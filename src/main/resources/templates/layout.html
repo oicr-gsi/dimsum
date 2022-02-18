@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+  <meta charset="UTF-8">
+  <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Dim Sum</title>
+
+  <link type="text/css" rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="header">[insert header here]</div>
+  <div layout:fragment="content">
+    [Page content goes here]
+  </div>
+  <div id="footer">[insert footer here]</div>
+</body>
+</html>
