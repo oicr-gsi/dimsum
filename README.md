@@ -19,9 +19,6 @@ Run server on default port (8080): `mvn spring-boot:run`
 
 Run server on different port: `mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8081"`
 
-## Monitoring Endpoints
+## Monitoring
 
-The following endpoints are available on the deployed webapp for monitoring purposes.
-
-* Health status: `/actuator/prometheus`
-* Prometheus metrics: `/actuator/prometheus`
+Prometheus metrics are available at `/metrics` on the deployed webapp.
