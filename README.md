@@ -10,8 +10,8 @@
 
 ## Build/Run
 
-Maven is configured to automatically install Node modules via `npm`, compile TypeScript via `tsc`,
-and include requirements from both in the Java build.
+Maven is configured to automatically run `npm` to install node modules, compile and package
+TypeScript via `tsc` and `webpack`, and include requirements from both in the Java build.
 
 Build runnable `.jar` file: `mvn clean package`
 
