@@ -1,6 +1,13 @@
 # Dim Sum Development Guide
 
-Dim Sum is a Spring Boot web app. Spring Controller classes respond to web requests.
+Dim Sum is a Spring Boot web app.
+
+* [Auto-configuration](https://docs.spring.io/spring-boot/docs/2.0.x/reference/html/using-boot-auto-configuration.html)
+  automates a lot of application and library setup while allowing you to override any of its
+  defaults
+* The [IoC container](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans)
+  simplifies the creation of application components via dependency injection
+* Controller classes respond to web requests
 
 ## Configuration
 
