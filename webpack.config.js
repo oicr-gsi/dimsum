@@ -20,7 +20,7 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'target/classes/static/js/'),
     library: {
       name: '[name]',
       type: 'var'
