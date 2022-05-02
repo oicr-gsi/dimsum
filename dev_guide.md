@@ -28,11 +28,11 @@ from the page template. The title from the page and layout will also be concaten
 ## TypeScript
 
 The JavaScript for the front end is compiled from TypeScript and packed using Webpack. During the
-Maven build, the TypeScript in `/ui` is compiled and packed into individual files per HTML page,
+Maven build, the TypeScript in `/ts` is compiled and packed into individual files per HTML page,
 and the resulting JavaScript is copied into `/target/classes/static/js/`, which will be available
 at `/js/` in the webapp.
 
-The page scripts to generate are defined in module.exports.entry in `webpack.config.js`. These
+The page scripts to generate are defined in `module.exports.entry` in `webpack.config.js`. These
 scripts are packaged as libraries to make any exports available to inline scripts in the HTML.
 TypeScript compiler config is in `tsconfig.json`.
 
