@@ -34,3 +34,7 @@ build/
 
 ### Node ###
 node_modules/
+
+### Project-specific ###
+/config/
+

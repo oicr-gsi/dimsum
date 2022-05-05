@@ -11,8 +11,15 @@ Dim Sum is a Spring Boot web app.
 
 ## Configuration
 
-App config is in `/resources/application.properties`. The properties in this file can be overridden
-using command-line parameters, system variables, or an external copy of this file.
+App config is in `/resources/application.yml`. The properties in this file can be overridden
+using command-line parameters, system variables, or an external properties file. See the
+[README](/README.md) for more information on the external properties file.
+
+## Authentication
+
+SAML authentication is configured using Spring Security. Documentation for that is
+[here](https://docs.spring.io/spring-security/reference/servlet/saml2/index.html). Authentication
+may be disabled for development/testing using the "noauth" Spring profile
 
 ## HTML Templates
 
