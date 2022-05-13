@@ -36,6 +36,7 @@ public class SecurityConfiguration {
             .antMatchers("/favicon.ico").permitAll()
             .antMatchers("/css/**").permitAll()
             .antMatchers("/js/**").permitAll()
+            .antMatchers("/metrics").permitAll()
             .antMatchers(LOGIN_URL).permitAll()
             .anyRequest().authenticated())
         .saml2Login().loginPage(LOGIN_URL)
