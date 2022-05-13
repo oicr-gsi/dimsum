@@ -1,0 +1,16 @@
+[
+  {
+    "id": 512,
+    "name": "REQ-1",
+    "informatics_reviews": [
+      {
+        "qcable_type": "informatics_interpretation",
+        "qc_state": "Ready",
+        "qc_user": "Person",
+        "qc_date": "2021-08-10"
+      }
+    ],
+    "draft_reports": [],
+    "final_reports": []
+  }
+]
