@@ -1,13 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
   <meta charset="UTF-8">
+  <meta name="_csrf_header" th:content="${_csrf.parameterName}"/>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+
   <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Dim Sum</title>
 
-  <link type="text/css" rel="stylesheet" href="/css/styles.css">
+  <link type="text/css" rel="stylesheet" th:href="@{/css/styles.css}">
+
+  <script th:src="@{/js/common.js}"></script>
+  <script type="text/javascript">
+    common.setCsrfToken();
+  </script>
 </head>
 <body>
-  <div id="header">[insert header here]</div>
+  <div id="header">
+    <p>[insert header here]</p>
+    <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <span sec:authentication="name"></span>
+      <input type="submit" value="Logout">
+    </form>
+  </div>
   <div layout:fragment="content">
     [Page content goes here]
   </div>
