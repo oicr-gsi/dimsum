@@ -5,7 +5,6 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,21 +12,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class CaseService {
 
-  private static Logger log = LoggerFactory.getLogger(CaseService.class);
+  private static final Logger log = LoggerFactory.getLogger(CaseService.class);
 
   @Autowired
   private CaseLoader dataLoader;
 
   private CaseData caseData;
 
-  private Timer refreshTimer;
   private int refreshFailures = 0;
 
   public CaseService(@Autowired MeterRegistry meterRegistry) {
@@ -37,9 +35,6 @@ public class CaseService {
           .register(meterRegistry);
       Gauge.builder("case_data_age_seconds", () -> this.getDataAge().toSeconds())
           .description("Time since case data was refreshed")
-          .register(meterRegistry);
-      refreshTimer = Timer.builder("case_data_refresh_time")
-          .description("Time taken to refresh the case data")
           .register(meterRegistry);
     }
   }
@@ -52,7 +47,7 @@ public class CaseService {
     if (caseData == null) {
       return Duration.ZERO;
     }
-    return Duration.between(caseData.getTimestamp(), LocalDateTime.now());
+    return Duration.between(caseData.getTimestamp(), ZonedDateTime.now());
   }
 
   public List<Case> getCases() {
@@ -64,19 +59,13 @@ public class CaseService {
 
   @Scheduled(fixedDelay = 1L, timeUnit = TimeUnit.MINUTES)
   private void refreshData() {
-    log.debug("Checking for new data...");
     try {
-      LocalDateTime fileTimestamp = dataLoader.getDataTimestamp();
-      if (caseData != null && !fileTimestamp.isAfter(caseData.getTimestamp())) {
-        log.debug("No new data - aborting refresh");
-        return;
-      }
-      log.debug("New data found. Refreshing...");
-      long startTimeMillis = System.currentTimeMillis();
-      caseData = dataLoader.load();
-      refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
+      ZonedDateTime previousTimestamp = caseData == null ? null : caseData.getTimestamp();
+      CaseData newData = dataLoader.load(previousTimestamp);
       refreshFailures = 0;
-      log.debug(String.format("Data refreshed. %d cases loaded.", caseData.getCases().size()));
+      if (newData != null) {
+        caseData = newData;
+      }
     } catch (Exception e) {
       refreshFailures++;
       log.error("Failed to refresh case data", e);

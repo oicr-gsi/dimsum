@@ -10,8 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +32,8 @@ public class CaseLoaderTest {
   }
 
   @BeforeEach
-  public void setup() throws Exception {
-    sut = new CaseLoader(dataDirectory);
+  public void setup() {
+    sut = new CaseLoader(dataDirectory, null);
   }
 
   @Test
@@ -89,12 +88,12 @@ public class CaseLoaderTest {
 
   @Test
   public void testLoad() throws Exception {
-    CaseData data = sut.load();
+    CaseData data = sut.load(null);
     assertNotNull(data);
 
-    LocalDateTime timestamp = data.getTimestamp();
+    ZonedDateTime timestamp = data.getTimestamp();
     assertNotNull(timestamp);
-    assertEquals(LocalDateTime.of(2022, 5, 26, 14, 33, 28), timestamp);
+    assertEquals(ZonedDateTime.of(2022, 5, 26, 14, 33, 28, 0, ZoneOffset.UTC), timestamp);
 
     List<Case> cases = data.getCases();
     assertNotNull(cases);
