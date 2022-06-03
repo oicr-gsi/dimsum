@@ -46,22 +46,16 @@
         "group_id": "proj-extnl_1_5",
         "targeted_sequencing": null,
         "extraction_ids": [
-          "SAM413648",
-          "SAM413735"
+          "SAM413648"
         ],
         "library_preparation_ids": [
-          "LIB76197",
-          "LIB75803"
+          "LIB76197"
         ],
         "library_qualification_ids": [
-          "5460_1_LDI73998",
-          "5459_1_LDI73621",
-          "5467_1_LDI73621"
+          "5460_1_LDI73998"
         ],
         "full_depth_sequencing_ids": [
-          "5481_1_LDI73998",
-          "5476_1_LDI73621",
-          "5540_1_LDI73621"
+          "5481_1_LDI73998"
         ]
       },
       {
