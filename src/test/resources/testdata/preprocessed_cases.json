@@ -1,0 +1,94 @@
+[
+  {
+    "donor_id": "SAM413576",
+    "project_names": [
+      "PROJ"
+    ],
+    "assay_name": "WGTS - 40XT/30XN",
+    "assay_description": "Whole Genome and Transcriptome Sequencing (WGTS) - 40X Tumour, 30X Normal",
+    "tissue_origin": "Lv",
+    "tissue_type": "M",
+    "timepoint": null,
+    "receipt_ids": [
+      "SAM413577",
+      "SAM413641",
+      "SAM413643",
+      "SAM413645",
+      "SAM413647"
+    ],
+    "assay_tests": [
+      {
+        "name": "Normal WG",
+        "tissue_origin": "Ly",
+        "tissue_type": "R",
+        "timepoint": null,
+        "group_id": "proj-extnl_BC",
+        "targeted_sequencing": null,
+        "extraction_ids": [
+          "SAM413593"
+        ],
+        "library_preparation_ids": [
+          "LIB75802"
+        ],
+        "library_qualification_ids": [
+          "5459_1_LDI73620",
+          "5467_1_LDI73620"
+        ],
+        "full_depth_sequencing_ids": [
+          "5476_1_LDI73620"
+        ]
+      },
+      {
+        "name": "Tumour WT",
+        "tissue_origin": "Lv",
+        "tissue_type": "M",
+        "timepoint": null,
+        "group_id": "proj-extnl_1_5",
+        "targeted_sequencing": null,
+        "extraction_ids": [
+          "SAM413648",
+          "SAM413735"
+        ],
+        "library_preparation_ids": [
+          "LIB76197",
+          "LIB75803"
+        ],
+        "library_qualification_ids": [
+          "5460_1_LDI73998",
+          "5459_1_LDI73621",
+          "5467_1_LDI73621"
+        ],
+        "full_depth_sequencing_ids": [
+          "5481_1_LDI73998",
+          "5476_1_LDI73621",
+          "5540_1_LDI73621"
+        ]
+      },
+      {
+        "name": "Tumour WG",
+        "tissue_origin": "Lv",
+        "tissue_type": "M",
+        "timepoint": null,
+        "group_id": "proj-extnl_1_5",
+        "targeted_sequencing": null,
+        "extraction_ids": [
+          "SAM413735"
+        ],
+        "library_preparation_ids": [
+          "LIB75803"
+        ],
+        "library_qualification_ids": [
+          "5459_1_LDI73621",
+          "5467_1_LDI73621"
+        ],
+        "full_depth_sequencing_ids": [
+          "5476_1_LDI73621",
+          "5540_1_LDI73621"
+        ]
+      }
+    ],
+    "requisition_ids": [
+      512
+    ]
+  }
+]

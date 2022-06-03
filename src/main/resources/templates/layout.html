@@ -29,6 +29,6 @@
   <div layout:fragment="content">
     [Page content goes here]
   </div>
-  <div id="footer">[insert footer here]</div>
+  <div id="footer" th:text="'last fetched ' + ${dataAgeMinutes} + ' minutes ago'">Footer</div>
 </body>
 </html>
