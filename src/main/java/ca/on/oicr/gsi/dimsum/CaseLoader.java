@@ -3,6 +3,11 @@ package ca.on.oicr.gsi.dimsum;
 import ca.on.oicr.gsi.dimsum.data.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,14 +17,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 public class CaseLoader {
+
+  private static final Logger log = LoggerFactory.getLogger(CaseLoader.class);
 
   private File caseFile;
   private File donorFile;
@@ -27,11 +36,19 @@ public class CaseLoader {
   private File sampleFile;
   private File timestampFile;
 
+  private Timer refreshTimer = null;
+
   private ObjectMapper mapper = new ObjectMapper();
 
-  public CaseLoader(@Value("${datadirectory}") File dataDirectory) {
+  public CaseLoader(@Value("${datadirectory}") File dataDirectory,
+      @Autowired MeterRegistry meterRegistry) {
     if (!dataDirectory.isDirectory() || !dataDirectory.canRead()) {
       throw new IllegalStateException(String.format("Data directory unreadable: %s", dataDirectory.getAbsolutePath()));
+    }
+    if (meterRegistry != null) {
+      refreshTimer = Timer.builder("case_data_refresh_time")
+          .description("Time taken to refresh the case data")
+          .register(meterRegistry);
     }
     caseFile = new File(dataDirectory, "preprocessed_cases.json");
     donorFile = new File(dataDirectory, "preprocessed_donors.json");
@@ -40,30 +57,63 @@ public class CaseLoader {
     timestampFile = new File(dataDirectory, "timestamp");
   }
 
-  public LocalDateTime getDataTimestamp() throws IOException {
+  /**
+   * @return The time that the data finished writing, or null if the data is currently being
+   * written
+   * @throws IOException if there is an error reading the timestamp file from disk
+   */
+  private ZonedDateTime getDataTimestamp() throws IOException {
     String timeString = Files.readString(timestampFile.toPath()).trim();
-    return LocalDateTime.parse(timeString);
+    if ("WORKING".equals(timeString)) {
+      return null;
+    }
+    return ZonedDateTime.parse(timeString, DateTimeFormatter.ISO_DATE_TIME);
   }
 
-  public CaseData load() throws DataParseException, IOException {
-    LocalDateTime beforeTimestamp = getDataTimestamp();
+  /**
+   * Loads new case data if available
+   *
+   * @param previousTimestamp timestamp of previous successful load
+   * @return case data if it is available and newer than the previousTimestamp; null otherwise
+   * @throws DataParseException if there is an error parsing the data from file
+   * @throws IOException if there is an error reading from disk
+   */
+  public CaseData load(ZonedDateTime previousTimestamp) throws DataParseException, IOException {
+    log.debug("Loading case data...");
+    ZonedDateTime beforeTimestamp = getDataTimestamp();
+    if (beforeTimestamp == null) {
+      log.debug("New case data is currently being written; aborting load.");
+      return null;
+    } else if (previousTimestamp != null && !beforeTimestamp.isAfter(previousTimestamp)) {
+      log.debug("Current case data is up to date with data files; aborting load");
+      return null;
+    }
+    long startTimeMillis = System.currentTimeMillis();
     try (
       FileReader sampleReader = getSampleReader();
       FileReader donorReader = getDonorReader();
       FileReader requisitionReader = getRequisitionReader();
       FileReader caseReader = getCaseReader();
     ) {
-      LocalDateTime afterTimestamp = getDataTimestamp();
-      if (afterTimestamp.equals(beforeTimestamp)) {
-        Map<String, Sample> samplesById = loadSamples(sampleReader);
-        Map<String, Donor> donorsById = loadDonors(donorReader);
-        Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
-        List<Case> cases = loadCases(caseReader, samplesById, donorsById, requisitionsById);
-        return new CaseData(cases, afterTimestamp);
+      ZonedDateTime afterTimestamp = getDataTimestamp();
+      if (afterTimestamp == null) {
+        log.debug("New case data is currently being written; aborting load.");
+        return null;
+      } else if (!afterTimestamp.equals(beforeTimestamp)) {
+        // Data was written in the middle of loading. Restart
+        log.debug("New case data was written while we were reading; reloading...");
+        return load(previousTimestamp);
       }
+      Map<String, Sample> samplesById = loadSamples(sampleReader);
+      Map<String, Donor> donorsById = loadDonors(donorReader);
+      Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
+      List<Case> cases = loadCases(caseReader, samplesById, donorsById, requisitionsById);
+      if (refreshTimer != null) {
+        refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
+      }
+      log.debug(String.format("Completed loading %d cases.",cases.size()));
+      return new CaseData(cases, afterTimestamp);
     }
-    // Data was written in the middle of loading. Restart
-    return load();
   }
 
   protected FileReader getSampleReader() throws FileNotFoundException {
