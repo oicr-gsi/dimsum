@@ -1,5 +1,7 @@
 # Dim Sum - QC Tracking Dashboard
 
+![CI](https://github.com/oicr-gsi/dimsum/actions/workflows/ci.yml/badge.svg)
+
 ## Build Requirements
 
 * Java 17 JDK
