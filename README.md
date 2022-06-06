@@ -2,7 +2,7 @@
 
 ## Build Requirements
 
-* Java 11 JDK
+* Java 17 JDK
 * Maven 3.8+
 * Node 17.3+
 * NPM 8.3+
