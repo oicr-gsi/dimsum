@@ -6,6 +6,7 @@ public class Requisition {
 
   private long id;
   private String name;
+  private boolean stopped;
   private List<RequisitionQc> informationReviews;
   private List<RequisitionQc> draftReports;
   private List<RequisitionQc> finalReports;
@@ -24,6 +25,14 @@ public class Requisition {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public boolean isStopped() {
+    return stopped;
+  }
+
+  public void setStopped(boolean stopped) {
+    this.stopped = stopped;
   }
 
   public List<RequisitionQc> getInformationReviews() {

@@ -2,6 +2,7 @@
   {
     "id": 512,
     "name": "REQ-1",
+    "stopped": false,
     "informatics_reviews": [
       {
         "qcable_type": "informatics_interpretation",

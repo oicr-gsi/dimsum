@@ -12,6 +12,7 @@ public class Case {
   private String tissueOrigin;
   private String tissueType;
   private String timepoint;
+  private boolean stopped;
   private List<Sample> receipts;
   private List<Test> tests;
   private List<Requisition> requisitions;
@@ -70,6 +71,14 @@ public class Case {
 
   public void setTimepoint(String timepoint) {
     this.timepoint = timepoint;
+  }
+
+  public boolean isStopped() {
+    return stopped;
+  }
+
+  public void setStopped(boolean stopped) {
+    this.stopped = stopped;
   }
 
   public List<Sample> getReceipts() {
