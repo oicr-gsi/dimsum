@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
-<head>
-  <meta charset="UTF-8">
-  <title>Test</title>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
 
+<head>
+  <meta charset="UTF-8" />
+  <title>Test</title>
   <script src="/js/test.js"></script>
 </head>
+
 <body>
   <div layout:fragment="content">
     <p th:text="'Hello, ' + ${name} + '!'" />
@@ -18,10 +17,11 @@
     <p id="test2"></p>
 
     <script>
-      const p = document.getElementById('test1');
-      p.innerHTML = test.getText('world');
+      const p = document.getElementById("test1");
+      p.innerHTML = test.getText("world");
       test.setText();
     </script>
   </div>
 </body>
+
 </html>

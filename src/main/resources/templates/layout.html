@@ -1,34 +1,44 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="_csrf_header" th:content="${_csrf.parameterName}"/>
-  <meta name="_csrf" th:content="${_csrf.token}"/>
-
+  <meta charset="UTF-8" />
+  <meta name="_csrf_header" th:content="${_csrf.parameterName}" />
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Dim Sum</title>
-
-  <link type="text/css" rel="stylesheet" th:href="@{/css/styles.css}">
-
+  <link type="text/css" rel="stylesheet" th:href="@{/css/output.css}" />
+  <link href="../static/css/output.css" rel="stylesheet" /> <!-- for live server only -->
   <script th:src="@{/js/common.js}"></script>
   <script type="text/javascript">
     common.setCsrfToken();
   </script>
 </head>
-<body>
+
+<body class="flex flex-col min-h-screen">
   <div id="header">
-    <p>[insert header here]</p>
-    <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-      <span sec:authentication="name"></span>
-      <input type="submit" value="Logout">
-    </form>
+    <nav class="flex justify-end space-x-4 items-center m-4 border-b-2 border-grey-200">
+      <div class="flex-grow">
+        <a href="."><img th:src="@{dimsum_logo.svg}" class="w-32" /></a>
+      </div>
+      <a href="https://github.com/oicr-gsi/dimsum" target="_blank" rel="noopener noreferrer"
+        class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">
+        help</a>
+      <a href="." class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">report a problem</a>
+      <span sec:authentication="name" class="font-inter text-16 px-3 py-2 text-black cursor-default"></span>
+      <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input type="submit" value="log out"
+          class="font-inter text-16 px-2 py-1 text-black hover:bg-green-200 hover:text-white bg-grey-100 rounded-lg" />
+      </form>
+    </nav>
   </div>
-  <div layout:fragment="content">
-    [Page content goes here]
-  </div>
-  <div id="footer" th:text="'last fetched ' + ${dataAgeMinutes} + ' minutes ago'">Footer</div>
+
+  <main class="flex-auto mx-4" layout:fragment="content">content</main>
+
+  <footer class="font-inter bg-green-200 text-center text-white mt-4 py-1 text-10 font-medium"
+    th:text="'version 1.0.0 | last fetched ' + ${dataAgeMinutes} + ' minutes ago'"></footer>
 </body>
+
 </html>
