@@ -122,6 +122,7 @@ public class CaseLoader {
       Requisition requisition = new Requisition();
       requisition.setId(parseLong(json, "id", true));
       requisition.setName(parseString(json, "name", true));
+      requisition.setStopped(parseBoolean(json, "stopped"));
       requisition.setInformationReviews(parseRequisitionQcs(json, "informatics_reviews"));
       requisition.setDraftReports(parseRequisitionQcs(json, "draft_reports"));
       requisition.setFinalReports(parseRequisitionQcs(json, "final_reports"));
@@ -157,6 +158,7 @@ public class CaseLoader {
       item.setTissueOrigin(parseString(json, "tissue_origin", true));
       item.setTissueType(parseString(json, "tissue_type", true));
       item.setTimepoint(parseString(json, "timepoint"));
+      item.setStopped(parseBoolean(json, "stopped"));
       item.setReceipts(parseIdsAndGet(json, "receipt_ids", JsonNode::asText, samplesById));
       item.setTests(parseTests(json, "assay_tests", samplesById));
       item.setRequisitions(parseIdsAndGet(json, "requisition_ids", JsonNode::asLong,
@@ -237,6 +239,15 @@ public class CaseLoader {
       }
     } else {
       return node.asLong();
+    }
+  }
+
+  private static boolean parseBoolean(JsonNode json, String fieldName) throws DataParseException {
+    JsonNode node = json.get(fieldName);
+    if (node == null || node.isNull()) {
+      throw new DataParseException(makeMissingFieldMessage(fieldName));
+    } else {
+      return node.asBoolean();
     }
   }
 

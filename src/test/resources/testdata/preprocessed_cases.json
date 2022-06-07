@@ -9,6 +9,7 @@
     "tissue_origin": "Lv",
     "tissue_type": "M",
     "timepoint": null,
+    "stopped": false,
     "receipt_ids": [
       "SAM413577",
       "SAM413641",
