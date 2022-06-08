@@ -1,97 +1,149 @@
 package ca.on.oicr.gsi.dimsum.data;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
+
 import java.util.List;
 
+import javax.annotation.concurrent.Immutable;
+
+@Immutable
 public class Test {
 
-  private String name;
-  private String tissueOrigin;
-  private String tissueType;
-  private String timepoint;
-  private String groupId;
-  private String targetedSequencing;
-  private List<Sample> extractions;
-  private List<Sample> libraryPreparations;
-  private List<Sample> libraryQualifications;
-  private List<Sample> fullDepthSequencings;
+  private final String name;
+  private final String tissueOrigin;
+  private final String tissueType;
+  private final String timepoint;
+  private final String groupId;
+  private final String targetedSequencing;
+  private final List<Sample> extractions;
+  private final List<Sample> libraryPreparations;
+  private final List<Sample> libraryQualifications;
+  private final List<Sample> fullDepthSequencings;
+
+  private Test(Builder builder) {
+    this.name = requireNonNull(builder.name);
+    this.tissueOrigin = builder.tissueOrigin;
+    this.tissueType = builder.tissueType;
+    this.timepoint = builder.timepoint;
+    this.groupId = builder.groupId;
+    this.targetedSequencing = builder.targetedSequencing;
+    this.extractions = builder.extractions == null ? emptyList()
+        : unmodifiableList(builder.extractions);
+    this.libraryPreparations = builder.libraryPreparations == null ? emptyList()
+        : unmodifiableList(builder.libraryPreparations);
+    this.libraryQualifications = builder.libraryQualifications == null ? emptyList()
+        : unmodifiableList(builder.libraryQualifications);
+    this.fullDepthSequencings = builder.fullDepthSequencings == null ? emptyList()
+        : unmodifiableList(builder.fullDepthSequencings);
+  }
 
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public String getTissueOrigin() {
     return tissueOrigin;
   }
 
-  public void setTissueOrigin(String tissueOrigin) {
-    this.tissueOrigin = tissueOrigin;
-  }
-
   public String getTissueType() {
     return tissueType;
-  }
-
-  public void setTissueType(String tissueType) {
-    this.tissueType = tissueType;
   }
 
   public String getTimepoint() {
     return timepoint;
   }
 
-  public void setTimepoint(String timepoint) {
-    this.timepoint = timepoint;
-  }
-
   public String getGroupId() {
     return groupId;
-  }
-
-  public void setGroupId(String groupId) {
-    this.groupId = groupId;
   }
 
   public String getTargetedSequencing() {
     return targetedSequencing;
   }
 
-  public void setTargetedSequencing(String targetedSequencing) {
-    this.targetedSequencing = targetedSequencing;
-  }
-
   public List<Sample> getExtractions() {
     return extractions;
-  }
-
-  public void setExtractions(List<Sample> extractions) {
-    this.extractions = extractions;
   }
 
   public List<Sample> getLibraryPreparations() {
     return libraryPreparations;
   }
 
-  public void setLibraryPreparations(List<Sample> libraryPreparations) {
-    this.libraryPreparations = libraryPreparations;
-  }
-
   public List<Sample> getLibraryQualifications() {
     return libraryQualifications;
-  }
-
-  public void setLibraryQualifications(List<Sample> libraryQualifications) {
-    this.libraryQualifications = libraryQualifications;
   }
 
   public List<Sample> getFullDepthSequencings() {
     return fullDepthSequencings;
   }
 
-  public void setFullDepthSequencings(List<Sample> fullDepthSequencings) {
-    this.fullDepthSequencings = fullDepthSequencings;
+  public static class Builder {
+
+    private String name;
+    private String tissueOrigin;
+    private String tissueType;
+    private String timepoint;
+    private String groupId;
+    private String targetedSequencing;
+    private List<Sample> extractions;
+    private List<Sample> libraryPreparations;
+    private List<Sample> libraryQualifications;
+    private List<Sample> fullDepthSequencings;
+
+    public Builder name(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public Builder tissueOrigin(String tissueOrigin) {
+      this.tissueOrigin = tissueOrigin;
+      return this;
+    }
+
+    public Builder tissueType(String tissueType) {
+      this.tissueType = tissueType;
+      return this;
+    }
+
+    public Builder timepoint(String timepoint) {
+      this.timepoint = timepoint;
+      return this;
+    }
+
+    public Builder groupId(String groupId) {
+      this.groupId = groupId;
+      return this;
+    }
+
+    public Builder targetedSequencing(String targetedSequencing) {
+      this.targetedSequencing = targetedSequencing;
+      return this;
+    }
+
+    public Builder extractions(List<Sample> extractions) {
+      this.extractions = extractions;
+      return this;
+    }
+
+    public Builder libraryPreparations(List<Sample> libraryPreparations) {
+      this.libraryPreparations = libraryPreparations;
+      return this;
+    }
+
+    public Builder libraryQualifications(List<Sample> libraryQualifications) {
+      this.libraryQualifications = libraryQualifications;
+      return this;
+    }
+
+    public Builder fullDepthSequencings(List<Sample> fullDepthSequencings) {
+      this.fullDepthSequencings = fullDepthSequencings;
+      return this;
+    }
+
+    public Test build() {
+      return new Test(this);
+    }
   }
 }
