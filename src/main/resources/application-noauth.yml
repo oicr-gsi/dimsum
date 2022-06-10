@@ -1,4 +1,6 @@
 spring:
   autoconfigure:
     exclude:
+      # Disable UserDetailsServiceAutoConfiguration to prevent auto-creation of a test user
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
       - org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration
