@@ -32,11 +32,17 @@
 Maven is configured to automatically run `npm` to install node modules, compile and package
 TypeScript via `tsc` and `webpack`, and include requirements from both in the Java build.
 
-Build runnable `.jar` file: `mvn clean package`
+Build runnable `.jar` file: 
 
-Run server on default port (8080): `mvn clean spring-boot:run`
+`mvn clean package`
 
-Run server on different port: `mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8081"`
+Run server on default port (8080): 
+
+`mvn clean spring-boot:run`
+
+Run server on different port: 
+
+`mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8081"`
 
 ## Monitoring
 

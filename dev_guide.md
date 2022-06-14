@@ -32,6 +32,18 @@ include a div with property `layout:fragment="content"` in the `body` to contain
 Elements from the `head` section of the main layout will be included before the `head` elements
 from the page template. The title from the page and layout will also be concatenated automatically.
 
+## Tailwind CSS
+
+[Tailwind](https://tailwindcss.com) is a utility-based CSS framework that has been configured for Dimsum's design systems. Styles are defined in `tailwind.config.js` and can be reused in different files.
+
+The config currently scans `.html` and `.ts` files in the `templates` and `ts` directories. The generated CSS can be found in `/src/resources/static/css/output.css`. New templates not on this path should be added.
+
+If you've updated any template files, use
+
+```npx tailwindcss -i src/main/resources/static/css/input.css -o src/main/resources/static/css/output.css --watch```
+
+before building/running as usual outlined in the [README](/README.md)
+
 ## TypeScript
 
 The JavaScript for the front end is compiled from TypeScript and packed using Webpack. During the

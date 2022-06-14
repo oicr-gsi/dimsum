@@ -58,8 +58,9 @@ public class CaseLoader {
   }
 
   /**
-   * @return The time that the data finished writing, or null if the data is currently being
-   * written
+   * @return The time that the data finished writing, or null if the data is
+   *         currently being
+   *         written
    * @throws IOException if there is an error reading the timestamp file from disk
    */
   private ZonedDateTime getDataTimestamp() throws IOException {
@@ -74,9 +75,10 @@ public class CaseLoader {
    * Loads new case data if available
    *
    * @param previousTimestamp timestamp of previous successful load
-   * @return case data if it is available and newer than the previousTimestamp; null otherwise
+   * @return case data if it is available and newer than the previousTimestamp;
+   *         null otherwise
    * @throws DataParseException if there is an error parsing the data from file
-   * @throws IOException if there is an error reading from disk
+   * @throws IOException        if there is an error reading from disk
    */
   public CaseData load(ZonedDateTime previousTimestamp) throws DataParseException, IOException {
     log.debug("Loading case data...");
@@ -90,11 +92,10 @@ public class CaseLoader {
     }
     long startTimeMillis = System.currentTimeMillis();
     try (
-      FileReader sampleReader = getSampleReader();
-      FileReader donorReader = getDonorReader();
-      FileReader requisitionReader = getRequisitionReader();
-      FileReader caseReader = getCaseReader();
-    ) {
+        FileReader sampleReader = getSampleReader();
+        FileReader donorReader = getDonorReader();
+        FileReader requisitionReader = getRequisitionReader();
+        FileReader caseReader = getCaseReader();) {
       ZonedDateTime afterTimestamp = getDataTimestamp();
       if (afterTimestamp == null) {
         log.debug("New case data is currently being written; aborting load.");
@@ -111,7 +112,7 @@ public class CaseLoader {
       if (refreshTimer != null) {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
-      log.debug(String.format("Completed loading %d cases.",cases.size()));
+      log.debug(String.format("Completed loading %d cases.", cases.size()));
       return new CaseData(cases, afterTimestamp);
     }
   }
