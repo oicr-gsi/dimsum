@@ -34,7 +34,7 @@ TypeScript via `tsc` and `webpack`, and include requirements from both in the Ja
 
 Build runnable `.jar` file: `mvn clean package`
 
-Run server on default port (8080): `mvn spring-boot:run`
+Run server on default port (8080): `mvn clean spring-boot:run`
 
 Run server on different port: `mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8081"`
 
