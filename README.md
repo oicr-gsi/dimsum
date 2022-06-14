@@ -38,7 +38,7 @@ Build runnable `.jar` file:
 
 Run server on default port (8080): 
 
-`mvn spring-boot:run`
+`mvn clean spring-boot:run`
 
 Run server on different port: 
 
