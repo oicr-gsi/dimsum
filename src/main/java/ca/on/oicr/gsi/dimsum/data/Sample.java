@@ -3,6 +3,8 @@ package ca.on.oicr.gsi.dimsum.data;
 import static java.util.Objects.requireNonNull;
 
 import java.time.LocalDate;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -16,6 +18,8 @@ public class Sample {
   private final String timepoint;
   private final String groupId;
   private final String targetedSequencing;
+  private final LocalDate createdDate;
+  private final Run run;
   private final Boolean qcPassed;
   private final String qcReason;
   private final String qcUser;
@@ -23,6 +27,7 @@ public class Sample {
   private final Boolean dataReviewPassed;
   private final String dataReviewUser;
   private final LocalDate dataReviewDate;
+  private final LocalDate latestActivityDate;
 
   private Sample(Builder builder) {
     this.id = requireNonNull(builder.id);
@@ -32,6 +37,8 @@ public class Sample {
     this.timepoint = builder.timepoint;
     this.groupId = builder.groupId;
     this.targetedSequencing = builder.targetedSequencing;
+    this.createdDate = requireNonNull(builder.createdDate);
+    this.run = builder.run;
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
     this.qcUser = builder.qcUser;
@@ -39,6 +46,8 @@ public class Sample {
     this.dataReviewPassed = builder.dataReviewPassed;
     this.dataReviewUser = builder.dataReviewUser;
     this.dataReviewDate = builder.dataReviewDate;
+    this.latestActivityDate = Stream.of(createdDate, qcDate, dataReviewDate)
+        .filter(Objects::nonNull).max(LocalDate::compareTo).orElseThrow();
   }
 
   public String getId() {
@@ -69,6 +78,14 @@ public class Sample {
     return targetedSequencing;
   }
 
+  public LocalDate getCreatedDate() {
+    return createdDate;
+  }
+
+  public Run getRun() {
+    return run;
+  }
+
   public Boolean getQcPassed() {
     return qcPassed;
   }
@@ -97,6 +114,10 @@ public class Sample {
     return dataReviewDate;
   }
 
+  public LocalDate getLatestActivityDate() {
+    return latestActivityDate;
+  }
+
   public static class Builder {
 
     private String id;
@@ -106,6 +127,8 @@ public class Sample {
     private String timepoint;
     private String groupId;
     private String targetedSequencing;
+    private LocalDate createdDate;
+    private Run run;
     private Boolean qcPassed;
     private String qcReason;
     private String qcUser;
@@ -146,6 +169,16 @@ public class Sample {
 
     public Builder targetedSequencing(String targetedSequencing) {
       this.targetedSequencing = targetedSequencing;
+      return this;
+    }
+
+    public Builder createdDate(LocalDate createdDate) {
+      this.createdDate = createdDate;
+      return this;
+    }
+
+    public Builder run(Run run) {
+      this.run = run;
       return this;
     }
 

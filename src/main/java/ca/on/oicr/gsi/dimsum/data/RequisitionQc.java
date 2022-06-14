@@ -32,7 +32,7 @@ public class RequisitionQc {
   }
 
   public static class Builder {
-    
+
     private boolean qcPassed;
     private String qcUser;
     private LocalDate qcDate;

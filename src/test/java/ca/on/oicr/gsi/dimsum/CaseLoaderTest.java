@@ -79,7 +79,7 @@ public class CaseLoaderTest {
       assertNotNull(requisition);
       assertEquals(requisitionId, requisition.getId());
       assertEquals("REQ-1", requisition.getName());
-      List<RequisitionQc> qcs = requisition.getInformationReviews();
+      List<RequisitionQc> qcs = requisition.getInformaticsReviews();
       assertEquals(1, qcs.size());
       RequisitionQc qc = qcs.get(0);
       assertTrue(qc.isQcPassed());
@@ -109,16 +109,14 @@ public class CaseLoaderTest {
 
     assertNotNull(kase.getReceipts());
     assertEquals(5, kase.getReceipts().size());
-    Sample sample = kase.getReceipts().stream()
-        .filter(x -> x.getId().equals(testSampleId))
+    Sample sample = kase.getReceipts().stream().filter(x -> x.getId().equals(testSampleId))
         .findAny().orElse(null);
     assertSample(sample);
 
     assertNotNull(kase.getTests());
     assertEquals(3, kase.getTests().size());
     ca.on.oicr.gsi.dimsum.data.Test test = kase.getTests().stream()
-        .filter(x -> x.getName().equals("Normal WG"))
-        .findAny().orElse(null);
+        .filter(x -> x.getName().equals("Normal WG")).findAny().orElse(null);
     assertNotNull(test);
     assertEquals("Normal WG", test.getName());
     assertNotNull(test.getExtractions());

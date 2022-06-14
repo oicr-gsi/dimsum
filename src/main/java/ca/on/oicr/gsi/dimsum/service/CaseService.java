@@ -3,8 +3,11 @@ package ca.on.oicr.gsi.dimsum.service;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +16,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class CaseService {
@@ -34,8 +40,7 @@ public class CaseService {
           .description("Number of consecutive failures to refresh the case data")
           .register(meterRegistry);
       Gauge.builder("case_data_age_seconds", () -> this.getDataAge().toSeconds())
-          .description("Time since case data was refreshed")
-          .register(meterRegistry);
+          .description("Time since case data was refreshed").register(meterRegistry);
     }
   }
 
@@ -55,6 +60,23 @@ public class CaseService {
       throw new IllegalStateException("Cases have not been loaded yet");
     }
     return caseData.getCases();
+  }
+
+  public List<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
+      Collection<CaseFilter> filters) {
+    Stream<Case> cases = getCases().stream();
+
+    if (filters != null) {
+      for (CaseFilter filter : filters) {
+        cases = cases.filter(filter.predicate());
+      }
+    }
+    if (sort == null) {
+      sort = CaseSort.LAST_ACTIVITY;
+    }
+    cases = cases.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+
+    return cases.skip(pageSize * pageNumber).limit(pageSize).collect(Collectors.toList());
   }
 
   @Scheduled(fixedDelay = 1L, timeUnit = TimeUnit.MINUTES)

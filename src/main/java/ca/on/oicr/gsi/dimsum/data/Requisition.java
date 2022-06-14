@@ -4,7 +4,10 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -17,6 +20,7 @@ public class Requisition {
   private final List<RequisitionQc> informaticsReviews;
   private final List<RequisitionQc> draftReports;
   private final List<RequisitionQc> finalReports;
+  private final LocalDate latestActivityDate;
 
   private Requisition(Builder builder) {
     this.id = requireNonNull(builder.id);
@@ -24,10 +28,14 @@ public class Requisition {
     this.stopped = builder.stopped;
     this.informaticsReviews = builder.informaticsReviews == null ? emptyList()
         : unmodifiableList(builder.informaticsReviews);
-    this.draftReports = builder.draftReports == null ? emptyList()
-        : unmodifiableList(builder.draftReports);
-    this.finalReports = builder.finalReports == null ? emptyList()
-        : unmodifiableList(builder.finalReports);
+    this.draftReports =
+        builder.draftReports == null ? emptyList() : unmodifiableList(builder.draftReports);
+    this.finalReports =
+        builder.finalReports == null ? emptyList() : unmodifiableList(builder.finalReports);
+    this.latestActivityDate =
+        Stream.of(informaticsReviews.stream(), draftReports.stream(), finalReports.stream())
+            .flatMap(Function.identity()).map(RequisitionQc::getQcDate).max(LocalDate::compareTo)
+            .orElse(null);
   }
 
   public long getId() {
@@ -42,7 +50,7 @@ public class Requisition {
     return stopped;
   }
 
-  public List<RequisitionQc> getInformationReviews() {
+  public List<RequisitionQc> getInformaticsReviews() {
     return informaticsReviews;
   }
 
@@ -52,6 +60,10 @@ public class Requisition {
 
   public List<RequisitionQc> getFinalReports() {
     return finalReports;
+  }
+
+  public LocalDate getLatestActivity() {
+    return latestActivityDate;
   }
 
   public static class Builder {
