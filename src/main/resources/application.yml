@@ -2,10 +2,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: 'prometheus'
-      base-path: '/'
+        include: "prometheus"
+      base-path: "/"
       path-mapping:
-        prometheus: 'metrics'
+        prometheus: "metrics"
 
 spring:
   autoconfigure:
@@ -25,3 +25,6 @@ spring:
               verification.credentials:
                 - certificate-location: file://${saml.idpcertificate}
               singlesignon.url: ${saml.ssourl}
+
+build:
+  version: "@project.version@"
