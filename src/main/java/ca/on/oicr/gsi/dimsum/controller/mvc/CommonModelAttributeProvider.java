@@ -14,6 +14,8 @@ public class CommonModelAttributeProvider {
 
   @Value("${build.version}")
   private String buildVersion;
+  @Value("${bugreport.url}")
+  private String bugReportUrl;
 
   @ModelAttribute("dataAgeMinutes")
   public long getDataAgeMinutes() {
@@ -23,6 +25,11 @@ public class CommonModelAttributeProvider {
   @ModelAttribute("buildVersion")
   public String getBuildVersion() {
     return buildVersion;
+  }
+  
+  @ModelAttribute("bugReportUrl")
+  public String getJiraLink() {
+    return bugReportUrl;
   }
 
 }

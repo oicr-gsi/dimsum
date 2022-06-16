@@ -25,7 +25,8 @@
       <a href="https://github.com/oicr-gsi/dimsum" target="_blank" rel="noopener noreferrer"
         class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">
         help</a>
-      <a href="." class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">report a problem</a>
+      <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
+        class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">report a problem</a>
       <span sec:authentication="name" class="font-inter text-16 px-3 py-2 text-black cursor-default"></span>
       <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
