@@ -14,7 +14,9 @@ module.exports = {
       10: '10px',
       12: '12px',
       16: '16px',
+      24: '24px',
       32: '32px',
+      40: '40px',
     },
     colors: {
       white: '#FFFFFF',
