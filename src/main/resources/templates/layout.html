@@ -38,7 +38,7 @@
   <main class="flex-auto mx-4" layout:fragment="content">content</main>
 
   <footer class="font-inter bg-green-200 text-center text-white mt-4 py-1 text-10 font-medium"
-    th:text="'version 1.0.0 | last fetched ' + ${dataAgeMinutes} + ' minutes ago'"></footer>
+    th:text="'version ' + ${buildVersion} + ' | last fetched ' + ${dataAgeMinutes} + ' minutes ago'"></footer>
 </body>
 
 </html>
