@@ -36,6 +36,7 @@ public class SecurityConfiguration {
             .antMatchers("/favicon.ico").permitAll()
             .antMatchers("/css/**").permitAll()
             .antMatchers("/js/**").permitAll()
+            .antMatchers("/img/**").permitAll()
             .antMatchers("/metrics").permitAll()
             .antMatchers(LOGIN_URL).permitAll()
             .anyRequest().authenticated())
@@ -70,7 +71,8 @@ public class SecurityConfiguration {
   }
 
   @Bean
-  public RelyingPartyRegistrationResolver relyingPartyRegistrationResolver(RelyingPartyRegistrationRepository registrations) {
+  public RelyingPartyRegistrationResolver relyingPartyRegistrationResolver(
+      RelyingPartyRegistrationRepository registrations) {
     return new DefaultRelyingPartyRegistrationResolver(registrations);
   }
 
