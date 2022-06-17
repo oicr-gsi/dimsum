@@ -1,6 +1,6 @@
 /// <reference types="jquery" />
 
-export function setCsrfToken() {
+function setCsrfToken() {
   $(function () {
     let token: string = $("meta[name='_csrf']").attr("content")!;
     let header: string = $("meta[name='_csrf_header']").attr("content")!;
@@ -9,3 +9,5 @@ export function setCsrfToken() {
     });
   });
 }
+
+setCsrfToken();
