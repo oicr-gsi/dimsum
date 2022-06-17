@@ -2,18 +2,26 @@
 
 Dim Sum is a Spring Boot web app.
 
-* [Auto-configuration](https://docs.spring.io/spring-boot/docs/2.0.x/reference/html/using-boot-auto-configuration.html)
+- [Auto-configuration](https://docs.spring.io/spring-boot/docs/2.0.x/reference/html/using-boot-auto-configuration.html)
   automates a lot of application and library setup while allowing you to override any of its
   defaults
-* The [IoC container](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans)
+- The [IoC container](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans)
   simplifies the creation of application components via dependency injection
-* Controller classes respond to web requests
+- Controller classes respond to web requests
 
 ## Configuration
 
 App config is in `/resources/application.yml`. The properties in this file can be overridden
 using command-line parameters, system variables, or an external properties file. See the
 [README](/README.md) for more information on the external properties file.
+
+## Code Formatting
+
+Dim Sum has formatters configured for Java, HTML, and TypeScript in VSCode. For these to work, you
+must have the following extensions installed:
+
+- Language Support for Java(TM) by Red Hat
+- Prettier - Code Formatter
 
 ## Authentication
 
@@ -40,7 +48,7 @@ The config currently scans `.html` and `.ts` files in the `templates` and `ts` d
 
 If you've updated any template files, use
 
-```npx tailwindcss -i src/main/resources/static/css/input.css -o src/main/resources/static/css/output.css --watch```
+`npx tailwindcss -i src/main/resources/static/css/input.css -o src/main/resources/static/css/output.css --watch`
 
 before building/running as usual outlined in the [README](/README.md)
 
