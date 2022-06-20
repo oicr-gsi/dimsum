@@ -9,9 +9,15 @@
 
 <body>
   <div layout:fragment="content">
-    <p>Please log in to use Dim Sum</p>
-    <a th:href="@{/saml2/authenticate/dimsum}">Login</a>
+    <div class="max-w-lg mx-auto my-20 flex flex-col px-8">
+      <div class="flex flex-col">
+        <h1 class="font-sarabun text-40 text-green-200">Welcome to dimsum!</h1>
+        <p class="font-inter text-16 font-medium text-black">Log in to continue:</p>
+      </div>
+      <a class="mt-8 hover:bg-green-200 hover:text-white bg-grey-100 rounded-lg text-center font-inter font-medium text-16 p-2"
+        th:href="@{/saml2/authenticate/dimsum}">Log in</a>
+    </div>
   </div>
 </body>
 
-</html>
+</html> 

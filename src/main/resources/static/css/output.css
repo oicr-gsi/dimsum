@@ -481,8 +481,22 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-right: 1rem;
 }
 
+.mx-auto{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.my-20{
+  margin-top: 5rem;
+  margin-bottom: 5rem;
+}
+
 .mt-4{
   margin-top: 1rem;
+}
+
+.mt-8{
+  margin-top: 2rem;
 }
 
 .flex{
@@ -499,6 +513,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .w-32{
   width: 8rem;
+}
+
+.max-w-lg{
+  max-width: 32rem;
 }
 
 .flex-auto{
@@ -554,6 +572,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(91 158 90 / var(--tw-bg-opacity));
 }
 
+.p-2{
+  padding: 0.5rem;
+}
+
 .px-3{
   padding-left: 0.75rem;
   padding-right: 0.75rem;
@@ -574,6 +596,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding-bottom: 0.25rem;
 }
 
+.px-8{
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
 .text-center{
   text-align: center;
 }
@@ -582,12 +609,20 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-family: Inter, sans-serif;
 }
 
+.font-sarabun{
+  font-family: Sarabun, sans-serif;
+}
+
 .text-16{
   font-size: 16px;
 }
 
 .text-10{
   font-size: 10px;
+}
+
+.text-40{
+  font-size: 40px;
 }
 
 .font-medium{
@@ -602,6 +637,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-white{
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.text-green-200{
+  --tw-text-opacity: 1;
+  color: rgb(91 158 90 / var(--tw-text-opacity));
 }
 
 .hover\:bg-green-200:hover{
