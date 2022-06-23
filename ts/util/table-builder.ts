@@ -26,12 +26,12 @@ export class TableBuilder<ParentType, ChildType> {
     this.container = container;
   }
 
-  public async makeTable() {
+  public async build() {
     // TODO: add filtering controls
     // TODO: add paging controls
     const table = document.createElement("table");
     this.container.appendChild(table);
-    this.loadTable();
+    this.load();
     // TODO: add action buttons
   }
 
@@ -48,7 +48,7 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   // TODO: make private once TableBuilder controls fetching/reloading
-  public loadTable(data?: ParentType[]) {
+  public load(data?: ParentType[]) {
     const table = this.getTable();
     while (table.lastChild) {
       table.removeChild(table.lastChild);

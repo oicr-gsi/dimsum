@@ -29,5 +29,5 @@ const cases: Case[] = [
 ];
 
 let table = new TableBuilder(tableDefinition, "tableContainer");
-table.makeTable();
-table.loadTable(cases);
+table.build();
+table.load(cases);
