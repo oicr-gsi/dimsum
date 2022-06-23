@@ -1,9 +1,33 @@
-/// <reference types="jquery" />
+import { Case, tableDefinition } from "./data/case";
+import { TableBuilder } from "./util/table-builder";
 
-export function getText(name: string) {
-  return "Hello " + name + "!";
-}
+const cases: Case[] = [
+  {
+    projects: [
+      {
+        name: "PROJ",
+      },
+    ],
+    donor: {
+      id: 1,
+      name: "PROJ_0001",
+      externalName: "extnl-01",
+    },
+    tests: [
+      {
+        name: "Normal WG",
+      },
+      {
+        name: "Tumour WG",
+      },
+      {
+        name: "Tumour WT",
+      },
+    ],
+    latestActivityDate: "2022-06-23",
+  },
+];
 
-export function setText() {
-  $('#test2').text('Hello again!');
-}
+let table = new TableBuilder(tableDefinition, "tableContainer");
+table.makeTable();
+table.loadTable(cases);
