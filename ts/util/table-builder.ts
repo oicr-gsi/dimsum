@@ -26,7 +26,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.container = container;
   }
 
-  public async build() {
+  public build() {
     // TODO: add filtering controls
     // TODO: add paging controls
     const table = document.createElement("table");
