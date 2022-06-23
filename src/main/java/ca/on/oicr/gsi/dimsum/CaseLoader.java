@@ -144,6 +144,8 @@ public class CaseLoader {
         .timepoint(parseString(json, "timepoint"))
         .groupId(parseString(json, "group_id"))
         .targetedSequencing(parseString(json, "targeted_sequencing"))
+        .createdDate(parseSampleCreatedDate(json))
+        .run(parseRun(json))
         .qcPassed(parseQcPassed(json, "qc_state"))
         .qcReason(parseString(json, "qc_reason"))
         .qcUser(parseString(json, "qc_user"))
@@ -154,6 +156,23 @@ public class CaseLoader {
         .build());
 
     return samples.stream().collect(Collectors.toMap(Sample::getId, Function.identity()));
+  }
+
+  private static LocalDate parseSampleCreatedDate(JsonNode json) throws DataParseException {
+    LocalDate receivedDate = parseDate(json, "received");
+    if (receivedDate != null) {
+      return receivedDate;
+    }
+    LocalDate createdDate = parseDate(json, "created");
+    if (createdDate != null) {
+      return createdDate;
+    }
+    return parseDate(json, "entered");
+  }
+
+  private static Run parseRun(JsonNode json) throws DataParseException {
+    String runName = parseString(json, "sequencing_run");
+    return runName == null ? null : new Run.Builder().name(runName).build();
   }
 
   protected Map<String, Donor> loadDonors(FileReader fileReader) throws DataParseException,
@@ -358,6 +377,10 @@ public class CaseLoader {
     String dateString = parseString(json, fieldName);
     if (dateString == null) {
       return null;
+    }
+    // Remove time portion if included. Result is original recorded date (unmodified by timezone)
+    if (dateString.contains("T")) {
+      dateString = dateString.split("T")[0];
     }
     try {
       return LocalDate.parse(dateString);

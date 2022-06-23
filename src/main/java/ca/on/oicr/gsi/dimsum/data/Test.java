@@ -4,7 +4,10 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -21,6 +24,7 @@ public class Test {
   private final List<Sample> libraryPreparations;
   private final List<Sample> libraryQualifications;
   private final List<Sample> fullDepthSequencings;
+  private final LocalDate latestActivityDate;
 
   private Test(Builder builder) {
     this.name = requireNonNull(builder.name);
@@ -29,14 +33,19 @@ public class Test {
     this.timepoint = builder.timepoint;
     this.groupId = builder.groupId;
     this.targetedSequencing = builder.targetedSequencing;
-    this.extractions = builder.extractions == null ? emptyList()
-        : unmodifiableList(builder.extractions);
+    this.extractions =
+        builder.extractions == null ? emptyList() : unmodifiableList(builder.extractions);
     this.libraryPreparations = builder.libraryPreparations == null ? emptyList()
         : unmodifiableList(builder.libraryPreparations);
     this.libraryQualifications = builder.libraryQualifications == null ? emptyList()
         : unmodifiableList(builder.libraryQualifications);
     this.fullDepthSequencings = builder.fullDepthSequencings == null ? emptyList()
         : unmodifiableList(builder.fullDepthSequencings);
+    this.latestActivityDate = Stream
+        .of(extractions.stream(), libraryPreparations.stream(), libraryQualifications.stream(),
+            fullDepthSequencings.stream())
+        .flatMap(Function.identity()).map(Sample::getLatestActivityDate).max(LocalDate::compareTo)
+        .orElse(null);
   }
 
   public String getName() {
@@ -77,6 +86,10 @@ public class Test {
 
   public List<Sample> getFullDepthSequencings() {
     return fullDepthSequencings;
+  }
+
+  public LocalDate getLatestActivityDate() {
+    return latestActivityDate;
   }
 
   public static class Builder {

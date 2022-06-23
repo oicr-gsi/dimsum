@@ -4,8 +4,12 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -21,8 +25,10 @@ public class Case {
   private final String timepoint;
   private final boolean stopped;
   private final List<Sample> receipts;
+  private final LocalDate earliestReceiptDate;
   private final List<Test> tests;
   private final List<Requisition> requisitions;
+  private final LocalDate latestActivityDate;
 
   private Case(Builder builder) {
     this.donor = requireNonNull(builder.donor);
@@ -36,6 +42,14 @@ public class Case {
     this.receipts = unmodifiableList(builder.receipts);
     this.tests = unmodifiableList(builder.tests);
     this.requisitions = unmodifiableList(builder.requisitions);
+    this.earliestReceiptDate = builder.receipts.stream().map(Sample::getCreatedDate)
+        .min(LocalDate::compareTo).orElse(null);
+    this.latestActivityDate = Stream
+        .of(receipts.stream().map(Sample::getLatestActivityDate),
+            tests.stream().map(Test::getLatestActivityDate),
+            requisitions.stream().map(Requisition::getLatestActivity))
+        .flatMap(Function.identity()).filter(Objects::nonNull).max(LocalDate::compareTo)
+        .orElse(null);
   }
 
   public Donor getDonor() {
@@ -74,12 +88,20 @@ public class Case {
     return receipts;
   }
 
+  public LocalDate getEarliestReceiptDate() {
+    return earliestReceiptDate;
+  }
+
   public List<Test> getTests() {
     return tests;
   }
 
   public List<Requisition> getRequisitions() {
     return requisitions;
+  }
+
+  public LocalDate getLatestActivityDate() {
+    return latestActivityDate;
   }
 
   public static class Builder {
