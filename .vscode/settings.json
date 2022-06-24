@@ -6,6 +6,11 @@
         "editor.formatOnSaveMode": "file",
         "editor.formatOnSave": true
     },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+    },
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features",
         "editor.formatOnSaveMode": "file",
