@@ -5,22 +5,15 @@
 <head>
   <meta charset="UTF-8" />
   <title>Test</title>
-  <script src="/js/test.js"></script>
 </head>
 
 <body>
   <div layout:fragment="content">
-    <p th:text="'Hello, ' + ${name} + '!'" />
+    <h1>Test Page</h1>
 
-    <p id="test1"></p>
+    <div id="tableContainer"></div>
 
-    <p id="test2"></p>
-
-    <script>
-      const p = document.getElementById("test1");
-      p.innerHTML = test.getText("world");
-      test.setText();
-    </script>
+    <script src="/js/test.js"></script>
   </div>
 </body>
 
