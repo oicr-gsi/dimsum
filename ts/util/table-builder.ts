@@ -81,18 +81,22 @@ export class TableBuilder<ParentType, ChildType> {
     if (this.definition.getChildren) {
       children = this.definition.getChildren(parent);
     }
+    // generate parent row, which includes the first child (if applicable)
     const tr = tbody.insertRow();
     this.definition.columns.forEach((column) => {
       if (column.child) {
         if (children.length) {
           this.addChildCell(tr, column, children[0]);
+        } else {
+          const td = tr.insertCell();
+          td.appendChild(document.createTextNode("N/A"));
         }
       } else {
         this.addParentCell(tr, column, parent, children);
       }
     });
     if (children.length > 1) {
-      // add additional child rows
+      // generate additional child rows
       children.forEach((child, i) => {
         if (i === 0) {
           // first child already added with parent
