@@ -1,4 +1,5 @@
 import { TableDefinition } from "../util/table-builder";
+import * as Rest from "../util/rest-api";
 
 export interface Project {
   name: string;
@@ -21,7 +22,8 @@ export interface Case {
   latestActivityDate: string;
 }
 
-export const tableDefinition: TableDefinition<Case, Test> = {
+export const caseDefinition: TableDefinition<Case, Test> = {
+  queryUrl: Rest.cases.query,
   getChildren: (parent) => parent.tests,
   columns: [
     {

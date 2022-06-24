@@ -5,7 +5,7 @@ module.exports = {
   mode: 'production',
   entry: {
     common: './ts/common.ts',
-    test: './ts/test.ts'
+    index: './ts/index.ts'
   },
   module: {
     rules: [
