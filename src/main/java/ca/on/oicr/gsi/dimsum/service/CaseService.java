@@ -5,6 +5,7 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -62,21 +63,29 @@ public class CaseService {
     return caseData.getCases();
   }
 
-  public List<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
+  public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
       Collection<CaseFilter> filters) {
-    Stream<Case> cases = getCases().stream();
+    List<Case> allCases = getCases();
+    Stream<Case> stream = allCases.stream();
 
     if (filters != null) {
       for (CaseFilter filter : filters) {
-        cases = cases.filter(filter.predicate());
+        stream = stream.filter(filter.predicate());
       }
     }
     if (sort == null) {
       sort = CaseSort.LAST_ACTIVITY;
     }
-    cases = cases.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+    stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
 
-    return cases.skip(pageSize * pageNumber).limit(pageSize).collect(Collectors.toList());
+    List<Case> filteredCases =
+        stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
+
+    TableData<Case> data = new TableData<>();
+    data.setTotalCount(allCases.size());
+    data.setFilteredCount(filteredCases.size());
+    data.setItems(filteredCases);
+    return data;
   }
 
   @Scheduled(fixedDelay = 1L, timeUnit = TimeUnit.MINUTES)

@@ -1,3 +1,5 @@
+import * as Rest from "./rest-api";
+
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   child?: boolean;
@@ -6,6 +8,7 @@ export interface ColumnDefinition<ParentType, ChildType> {
 }
 
 export interface TableDefinition<ParentType, ChildType> {
+  queryUrl: string;
   getChildren?: (parent: ParentType) => ChildType[];
   columns: ColumnDefinition<ParentType, ChildType>[];
 }
@@ -33,6 +36,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.container.appendChild(table);
     this.load();
     // TODO: add action buttons
+    this.reload();
   }
 
   private getTable(): HTMLTableElement {
@@ -47,8 +51,7 @@ export class TableBuilder<ParentType, ChildType> {
     return table;
   }
 
-  // TODO: make private once TableBuilder controls fetching/reloading
-  public load(data?: ParentType[]) {
+  private load(data?: ParentType[]) {
     const table = this.getTable();
     while (table.lastChild) {
       table.removeChild(table.lastChild);
@@ -62,6 +65,24 @@ export class TableBuilder<ParentType, ChildType> {
     } else {
       this.addNoDataRow(tbody);
     }
+  }
+
+  private async reload() {
+    this.showLoading(true);
+    const response = await Rest.post(Rest.cases.query, {
+      pageSize: 30,
+      pageNumber: 1,
+    });
+    if (!response.ok) {
+      throw new Error(`Error reloading table: ${response.status}`);
+    }
+    const data = await response.json();
+    this.load(data.items);
+    this.showLoading(false);
+  }
+
+  private showLoading(loading: boolean) {
+    // TODO: Disable all inputs, show indeterminate progress
   }
 
   private addTableHead(table: HTMLTableElement) {
