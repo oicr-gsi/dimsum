@@ -1,5 +1,10 @@
 import * as Rest from "./rest-api";
 
+import {
+  styleColumnHeader,
+  styleEmptyColumn,
+  styleNoDataRow,
+} from "./html-utils";
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   child?: boolean;
@@ -33,6 +38,8 @@ export class TableBuilder<ParentType, ChildType> {
     // TODO: add filtering controls
     // TODO: add paging controls
     const table = document.createElement("table");
+    // set global default styling settings
+    table.className = "w-full text-14 font-medium font-inter";
     this.container.appendChild(table);
     this.load();
     // TODO: add action buttons
@@ -57,7 +64,23 @@ export class TableBuilder<ParentType, ChildType> {
       table.removeChild(table.lastChild);
     }
     this.addTableHead(table);
+    this.addTableBody(table, data);
+  }
+
+  private addTableHead(table: HTMLTableElement) {
+    const thead = table.createTHead();
+    const row = thead.insertRow();
+    row.className = "divide-x-2 divide-grey-200 text-left text-align-top";
+    this.definition.columns.forEach((column) => {
+      const th = document.createElement("th");
+      styleColumnHeader(th, column.title);
+      row.appendChild(th);
+    });
+  }
+
+  private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
     const tbody = table.createTBody();
+    tbody.className = "divide-y-2 divide-grey-200";
     if (data) {
       data.forEach((parent) => {
         this.addDataRow(tbody, parent);
@@ -85,17 +108,6 @@ export class TableBuilder<ParentType, ChildType> {
     // TODO: Disable all inputs, show indeterminate progress
   }
 
-  private addTableHead(table: HTMLTableElement) {
-    const thead = table.createTHead();
-    const row = thead.insertRow();
-    this.definition.columns.forEach((column) => {
-      const th = document.createElement("th");
-      const text = document.createTextNode(column.title);
-      th.appendChild(text);
-      row.appendChild(th);
-    });
-  }
-
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {
     // TODO: keep track of "hideIfEmpty" columns
     let children: ChildType[] = [];
@@ -104,13 +116,14 @@ export class TableBuilder<ParentType, ChildType> {
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = tbody.insertRow();
+    tr.className = "divide-x-2 divide-grey-200 text-left align-text-top";
     this.definition.columns.forEach((column) => {
       if (column.child) {
         if (children.length) {
-          this.addChildCell(tr, column, children[0]);
+          this.addChildCell(tr, column, children[0], false);
         } else {
           const td = tr.insertCell();
-          td.appendChild(document.createTextNode("N/A"));
+          styleEmptyColumn(td);
         }
       } else {
         this.addParentCell(tr, column, parent, children);
@@ -124,9 +137,10 @@ export class TableBuilder<ParentType, ChildType> {
           return;
         }
         const tr = tbody.insertRow();
+        tr.className = "text-left align-text-top";
         this.definition.columns.forEach((column) => {
           if (column.child) {
-            this.addChildCell(tr, column, child);
+            this.addChildCell(tr, column, child, true);
           }
         });
       });
@@ -137,8 +151,7 @@ export class TableBuilder<ParentType, ChildType> {
     const row = tbody.insertRow();
     const cell = row.insertCell();
     cell.colSpan = this.definition.columns.length;
-    const text = document.createTextNode("No data");
-    cell.appendChild(text);
+    styleNoDataRow(cell);
   }
 
   private addParentCell(
@@ -153,6 +166,7 @@ export class TableBuilder<ParentType, ChildType> {
       );
     }
     const td = tr.insertCell();
+    td.className = "p-4";
     const fragment = document.createDocumentFragment();
     column.addParentContents(parent, fragment);
     td.appendChild(fragment);
@@ -164,7 +178,8 @@ export class TableBuilder<ParentType, ChildType> {
   private addChildCell(
     tr: HTMLTableRowElement,
     column: ColumnDefinition<ParentType, ChildType>,
-    child: ChildType
+    child: ChildType,
+    orphan: boolean // used to add a missing border for hanging children cells
   ) {
     if (!column.addChildContents) {
       throw new Error(
@@ -172,6 +187,10 @@ export class TableBuilder<ParentType, ChildType> {
       );
     }
     const td = tr.insertCell();
+    td.className = "p-4";
+    if (orphan) {
+      td.classList.add("border-l-2", "border-grey-200");
+    }
     const fragment = document.createDocumentFragment();
     column.addChildContents(child, fragment);
     td.appendChild(fragment);

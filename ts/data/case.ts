@@ -1,5 +1,6 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
+import { styleNameLink } from "../util/html-utils";
 
 export interface Project {
   name: string;
@@ -31,7 +32,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       addParentContents(kase, fragment) {
         kase.projects.forEach((project) => {
           const div = document.createElement("div");
-          div.appendChild(document.createTextNode(project.name));
+          styleNameLink(div, project.name);
           fragment.appendChild(div);
         });
       },
@@ -40,7 +41,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Donor",
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
-        nameDiv.appendChild(document.createTextNode(kase.donor.name));
+        styleNameLink(nameDiv, kase.donor.name);
         fragment.appendChild(nameDiv);
         const externalNameDiv = document.createElement("div");
         externalNameDiv.appendChild(
