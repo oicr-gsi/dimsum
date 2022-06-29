@@ -1,10 +1,6 @@
 import * as Rest from "./rest-api";
 
-import {
-  addColumnHeader,
-  styleEmptyColumn,
-  styleNoDataRow,
-} from "./html-utils";
+import { addCell, addColumnHeader, shadeNotApplicable } from "./html-utils";
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   child?: boolean;
@@ -40,7 +36,7 @@ export class TableBuilder<ParentType, ChildType> {
     const table = document.createElement("table");
     // set global default styling settings
     table.className =
-      "border-spacing-0 w-full text-14 font-medium font-inter border-separate rounded-lg border-grey-200 border-2 overflow-hidden";
+      "w-full text-14 text-black font-medium font-inter border-separate border-spacing-0 border-grey-200 border-2 rounded-xl overflow-hidden";
     this.container.appendChild(table);
     this.load();
     // TODO: add action buttons
@@ -71,7 +67,6 @@ export class TableBuilder<ParentType, ChildType> {
   private addTableHead(table: HTMLTableElement) {
     const thead = table.createTHead();
     const row = thead.insertRow();
-    row.className = "text-left text-align-top";
     this.definition.columns.forEach((column, i) => {
       addColumnHeader(row, column.title, i);
     });
@@ -114,14 +109,14 @@ export class TableBuilder<ParentType, ChildType> {
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = tbody.insertRow();
-    tr.className = "text-left align-text-top";
     this.definition.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
           this.addChildCell(tr, column, children[0], i);
         } else {
           const td = tr.insertCell();
-          styleEmptyColumn(td);
+          shadeNotApplicable(td);
+          td.appendChild(document.createTextNode("N/A"));
         }
       } else {
         this.addParentCell(tr, column, parent, children, i);
@@ -135,7 +130,6 @@ export class TableBuilder<ParentType, ChildType> {
           return;
         }
         const tr = tbody.insertRow();
-        tr.className = "text-left align-text-top";
         this.definition.columns.forEach((column) => {
           if (column.child) {
             this.addChildCell(tr, column, child, i);
@@ -149,7 +143,9 @@ export class TableBuilder<ParentType, ChildType> {
     const row = tbody.insertRow();
     const cell = row.insertCell();
     cell.colSpan = this.definition.columns.length;
-    styleNoDataRow(cell);
+    cell.className =
+      "text-black p-4 bg-grey-100 font-bold border-grey-200 border-t-2";
+    cell.appendChild(document.createTextNode("NO DATA"));
   }
 
   private addParentCell(
@@ -164,8 +160,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as parent, but doesn't define addParentContents`
       );
     }
-    const td = tr.insertCell();
-    td.className = "p-4 border-grey-200 border-t-2";
+    const td = addCell(tr);
     if (index > 0) {
       td.classList.add("border-l-2");
     }
@@ -188,8 +183,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as child, but doesn't define getChildContents`
       );
     }
-    const td = tr.insertCell();
-    td.className = "p-4 border-grey-200 border-t-2";
+    const td = addCell(tr);
     if (index > 0) {
       td.classList.add("border-l-2");
     }

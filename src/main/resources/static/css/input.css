@@ -4,3 +4,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.border-spacing-0 {
+  border-spacing: 0;
+}

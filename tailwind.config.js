@@ -2,7 +2,8 @@ module.exports = {
   content: [
     // files that Tailwind scans for
     "src/main/resources/templates/*.html",
-    "ts/*.ts",
+    "ts/util/*.ts",
+    "ts/**/*.ts",
   ],
   theme: {
     fontFamily: {
@@ -41,6 +42,7 @@ module.exports = {
       0.5: "0.5px",
       1: "1px",
       2: "2px",
+      4: "4px",
     },
 
     extend: {},

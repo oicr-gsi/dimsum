@@ -5,7 +5,8 @@ export function addColumnHeader(
   index: number
 ) {
   const th = document.createElement("th");
-  th.className = "p-4 text-white font-semibold bg-grey-300";
+  th.className =
+    "p-4 text-white font-semibold bg-grey-300 text-left align-text-top";
   if (index > 0) {
     th.classList.add("border-grey-200", "border-l-2");
   }
@@ -13,7 +14,14 @@ export function addColumnHeader(
   thead.appendChild(th);
 }
 
-// adds link-styled text to a div
+// adds a cell to a table row
+export function addCell(tr: HTMLTableRowElement) {
+  const td = tr.insertCell();
+  td.className = "p-4 border-grey-200 border-t-2 text-left align-text-top";
+  return td;
+}
+
+// adds a styled link to an element
 export function addLink(container: HTMLElement, text: string, url: string) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
@@ -22,15 +30,7 @@ export function addLink(container: HTMLElement, text: string, url: string) {
   container.appendChild(a);
 }
 
-// updates an empty col with corresponding style
-export function styleEmptyColumn(td: HTMLTableCellElement) {
+// applies N/A style shading to a cell
+export function shadeNotApplicable(td: HTMLTableCellElement) {
   td.className = "text-grey-300 bg-grey-200 border-grey-200 border-t-2";
-  td.appendChild(document.createTextNode("N/A"));
-}
-
-// updates an empty row with corresponding style
-export function styleNoDataRow(cell: HTMLTableCellElement) {
-  cell.className =
-    "text-black bg-grey-100 font-bold border-grey-200 border-t-2";
-  cell.appendChild(document.createTextNode("NO DATA"));
 }
