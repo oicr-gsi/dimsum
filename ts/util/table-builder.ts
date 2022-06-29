@@ -1,7 +1,7 @@
 import * as Rest from "./rest-api";
 
 import {
-  styleColumnHeader,
+  addColumnHeader,
   styleEmptyColumn,
   styleNoDataRow,
 } from "./html-utils";
@@ -39,7 +39,8 @@ export class TableBuilder<ParentType, ChildType> {
     // TODO: add paging controls
     const table = document.createElement("table");
     // set global default styling settings
-    table.className = "w-full text-14 font-medium font-inter";
+    table.className =
+      "border-spacing-0 w-full text-14 font-medium font-inter border-separate rounded-lg border-grey-200 border-2 overflow-hidden";
     this.container.appendChild(table);
     this.load();
     // TODO: add action buttons
@@ -70,17 +71,14 @@ export class TableBuilder<ParentType, ChildType> {
   private addTableHead(table: HTMLTableElement) {
     const thead = table.createTHead();
     const row = thead.insertRow();
-    row.className = "divide-x-2 divide-grey-200 text-left text-align-top";
-    this.definition.columns.forEach((column) => {
-      const th = document.createElement("th");
-      styleColumnHeader(th, column.title);
-      row.appendChild(th);
+    row.className = "text-left text-align-top";
+    this.definition.columns.forEach((column, i) => {
+      addColumnHeader(row, column.title, i);
     });
   }
 
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
     const tbody = table.createTBody();
-    tbody.className = "divide-y-2 divide-grey-200";
     if (data) {
       data.forEach((parent) => {
         this.addDataRow(tbody, parent);
@@ -116,17 +114,17 @@ export class TableBuilder<ParentType, ChildType> {
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = tbody.insertRow();
-    tr.className = "divide-x-2 divide-grey-200 text-left align-text-top";
-    this.definition.columns.forEach((column) => {
+    tr.className = "text-left align-text-top";
+    this.definition.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
-          this.addChildCell(tr, column, children[0], false);
+          this.addChildCell(tr, column, children[0], i);
         } else {
           const td = tr.insertCell();
           styleEmptyColumn(td);
         }
       } else {
-        this.addParentCell(tr, column, parent, children);
+        this.addParentCell(tr, column, parent, children, i);
       }
     });
     if (children.length > 1) {
@@ -140,7 +138,7 @@ export class TableBuilder<ParentType, ChildType> {
         tr.className = "text-left align-text-top";
         this.definition.columns.forEach((column) => {
           if (column.child) {
-            this.addChildCell(tr, column, child, true);
+            this.addChildCell(tr, column, child, i);
           }
         });
       });
@@ -158,7 +156,8 @@ export class TableBuilder<ParentType, ChildType> {
     tr: HTMLTableRowElement,
     column: ColumnDefinition<ParentType, ChildType>,
     parent: ParentType,
-    children: ChildType[]
+    children: ChildType[],
+    index: number
   ) {
     if (!column.addParentContents) {
       throw new Error(
@@ -166,7 +165,10 @@ export class TableBuilder<ParentType, ChildType> {
       );
     }
     const td = tr.insertCell();
-    td.className = "p-4";
+    td.className = "p-4 border-grey-200 border-t-2";
+    if (index > 0) {
+      td.classList.add("border-l-2");
+    }
     const fragment = document.createDocumentFragment();
     column.addParentContents(parent, fragment);
     td.appendChild(fragment);
@@ -179,7 +181,7 @@ export class TableBuilder<ParentType, ChildType> {
     tr: HTMLTableRowElement,
     column: ColumnDefinition<ParentType, ChildType>,
     child: ChildType,
-    orphan: boolean // used to add a missing border for hanging children cells
+    index: number
   ) {
     if (!column.addChildContents) {
       throw new Error(
@@ -187,9 +189,9 @@ export class TableBuilder<ParentType, ChildType> {
       );
     }
     const td = tr.insertCell();
-    td.className = "p-4";
-    if (orphan) {
-      td.classList.add("border-l-2", "border-grey-200");
+    td.className = "p-4 border-grey-200 border-t-2";
+    if (index > 0) {
+      td.classList.add("border-l-2");
     }
     const fragment = document.createDocumentFragment();
     column.addChildContents(child, fragment);
