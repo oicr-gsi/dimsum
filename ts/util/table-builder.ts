@@ -5,7 +5,11 @@ export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   child?: boolean;
   addParentContents?: (object: ParentType, fragment: DocumentFragment) => void;
-  addChildContents?: (object: ChildType, fragment: DocumentFragment) => void;
+  addChildContents?: (
+    object: ChildType,
+    parent: ParentType,
+    fragment: DocumentFragment
+  ) => void;
 }
 
 export interface TableDefinition<ParentType, ChildType> {
@@ -112,7 +116,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.definition.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
-          this.addChildCell(tr, column, children[0], i);
+          this.addChildCell(tr, column, children[0], parent, i);
         } else {
           const td = addCell(tr, i);
           shadeNotApplicable(td);
@@ -132,7 +136,7 @@ export class TableBuilder<ParentType, ChildType> {
         const tr = tbody.insertRow();
         this.definition.columns.forEach((column) => {
           if (column.child) {
-            this.addChildCell(tr, column, child, i);
+            this.addChildCell(tr, column, child, parent, i);
           }
         });
       });
@@ -172,6 +176,7 @@ export class TableBuilder<ParentType, ChildType> {
     tr: HTMLTableRowElement,
     column: ColumnDefinition<ParentType, ChildType>,
     child: ChildType,
+    parent: ParentType,
     index: number
   ) {
     if (!column.addChildContents) {
@@ -181,7 +186,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
     const td = addCell(tr, index);
     const fragment = document.createDocumentFragment();
-    column.addChildContents(child, fragment);
+    column.addChildContents(child, parent, fragment);
     td.appendChild(fragment);
   }
 }
