@@ -33,11 +33,14 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     // TODO: add filtering controls
     // TODO: add paging controls
+    const tableContainer = document.createElement("div");
+    tableContainer.className = "mt-4 overflow-auto";
     const table = document.createElement("table");
     // set global default styling settings
     table.className =
       "w-full text-14 text-black font-medium font-inter border-separate border-spacing-0 border-grey-200 border-2 rounded-xl overflow-hidden";
-    this.container.appendChild(table);
+    tableContainer.appendChild(table);
+    this.container.appendChild(tableContainer);
     this.load();
     // TODO: add action buttons
     this.reload();
