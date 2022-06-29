@@ -114,7 +114,7 @@ export class TableBuilder<ParentType, ChildType> {
         if (children.length) {
           this.addChildCell(tr, column, children[0], i);
         } else {
-          const td = addCell(tr);
+          const td = addCell(tr, i);
           shadeNotApplicable(td);
           td.appendChild(document.createTextNode("N/A"));
         }
@@ -141,10 +141,9 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addNoDataRow(tbody: HTMLTableSectionElement) {
     const row = tbody.insertRow();
-    const cell = row.insertCell();
+    const cell = addCell(row, 0);
     cell.colSpan = this.definition.columns.length;
-    cell.className =
-      "text-black p-4 bg-grey-100 font-bold border-grey-200 border-t-2";
+    cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
   }
 
@@ -160,10 +159,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as parent, but doesn't define addParentContents`
       );
     }
-    const td = addCell(tr);
-    if (index > 0) {
-      td.classList.add("border-l-2");
-    }
+    const td = addCell(tr, index);
     const fragment = document.createDocumentFragment();
     column.addParentContents(parent, fragment);
     td.appendChild(fragment);
@@ -183,10 +179,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as child, but doesn't define getChildContents`
       );
     }
-    const td = addCell(tr);
-    if (index > 0) {
-      td.classList.add("border-l-2");
-    }
+    const td = addCell(tr, index);
     const fragment = document.createDocumentFragment();
     column.addChildContents(child, fragment);
     td.appendChild(fragment);

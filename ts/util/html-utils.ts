@@ -15,9 +15,12 @@ export function addColumnHeader(
 }
 
 // adds a cell to a table row
-export function addCell(tr: HTMLTableRowElement) {
+export function addCell(tr: HTMLTableRowElement, index: number) {
   const td = tr.insertCell();
   td.className = "p-4 border-grey-200 border-t-2 text-left align-text-top";
+  if (index > 0) {
+    td.classList.add("border-l-2");
+  }
   return td;
 }
 
