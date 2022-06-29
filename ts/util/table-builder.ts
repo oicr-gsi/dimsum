@@ -1,5 +1,6 @@
 import * as Rest from "./rest-api";
 
+import { addCell, addColumnHeader, shadeNotApplicable } from "./html-utils";
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   child?: boolean;
@@ -33,6 +34,9 @@ export class TableBuilder<ParentType, ChildType> {
     // TODO: add filtering controls
     // TODO: add paging controls
     const table = document.createElement("table");
+    // set global default styling settings
+    table.className =
+      "w-full text-14 text-black font-medium font-inter border-separate border-spacing-0 border-grey-200 border-2 rounded-xl overflow-hidden";
     this.container.appendChild(table);
     this.load();
     // TODO: add action buttons
@@ -57,6 +61,18 @@ export class TableBuilder<ParentType, ChildType> {
       table.removeChild(table.lastChild);
     }
     this.addTableHead(table);
+    this.addTableBody(table, data);
+  }
+
+  private addTableHead(table: HTMLTableElement) {
+    const thead = table.createTHead();
+    const row = thead.insertRow();
+    this.definition.columns.forEach((column, i) => {
+      addColumnHeader(row, column.title, i);
+    });
+  }
+
+  private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
     const tbody = table.createTBody();
     if (data) {
       data.forEach((parent) => {
@@ -85,17 +101,6 @@ export class TableBuilder<ParentType, ChildType> {
     // TODO: Disable all inputs, show indeterminate progress
   }
 
-  private addTableHead(table: HTMLTableElement) {
-    const thead = table.createTHead();
-    const row = thead.insertRow();
-    this.definition.columns.forEach((column) => {
-      const th = document.createElement("th");
-      const text = document.createTextNode(column.title);
-      th.appendChild(text);
-      row.appendChild(th);
-    });
-  }
-
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {
     // TODO: keep track of "hideIfEmpty" columns
     let children: ChildType[] = [];
@@ -104,16 +109,17 @@ export class TableBuilder<ParentType, ChildType> {
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = tbody.insertRow();
-    this.definition.columns.forEach((column) => {
+    this.definition.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
-          this.addChildCell(tr, column, children[0]);
+          this.addChildCell(tr, column, children[0], i);
         } else {
-          const td = tr.insertCell();
+          const td = addCell(tr, i);
+          shadeNotApplicable(td);
           td.appendChild(document.createTextNode("N/A"));
         }
       } else {
-        this.addParentCell(tr, column, parent, children);
+        this.addParentCell(tr, column, parent, children, i);
       }
     });
     if (children.length > 1) {
@@ -126,7 +132,7 @@ export class TableBuilder<ParentType, ChildType> {
         const tr = tbody.insertRow();
         this.definition.columns.forEach((column) => {
           if (column.child) {
-            this.addChildCell(tr, column, child);
+            this.addChildCell(tr, column, child, i);
           }
         });
       });
@@ -135,24 +141,25 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addNoDataRow(tbody: HTMLTableSectionElement) {
     const row = tbody.insertRow();
-    const cell = row.insertCell();
+    const cell = addCell(row, 0);
     cell.colSpan = this.definition.columns.length;
-    const text = document.createTextNode("No data");
-    cell.appendChild(text);
+    cell.classList.add("bg-grey-100", "font-bold");
+    cell.appendChild(document.createTextNode("NO DATA"));
   }
 
   private addParentCell(
     tr: HTMLTableRowElement,
     column: ColumnDefinition<ParentType, ChildType>,
     parent: ParentType,
-    children: ChildType[]
+    children: ChildType[],
+    index: number
   ) {
     if (!column.addParentContents) {
       throw new Error(
         `Column "${column.title}" specified as parent, but doesn't define addParentContents`
       );
     }
-    const td = tr.insertCell();
+    const td = addCell(tr, index);
     const fragment = document.createDocumentFragment();
     column.addParentContents(parent, fragment);
     td.appendChild(fragment);
@@ -164,14 +171,15 @@ export class TableBuilder<ParentType, ChildType> {
   private addChildCell(
     tr: HTMLTableRowElement,
     column: ColumnDefinition<ParentType, ChildType>,
-    child: ChildType
+    child: ChildType,
+    index: number
   ) {
     if (!column.addChildContents) {
       throw new Error(
         `Column "${column.title}" specified as child, but doesn't define getChildContents`
       );
     }
-    const td = tr.insertCell();
+    const td = addCell(tr, index);
     const fragment = document.createDocumentFragment();
     column.addChildContents(child, fragment);
     td.appendChild(fragment);
