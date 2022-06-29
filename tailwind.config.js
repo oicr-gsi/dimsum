@@ -2,7 +2,6 @@ module.exports = {
   content: [
     // files that Tailwind scans for
     "src/main/resources/templates/*.html",
-    "ts/util/*.ts",
     "ts/**/*.ts",
   ],
   theme: {

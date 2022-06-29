@@ -114,7 +114,7 @@ export class TableBuilder<ParentType, ChildType> {
         if (children.length) {
           this.addChildCell(tr, column, children[0], i);
         } else {
-          const td = tr.insertCell();
+          const td = addCell(tr);
           shadeNotApplicable(td);
           td.appendChild(document.createTextNode("N/A"));
         }

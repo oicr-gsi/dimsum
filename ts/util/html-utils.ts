@@ -32,5 +32,5 @@ export function addLink(container: HTMLElement, text: string, url: string) {
 
 // applies N/A style shading to a cell
 export function shadeNotApplicable(td: HTMLTableCellElement) {
-  td.className = "text-grey-300 bg-grey-200 border-grey-200 border-t-2";
+  td.classList.add("text-grey-300", "bg-grey-200");
 }
