@@ -8,7 +8,7 @@ export function addColumnHeader(
   th.className =
     "p-4 text-white font-semibold bg-grey-300 text-left align-text-top";
   if (index > 0) {
-    th.classList.add("border-grey-200", "border-l-2");
+    th.classList.add("border-grey-200", "border-l-1");
   }
   th.appendChild(document.createTextNode(header));
   thead.appendChild(th);
@@ -17,9 +17,9 @@ export function addColumnHeader(
 // adds a cell to a table row
 export function addCell(tr: HTMLTableRowElement, index: number) {
   const td = tr.insertCell();
-  td.className = "p-4 border-grey-200 border-t-2 text-left align-text-top";
+  td.className = "p-4 border-grey-200 border-t-1 text-left align-text-top";
   if (index > 0) {
-    td.classList.add("border-l-2");
+    td.classList.add("border-l-1");
   }
   return td;
 }
@@ -37,7 +37,7 @@ export type CellStatus = "na" | "stopped" | "warning" | "error";
 
 // map cell status to styles
 const highlightClasses: Record<CellStatus, string[]> = {
-  na: ["text-grey-300", "bg-grey-200"],
+  na: ["text-grey-300", "bg-grey-150"],
   stopped: ["bg-grey-100"],
   warning: ["bg-yellow"],
   error: ["bg-red"],
