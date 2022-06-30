@@ -75,6 +75,7 @@ public class CaseService {
     }
     if (sort == null) {
       sort = CaseSort.LAST_ACTIVITY;
+      descending = true;
     }
     stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
 
