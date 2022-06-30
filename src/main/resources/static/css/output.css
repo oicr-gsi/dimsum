@@ -652,6 +652,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(170 176 184 / var(--tw-bg-opacity));
 }
 
+.bg-yellow{
+  --tw-bg-opacity: 1;
+  background-color: rgb(244 245 173 / var(--tw-bg-opacity));
+}
+
+.bg-red{
+  --tw-bg-opacity: 1;
+  background-color: rgb(223 132 132 / var(--tw-bg-opacity));
+}
+
 .p-2{
   padding: 0.5rem;
 }
@@ -759,6 +769,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-grey-300{
   --tw-text-opacity: 1;
   color: rgb(127 133 140 / var(--tw-text-opacity));
+}
+
+.text-red{
+  --tw-text-opacity: 1;
+  color: rgb(223 132 132 / var(--tw-text-opacity));
 }
 
 .border-spacing-0 {

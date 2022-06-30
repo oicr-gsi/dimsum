@@ -1,6 +1,11 @@
 import * as Rest from "./rest-api";
+import {
+  addCell,
+  addColumnHeader,
+  CellStatus,
+  shadeElement,
+} from "./html-utils";
 
-import { addCell, addColumnHeader, shadeNotApplicable } from "./html-utils";
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   child?: boolean;
@@ -10,12 +15,17 @@ export interface ColumnDefinition<ParentType, ChildType> {
     parent: ParentType,
     fragment: DocumentFragment
   ) => void;
+  getCellHighlight?: (
+    object: ParentType,
+    child: ChildType | null
+  ) => CellStatus | null;
 }
 
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   getChildren?: (parent: ParentType) => ChildType[];
   columns: ColumnDefinition<ParentType, ChildType>[];
+  getRowHighlight?: (object: ParentType) => CellStatus | null;
 }
 
 export class TableBuilder<ParentType, ChildType> {
@@ -115,14 +125,14 @@ export class TableBuilder<ParentType, ChildType> {
       children = this.definition.getChildren(parent);
     }
     // generate parent row, which includes the first child (if applicable)
-    const tr = tbody.insertRow();
+    const tr = this.addBodyRow(tbody, parent);
     this.definition.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
           this.addChildCell(tr, column, children[0], parent, i);
         } else {
           const td = addCell(tr, i);
-          shadeNotApplicable(td);
+          shadeElement(td, "na");
           td.appendChild(document.createTextNode("N/A"));
         }
       } else {
@@ -136,7 +146,7 @@ export class TableBuilder<ParentType, ChildType> {
           // first child already added with parent
           return;
         }
-        const tr = tbody.insertRow();
+        const tr = this.addBodyRow(tbody, parent);
         this.definition.columns.forEach((column) => {
           if (column.child) {
             this.addChildCell(tr, column, child, parent, i);
@@ -144,6 +154,14 @@ export class TableBuilder<ParentType, ChildType> {
         });
       });
     }
+  }
+
+  private addBodyRow(tbody: HTMLTableSectionElement, parent: ParentType) {
+    const tr = tbody.insertRow();
+    if (this.definition.getRowHighlight) {
+      shadeElement(tr, this.definition.getRowHighlight(parent));
+    }
+    return tr;
   }
 
   private addNoDataRow(tbody: HTMLTableSectionElement) {
@@ -167,6 +185,9 @@ export class TableBuilder<ParentType, ChildType> {
       );
     }
     const td = addCell(tr, index);
+    if (column.getCellHighlight) {
+      shadeElement(td, column.getCellHighlight(parent, null));
+    }
     const fragment = document.createDocumentFragment();
     column.addParentContents(parent, fragment);
     td.appendChild(fragment);
@@ -188,6 +209,9 @@ export class TableBuilder<ParentType, ChildType> {
       );
     }
     const td = addCell(tr, index);
+    if (column.getCellHighlight) {
+      shadeElement(td, column.getCellHighlight(parent, child));
+    }
     const fragment = document.createDocumentFragment();
     column.addChildContents(child, parent, fragment);
     td.appendChild(fragment);

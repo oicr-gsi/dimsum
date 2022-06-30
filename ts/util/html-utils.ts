@@ -33,7 +33,26 @@ export function addLink(container: HTMLElement, text: string, url: string) {
   container.appendChild(a);
 }
 
-// applies N/A style shading to a cell
-export function shadeNotApplicable(td: HTMLTableCellElement) {
-  td.classList.add("text-grey-300", "bg-grey-200");
+export type CellStatus = "na" | "stopped" | "warning" | "error";
+
+// map cell status to styles
+const highlightClasses: Record<CellStatus, string[]> = {
+  na: ["text-grey-300", "bg-grey-200"],
+  stopped: ["bg-grey-100"],
+  warning: ["bg-yellow"],
+  error: ["bg-red"],
+};
+
+export function shadeElement(element: HTMLElement, status?: CellStatus | null) {
+  if (status) {
+    element.classList.add(...highlightClasses[status]);
+  }
+}
+
+export type TextStyle = "error";
+
+export function styleText(element: HTMLElement, style?: TextStyle | null) {
+  if (style === "error") {
+    element.classList.add("text-red", "font-bold");
+  }
 }
