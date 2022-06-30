@@ -1,6 +1,6 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
-import { addLink } from "../util/html-utils";
+import { addLink, styleText } from "../util/html-utils";
 
 export interface Project {
   name: string;
@@ -83,6 +83,7 @@ export interface Case {
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: Rest.cases.query,
   getChildren: (parent) => parent.tests,
+  getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
   columns: [
     {
       title: "Project",
@@ -110,7 +111,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     {
       title: "Assay",
       addParentContents(kase, fragment) {
-        fragment.appendChild(document.createTextNode(kase.assayName));
+        const assayDiv = document.createElement("div");
+        assayDiv.appendChild(document.createTextNode(kase.assayName));
+        fragment.appendChild(assayDiv);
+        if (kase.stopped) {
+          const stoppedDiv = document.createElement("div");
+          styleText(stoppedDiv, "error");
+          stoppedDiv.appendChild(document.createTextNode("CASE STOPPED"));
+          fragment.appendChild(stoppedDiv);
+        }
       },
     },
     {
@@ -123,6 +132,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Receipt/Inspection",
       addParentContents(kase, fragment) {
         addSampleIcons(kase.receipts, fragment);
+        if (!kase.receipts.length) {
+          addConstructionIcon("receipt", fragment);
+        }
+      },
+      getCellHighlight(kase) {
+        return getSamplePhaseHighlight(kase, kase.receipts);
       },
     },
     {
@@ -136,6 +151,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Extraction",
       child: true,
       addChildContents(test, kase, fragment) {
+        if (handleNaSamplePhase(kase, test.extractions, fragment)) {
+          return;
+        }
         addSampleIcons(test.extractions, fragment);
         if (
           samplePhaseComplete(kase.receipts) &&
@@ -147,11 +165,18 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addConstructionIcon("extraction", fragment);
         }
       },
+      getCellHighlight(kase, test) {
+        test = assertNotNull(test);
+        return getSamplePhaseHighlight(kase, test.extractions);
+      },
     },
     {
       title: "Library Preparation",
       child: true,
       addChildContents(test, kase, fragment) {
+        if (handleNaSamplePhase(kase, test.libraryPreparations, fragment)) {
+          return;
+        }
         addSampleIcons(test.libraryPreparations, fragment);
         if (
           samplePhaseComplete(test.extractions) &&
@@ -163,11 +188,18 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addConstructionIcon("library preparation", fragment);
         }
       },
+      getCellHighlight(kase, test) {
+        test = assertNotNull(test);
+        return getSamplePhaseHighlight(kase, test.libraryPreparations);
+      },
     },
     {
       title: "Library Qualification",
       child: true,
       addChildContents(test, kase, fragment) {
+        if (handleNaSamplePhase(kase, test.libraryQualifications, fragment)) {
+          return;
+        }
         addSampleIcons(test.libraryQualifications, fragment);
         if (
           samplePhaseComplete(test.libraryPreparations) &&
@@ -179,11 +211,18 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addConstructionIcon("library qualification", fragment);
         }
       },
+      getCellHighlight(kase, test) {
+        test = assertNotNull(test);
+        return getSamplePhaseHighlight(kase, test.libraryQualifications);
+      },
     },
     {
       title: "Full-Depth Sequencing",
       child: true,
       addChildContents(test, kase, fragment) {
+        if (handleNaSamplePhase(kase, test.fullDepthSequencings, fragment)) {
+          return;
+        }
         addSampleIcons(test.fullDepthSequencings, fragment);
         if (
           samplePhaseComplete(test.libraryQualifications) &&
@@ -195,10 +234,19 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addConstructionIcon("full-depth sequencing", fragment);
         }
       },
+      getCellHighlight(kase, test) {
+        test = assertNotNull(test);
+        return getSamplePhaseHighlight(kase, test.fullDepthSequencings);
+      },
     },
     {
       title: "Informatics Review",
       addParentContents(kase, fragment) {
+        if (
+          handleNaRequisitionPhase(kase, (x) => x.informaticsReviews, fragment)
+        ) {
+          return;
+        }
         const sequencingComplete = kase.tests.every((test) =>
           samplePhaseComplete(test.fullDepthSequencings)
         );
@@ -209,10 +257,19 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           fragment
         );
       },
+      getCellHighlight(kase) {
+        return getRequisitionPhaseHighlight(
+          kase,
+          (requisition) => requisition.informaticsReviews
+        );
+      },
     },
     {
       title: "Draft Report",
       addParentContents(kase, fragment) {
+        if (handleNaRequisitionPhase(kase, (x) => x.draftReports, fragment)) {
+          return;
+        }
         const informaticsComplete = requisitionPhaseComplete(
           kase.requisitions,
           (requisition) => requisition.informaticsReviews
@@ -224,10 +281,19 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           fragment
         );
       },
+      getCellHighlight(kase) {
+        return getRequisitionPhaseHighlight(
+          kase,
+          (requisition) => requisition.draftReports
+        );
+      },
     },
     {
       title: "Final Report",
       addParentContents(kase, fragment) {
+        if (handleNaRequisitionPhase(kase, (x) => x.finalReports, fragment)) {
+          return;
+        }
         const draftComplete = requisitionPhaseComplete(
           kase.requisitions,
           (requisition) => requisition.draftReports
@@ -237,6 +303,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           (requisition) => requisition.finalReports,
           draftComplete,
           fragment
+        );
+      },
+      getCellHighlight(kase) {
+        return getRequisitionPhaseHighlight(
+          kase,
+          (requisition) => requisition.finalReports
         );
       },
     },
@@ -249,17 +321,43 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
 };
 
+function assertNotNull<Type>(object: Type | null) {
+  if (object === null) {
+    throw new Error("Unexpected null value");
+  }
+  return object;
+}
+
+function handleNaSamplePhase(
+  kase: Case,
+  samples: Sample[],
+  fragment: DocumentFragment
+) {
+  if (kase.stopped && !samples.length) {
+    addNaText(fragment);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function samplePhaseComplete(samples: Sample[]) {
   // consider incomplete if any are pending QC or data review
+  // pending statuses besides "Top-up Required" are still considered pending QC
   if (
     samples.some(
-      (sample) => !sample.qcDate || (sample.run && !sample.dataReviewDate)
+      (sample) =>
+        (sample.qcPassed === null &&
+          sample.qcReason !== statuses.topUp.label) ||
+        (sample.run && !sample.dataReviewDate)
     )
   ) {
     return false;
   } else {
-    // consider complete if at least one is passed QC
-    return samples.some((sample) => sample.qcPassed);
+    // consider complete if at least one is passed QC, and data review if applicable
+    return samples.some(
+      (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
+    );
   }
 }
 
@@ -282,6 +380,29 @@ function samplePhasePendingWork(samples: Sample[]) {
   );
 }
 
+function getSamplePhaseHighlight(kase: Case, samples: Sample[]) {
+  if (samplePhaseComplete(samples)) {
+    return null;
+  } else if (kase.stopped) {
+    return samples.length ? null : "na";
+  } else {
+    return "warning";
+  }
+}
+
+function handleNaRequisitionPhase(
+  kase: Case,
+  getQcs: (requisition: Requisition) => RequisitionQc[],
+  fragment: DocumentFragment
+) {
+  if (kase.stopped && !kase.requisitions.flatMap(getQcs).length) {
+    addNaText(fragment);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function requisitionPhaseComplete(
   requisitions: Requisition[],
   getQcs: (requisition: Requisition) => RequisitionQc[]
@@ -292,6 +413,19 @@ function requisitionPhaseComplete(
   });
 }
 
+function getRequisitionPhaseHighlight(
+  kase: Case,
+  getQcs: (requisition: Requisition) => RequisitionQc[]
+) {
+  if (requisitionPhaseComplete(kase.requisitions, getQcs)) {
+    return null;
+  } else if (kase.stopped) {
+    return kase.requisitions.flatMap(getQcs).length ? null : "na";
+  } else {
+    return "warning";
+  }
+}
+
 function addSpace(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode(" "));
 }
@@ -300,6 +434,10 @@ function addConstructionIcon(phase: string, fragment: DocumentFragment) {
   const icon = makeIcon(statuses.construction);
   icon.title = `Pending ${phase}`;
   fragment.appendChild(icon);
+}
+
+function addNaText(fragment: DocumentFragment) {
+  fragment.appendChild(document.createTextNode("N/A"));
 }
 
 interface QcStatus {
@@ -349,7 +487,7 @@ const statuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
   },
   topUp: {
-    label: "Top-up required",
+    label: "Top-up Required",
     icon: "fill-drip",
     qcComplete: true,
   },
