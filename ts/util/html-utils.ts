@@ -52,7 +52,7 @@ export function shadeElement(element: HTMLElement, status?: CellStatus | null) {
 
 export type TextStyle = "error";
 
-// styles cell text to match cell shading
+// styles cell text to match appropriate text style
 export function styleText(element: HTMLElement, style?: TextStyle | null) {
   if (style === "error") {
     element.classList.add("text-red", "font-bold");
