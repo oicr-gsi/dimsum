@@ -1,6 +1,6 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
-import { addLink, styleText } from "../util/html-utils";
+import { addLink, addMisoIcon, styleText } from "../util/html-utils";
 
 export interface Project {
   name: string;
@@ -90,7 +90,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       addParentContents(kase, fragment) {
         kase.projects.forEach((project) => {
           const div = document.createElement("div");
+          div.className = "flex flex-row space-x-2 items-center";
           addLink(div, project.name, "#");
+          addMisoIcon(div, "#");
           fragment.appendChild(div);
         });
       },
@@ -99,7 +101,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Donor",
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
+        nameDiv.className = "flex flex-row space-x-2 items-center";
         addLink(nameDiv, kase.donor.name, "#");
+        addMisoIcon(nameDiv, "#");
         fragment.appendChild(nameDiv);
         const externalNameDiv = document.createElement("div");
         externalNameDiv.appendChild(
@@ -112,7 +116,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Assay",
       addParentContents(kase, fragment) {
         const assayDiv = document.createElement("div");
-        assayDiv.appendChild(document.createTextNode(kase.assayName));
+        addLink(assayDiv, kase.assayName, "#");
         fragment.appendChild(assayDiv);
         if (kase.stopped) {
           const stoppedDiv = document.createElement("div");

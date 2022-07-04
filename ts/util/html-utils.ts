@@ -6,10 +6,8 @@ export function addColumnHeader(
 ) {
   const th = document.createElement("th");
   th.className =
-    "p-4 text-white font-semibold bg-grey-300 text-left align-text-top";
-  if (index > 0) {
-    th.classList.add("border-grey-200", "border-l-1");
-  }
+    "p-4 text-white font-semibold bg-grey-300 text-left align-text-top" +
+    (index > 0 ? " border-grey-200 border-l-1" : "");
   th.appendChild(document.createTextNode(header));
   thead.appendChild(th);
 }
@@ -17,10 +15,9 @@ export function addColumnHeader(
 // adds a cell to a table row
 export function addCell(tr: HTMLTableRowElement, index: number) {
   const td = tr.insertCell();
-  td.className = "p-4 border-grey-200 border-t-1 text-left align-text-top";
-  if (index > 0) {
-    td.classList.add("border-l-1");
-  }
+  td.className =
+    "p-4 border-grey-200 border-t-1 text-left align-text-top" +
+    (index > 0 ? " border-l-1" : "");
   return td;
 }
 
@@ -30,6 +27,16 @@ export function addLink(container: HTMLElement, text: string, url: string) {
   a.setAttribute("href", url);
   a.className = "text-green-200 font-bold hover:underline";
   a.innerHTML = text;
+  container.appendChild(a);
+}
+
+export function addMisoIcon(container: HTMLElement, url: string) {
+  const a = document.createElement("a");
+  a.setAttribute("href", url);
+  const img = document.createElement("img");
+  img.src = "/img/miso_logo.svg";
+  img.alt = "link to MISO page";
+  a.appendChild(img);
   container.appendChild(a);
 }
 
