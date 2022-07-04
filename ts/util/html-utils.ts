@@ -56,3 +56,9 @@ export function styleText(element: HTMLElement, style?: TextStyle | null) {
     element.classList.add("text-red", "font-bold");
   }
 }
+
+export function makeIcon(name: string) {
+  const icon = document.createElement("i");
+  icon.className = `fa-solid fa-${name}`;
+  return icon;
+}

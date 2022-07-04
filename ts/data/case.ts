@@ -1,6 +1,6 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
-import { addLink, styleText } from "../util/html-utils";
+import { addLink, makeIcon, styleText } from "../util/html-utils";
 
 export interface Project {
   name: string;
@@ -82,6 +82,11 @@ export interface Case {
 
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: Rest.cases.query,
+  defaultSort: {
+    columnTitle: "Latest Activity",
+    descending: true,
+    type: "date",
+  },
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
   columns: [
@@ -97,6 +102,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     },
     {
       title: "Donor",
+      sortType: "text",
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
         addLink(nameDiv, kase.donor.name, "#");
@@ -110,6 +116,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     },
     {
       title: "Assay",
+      sortType: "text",
       addParentContents(kase, fragment) {
         const assayDiv = document.createElement("div");
         assayDiv.appendChild(document.createTextNode(kase.assayName));
@@ -124,6 +131,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     },
     {
       title: "First Receipt",
+      sortType: "date",
       addParentContents(kase, fragment) {
         fragment.appendChild(document.createTextNode(kase.earliestReceiptDate));
       },
@@ -314,6 +322,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     },
     {
       title: "Latest Activity",
+      sortType: "date",
       addParentContents(kase, fragment) {
         fragment.appendChild(document.createTextNode(kase.latestActivityDate));
       },
@@ -431,7 +440,7 @@ function addSpace(fragment: DocumentFragment) {
 }
 
 function addConstructionIcon(phase: string, fragment: DocumentFragment) {
-  const icon = makeIcon(statuses.construction);
+  const icon = makeIcon(statuses.construction.icon);
   icon.title = `Pending ${phase}`;
   fragment.appendChild(icon);
 }
@@ -496,7 +505,7 @@ const statuses: Record<QcStatusKey, QcStatus> = {
 function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   samples.forEach((sample, i) => {
     const status = getSampleStatus(sample);
-    const icon = makeIcon(status);
+    const icon = makeIcon(status.icon);
     icon.title =
       (sample.run ? sample.run.name + " - " : "") +
       `${sample.name}: ${status.label}`; // TODO: more detailed popup
@@ -505,12 +514,6 @@ function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
       fragment.appendChild(document.createTextNode(" "));
     }
   });
-}
-
-function makeIcon(status: QcStatus) {
-  const icon = document.createElement("i");
-  icon.className = `fa-solid fa-${status.icon}`;
-  return icon;
 }
 
 function getSampleStatus(sample: Sample): QcStatus {
@@ -580,7 +583,7 @@ function addRequisitionIcon(
   status: QcStatus,
   fragment: DocumentFragment
 ) {
-  const icon = makeIcon(status);
+  const icon = makeIcon(status.icon);
   icon.title = `${requisition.name}: ${status.label}`; // TODO: more detailed popup
   fragment.appendChild(icon);
 }
