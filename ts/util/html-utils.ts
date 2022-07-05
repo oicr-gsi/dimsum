@@ -43,6 +43,7 @@ const highlightClasses: Record<CellStatus, string[]> = {
   error: ["bg-red"],
 };
 
+// shade cell backgrounds
 export function shadeElement(element: HTMLElement, status?: CellStatus | null) {
   if (status) {
     element.classList.add(...highlightClasses[status]);
@@ -51,6 +52,7 @@ export function shadeElement(element: HTMLElement, status?: CellStatus | null) {
 
 export type TextStyle = "error";
 
+// styles container text to match appropriate text style
 export function styleText(element: HTMLElement, style?: TextStyle | null) {
   if (style === "error") {
     element.classList.add("text-red", "font-bold");
