@@ -35,7 +35,7 @@ export function addMisoIcon(container: HTMLElement, url: string) {
   a.setAttribute("href", url);
   const img = document.createElement("img");
   img.src = "/img/miso_logo.svg";
-  img.alt = "link to MISO page";
+  img.alt = "View in MISO";
   a.appendChild(img);
   container.appendChild(a);
 }
