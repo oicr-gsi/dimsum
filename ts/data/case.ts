@@ -1,6 +1,6 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
-import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
+import { makeLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
 import { urls } from "../util/urls";
 
 const dayMillis = 1000 * 60 * 60 * 24;
@@ -100,7 +100,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         kase.projects.forEach((project) => {
           const nameDiv = document.createElement("div");
           nameDiv.className = "flex flex-row space-x-2 items-center";
-          addLink(nameDiv, project.name, "#");
+          makeLink(nameDiv, project.name, "#");
           addMisoIcon(nameDiv, urls.miso.project(project.name));
           fragment.appendChild(nameDiv);
 
@@ -116,7 +116,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
         nameDiv.className = "flex flex-row space-x-2 items-center";
-        addLink(nameDiv, kase.donor.name, "#");
+        makeLink(nameDiv, kase.donor.name, "#");
         addMisoIcon(nameDiv, urls.miso.sample(kase.donor.id));
         fragment.appendChild(nameDiv);
 
@@ -141,7 +141,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       sortType: "text",
       addParentContents(kase, fragment) {
         const assayDiv = document.createElement("div");
-        addLink(assayDiv, kase.assayName, "#");
+        makeLink(assayDiv, kase.assayName, "#");
         fragment.appendChild(assayDiv);
         if (kase.stopped) {
           const stoppedDiv = document.createElement("div");

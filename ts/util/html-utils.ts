@@ -1,5 +1,5 @@
 // adds a header cell to a table header
-export function addColumnHeader(
+export function makeColumnHeader(
   thead: HTMLTableRowElement,
   header: string,
   index: number
@@ -13,7 +13,7 @@ export function addColumnHeader(
 }
 
 // adds a cell to a table row
-export function addCell(tr: HTMLTableRowElement, index: number) {
+export function makeCell(tr: HTMLTableRowElement, index: number) {
   const td = tr.insertCell();
   td.className =
     "p-4 border-grey-200 border-t-1 text-left align-text-top" +
@@ -22,7 +22,7 @@ export function addCell(tr: HTMLTableRowElement, index: number) {
 }
 
 // adds a styled link to an element
-export function addLink(container: HTMLElement, text: string, url: string) {
+export function makeLink(container: HTMLElement, text: string, url: string) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
   a.className = "text-green-200 font-bold hover:underline";
@@ -70,4 +70,25 @@ export function makeIcon(name: string) {
   const icon = document.createElement("i");
   icon.className = `fa-solid fa-${name}`;
   return icon;
+}
+
+export function makeDropdownButton() {
+  const button = document.createElement("button");
+  button.className =
+    "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1";
+  return button;
+}
+
+export function makeDropdownMenuContainer() {
+  const dropdownMenuContainer = document.createElement("menu");
+  dropdownMenuContainer.className =
+    "absolute hidden mt-1 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer";
+  return dropdownMenuContainer;
+}
+
+export function makeDropdownClickout() {
+  const clickout = document.createElement("button");
+  clickout.className =
+    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
+  return clickout;
 }
