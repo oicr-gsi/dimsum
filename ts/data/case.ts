@@ -1,6 +1,6 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
-import { addLink, makeIcon, styleText } from "../util/html-utils";
+import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
 import { urls } from "../util/urls";
 
 export interface Project {
