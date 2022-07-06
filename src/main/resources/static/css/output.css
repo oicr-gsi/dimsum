@@ -506,19 +506,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   }
 }
 
-.absolute{
-  position: absolute;
-}
-
-.inset-y-0{
-  top: 0px;
-  bottom: 0px;
-}
-
-.left-0{
-  left: 0px;
-}
-
 .m-4{
   margin: 1rem;
 }
@@ -544,10 +531,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .mt-8{
   margin-top: 2rem;
-}
-
-.inline{
-  display: inline;
 }
 
 .flex{
@@ -582,10 +565,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   flex: 1 1 auto;
 }
 
-.flex-shrink{
-  flex-shrink: 1;
-}
-
 .shrink{
   flex-shrink: 1;
 }
@@ -610,20 +589,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   flex-direction: column;
 }
 
-.content-center{
-  align-content: center;
-}
-
 .items-center{
   align-items: center;
 }
 
 .justify-end{
   justify-content: flex-end;
-}
-
-.justify-center{
-  justify-content: center;
 }
 
 .space-x-4 > :not([hidden]) ~ :not([hidden]){
@@ -636,12 +607,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
-}
-
-.space-x-1 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-x-reverse: 0;
-  margin-right: calc(0.25rem * var(--tw-space-x-reverse));
-  margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
 .overflow-auto{
@@ -711,11 +676,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(223 132 132 / var(--tw-bg-opacity));
 }
 
-.object-center{
-  -o-object-position: center;
-     object-position: center;
-}
-
 .p-2{
   padding: 0.5rem;
 }
@@ -747,10 +707,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .px-8{
   padding-left: 2rem;
   padding-right: 2rem;
-}
-
-.pl-2{
-  padding-left: 0.5rem;
 }
 
 .text-left{
@@ -832,6 +788,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-red{
   --tw-text-opacity: 1;
   color: rgb(223 132 132 / var(--tw-text-opacity));
+}
+
+.filter{
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .border-spacing-0 {
