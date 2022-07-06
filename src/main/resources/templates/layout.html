@@ -13,13 +13,17 @@
   <link type="text/css" rel="stylesheet" th:href="@{/libs/fontawesome/css/solid.min.css}" />
 
   <link type="text/css" rel="stylesheet" th:href="@{/css/output.css}" />
+
+  <script src="/js/site-config.js"></script>
 </head>
 
 <body class="flex flex-col min-h-screen">
   <div id="header">
     <nav class="flex justify-end space-x-4 items-center m-4 border-b-2 border-grey-200">
       <div class="flex-grow">
-        <a href="."><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a>
+        <div class="flex">
+          <a class="shrink" href="."><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a>
+        </div>
       </div>
       <a href="https://github.com/oicr-gsi/dimsum" target="_blank" rel="noopener noreferrer"
         class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">

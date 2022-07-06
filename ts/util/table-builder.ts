@@ -3,11 +3,15 @@ import {
   addCell,
   addColumnHeader,
   CellStatus,
+  makeIcon,
   shadeElement,
 } from "./html-utils";
 
+type SortType = "number" | "text" | "date";
+
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
+  sortType?: SortType;
   child?: boolean;
   addParentContents?: (object: ParentType, fragment: DocumentFragment) => void;
   addChildContents?: (
@@ -21,8 +25,15 @@ export interface ColumnDefinition<ParentType, ChildType> {
   ) => CellStatus | null;
 }
 
+export interface SortDefinition {
+  columnTitle: string;
+  descending: boolean;
+  type: SortType;
+}
+
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
+  defaultSort: SortDefinition;
   getChildren?: (parent: ParentType) => ChildType[];
   columns: ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
@@ -31,12 +42,16 @@ export interface TableDefinition<ParentType, ChildType> {
 export class TableBuilder<ParentType, ChildType> {
   definition: TableDefinition<ParentType, ChildType>;
   container: HTMLElement;
+  sortColumn: string;
+  sortDescending: boolean;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
     containerId: string
   ) {
     this.definition = definition;
+    this.sortColumn = definition.defaultSort.columnTitle;
+    this.sortDescending = definition.defaultSort.descending;
     const container = document.getElementById(containerId);
     if (container === null) {
       throw Error(`Container ID "${containerId}" not found on page`);
@@ -45,6 +60,7 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   public build() {
+    this.addSortControls();
     // TODO: add filtering controls
     // TODO: add paging controls
     const tableContainer = document.createElement("div");
@@ -58,6 +74,71 @@ export class TableBuilder<ParentType, ChildType> {
     this.load();
     // TODO: add action buttons
     this.reload();
+  }
+
+  private addSortControls() {
+    const sortContainer = document.createElement("div");
+    sortContainer.classList.add("sortContainer");
+    this.container.appendChild(sortContainer);
+
+    const icon = makeIcon("sort");
+    icon.title = "Sort";
+    sortContainer.appendChild(icon);
+
+    const dropdown = document.createElement("select");
+    this.definition.columns
+      .filter((column) => column.sortType)
+      .forEach((column) => {
+        this.addSortOption(column, false, dropdown);
+        this.addSortOption(column, true, dropdown);
+      });
+    dropdown.addEventListener("input", (event) => {
+      const dropdown = <HTMLSelectElement>event.target;
+      const selected = dropdown.options[dropdown.selectedIndex];
+      this.sortColumn = <string>selected.getAttribute("data-column");
+      this.sortDescending = selected.getAttribute("data-order") == "desc";
+      this.reload();
+    });
+    sortContainer.appendChild(dropdown);
+  }
+
+  private addSortOption(
+    column: ColumnDefinition<ParentType, ChildType>,
+    descending: boolean,
+    dropdown: HTMLSelectElement
+  ) {
+    const option = document.createElement("option");
+    option.value = column.title + (descending ? "/desc" : "/asc");
+    option.setAttribute("data-column", column.title);
+    option.setAttribute("data-order", descending ? "desc" : "asc");
+    option.text =
+      column.title +
+      " - " +
+      this.getSortDescriptor(column.sortType, descending);
+
+    if (
+      this.sortColumn === column.title &&
+      this.sortDescending === descending
+    ) {
+      option.selected = true;
+    }
+    dropdown.appendChild(option);
+  }
+
+  private getSortDescriptor(
+    sortType: SortType | undefined,
+    descending: boolean
+  ) {
+    switch (sortType) {
+      case "date":
+        return descending ? "Lastest First" : "Latest Last";
+      case "number":
+        return descending ? "High to Low" : "Low to High";
+      case "text":
+        return descending ? "Z to A" : "A to Z";
+      default:
+        throw new Error(`Unhandled sort type: ${sortType}`);
+    }
   }
 
   private getTable(): HTMLTableElement {
@@ -105,6 +186,8 @@ export class TableBuilder<ParentType, ChildType> {
     const response = await Rest.post(Rest.cases.query, {
       pageSize: 30,
       pageNumber: 1,
+      sortColumn: this.sortColumn,
+      descending: this.sortDescending,
     });
     if (!response.ok) {
       throw new Error(`Error reloading table: ${response.status}`);
