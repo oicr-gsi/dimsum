@@ -1,13 +1,14 @@
 import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
 import { addLink, makeIcon, styleText } from "../util/html-utils";
+import { urls } from "../util/urls";
 
 export interface Project {
   name: string;
 }
 
 export interface Donor {
-  id: number;
+  id: string;
   name: string;
   externalName: string;
 }
@@ -17,7 +18,7 @@ export interface Run {
 }
 
 export interface Sample {
-  id: number;
+  id: string;
   name: string;
   tissueOrigin: string;
   tissueType: string;
@@ -105,7 +106,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       sortType: "text",
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
-        addLink(nameDiv, kase.donor.name, "#");
+        addLink(nameDiv, kase.donor.name, urls.miso.sample(kase.donor.id));
         fragment.appendChild(nameDiv);
         const externalNameDiv = document.createElement("div");
         externalNameDiv.appendChild(
