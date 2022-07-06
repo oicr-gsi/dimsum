@@ -3,8 +3,11 @@ import * as Rest from "../util/rest-api";
 import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
 import { urls } from "../util/urls";
 
+const dayMillis = 1000 * 60 * 60 * 24;
+
 export interface Project {
   name: string;
+  pipeline: string;
 }
 
 export interface Donor {
@@ -95,11 +98,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Project",
       addParentContents(kase, fragment) {
         kase.projects.forEach((project) => {
-          const div = document.createElement("div");
-          div.className = "flex flex-row space-x-2 items-center";
-          addLink(div, project.name, "#");
-          addMisoIcon(div, "#");
-          fragment.appendChild(div);
+          const nameDiv = document.createElement("div");
+          nameDiv.className = "flex flex-row space-x-2 items-center";
+          addLink(nameDiv, project.name, "#");
+          addMisoIcon(nameDiv, urls.miso.project(project.name));
+          fragment.appendChild(nameDiv);
+
+          const pipelineDiv = document.createElement("div");
+          pipelineDiv.appendChild(document.createTextNode(project.pipeline));
+          fragment.appendChild(pipelineDiv);
         });
       },
     },
@@ -109,14 +116,24 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
         nameDiv.className = "flex flex-row space-x-2 items-center";
-        addLink(nameDiv, kase.donor.name, urls.miso.sample(kase.donor.id));
-        addMisoIcon(nameDiv, "#");
+        addLink(nameDiv, kase.donor.name, "#");
+        addMisoIcon(nameDiv, urls.miso.sample(kase.donor.id));
         fragment.appendChild(nameDiv);
+
         const externalNameDiv = document.createElement("div");
         externalNameDiv.appendChild(
           document.createTextNode(kase.donor.externalName)
         );
         fragment.appendChild(externalNameDiv);
+
+        const tumourDetailDiv = document.createElement("div");
+        tumourDetailDiv.appendChild(
+          document.createTextNode(
+            `${kase.tissueOrigin} ${kase.tissueType}` +
+              (kase.timepoint ? " " + kase.timepoint : "")
+          )
+        );
+        fragment.appendChild(tumourDetailDiv);
       },
     },
     {
@@ -138,7 +155,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "First Receipt",
       sortType: "date",
       addParentContents(kase, fragment) {
-        fragment.appendChild(document.createTextNode(kase.earliestReceiptDate));
+        const dateDiv = document.createElement("div");
+        dateDiv.appendChild(document.createTextNode(kase.earliestReceiptDate));
+        fragment.appendChild(dateDiv);
+
+        const elapsedDiv = document.createElement("div");
+        elapsedDiv.appendChild(
+          document.createTextNode(getElapsedMessage(kase))
+        );
+        fragment.appendChild(elapsedDiv);
       },
     },
     {
@@ -157,7 +182,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Test",
       child: true,
       addChildContents(test, kase, fragment) {
-        fragment.appendChild(document.createTextNode(test.name));
+        const testNameDiv = document.createElement("div");
+        testNameDiv.appendChild(document.createTextNode(test.name));
+        fragment.appendChild(testNameDiv);
+
+        if (test.groupId) {
+          const groupIdDiv = document.createElement("div");
+          groupIdDiv.appendChild(document.createTextNode(test.groupId));
+          fragment.appendChild(groupIdDiv);
+        }
       },
     },
     {
@@ -591,4 +624,32 @@ function addRequisitionIcon(
   const icon = makeIcon(status.icon);
   icon.title = `${requisition.name}: ${status.label}`; // TODO: more detailed popup
   fragment.appendChild(icon);
+}
+
+function getElapsedMessage(kase: Case) {
+  let endDate;
+  let message;
+  if (
+    requisitionPhaseComplete(
+      kase.requisitions,
+      (requisition) => requisition.finalReports
+    )
+  ) {
+    endDate = new Date(
+      kase.requisitions
+        .flatMap((req) => req.finalReports)
+        .map((qc) => qc.qcDate)
+        .reduce((previous, current) =>
+          previous > current ? previous : current
+        )
+    );
+    message = "Completed in";
+  } else {
+    endDate = new Date();
+    message = "Ongoing";
+  }
+  const startDate = new Date(kase.earliestReceiptDate);
+  const milliDiff = endDate.getTime() - startDate.getTime();
+  const dayDiff = Math.ceil(milliDiff / dayMillis);
+  return `(${message} ${dayDiff} days)`;
 }

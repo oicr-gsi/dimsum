@@ -16,6 +16,7 @@ import java.util.Map;
 
 public class CaseLoaderTest {
 
+  private static final String testProjectName = "PROJ";
   private static final String testDonorId = "SAM413576";
   private static final String testSampleId = "SAM413577";
 
@@ -26,7 +27,7 @@ public class CaseLoaderTest {
   @BeforeAll
   public static void setupClass() {
     ClassLoader classLoader = CaseLoaderTest.class.getClassLoader();
-    URL caseFileUrl = classLoader.getResource("testdata/preprocessed_cases.json");
+    URL caseFileUrl = classLoader.getResource("testdata/cases.json");
     File caseFile = new File(caseFileUrl.getFile());
     dataDirectory = caseFile.getParentFile();
   }
@@ -34,6 +35,21 @@ public class CaseLoaderTest {
   @BeforeEach
   public void setup() {
     sut = new CaseLoader(dataDirectory, null);
+  }
+
+  @Test
+  public void testLoadProjects() throws Exception {
+    try (FileReader reader = sut.getProjectReader()) {
+      Map<String, Project> projectsByName = sut.loadProjects(reader);
+      assertEquals(1, projectsByName.size());
+      assertProject(projectsByName.get(testProjectName));
+    }
+  }
+
+  private void assertProject(Project project) {
+    assertNotNull(project);
+    assertEquals(testProjectName, project.getName());
+    assertEquals("Research", project.getPipeline());
   }
 
   @Test
@@ -104,7 +120,8 @@ public class CaseLoaderTest {
     assertNotNull(kase.getProjects());
     assertEquals(1, kase.getProjects().size());
     Project project = kase.getProjects().iterator().next();
-    assertEquals("PROJ", project.getName());
+    assertProject(project);
+
     assertEquals("WGTS - 40XT/30XN", kase.getAssayName());
 
     assertNotNull(kase.getReceipts());

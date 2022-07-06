@@ -16,7 +16,7 @@ export const urls = {
           throw new Error(`Unhandled ID prefix: ${prefix}`);
       }
     },
-    project: (projectId: number) => makeMisoUrl("project", projectId),
+    project: (shortName: string) => makeMisoUrl("project/shortname", shortName),
     run: (runId: number) => makeMisoUrl("run", runId),
   },
   dashi: {
@@ -25,9 +25,9 @@ export const urls = {
   },
 };
 
-const misoBaseUrl = `${siteConfig.misoUrl}/miso-lims`;
+const misoBaseUrl = `${siteConfig.misoUrl}/miso`;
 
-function makeMisoUrl(type: string, id: number) {
+function makeMisoUrl(type: string, id: number | string) {
   return `${misoBaseUrl}/${type}/${id}`;
 }
 
