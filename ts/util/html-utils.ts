@@ -71,3 +71,11 @@ export function makeIcon(name: string) {
   icon.className = `fa-solid fa-${name}`;
   return icon;
 }
+
+export function addIconButton(container: HTMLElement, iconName: string) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `fa-solid fa-${iconName} px-2 py-1 rounded-md bg-grey-100 hover:bg-green-200 hover:text-white disabled:bg-grey-100 disabled:text-grey-200`;
+  container.appendChild(button);
+  return button;
+}

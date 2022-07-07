@@ -5,8 +5,8 @@ import java.util.List;
 public class TableData<T> {
 
   private List<T> items;
-  private int totalCount;
-  private int filteredCount;
+  private long totalCount;
+  private long filteredCount;
 
   public List<T> getItems() {
     return items;
@@ -16,19 +16,19 @@ public class TableData<T> {
     this.items = items;
   }
 
-  public int getTotalCount() {
+  public long getTotalCount() {
     return totalCount;
   }
 
-  public void setTotalCount(int totalCount) {
+  public void setTotalCount(long totalCount) {
     this.totalCount = totalCount;
   }
 
-  public int getFilteredCount() {
+  public long getFilteredCount() {
     return filteredCount;
   }
 
-  public void setFilteredCount(int filteredCount) {
+  public void setFilteredCount(long filteredCount) {
     this.filteredCount = filteredCount;
   }
 

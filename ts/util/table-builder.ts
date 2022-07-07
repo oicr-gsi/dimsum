@@ -4,6 +4,7 @@ import { makeDropdownMenu, BasicDropdownOption } from "./dropdown";
 import {
   makeCell,
   addColumnHeader,
+  addIconButton,
   CellStatus,
   makeIcon,
   shadeElement,
@@ -43,8 +44,17 @@ export interface TableDefinition<ParentType, ChildType> {
 export class TableBuilder<ParentType, ChildType> {
   definition: TableDefinition<ParentType, ChildType>;
   container: HTMLElement;
+  table?: HTMLTableElement;
+  pageDescription?: HTMLSpanElement;
+  pageLeftButton?: HTMLButtonElement;
+  pageRightButton?: HTMLButtonElement;
+
   sortColumn: string;
   sortDescending: boolean;
+  pageSize: number = 30;
+  pageNumber: number = 1;
+  totalCount: number = 0;
+  filteredCount: number = 0;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
@@ -61,14 +71,18 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   public build() {
-    this.addSortControls();
-    // TODO: add filtering controls
-    // TODO: add paging controls
+    const topControlsContainer = document.createElement("div");
+    topControlsContainer.className = "flex";
+    this.addSortControls(topControlsContainer);
+    this.addFilterControls(topControlsContainer);
+    this.addPagingControls(topControlsContainer);
+    this.container.appendChild(topControlsContainer);
+
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
-    const table = document.createElement("table");
+    this.table = document.createElement("table");
     // set global default styling settings
-    table.classList.add(
+    this.table.classList.add(
       "w-full",
       "text-14",
       "text-black",
@@ -82,25 +96,23 @@ export class TableBuilder<ParentType, ChildType> {
       "overflow-hidden"
     );
 
-    tableContainer.appendChild(table);
+    tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
     this.load();
     // TODO: add action buttons
     this.reload();
   }
 
-  private addSortControls() {
-    // makes outer wrapper div
+  private addSortControls(container: HTMLElement) {
     const sortContainer = document.createElement("div");
     sortContainer.classList.add(
-      "sortContainer",
-      "flex",
+      "flex-none",
       "space-x-2",
       "items-center",
       "mt-4"
     );
-    this.container.appendChild(sortContainer);
-    // adds sort icon
+    container.appendChild(sortContainer);
+
     const icon = makeIcon("sort");
     icon.title = "Sort";
     icon.classList.add("text-black");
@@ -123,7 +135,9 @@ export class TableBuilder<ParentType, ChildType> {
         this.definition.defaultSort.type,
         this.definition.defaultSort.descending
       );
-    sortContainer.appendChild(makeDropdownMenu(dropdownOptions, defaultOption));
+    sortContainer.appendChild(
+      makeDropdownMenu(dropdownOptions, defaultOption, true)
+    );
   }
 
   private addSortOption(
@@ -158,20 +172,66 @@ export class TableBuilder<ParentType, ChildType> {
     }
   }
 
-  private getTable(): HTMLTableElement {
-    const elements = this.container.getElementsByTagName("table");
-    let table = null;
-    if (elements.length === 1) {
-      table = elements.item(0);
-    }
-    if (table === null) {
-      throw new Error("Error trying to find table element");
-    }
-    return table;
+  private addFilterControls(container: HTMLElement) {
+    const filterContainer = document.createElement("div");
+    filterContainer.classList.add("flex-auto");
+    container.appendChild(filterContainer);
+
+    // TODO: filter controls
+  }
+
+  private addPagingControls(container: HTMLElement) {
+    const pagingContainer = document.createElement("div");
+    pagingContainer.classList.add("flex-none");
+    container.appendChild(pagingContainer);
+
+    const pageSizeOptions = [10, 30, 50, 75, 100, 250, 500, 1000].map(
+      (pageSize) =>
+        new BasicDropdownOption(pageSize.toString(), () => {
+          const topItemNumber = (this.pageNumber - 1) * this.pageSize + 1;
+          this.pageSize = pageSize;
+          // keep current top item in view
+          this.pageNumber = Math.floor(topItemNumber / pageSize) + 1;
+          this.reload();
+        })
+    );
+    const pageSizeSelect = makeDropdownMenu(
+      pageSizeOptions,
+      this.pageSize.toString(),
+      true,
+      "Items per page"
+    );
+    pagingContainer.appendChild(pageSizeSelect);
+
+    this.pageDescription = document.createElement("span");
+    this.pageDescription.classList.add("mx-2");
+    pagingContainer.appendChild(this.pageDescription);
+
+    this.pageLeftButton = addIconButton(pagingContainer, "angle-left");
+    this.pageLeftButton.classList.add("mx-2");
+    this.pageLeftButton.disabled = true;
+    this.pageLeftButton.onclick = (event) => {
+      this.pageNumber--;
+      this.reload();
+    };
+    this.pageRightButton = addIconButton(pagingContainer, "angle-right");
+    this.pageRightButton.disabled = true;
+    this.pageRightButton.onclick = (event) => {
+      this.pageNumber++;
+      this.reload();
+    };
+  }
+
+  private makePageSizeOption(pageSize: number) {
+    return new BasicDropdownOption(pageSize.toString(), () => {
+      this.pageSize = pageSize;
+      this.pageNumber = 1; // TODO: calculate current page to include previous top item?
+      this.reload();
+    });
   }
 
   private load(data?: ParentType[]) {
-    const table = this.getTable();
+    const table = getElement(this.table);
     while (table.lastChild) {
       table.removeChild(table.lastChild);
     }
@@ -199,10 +259,10 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private async reload() {
-    this.showLoading(true);
+    this.showLoading();
     const response = await Rest.post(Rest.cases.query, {
-      pageSize: 30,
-      pageNumber: 1,
+      pageSize: this.pageSize,
+      pageNumber: this.pageNumber,
       sortColumn: this.sortColumn,
       descending: this.sortDescending,
     });
@@ -211,11 +271,31 @@ export class TableBuilder<ParentType, ChildType> {
     }
     const data = await response.json();
     this.load(data.items);
-    this.showLoading(false);
+    this.showLoaded(data);
   }
 
-  private showLoading(loading: boolean) {
+  private showLoading() {
     // TODO: Disable all inputs, show indeterminate progress
+    getElement(this.pageLeftButton).disabled = true;
+    getElement(this.pageRightButton).disabled = true;
+  }
+
+  private showLoaded(data: any) {
+    if (this.pageNumber > 1) {
+      getElement(this.pageLeftButton).disabled = false;
+    }
+    if (data.filteredCount > this.pageSize * this.pageNumber) {
+      getElement(this.pageRightButton).disabled = false;
+    }
+    const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
+    const pageEnd = Math.min(
+      this.pageSize * this.pageNumber,
+      data.filteredCount
+    );
+    // TODO: if filtered, show totalCount too
+    getElement(
+      this.pageDescription
+    ).textContent = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
   }
 
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {
@@ -315,5 +395,13 @@ export class TableBuilder<ParentType, ChildType> {
     const fragment = document.createDocumentFragment();
     column.addChildContents(child, parent, fragment);
     td.appendChild(fragment);
+  }
+}
+
+function getElement<Type>(element?: Type) {
+  if (element) {
+    return element;
+  } else {
+    throw new Error("Missing element");
   }
 }

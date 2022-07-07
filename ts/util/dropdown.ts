@@ -1,7 +1,11 @@
 interface DropdownOption {
+  selectable: boolean;
+  text?: string; // text is required if option is selectable
   render(li: HTMLLIElement): void;
 }
+
 export class BasicDropdownOption implements DropdownOption {
+  selectable: boolean = true;
   text: string;
   handler: () => void;
 
@@ -18,12 +22,15 @@ export class BasicDropdownOption implements DropdownOption {
 }
 
 export function makeDropdownMenu(
-  DropdownOptions: BasicDropdownOption[],
-  defaultOption: string
+  DropdownOptions: DropdownOption[],
+  defaultOption: string,
+  displaySelection: boolean,
+  displayLabel?: string
 ) {
   const dropdownButton = makeDropdownButton();
-  dropdownButton.innerHTML = defaultOption;
+  dropdownButton.innerHTML = makeDisplayText(defaultOption, displayLabel);
   const dropdownContainer = document.createElement("div");
+  dropdownContainer.classList.add("inline-block");
   const dropdownClickout = makeDropdownClickout();
   const dropdownMenuContainer = makeDropdownMenuContainer();
   const toggleMenu = () => {
@@ -34,10 +41,17 @@ export function makeDropdownMenu(
   DropdownOptions.forEach((option) => {
     const li = document.createElement("li");
     option.render(li);
-    li.addEventListener("click", () => {
-      dropdownButton.innerHTML = option.text;
-      toggleMenu();
-    });
+    if (option.selectable) {
+      li.addEventListener("click", () => {
+        if (displaySelection) {
+          if (!option.text) {
+            throw new Error("Selectable option has no text to display");
+          }
+          dropdownButton.innerHTML = makeDisplayText(option.text, displayLabel);
+        }
+        toggleMenu();
+      });
+    }
     dropdownMenuContainer.appendChild(li);
   });
 
@@ -48,6 +62,10 @@ export function makeDropdownMenu(
   dropdownContainer.appendChild(dropdownClickout);
   dropdownContainer.appendChild(dropdownMenuContainer);
   return dropdownContainer;
+}
+
+function makeDisplayText(text: string, label?: string) {
+  return label ? `${label}: ${text}` : text;
 }
 
 function makeDropdownButton() {

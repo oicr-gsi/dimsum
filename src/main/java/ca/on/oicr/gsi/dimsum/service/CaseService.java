@@ -66,13 +66,8 @@ public class CaseService {
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
       Collection<CaseFilter> filters) {
     List<Case> allCases = getCases();
-    Stream<Case> stream = allCases.stream();
+    Stream<Case> stream = applyFilters(allCases, filters);
 
-    if (filters != null) {
-      for (CaseFilter filter : filters) {
-        stream = stream.filter(filter.predicate());
-      }
-    }
     if (sort == null) {
       sort = CaseSort.LAST_ACTIVITY;
       descending = true;
@@ -84,9 +79,20 @@ public class CaseService {
 
     TableData<Case> data = new TableData<>();
     data.setTotalCount(allCases.size());
-    data.setFilteredCount(filteredCases.size());
+    data.setFilteredCount(applyFilters(allCases, filters).count());
     data.setItems(filteredCases);
     return data;
+  }
+
+  private Stream<Case> applyFilters(List<Case> cases, Collection<CaseFilter> filters) {
+    Stream<Case> stream = cases.stream();
+
+    if (filters != null) {
+      for (CaseFilter filter : filters) {
+        stream = stream.filter(filter.predicate());
+      }
+    }
+    return stream;
   }
 
   @Scheduled(fixedDelay = 1L, timeUnit = TimeUnit.MINUTES)
