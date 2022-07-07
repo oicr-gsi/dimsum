@@ -30,6 +30,7 @@ public class CaseLoader {
 
   private static final Logger log = LoggerFactory.getLogger(CaseLoader.class);
 
+  private File projectFile;
   private File caseFile;
   private File donorFile;
   private File requisitionFile;
@@ -48,20 +49,18 @@ public class CaseLoader {
     }
     if (meterRegistry != null) {
       refreshTimer = Timer.builder("case_data_refresh_time")
-          .description("Time taken to refresh the case data")
-          .register(meterRegistry);
+          .description("Time taken to refresh the case data").register(meterRegistry);
     }
-    caseFile = new File(dataDirectory, "preprocessed_cases.json");
-    donorFile = new File(dataDirectory, "preprocessed_donors.json");
-    requisitionFile = new File(dataDirectory, "preprocessed_requisitions.json");
-    sampleFile = new File(dataDirectory, "preprocessed_samples.json");
+    projectFile = new File(dataDirectory, "projects.json");
+    caseFile = new File(dataDirectory, "cases.json");
+    donorFile = new File(dataDirectory, "donors.json");
+    requisitionFile = new File(dataDirectory, "requisitions.json");
+    sampleFile = new File(dataDirectory, "samples.json");
     timestampFile = new File(dataDirectory, "timestamp");
   }
 
   /**
-   * @return The time that the data finished writing, or null if the data is
-   *         currently being
-   *         written
+   * @return The time that the data finished writing, or null if the data is currently being written
    * @throws IOException if there is an error reading the timestamp file from disk
    */
   private ZonedDateTime getDataTimestamp() throws IOException {
@@ -76,10 +75,9 @@ public class CaseLoader {
    * Loads new case data if available
    *
    * @param previousTimestamp timestamp of previous successful load
-   * @return case data if it is available and newer than the previousTimestamp;
-   *         null otherwise
+   * @return case data if it is available and newer than the previousTimestamp; null otherwise
    * @throws DataParseException if there is an error parsing the data from file
-   * @throws IOException        if there is an error reading from disk
+   * @throws IOException if there is an error reading from disk
    */
   public CaseData load(ZonedDateTime previousTimestamp) throws DataParseException, IOException {
     log.debug("Loading case data...");
@@ -92,7 +90,7 @@ public class CaseLoader {
       return null;
     }
     long startTimeMillis = System.currentTimeMillis();
-    try (
+    try (FileReader projectReader = getProjectReader();
         FileReader sampleReader = getSampleReader();
         FileReader donorReader = getDonorReader();
         FileReader requisitionReader = getRequisitionReader();
@@ -106,16 +104,22 @@ public class CaseLoader {
         log.debug("New case data was written while we were reading; reloading...");
         return load(previousTimestamp);
       }
+      Map<String, Project> projectsByName = loadProjects(projectReader);
       Map<String, Sample> samplesById = loadSamples(sampleReader);
       Map<String, Donor> donorsById = loadDonors(donorReader);
       Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
-      List<Case> cases = loadCases(caseReader, samplesById, donorsById, requisitionsById);
+      List<Case> cases =
+          loadCases(caseReader, projectsByName, samplesById, donorsById, requisitionsById);
       if (refreshTimer != null) {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
       log.debug(String.format("Completed loading %d cases.", cases.size()));
       return new CaseData(cases, afterTimestamp);
     }
+  }
+
+  protected FileReader getProjectReader() throws FileNotFoundException {
+    return new FileReader(projectFile);
   }
 
   protected FileReader getSampleReader() throws FileNotFoundException {
@@ -134,26 +138,30 @@ public class CaseLoader {
     return new FileReader(caseFile);
   }
 
-  protected Map<String, Sample> loadSamples(FileReader fileReader) throws DataParseException,
-      IOException {
-    List<Sample> samples = loadFromJsonArrayFile(fileReader, json -> new Sample.Builder()
-        .id(parseString(json, "sample_id", true))
-        .name(parseString(json, "oicr_internal_name", true))
-        .tissueOrigin(parseString(json, "tissue_origin", true))
-        .tissueType(parseString(json, "tissue_type", true))
-        .timepoint(parseString(json, "timepoint"))
-        .groupId(parseString(json, "group_id"))
-        .targetedSequencing(parseString(json, "targeted_sequencing"))
-        .createdDate(parseSampleCreatedDate(json))
-        .run(parseRun(json))
-        .qcPassed(parseQcPassed(json, "qc_state"))
-        .qcReason(parseString(json, "qc_reason"))
-        .qcUser(parseString(json, "qc_user"))
-        .qcDate(parseDate(json, "qc_date"))
-        .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
-        .dataReviewUser(parseString(json, "data_review_user"))
-        .dataReviewDate(parseDate(json, "data_review_date"))
-        .build());
+  protected Map<String, Project> loadProjects(FileReader fileReader)
+      throws DataParseException, IOException {
+    List<Project> projects = loadFromJsonArrayFile(fileReader,
+        json -> new Project.Builder().name(parseString(json, "name", true))
+            .pipeline(parseString(json, "pipeline", true)).build());
+
+    return projects.stream().collect(Collectors.toMap(Project::getName, Function.identity()));
+  }
+
+  protected Map<String, Sample> loadSamples(FileReader fileReader)
+      throws DataParseException, IOException {
+    List<Sample> samples = loadFromJsonArrayFile(fileReader,
+        json -> new Sample.Builder().id(parseString(json, "sample_id", true))
+            .name(parseString(json, "oicr_internal_name", true))
+            .tissueOrigin(parseString(json, "tissue_origin", true))
+            .tissueType(parseString(json, "tissue_type", true))
+            .timepoint(parseString(json, "timepoint")).groupId(parseString(json, "group_id"))
+            .targetedSequencing(parseString(json, "targeted_sequencing"))
+            .createdDate(parseSampleCreatedDate(json)).run(parseRun(json))
+            .qcPassed(parseQcPassed(json, "qc_state")).qcReason(parseString(json, "qc_reason"))
+            .qcUser(parseString(json, "qc_user")).qcDate(parseDate(json, "qc_date"))
+            .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
+            .dataReviewUser(parseString(json, "data_review_user"))
+            .dataReviewDate(parseDate(json, "data_review_date")).build());
 
     return samples.stream().collect(Collectors.toMap(Sample::getId, Function.identity()));
   }
@@ -175,13 +183,12 @@ public class CaseLoader {
     return runName == null ? null : new Run.Builder().name(runName).build();
   }
 
-  protected Map<String, Donor> loadDonors(FileReader fileReader) throws DataParseException,
-      IOException {
-    List<Donor> donors = loadFromJsonArrayFile(fileReader, json -> new Donor.Builder()
-        .id(parseString(json, "id", true))
-        .name(parseString(json, "name", true))
-        .externalName(parseString(json, "external_name", true))
-        .build());
+  protected Map<String, Donor> loadDonors(FileReader fileReader)
+      throws DataParseException, IOException {
+    List<Donor> donors = loadFromJsonArrayFile(fileReader,
+        json -> new Donor.Builder().id(parseString(json, "id", true))
+            .name(parseString(json, "name", true))
+            .externalName(parseString(json, "external_name", true)).build());
 
     return donors.stream().collect(Collectors.toMap(Donor::getId, Function.identity()));
   }
@@ -189,50 +196,45 @@ public class CaseLoader {
   protected Map<Long, Requisition> loadRequisitions(FileReader fileReader)
       throws DataParseException, IOException {
     List<Requisition> requisitions = loadFromJsonArrayFile(fileReader, json -> {
-      Requisition requisition = new Requisition.Builder()
-          .id(parseLong(json, "id", true))
-          .name(parseString(json, "name", true))
-          .stopped(parseBoolean(json, "stopped"))
+      Requisition requisition = new Requisition.Builder().id(parseLong(json, "id", true))
+          .name(parseString(json, "name", true)).stopped(parseBoolean(json, "stopped"))
           .informaticsReviews(parseRequisitionQcs(json, "informatics_reviews"))
           .draftReports(parseRequisitionQcs(json, "draft_reports"))
-          .finalReports(parseRequisitionQcs(json, "final_reports"))
-          .build();
+          .finalReports(parseRequisitionQcs(json, "final_reports")).build();
       return requisition;
     });
 
     return requisitions.stream().collect(Collectors.toMap(Requisition::getId, Function.identity()));
   }
 
-  private List<Case> loadCases(FileReader fileReader, Map<String, Sample> samplesById,
-      Map<String, Donor> donorsById, Map<Long, Requisition> requisitionsById)
-      throws DataParseException, IOException {
+  private List<Case> loadCases(FileReader fileReader, Map<String, Project> projectsByName,
+      Map<String, Sample> samplesById, Map<String, Donor> donorsById,
+      Map<Long, Requisition> requisitionsById) throws DataParseException, IOException {
     return loadFromJsonArrayFile(fileReader, json -> {
       String donorId = parseString(json, "donor_id", true);
-      return new Case.Builder()
-          .donor(donorsById.get(donorId))
-          .projects(parseProjects(json, "project_names"))
+      return new Case.Builder().donor(donorsById.get(donorId))
+          .projects(parseProjects(json, "project_names", projectsByName))
           .assayName(parseString(json, "assay_name", true))
           .assayDescription(parseString(json, "assay_description", true))
           .tissueOrigin(parseString(json, "tissue_origin", true))
           .tissueType(parseString(json, "tissue_type", true))
-          .timepoint(parseString(json, "timepoint"))
-          .stopped(parseBoolean(json, "stopped"))
+          .timepoint(parseString(json, "timepoint")).stopped(parseBoolean(json, "stopped"))
           .receipts(parseIdsAndGet(json, "receipt_ids", JsonNode::asText, samplesById))
           .tests(parseTests(json, "assay_tests", samplesById))
-          .requisitions(parseIdsAndGet(json, "requisition_ids", JsonNode::asLong,
-              requisitionsById))
+          .requisitions(parseIdsAndGet(json, "requisition_ids", JsonNode::asLong, requisitionsById))
           .build();
     });
   }
 
-  private Set<Project> parseProjects(JsonNode json, String fieldName) throws DataParseException {
+  private Set<Project> parseProjects(JsonNode json, String fieldName,
+      Map<String, Project> projectsByName) throws DataParseException {
     JsonNode projectsNode = json.get("project_names");
     if (projectsNode == null || !projectsNode.isArray() || projectsNode.isEmpty()) {
       throw new DataParseException("Case has no projects");
     }
     Set<Project> projects = new HashSet<>();
     for (JsonNode projectNode : projectsNode) {
-      projects.add(new Project(projectNode.asText()));
+      projects.add(projectsByName.get(projectNode.asText()));
     }
     return projects;
   }
@@ -263,15 +265,12 @@ public class CaseLoader {
     }
     List<Test> tests = new ArrayList<>();
     for (JsonNode testNode : testsNode) {
-      tests.add(new Test.Builder()
-          .name(parseString(testNode, "name", true))
+      tests.add(new Test.Builder().name(parseString(testNode, "name", true))
           .tissueOrigin(parseString(testNode, "tissue_origin"))
           .tissueType(parseString(testNode, "tissue_type"))
-          .timepoint(parseString(testNode, "timepoint"))
-          .groupId(parseString(testNode, "group_id"))
+          .timepoint(parseString(testNode, "timepoint")).groupId(parseString(testNode, "group_id"))
           .targetedSequencing(parseString(testNode, "targeted_sequencing"))
-          .extractions(
-              parseIdsAndGet(testNode, "extraction_ids", JsonNode::asText, samplesById))
+          .extractions(parseIdsAndGet(testNode, "extraction_ids", JsonNode::asText, samplesById))
           .libraryPreparations(
               parseIdsAndGet(testNode, "library_preparation_ids", JsonNode::asText, samplesById))
           .libraryQualifications(
@@ -287,7 +286,8 @@ public class CaseLoader {
     return parseString(json, fieldName, false);
   }
 
-  private static String parseString(JsonNode json, String fieldName, boolean required) throws DataParseException {
+  private static String parseString(JsonNode json, String fieldName, boolean required)
+      throws DataParseException {
     JsonNode node = json.get(fieldName);
     if (node == null || node.isNull()) {
       if (required) {
@@ -299,7 +299,8 @@ public class CaseLoader {
     return node.asText();
   }
 
-  private static Long parseLong(JsonNode json, String fieldName, boolean required) throws DataParseException {
+  private static Long parseLong(JsonNode json, String fieldName, boolean required)
+      throws DataParseException {
     JsonNode node = json.get(fieldName);
     if (node == null || node.isNull()) {
       if (required) {
@@ -329,11 +330,8 @@ public class CaseLoader {
     }
     List<RequisitionQc> qcs = new ArrayList<>();
     for (JsonNode node : arr) {
-      qcs.add(new RequisitionQc.Builder()
-          .qcPassed(parseQcPassed(node, "qc_state"))
-          .qcUser(parseString(node, "qc_user"))
-          .qcDate(parseDate(node, "qc_date"))
-          .build());
+      qcs.add(new RequisitionQc.Builder().qcPassed(parseQcPassed(node, "qc_state"))
+          .qcUser(parseString(node, "qc_user")).qcDate(parseDate(node, "qc_date")).build());
     }
     return qcs;
   }
@@ -356,7 +354,8 @@ public class CaseLoader {
     }
   }
 
-  private static Boolean parseDataReviewPassed(JsonNode json, String fieldName) throws DataParseException {
+  private static Boolean parseDataReviewPassed(JsonNode json, String fieldName)
+      throws DataParseException {
     String qcState = parseString(json, fieldName);
     if (qcState == null) {
       return null;
