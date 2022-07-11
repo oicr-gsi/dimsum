@@ -1,18 +1,12 @@
 import * as Rest from "./rest-api";
-import {
-  BasicDropdownOption,
-  DropdownOption,
-  makeDropdownMenu,
-} from "./dropdown";
+import { makeDropdownMenu, BasicDropdownOption } from "./dropdown";
 
 import {
   makeCell,
-  makeColumnHeader,
+  addColumnHeader,
   CellStatus,
   makeIcon,
-  makeDropdownButton,
   shadeElement,
-  makeDropdownClickout,
 } from "./html-utils";
 
 type SortType = "number" | "text" | "date";
@@ -113,38 +107,23 @@ export class TableBuilder<ParentType, ChildType> {
     sortContainer.appendChild(icon);
 
     // adds all dropdown items
-    let DropdownOptions: BasicDropdownOption[] = [];
+    let dropdownOptions: BasicDropdownOption[] = [];
 
     this.definition.columns
       .filter((column) => column.sortType)
       .forEach((column) => {
-        DropdownOptions.push(this.addSortOption(column, false));
-        DropdownOptions.push(this.addSortOption(column, true));
+        dropdownOptions.push(this.addSortOption(column, false));
+        dropdownOptions.push(this.addSortOption(column, true));
       });
 
-    const sortButton = makeDropdownButton();
-    sortButton.innerHTML =
+    const defaultOption =
       this.definition.defaultSort.columnTitle +
       " - " +
       this.getSortDescriptor(
         this.definition.defaultSort.type,
         this.definition.defaultSort.descending
       );
-    const dropdownContainer = document.createElement("div");
-    const dropdownMenu = makeDropdownMenu(DropdownOptions, sortButton);
-    const dropdownClickout = makeDropdownClickout();
-
-    const toggleMenu = () => {
-      dropdownMenu.classList.toggle("hidden");
-      dropdownClickout.classList.toggle("hidden");
-    };
-    sortButton.onclick = toggleMenu;
-    dropdownClickout.onclick = toggleMenu;
-
-    dropdownContainer.appendChild(sortButton);
-    dropdownContainer.appendChild(dropdownClickout);
-    dropdownContainer.appendChild(dropdownMenu);
-    sortContainer.appendChild(dropdownContainer);
+    sortContainer.appendChild(makeDropdownMenu(dropdownOptions, defaultOption));
   }
 
   private addSortOption(
@@ -156,9 +135,11 @@ export class TableBuilder<ParentType, ChildType> {
       " - " +
       this.getSortDescriptor(column.sortType, descending);
 
-    return new BasicDropdownOption(label, () =>
-      this.applySort(column.title, descending)
-    );
+    return new BasicDropdownOption(label, () => {
+      this.sortColumn = column.title;
+      this.sortDescending = descending;
+      this.reload();
+    });
   }
 
   private getSortDescriptor(
@@ -175,12 +156,6 @@ export class TableBuilder<ParentType, ChildType> {
       default:
         throw new Error(`Unhandled sort type: ${sortType}`);
     }
-  }
-
-  private applySort(title: string, decending: boolean) {
-    this.sortColumn = title;
-    this.sortDescending = decending;
-    this.reload();
   }
 
   private getTable(): HTMLTableElement {
@@ -208,7 +183,7 @@ export class TableBuilder<ParentType, ChildType> {
     const thead = table.createTHead();
     const row = thead.insertRow();
     this.definition.columns.forEach((column, i) => {
-      makeColumnHeader(row, column.title, i);
+      addColumnHeader(row, column.title, i);
     });
   }
 

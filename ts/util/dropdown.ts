@@ -1,18 +1,13 @@
-import { makeDropdownMenuContainer } from "./html-utils";
-
-export interface DropdownOption {
-  selectable: boolean;
+interface DropdownOption {
   render(li: HTMLLIElement): void;
 }
 export class BasicDropdownOption implements DropdownOption {
   text: string;
-  selectable: boolean;
   handler: () => void;
 
   constructor(text: string, handler: () => void) {
     this.text = text;
     this.handler = handler;
-    this.selectable = true;
   }
 
   render(li: HTMLLIElement): void {
@@ -24,19 +19,54 @@ export class BasicDropdownOption implements DropdownOption {
 
 export function makeDropdownMenu(
   DropdownOptions: BasicDropdownOption[],
-  ParentOption: HTMLButtonElement | HTMLLIElement
+  defaultOption: string
 ) {
+  const dropdownButton = makeDropdownButton();
+  dropdownButton.innerHTML = defaultOption;
+  const dropdownContainer = document.createElement("div");
+  const dropdownClickout = makeDropdownClickout();
+
   const dropdownMenuContainer = makeDropdownMenuContainer();
   DropdownOptions.forEach((option) => {
     const li = document.createElement("li");
     option.render(li);
-    if (ParentOption instanceof HTMLButtonElement && option.selectable) {
-      li.addEventListener(
-        "click",
-        () => (ParentOption.innerHTML = option.text)
-      );
-    }
+    li.addEventListener(
+      "click",
+      () => (dropdownButton.innerHTML = option.text)
+    );
     dropdownMenuContainer.appendChild(li);
   });
+
+  const toggleMenu = () => {
+    dropdownMenuContainer.classList.toggle("hidden");
+    dropdownClickout.classList.toggle("hidden");
+  };
+  dropdownButton.onclick = toggleMenu;
+  dropdownClickout.onclick = toggleMenu;
+
+  dropdownContainer.appendChild(dropdownButton);
+  dropdownContainer.appendChild(dropdownClickout);
+  dropdownContainer.appendChild(dropdownMenuContainer);
+  return dropdownContainer;
+}
+
+function makeDropdownButton() {
+  const button = document.createElement("button");
+  button.className =
+    "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1";
+  return button;
+}
+
+function makeDropdownMenuContainer() {
+  const dropdownMenuContainer = document.createElement("menu");
+  dropdownMenuContainer.className =
+    "absolute hidden mt-1 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer";
   return dropdownMenuContainer;
+}
+
+function makeDropdownClickout() {
+  const clickout = document.createElement("button");
+  clickout.className =
+    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
+  return clickout;
 }
