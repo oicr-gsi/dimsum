@@ -3,8 +3,13 @@ package ca.on.oicr.gsi.dimsum.service;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.dimsum.data.Test;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -20,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +49,10 @@ public class CaseService {
       Gauge.builder("case_data_age_seconds", () -> this.getDataAge().toSeconds())
           .description("Time since case data was refreshed").register(meterRegistry);
     }
+  }
+
+  protected void setCaseData(CaseData caseData) {
+    this.caseData = caseData;
   }
 
   private int getRefreshFailures() {
@@ -84,9 +94,75 @@ public class CaseService {
     return data;
   }
 
+  public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,
+      boolean descending, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, filters,
+        (kase) -> kase.getReceipts().stream());
+  }
+
+  public TableData<Sample> getExtractions(int pageSize, int pageNumber, SampleSort sort,
+      boolean descending, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, filters,
+        getTestSampleStream(Test::getExtractions));
+  }
+
+  public TableData<Sample> getLibraryPreparations(int pageSize, int pageNumber, SampleSort sort,
+      boolean descending, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, filters,
+        getTestSampleStream(Test::getLibraryPreparations));
+  }
+
+  public TableData<Sample> getLibraryQualifications(int pageSize, int pageNumber, SampleSort sort,
+      boolean descending, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, filters,
+        getTestSampleStream(Test::getLibraryQualifications));
+  }
+
+  public TableData<Sample> getFullDepthSequencings(int pageSize, int pageNumber, SampleSort sort,
+      boolean descending, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, filters,
+        getTestSampleStream(Test::getFullDepthSequencings));
+  }
+
+  private Function<Case, Stream<Sample>> getTestSampleStream(
+      Function<Test, List<Sample>> getTestSamples) {
+    return kase -> kase.getTests().stream().flatMap(test -> getTestSamples.apply(test).stream());
+  }
+
+  private TableData<Sample> getSamples(int pageSize, int pageNumber, SampleSort sort,
+      boolean descending, Collection<CaseFilter> filters,
+      Function<Case, Stream<Sample>> getSampleStream) {
+    long sampleCount =
+        applyFilters(getCases(), filters).flatMap(getSampleStream).distinct().count();
+    List<Sample> filteredSamples = applyFilters(getCases(), filters).flatMap(getSampleStream)
+        .distinct().sorted(descending ? sort.comparator().reversed() : sort.comparator())
+        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList();
+
+    TableData<Sample> data = new TableData<>();
+    data.setTotalCount(sampleCount);
+    data.setFilteredCount(sampleCount);
+    data.setItems(filteredSamples);
+    return data;
+  }
+
+  public TableData<Requisition> getRequisitions(int pageSize, int pageNumber, RequisitionSort sort,
+      boolean descending, Collection<CaseFilter> filters) {
+    long requisitionCount = applyFilters(getCases(), filters)
+        .flatMap(kase -> kase.getRequisitions().stream()).distinct().count();
+    List<Requisition> filteredRequisitions =
+        applyFilters(getCases(), filters).flatMap(kase -> kase.getRequisitions().stream())
+            .distinct().sorted(descending ? sort.comparator().reversed() : sort.comparator())
+            .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList();
+
+    TableData<Requisition> data = new TableData<>();
+    data.setTotalCount(requisitionCount);
+    data.setFilteredCount(requisitionCount);
+    data.setItems(filteredRequisitions);
+    return data;
+  }
+
   private Stream<Case> applyFilters(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
-
     if (filters != null) {
       for (CaseFilter filter : filters) {
         stream = stream.filter(filter.predicate());
