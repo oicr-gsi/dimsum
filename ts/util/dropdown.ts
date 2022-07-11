@@ -25,22 +25,22 @@ export function makeDropdownMenu(
   dropdownButton.innerHTML = defaultOption;
   const dropdownContainer = document.createElement("div");
   const dropdownClickout = makeDropdownClickout();
-
   const dropdownMenuContainer = makeDropdownMenuContainer();
-  DropdownOptions.forEach((option) => {
-    const li = document.createElement("li");
-    option.render(li);
-    li.addEventListener(
-      "click",
-      () => (dropdownButton.innerHTML = option.text)
-    );
-    dropdownMenuContainer.appendChild(li);
-  });
-
   const toggleMenu = () => {
     dropdownMenuContainer.classList.toggle("hidden");
     dropdownClickout.classList.toggle("hidden");
   };
+
+  DropdownOptions.forEach((option) => {
+    const li = document.createElement("li");
+    option.render(li);
+    li.addEventListener("click", () => {
+      dropdownButton.innerHTML = option.text;
+      toggleMenu();
+    });
+    dropdownMenuContainer.appendChild(li);
+  });
+
   dropdownButton.onclick = toggleMenu;
   dropdownClickout.onclick = toggleMenu;
 

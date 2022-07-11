@@ -103,7 +103,7 @@ export class TableBuilder<ParentType, ChildType> {
     // adds sort icon
     const icon = makeIcon("sort");
     icon.title = "Sort";
-    icon.classList.add("text-grey-200");
+    icon.classList.add("text-black");
     sortContainer.appendChild(icon);
 
     // adds all dropdown items
