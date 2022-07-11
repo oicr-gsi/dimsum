@@ -1,6 +1,8 @@
 import * as Rest from "./rest-api";
+import { makeDropdownMenu, BasicDropdownOption } from "./dropdown";
+
 import {
-  addCell,
+  makeCell,
   addColumnHeader,
   CellStatus,
   makeIcon,
@@ -30,7 +32,6 @@ export interface SortDefinition {
   descending: boolean;
   type: SortType;
 }
-
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   defaultSort: SortDefinition;
@@ -67,8 +68,20 @@ export class TableBuilder<ParentType, ChildType> {
     tableContainer.className = "mt-4 overflow-auto";
     const table = document.createElement("table");
     // set global default styling settings
-    table.className =
-      "w-full text-14 text-black font-medium font-inter border-separate border-spacing-0 border-grey-200 border-2 rounded-xl overflow-hidden";
+    table.classList.add(
+      "w-full",
+      "text-14",
+      "text-black",
+      "font-medium",
+      "font-inter",
+      "border-separate",
+      "border-spacing-0",
+      "border-grey-200",
+      "border-2",
+      "rounded-xl",
+      "overflow-hidden"
+    );
+
     tableContainer.appendChild(table);
     this.container.appendChild(tableContainer);
     this.load();
@@ -77,52 +90,56 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addSortControls() {
+    // makes outer wrapper div
     const sortContainer = document.createElement("div");
-    sortContainer.classList.add("sortContainer");
+    sortContainer.classList.add(
+      "sortContainer",
+      "flex",
+      "space-x-2",
+      "items-center",
+      "mt-4"
+    );
     this.container.appendChild(sortContainer);
-
+    // adds sort icon
     const icon = makeIcon("sort");
     icon.title = "Sort";
+    icon.classList.add("text-black");
     sortContainer.appendChild(icon);
 
-    const dropdown = document.createElement("select");
+    // adds all dropdown items
+    let dropdownOptions: BasicDropdownOption[] = [];
+
     this.definition.columns
       .filter((column) => column.sortType)
       .forEach((column) => {
-        this.addSortOption(column, false, dropdown);
-        this.addSortOption(column, true, dropdown);
+        dropdownOptions.push(this.addSortOption(column, false));
+        dropdownOptions.push(this.addSortOption(column, true));
       });
-    dropdown.addEventListener("input", (event) => {
-      const dropdown = <HTMLSelectElement>event.target;
-      const selected = dropdown.options[dropdown.selectedIndex];
-      this.sortColumn = <string>selected.getAttribute("data-column");
-      this.sortDescending = selected.getAttribute("data-order") == "desc";
-      this.reload();
-    });
-    sortContainer.appendChild(dropdown);
+
+    const defaultOption =
+      this.definition.defaultSort.columnTitle +
+      " - " +
+      this.getSortDescriptor(
+        this.definition.defaultSort.type,
+        this.definition.defaultSort.descending
+      );
+    sortContainer.appendChild(makeDropdownMenu(dropdownOptions, defaultOption));
   }
 
   private addSortOption(
     column: ColumnDefinition<ParentType, ChildType>,
-    descending: boolean,
-    dropdown: HTMLSelectElement
+    descending: boolean
   ) {
-    const option = document.createElement("option");
-    option.value = column.title + (descending ? "/desc" : "/asc");
-    option.setAttribute("data-column", column.title);
-    option.setAttribute("data-order", descending ? "desc" : "asc");
-    option.text =
+    const label =
       column.title +
       " - " +
       this.getSortDescriptor(column.sortType, descending);
 
-    if (
-      this.sortColumn === column.title &&
-      this.sortDescending === descending
-    ) {
-      option.selected = true;
-    }
-    dropdown.appendChild(option);
+    return new BasicDropdownOption(label, () => {
+      this.sortColumn = column.title;
+      this.sortDescending = descending;
+      this.reload();
+    });
   }
 
   private getSortDescriptor(
@@ -131,7 +148,7 @@ export class TableBuilder<ParentType, ChildType> {
   ) {
     switch (sortType) {
       case "date":
-        return descending ? "Lastest First" : "Latest Last";
+        return descending ? "Latest First" : "Latest Last";
       case "number":
         return descending ? "High to Low" : "Low to High";
       case "text":
@@ -214,7 +231,7 @@ export class TableBuilder<ParentType, ChildType> {
         if (children.length) {
           this.addChildCell(tr, column, children[0], parent, i);
         } else {
-          const td = addCell(tr, i);
+          const td = makeCell(tr, i);
           shadeElement(td, "na");
           td.appendChild(document.createTextNode("N/A"));
         }
@@ -249,7 +266,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addNoDataRow(tbody: HTMLTableSectionElement) {
     const row = tbody.insertRow();
-    const cell = addCell(row, 0);
+    const cell = makeCell(row, 0);
     cell.colSpan = this.definition.columns.length;
     cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
@@ -267,7 +284,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as parent, but doesn't define addParentContents`
       );
     }
-    const td = addCell(tr, index);
+    const td = makeCell(tr, index);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, null));
     }
@@ -291,7 +308,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as child, but doesn't define getChildContents`
       );
     }
-    const td = addCell(tr, index);
+    const td = makeCell(tr, index);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, child));
     }

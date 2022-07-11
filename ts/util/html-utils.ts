@@ -13,7 +13,7 @@ export function addColumnHeader(
 }
 
 // adds a cell to a table row
-export function addCell(tr: HTMLTableRowElement, index: number) {
+export function makeCell(tr: HTMLTableRowElement, index: number) {
   const td = tr.insertCell();
   td.className =
     "p-4 border-grey-200 border-t-1 text-left align-text-top" +
