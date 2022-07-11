@@ -19,7 +19,7 @@
 
 <body class="flex flex-col min-h-screen">
   <div id="header">
-    <nav class="flex justify-end space-x-4 items-center my-4 mx-6 border-b-2 border-grey-200">
+    <nav class="flex justify-end space-x-4 items-center m-4 border-b-2 border-grey-200">
       <div class="flex-grow">
         <div class="flex">
           <a class="shrink" href="."><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a>
@@ -40,7 +40,7 @@
     </nav>
   </div>
 
-  <main class="flex-auto mx-6" layout:fragment="content">content</main>
+  <main class="flex-auto mx-4" layout:fragment="content">content</main>
 
   <footer class="font-inter bg-green-200 text-center text-white mt-4 py-1 text-10 font-medium"
     th:text="'version ' + ${buildVersion} + ' | last fetched ' + ${dataAgeMinutes} + ' minutes ago'"></footer>

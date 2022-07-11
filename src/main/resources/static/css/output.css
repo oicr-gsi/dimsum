@@ -521,9 +521,8 @@ Ensure the default browser behavior of the `hidden` attribute.
   left: 0px;
 }
 
-.my-4{
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+.m-4{
+  margin: 1rem;
 }
 
 .mx-6{
@@ -539,6 +538,16 @@ Ensure the default browser behavior of the `hidden` attribute.
 .my-20{
   margin-top: 5rem;
   margin-bottom: 5rem;
+}
+
+.my-4{
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mx-4{
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
 
 .mt-4{
@@ -718,12 +727,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding: 0.5rem;
 }
 
-.p-4{
-  padding: 1rem;
-}
-
 .p-1{
   padding: 0.25rem;
+}
+
+.p-4{
+  padding: 1rem;
 }
 
 .px-3{
