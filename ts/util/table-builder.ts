@@ -72,7 +72,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   public build() {
     const topControlsContainer = document.createElement("div");
-    topControlsContainer.className = "flex";
+    topControlsContainer.className = "flex mt-4 items-center";
     this.addSortControls(topControlsContainer);
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
@@ -105,12 +105,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addSortControls(container: HTMLElement) {
     const sortContainer = document.createElement("div");
-    sortContainer.classList.add(
-      "flex-none",
-      "space-x-2",
-      "items-center",
-      "mt-4"
-    );
+    sortContainer.classList.add("flex-none", "space-x-2");
     container.appendChild(sortContainer);
 
     const icon = makeIcon("sort");
@@ -182,7 +177,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addPagingControls(container: HTMLElement) {
     const pagingContainer = document.createElement("div");
-    pagingContainer.classList.add("flex-none");
+    pagingContainer.classList.add("flex-none", "space-x-2");
     container.appendChild(pagingContainer);
 
     const pageSizeOptions = [10, 30, 50, 75, 100, 250, 500, 1000].map(
@@ -204,11 +199,12 @@ export class TableBuilder<ParentType, ChildType> {
     pagingContainer.appendChild(pageSizeSelect);
 
     this.pageDescription = document.createElement("span");
-    this.pageDescription.classList.add("mx-2");
+    this.pageDescription.className =
+      "font-inter font-medium text-black text-12";
     pagingContainer.appendChild(this.pageDescription);
 
     this.pageLeftButton = addIconButton(pagingContainer, "angle-left");
-    this.pageLeftButton.classList.add("mx-2");
+    //this.pageLeftButton.classList.add("mx-2");
     this.pageLeftButton.disabled = true;
     this.pageLeftButton.onclick = (event) => {
       this.pageNumber--;
