@@ -1,12 +1,12 @@
 package ca.on.oicr.gsi.dimsum.controller.rest.request;
 
-import java.util.Map;
+import java.util.List;
 
 public class DataQuery {
 
   private int pageNumber;
   private int pageSize;
-  private Map<String, String> filters;
+  private List<KeyValuePair> filters;
   private String sortColumn;
   private Boolean descending;
 
@@ -26,11 +26,11 @@ public class DataQuery {
     this.pageSize = pageSize;
   }
 
-  public Map<String, String> getFilters() {
+  public List<KeyValuePair> getFilters() {
     return filters;
   }
 
-  public void setFilters(Map<String, String> filters) {
+  public void setFilters(List<KeyValuePair> filters) {
     this.filters = filters;
   }
 
