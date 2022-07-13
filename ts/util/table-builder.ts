@@ -204,7 +204,6 @@ export class TableBuilder<ParentType, ChildType> {
     pagingContainer.appendChild(this.pageDescription);
 
     this.pageLeftButton = addIconButton(pagingContainer, "angle-left");
-    //this.pageLeftButton.classList.add("mx-2");
     this.pageLeftButton.disabled = true;
     this.pageLeftButton.onclick = (event) => {
       this.pageNumber--;
