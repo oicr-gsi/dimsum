@@ -19,6 +19,8 @@ public enum CaseFilterKey {
     }
     return state.predicate();
   }),
+  PIPELINE(string -> kase -> kase.getProjects().stream()
+      .anyMatch(project -> project.getPipeline().equals(string))),
   PROJECT(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getName().equals(string))),
   REQUISITION(string -> kase -> kase.getRequisitions().stream()

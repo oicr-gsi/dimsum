@@ -1,8 +1,10 @@
 package ca.on.oicr.gsi.dimsum.service;
 
 import ca.on.oicr.gsi.dimsum.CaseLoader;
+import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
@@ -36,6 +38,9 @@ public class CaseService {
 
   @Autowired
   private CaseLoader dataLoader;
+
+  @Autowired
+  private FrontEndConfig frontEndConfig;
 
   private CaseData caseData;
 
@@ -179,6 +184,9 @@ public class CaseService {
       refreshFailures = 0;
       if (newData != null) {
         caseData = newData;
+        frontEndConfig
+            .setPipelines(newData.getCases().stream().flatMap(kase -> kase.getProjects().stream())
+                .map(Project::getPipeline).collect(Collectors.toSet()));
       }
     } catch (Exception e) {
       refreshFailures++;
