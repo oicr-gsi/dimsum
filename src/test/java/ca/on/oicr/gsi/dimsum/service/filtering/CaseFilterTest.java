@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum;
+package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,9 +19,6 @@ import ca.on.oicr.gsi.dimsum.data.RequisitionQc;
 import ca.on.oicr.gsi.dimsum.data.Run;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
-import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
-import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 
 public class CaseFilterTest {
 
