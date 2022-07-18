@@ -7,6 +7,7 @@ import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
@@ -23,9 +24,12 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -163,9 +167,18 @@ public class CaseService {
 
   private Stream<Case> applyFilters(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
-    if (filters != null) {
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Case>> filterMap = new HashMap<>();
       for (CaseFilter filter : filters) {
-        stream = stream.filter(filter.predicate());
+        CaseFilterKey key = filter.getKey();
+        if (filterMap.containsKey(key)) {
+          filterMap.put(key, filterMap.get(key).or(filter.predicate()));
+        } else {
+          filterMap.put(key, filter.predicate());
+        }
+      }
+      for (Predicate<Case> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
       }
     }
     return stream;
