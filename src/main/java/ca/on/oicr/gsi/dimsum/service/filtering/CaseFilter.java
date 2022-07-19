@@ -8,18 +8,22 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 
 public class CaseFilter {
 
-    private final CaseFilterKey filter;
-    private final String value;
+  private final CaseFilterKey key;
+  private final String value;
 
-    public CaseFilter(CaseFilterKey filter, String value) {
-        requireNonNull(filter);
-        requireNonNull(value);
-        this.filter = filter;
-        this.value = value;
-    }
+  public CaseFilter(CaseFilterKey key, String value) {
+    requireNonNull(key);
+    requireNonNull(value);
+    this.key = key;
+    this.value = value;
+  }
 
-    public Predicate<Case> predicate() {
-        return filter.create().apply(value);
-    }
+  public CaseFilterKey getKey() {
+    return key;
+  }
+
+  public Predicate<Case> predicate() {
+    return key.create().apply(value);
+  }
 
 }
