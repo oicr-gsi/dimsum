@@ -60,7 +60,7 @@ class AcceptedFilter {
     key: string,
     value: string,
     container: HTMLElement,
-    reload: () => {}
+    onRemove: () => {}
   ) {
     this.key = key;
     this.value = value;
@@ -79,7 +79,7 @@ class AcceptedFilter {
     destroyFilterIcon.onclick = () => {
       this.valid = false;
       this.element.remove();
-      reload();
+      onRemove();
     };
     this.element.appendChild(destroyFilterIcon);
 
@@ -234,7 +234,7 @@ export class TableBuilder<ParentType, ChildType> {
       switch (filter.type) {
         case "dropdown":
           // create all submenu options
-          const onRemove = () => this.reload();
+          const reload = () => this.reload();
           const filterSuboptions = filter.values.map(
             (value) =>
               new BasicDropdownOption(value, (dropdown: Dropdown) => {
@@ -244,7 +244,7 @@ export class TableBuilder<ParentType, ChildType> {
                   filter.key,
                   value,
                   filterContainer,
-                  onRemove
+                  reload
                 );
                 // add filter to the menu bar
                 filterContainer.insertBefore(
@@ -252,7 +252,7 @@ export class TableBuilder<ParentType, ChildType> {
                   addFilterDropdown.getTag()
                 );
                 this.acceptedFilters.push(filterLabel);
-                onRemove();
+                reload();
               })
           );
           // add filter (& its submenu) to the parent filter menu
