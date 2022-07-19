@@ -2,6 +2,7 @@ import { TableDefinition } from "../util/table-builder";
 import * as Rest from "../util/rest-api";
 import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
 import { urls } from "../util/urls";
+import { siteConfig } from "../util/site-config";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -91,6 +92,20 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     descending: true,
     type: "date",
   },
+  filters: [
+    {
+      title: "Pipeline",
+      key: "PIPELINE",
+      type: "dropdown",
+      values: siteConfig.pipelines,
+    },
+    {
+      title: "Pending",
+      key: "PENDING",
+      type: "dropdown",
+      values: siteConfig.pendingStates,
+    },
+  ],
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
   columns: [
@@ -530,7 +545,7 @@ const statuses: Record<QcStatusKey, QcStatus> = {
   },
   failed: {
     label: "Failed",
-    icon: "x",
+    icon: "xmark",
     qcComplete: true,
   },
   topUp: {

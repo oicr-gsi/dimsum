@@ -2,10 +2,10 @@ package ca.on.oicr.gsi.dimsum.controller.mvc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
+import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 
@@ -38,17 +38,18 @@ public class MvcUtils {
   }
 
   public static List<CaseFilter> parseCaseFilters(DataQuery query) {
-    Map<String, String> queryFilters = query.getFilters();
+
+    List<KeyValuePair> queryFilters = query.getFilters();
     if (queryFilters == null || queryFilters.isEmpty()) {
       return null;
     }
     List<CaseFilter> filters = new ArrayList<>();
-    for (String keyString : queryFilters.keySet()) {
+    for (KeyValuePair pair : queryFilters) {
       try {
-        CaseFilterKey key = CaseFilterKey.valueOf(keyString);
-        filters.add(new CaseFilter(key, queryFilters.get(keyString)));
+        CaseFilterKey key = CaseFilterKey.valueOf(pair.getKey());
+        filters.add(new CaseFilter(key, pair.getValue()));
       } catch (IllegalArgumentException e) {
-        throw new BadRequestException(String.format("Invalid filter key: %s", keyString));
+        throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
       }
     }
     return filters;

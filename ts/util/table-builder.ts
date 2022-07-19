@@ -1,5 +1,5 @@
 import * as Rest from "./rest-api";
-import { makeDropdownMenu, BasicDropdownOption } from "./dropdown";
+import { Dropdown, DropdownOption, BasicDropdownOption } from "./dropdown";
 
 import {
   makeCell,
@@ -11,6 +11,7 @@ import {
 } from "./html-utils";
 
 type SortType = "number" | "text" | "date";
+type FilterType = "text" | "dropdown";
 
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
@@ -33,12 +34,57 @@ export interface SortDefinition {
   descending: boolean;
   type: SortType;
 }
+
+export interface FilterDefinition {
+  title: string; // user friendly label
+  key: string; // internal use
+  type: FilterType; // either text or dropdown
+  values: string[]; // required for dropdown filters
+}
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   defaultSort: SortDefinition;
+  filters?: FilterDefinition[];
   getChildren?: (parent: ParentType) => ChildType[];
   columns: ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
+}
+class AcceptedFilter {
+  element: HTMLElement;
+  key: string;
+  value: string;
+  valid: boolean = true;
+
+  constructor(
+    title: string,
+    key: string,
+    value: string,
+    container: HTMLElement,
+    onRemove: () => {}
+  ) {
+    this.key = key;
+    this.value = value;
+    this.element = document.createElement("span");
+    this.element.className =
+      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
+    this.element.innerHTML = `${title}: ${value}`;
+
+    const destroyFilterIcon = makeIcon("xmark");
+    destroyFilterIcon.classList.add(
+      "text-black",
+      "cursor-pointer",
+      "ml-2",
+      "hover:text-green-200"
+    );
+    destroyFilterIcon.onclick = () => {
+      this.valid = false;
+      this.element.remove();
+      onRemove();
+    };
+    this.element.appendChild(destroyFilterIcon);
+
+    container.appendChild(this.element);
+  }
 }
 
 export class TableBuilder<ParentType, ChildType> {
@@ -55,6 +101,7 @@ export class TableBuilder<ParentType, ChildType> {
   pageNumber: number = 1;
   totalCount: number = 0;
   filteredCount: number = 0;
+  acceptedFilters: AcceptedFilter[] = [];
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
@@ -72,7 +119,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   public build() {
     const topControlsContainer = document.createElement("div");
-    topControlsContainer.className = "flex mt-4 items-center";
+    topControlsContainer.className = "flex mt-4 items-top space-x-2";
     this.addSortControls(topControlsContainer);
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
@@ -114,8 +161,7 @@ export class TableBuilder<ParentType, ChildType> {
     sortContainer.appendChild(icon);
 
     // adds all dropdown items
-    let dropdownOptions: BasicDropdownOption[] = [];
-
+    let dropdownOptions: DropdownOption[] = [];
     this.definition.columns
       .filter((column) => column.sortType)
       .forEach((column) => {
@@ -130,9 +176,13 @@ export class TableBuilder<ParentType, ChildType> {
         this.definition.defaultSort.type,
         this.definition.defaultSort.descending
       );
-    sortContainer.appendChild(
-      makeDropdownMenu(dropdownOptions, defaultOption, true)
+    const sortDropdown = new Dropdown(
+      dropdownOptions,
+      true,
+      undefined,
+      defaultOption
     );
+    sortContainer.appendChild(sortDropdown.getTag());
   }
 
   private addSortOption(
@@ -169,10 +219,73 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
-    filterContainer.classList.add("flex-auto");
-    container.appendChild(filterContainer);
+    filterContainer.classList.add("flex-auto", "space-x-2", "items-center");
+    if (!this.definition.filters) {
+      // no filters for this table
+      return;
+    }
 
-    // TODO: filter controls
+    const filterIcon = makeIcon("filter");
+    filterIcon.classList.add("text-black");
+    filterContainer.appendChild(filterIcon);
+
+    let filterOptions: DropdownOption[] = [];
+    this.definition.filters.forEach((filter) => {
+      switch (filter.type) {
+        case "dropdown":
+          // create all submenu options
+          const reload = () => this.reload();
+          const filterSuboptions = filter.values.map(
+            (value) =>
+              new BasicDropdownOption(value, (dropdown: Dropdown) => {
+                dropdown.getTag().remove();
+                const filterLabel = new AcceptedFilter(
+                  filter.title,
+                  filter.key,
+                  value,
+                  filterContainer,
+                  reload
+                );
+                // add filter to the menu bar
+                filterContainer.insertBefore(
+                  filterLabel.element,
+                  addFilterDropdown.getTag()
+                );
+                this.acceptedFilters.push(filterLabel);
+                reload();
+              })
+          );
+          // add filter (& its submenu) to the parent filter menu
+          filterOptions.push(
+            new BasicDropdownOption(filter.title, () => {
+              const filterSuboptionsDropdown = new Dropdown(
+                filterSuboptions,
+                true,
+                filter.title
+              );
+              filterContainer.insertBefore(
+                filterSuboptionsDropdown.getTag(),
+                addFilterDropdown.getTag()
+              );
+            })
+          );
+          break;
+        case "text":
+          // TODO: make text filters
+          break;
+        default:
+          throw new Error(`Unhandled filter type: ${filter.type}`);
+      }
+    });
+
+    const addFilterDropdown = new Dropdown(
+      filterOptions,
+      false,
+      undefined,
+      "+ filter"
+    );
+    filterContainer.append(addFilterDropdown.getTag());
+    container.appendChild(filterContainer);
   }
 
   private addPagingControls(container: HTMLElement) {
@@ -190,13 +303,13 @@ export class TableBuilder<ParentType, ChildType> {
           this.reload();
         })
     );
-    const pageSizeSelect = makeDropdownMenu(
+    const pageSizeSelectDropdown = new Dropdown(
       pageSizeOptions,
-      this.pageSize.toString(),
       true,
-      "Items per page"
+      "Items per page",
+      this.pageSize.toString()
     );
-    pagingContainer.appendChild(pageSizeSelect);
+    pagingContainer.appendChild(pageSizeSelectDropdown.getTag());
 
     this.pageDescription = document.createElement("span");
     this.pageDescription.className =
@@ -255,9 +368,15 @@ export class TableBuilder<ParentType, ChildType> {
 
   private async reload() {
     this.showLoading();
+    this.acceptedFilters = this.acceptedFilters.filter(
+      (filter) => filter.valid
+    );
     const response = await Rest.post(Rest.cases.query, {
       pageSize: this.pageSize,
       pageNumber: this.pageNumber,
+      filters: this.acceptedFilters.map((filter) => {
+        return { key: filter.key, value: filter.value };
+      }),
       sortColumn: this.sortColumn,
       descending: this.sortDescending,
     });
