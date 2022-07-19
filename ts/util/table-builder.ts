@@ -1,10 +1,5 @@
 import * as Rest from "./rest-api";
-import {
-  dropdown,
-  DropdownOption,
-  BasicDropdownOption,
-  makeDisplayText,
-} from "./dropdown";
+import { Dropdown, DropdownOption, BasicDropdownOption } from "./dropdown";
 
 import {
   makeCell,
@@ -71,7 +66,7 @@ class AcceptedFilter {
     this.value = value;
     this.element = document.createElement("span");
     this.element.className =
-      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default";
+      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
     this.element.innerHTML = `${title}: ${value}`;
 
     const destroyFilterIcon = makeIcon("xmark");
@@ -124,7 +119,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   public build() {
     const topControlsContainer = document.createElement("div");
-    topControlsContainer.className = "flex mt-4 items-center space-x-2";
+    topControlsContainer.className = "flex mt-4 items-top space-x-2";
     this.addSortControls(topControlsContainer);
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
@@ -181,7 +176,7 @@ export class TableBuilder<ParentType, ChildType> {
         this.definition.defaultSort.type,
         this.definition.defaultSort.descending
       );
-    const sortDropdown = new dropdown(
+    const sortDropdown = new Dropdown(
       dropdownOptions,
       true,
       undefined,
@@ -239,17 +234,17 @@ export class TableBuilder<ParentType, ChildType> {
       switch (filter.type) {
         case "dropdown":
           // create all submenu options
-          const reload = () => this.reload();
+          const onRemove = () => this.reload();
           const filterSuboptions = filter.values.map(
             (value) =>
-              new BasicDropdownOption(value, (dropdown: dropdown) => {
+              new BasicDropdownOption(value, (dropdown: Dropdown) => {
                 dropdown.getTag().remove();
                 const filterLabel = new AcceptedFilter(
                   filter.title,
                   filter.key,
                   value,
                   filterContainer,
-                  reload
+                  onRemove
                 );
                 // add filter to the menu bar
                 filterContainer.insertBefore(
@@ -257,13 +252,13 @@ export class TableBuilder<ParentType, ChildType> {
                   addFilterDropdown.getTag()
                 );
                 this.acceptedFilters.push(filterLabel);
-                reload();
+                onRemove();
               })
           );
           // add filter (& its submenu) to the parent filter menu
           filterOptions.push(
             new BasicDropdownOption(filter.title, () => {
-              const filterSuboptionsDropdown = new dropdown(
+              const filterSuboptionsDropdown = new Dropdown(
                 filterSuboptions,
                 true,
                 filter.title
@@ -279,11 +274,11 @@ export class TableBuilder<ParentType, ChildType> {
           // TODO: make text filters
           break;
         default:
-          break;
+          throw new Error(`Unhandled filter type: ${filter.type}`);
       }
     });
 
-    const addFilterDropdown = new dropdown(
+    const addFilterDropdown = new Dropdown(
       filterOptions,
       false,
       undefined,
@@ -308,7 +303,7 @@ export class TableBuilder<ParentType, ChildType> {
           this.reload();
         })
     );
-    const pageSizeSelectDropdown = new dropdown(
+    const pageSizeSelectDropdown = new Dropdown(
       pageSizeOptions,
       true,
       "Items per page",
@@ -380,8 +375,7 @@ export class TableBuilder<ParentType, ChildType> {
       pageSize: this.pageSize,
       pageNumber: this.pageNumber,
       filters: this.acceptedFilters.map((filter) => {
-        const mappedFilters = { key: filter.key, value: filter.value };
-        return mappedFilters;
+        return { key: filter.key, value: filter.value };
       }),
       sortColumn: this.sortColumn,
       descending: this.sortDescending,

@@ -556,6 +556,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-left: 0.5rem;
 }
 
+.block{
+  display: block;
+}
+
 .inline-block{
   display: inline-block;
 }
@@ -652,6 +656,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-y-2 > :not([hidden]) ~ :not([hidden]){
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 
 .overflow-auto{
@@ -856,6 +866,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 .ring-green-200{
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(91 158 90 / var(--tw-ring-opacity));
+}
+
+.ring-grey-200{
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(170 176 184 / var(--tw-ring-opacity));
 }
 
 .ring-offset-1{

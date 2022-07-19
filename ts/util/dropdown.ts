@@ -1,30 +1,28 @@
-import { makeIcon } from "./html-utils";
-
 export interface DropdownOption {
   selectable: boolean;
   text?: string; // text is required if option is selectable
 
-  render(li: HTMLLIElement, dropdown: dropdown): void;
+  render(li: HTMLLIElement, dropdown: Dropdown): void;
 }
 
 export class BasicDropdownOption implements DropdownOption {
   selectable: boolean = true;
   text: string;
-  handler: (dropdown: dropdown) => void;
+  handler: (dropdown: Dropdown) => void;
 
-  constructor(text: string, handler: (dropdown: dropdown) => void) {
+  constructor(text: string, handler: (dropdown: Dropdown) => void) {
     this.text = text;
     this.handler = handler;
   }
 
-  render(li: HTMLLIElement, dropdown: dropdown): void {
+  render(li: HTMLLIElement, dropdown: Dropdown): void {
     li.className = "px-2 py-1 rounded-md hover:bg-green-200 hover:text-white";
     li.innerHTML = this.text;
     li.addEventListener("click", () => this.handler(dropdown));
   }
 }
 
-export class dropdown {
+export class Dropdown {
   private dropdownContainer: HTMLElement;
 
   constructor(
@@ -57,9 +55,8 @@ export class dropdown {
 
     DropdownOptions.forEach((option) => {
       const li = document.createElement("li");
+      option.render(li, this);
       if (option.selectable) {
-        // basic option
-        option.render(li, this); // new
         li.addEventListener("click", () => {
           if (displaySelection) {
             if (!option.text) {
@@ -88,29 +85,14 @@ export class dropdown {
   }
 }
 
-export function makeDisplayText(label?: string, option?: string) {
-  const formatText = (text?: string) => (text ? `${text}` : ``);
-  const formatLabel = (label?: string) => (label ? `${label}:` : ``);
-  return `${formatLabel(label)} ${formatText(option)}`;
+function makeDisplayText(label?: string, text?: string) {
+  return (label ? label + ": " : "") + (text || "");
 }
 
 function makeDropdownButton() {
   const button = document.createElement("button");
   button.className =
     "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center";
-
-  //doesnt work???
-  const dropdownOpenIcon = makeIcon("check");
-  dropdownOpenIcon.classList.add("text-black");
-  const dropdownCloseIcon = makeIcon("xmark");
-  dropdownCloseIcon.classList.add("text-black", "hidden");
-  button.appendChild(dropdownOpenIcon);
-  button.appendChild(dropdownCloseIcon);
-  button.addEventListener("click", () => {
-    dropdownOpenIcon.classList.toggle("hidden");
-    dropdownCloseIcon.classList.toggle("hidden");
-  });
-
   return button;
 }
 
