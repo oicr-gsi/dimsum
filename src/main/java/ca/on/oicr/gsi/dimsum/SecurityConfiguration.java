@@ -31,34 +31,29 @@ public class SecurityConfiguration {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests(auth -> auth
-            .antMatchers("/favicon.ico").permitAll()
-            .antMatchers("/css/**").permitAll()
-            .antMatchers("/js/**").permitAll()
-            .antMatchers("/img/**").permitAll()
-            .antMatchers("/metrics").permitAll()
-            .antMatchers(LOGIN_URL).permitAll()
-            .anyRequest().authenticated())
-        .saml2Login().loginPage(LOGIN_URL)
-        .and().saml2Logout(Customizer.withDefaults());
+    http.authorizeHttpRequests(auth -> auth.antMatchers("/favicon.ico").permitAll()
+        .antMatchers("/css/**").permitAll().antMatchers("/js/**").permitAll().antMatchers("/img/**")
+        .permitAll().antMatchers("/metrics").permitAll().antMatchers(LOGIN_URL).permitAll()
+        .anyRequest().authenticated()).saml2Login().loginPage(LOGIN_URL).and()
+        .saml2Logout(Customizer.withDefaults());
     return http.build();
   }
 
   @Bean
   public RelyingPartyRegistrationRepository repository(
-      @Value("${saml.idpmetadataurl}") String metadataUrl,
-      @Value("${baseurl}") String baseUrl,
+      @Value("${saml.idpmetadataurl}") String metadataUrl, @Value("${baseurl}") String baseUrl,
       @Value("file://${saml.spkey}") RSAPrivateKey key,
       @Value("${saml.spcert}") File certificateFile) {
-    Saml2X509Credential credential = Saml2X509Credential.signing(key, getCertificate(certificateFile));
+    Saml2X509Credential credential =
+        Saml2X509Credential.signing(key, getCertificate(certificateFile));
     String logoutUrl = baseUrl + "/logout/saml2/slo";
-    RelyingPartyRegistration registration = RelyingPartyRegistrations
-        .fromMetadataLocation(metadataUrl)
-        .registrationId("dimsum")
-        .singleLogoutServiceLocation(logoutUrl)
-        .signingX509Credentials(saml2X509Credentials -> saml2X509Credentials.add(credential))
-        .build();
+    RelyingPartyRegistration registration =
+        RelyingPartyRegistrations.fromMetadataLocation(metadataUrl).registrationId("dimsum")
+            .entityId(baseUrl + "/saml2/service-provider-metadata/dimsum")
+            .assertionConsumerServiceLocation(baseUrl + "/login/saml2/sso/dimsum")
+            .singleLogoutServiceLocation(logoutUrl)
+            .signingX509Credentials(saml2X509Credentials -> saml2X509Credentials.add(credential))
+            .build();
     return new InMemoryRelyingPartyRegistrationRepository(registration);
   }
 
@@ -84,8 +79,10 @@ public class SecurityConfiguration {
    * @return
    */
   @Bean
-  FilterRegistrationBean<Saml2MetadataFilter> metadata(RelyingPartyRegistrationResolver registrations) {
-    Saml2MetadataFilter metadata = new Saml2MetadataFilter(registrations, new OpenSamlMetadataResolver());
+  FilterRegistrationBean<Saml2MetadataFilter> metadata(
+      RelyingPartyRegistrationResolver registrations) {
+    Saml2MetadataFilter metadata =
+        new Saml2MetadataFilter(registrations, new OpenSamlMetadataResolver());
     FilterRegistrationBean<Saml2MetadataFilter> filter = new FilterRegistrationBean<>(metadata);
     filter.setOrder(-101);
     return filter;
