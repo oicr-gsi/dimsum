@@ -33,9 +33,9 @@ public class SecurityConfiguration {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth.antMatchers("/favicon.ico").permitAll()
         .antMatchers("/css/**").permitAll().antMatchers("/js/**").permitAll().antMatchers("/img/**")
-        .permitAll().antMatchers("/metrics").permitAll().antMatchers(LOGIN_URL).permitAll()
-        .anyRequest().authenticated()).saml2Login().loginPage(LOGIN_URL).and()
-        .saml2Logout(Customizer.withDefaults());
+        .permitAll().antMatchers("/libs/**").permitAll().antMatchers("/metrics").permitAll()
+        .antMatchers(LOGIN_URL).permitAll().anyRequest().authenticated()).saml2Login()
+        .loginPage(LOGIN_URL).and().saml2Logout(Customizer.withDefaults());
     return http.build();
   }
 
