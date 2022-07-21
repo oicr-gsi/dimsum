@@ -27,9 +27,10 @@ public class CaseRestController {
     validateDataQuery(query);
     CaseSort sort = parseSort(query, CaseSort::getByLabel);
     boolean descending = parseDescending(query);
+    CaseFilter baseFilter = parseBaseFilter(query);
     List<CaseFilter> filters = parseCaseFilters(query);
     return caseService.getCases(query.getPageSize(), query.getPageNumber(), sort, descending,
-        filters);
+        baseFilter, filters);
   }
 
 

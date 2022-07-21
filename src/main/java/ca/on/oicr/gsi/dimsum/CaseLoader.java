@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -157,6 +158,8 @@ public class CaseLoader {
             .timepoint(parseString(json, "timepoint")).groupId(parseString(json, "group_id"))
             .targetedSequencing(parseString(json, "targeted_sequencing"))
             .createdDate(parseSampleCreatedDate(json)).run(parseRun(json))
+            .volume(parseDecimal(json, "volume", false))
+            .concentration(parseDecimal(json, "concentration", false))
             .qcPassed(parseQcPassed(json, "qc_state")).qcReason(parseString(json, "qc_reason"))
             .qcUser(parseString(json, "qc_user")).qcDate(parseDate(json, "qc_date"))
             .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
@@ -320,6 +323,12 @@ public class CaseLoader {
     } else {
       return node.asBoolean();
     }
+  }
+
+  private static BigDecimal parseDecimal(JsonNode json, String fieldName, boolean required)
+      throws DataParseException {
+    String stringValue = parseString(json, fieldName, required);
+    return stringValue == null ? null : new BigDecimal(stringValue);
   }
 
   private static List<RequisitionQc> parseRequisitionQcs(JsonNode json, String fieldName)

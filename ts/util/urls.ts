@@ -1,8 +1,26 @@
 import { siteConfig } from "./site-config";
 
+const restBaseUrl = "/rest";
+
 export const urls = {
+  dimsum: {
+    project: (name: string) => `/projects/${name}`,
+  },
+  rest: {
+    cases: `${restBaseUrl}/cases`,
+    receipts: `${restBaseUrl}/receipts`,
+    extractions: `${restBaseUrl}/extractions`,
+    libraryPreparations: `${restBaseUrl}/library-preparations`,
+    libraryQualifications: `${restBaseUrl}/library-qualifications`,
+    fullDepthSequencings: `${restBaseUrl}/full-depth-sequencings`,
+    requisitions: `${restBaseUrl}/requisitions`,
+  },
   miso: {
     sample: function (sampleId: string) {
+      const match = sampleId.match("^\\d+_\\d+_LDI(\\d+)$");
+      if (match) {
+        return makeMisoUrl("libraryaliquot", match[1]);
+      }
       const prefix = sampleId.substring(0, 3);
       const id = parseInt(sampleId.substring(3));
       switch (prefix) {
@@ -13,11 +31,13 @@ export const urls = {
         case "LDI":
           return makeMisoUrl("libraryaliquot", id);
         default:
-          throw new Error(`Unhandled ID prefix: ${prefix}`);
+          throw new Error(`Unhandled ID pattern: ${sampleId}`);
       }
     },
     project: (shortName: string) => makeMisoUrl("project/shortname", shortName),
     run: (runId: number) => makeMisoUrl("run", runId),
+    requisition: (requisitionId: number) =>
+      makeMisoUrl("requisition", requisitionId),
   },
   dashi: {
     singleLaneTar: (runName: string) => makeDashiSingleLaneUrl("tar", runName),

@@ -5,6 +5,7 @@ module.exports = {
   mode: "production",
   entry: {
     index: "./ts/index.ts",
+    details: "./ts/details.ts",
   },
   module: {
     rules: [

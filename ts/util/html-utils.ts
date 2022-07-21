@@ -34,8 +34,10 @@ export function addMisoIcon(container: HTMLElement, url: string) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
   const img = document.createElement("img");
+  img.className = "max-w-none";
   img.src = "/img/miso_logo.svg";
   img.alt = "View in MISO";
+  img.title = "View in MISO";
   a.appendChild(img);
   container.appendChild(a);
 }
@@ -85,4 +87,14 @@ export function makeClickout() {
   clickout.className =
     "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
   return clickout;
+}
+
+export function makeNameDiv(name: string, misoUrl: string) {
+  const div = document.createElement("div");
+  div.className = "flex flex-row space-x-2 items-center";
+  const nameSpan = document.createElement("span");
+  nameSpan.innerText = name;
+  div.appendChild(nameSpan);
+  addMisoIcon(div, misoUrl);
+  return div;
 }

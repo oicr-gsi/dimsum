@@ -9,7 +9,11 @@ import ca.on.oicr.gsi.dimsum.data.Requisition;
 
 public enum RequisitionSort {
 
-  NAME("Name", Comparator.comparing(Requisition::getName));
+  // @formatter:off
+  NAME("Requisition", Comparator.comparing(Requisition::getName)),
+  LATEST_ACTIVITY("Latest Activity", Comparator.comparing(
+      Requisition::getLatestActivityDate, Comparator.nullsFirst(Comparator.naturalOrder())));
+  // @formatter:off
 
   private static final Map<String, RequisitionSort> map = Stream.of(RequisitionSort.values())
       .collect(Collectors.toMap(RequisitionSort::getLabel, Function.identity()));

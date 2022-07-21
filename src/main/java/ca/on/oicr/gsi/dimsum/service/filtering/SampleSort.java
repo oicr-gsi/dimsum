@@ -9,7 +9,10 @@ import ca.on.oicr.gsi.dimsum.data.Sample;
 
 public enum SampleSort {
 
-  NAME("Name", Comparator.comparing(Sample::getName));
+  // @formatter:off
+  NAME("Name", Comparator.comparing(Sample::getName)),
+  LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate));
+  // @formatter:on
 
   private static final Map<String, SampleSort> map = Stream.of(SampleSort.values())
       .collect(Collectors.toMap(SampleSort::getLabel, Function.identity()));

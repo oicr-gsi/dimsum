@@ -548,37 +548,28 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-bottom: 5rem;
 }
 
-.mx-2{
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
+.mt-8{
+  margin-top: 2rem;
 }
 
 .mt-4{
   margin-top: 1rem;
 }
 
-.mt-8{
-  margin-top: 2rem;
-}
-
 .mt-2{
   margin-top: 0.5rem;
-}
-
-.ml-2{
-  margin-left: 0.5rem;
 }
 
 .mr-2{
   margin-right: 0.5rem;
 }
 
-.inline-block{
-  display: inline-block;
+.ml-2{
+  margin-left: 0.5rem;
 }
 
-.inline{
-  display: inline;
+.inline-block{
+  display: inline-block;
 }
 
 .flex{
@@ -619,12 +610,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: 1rem;
 }
 
-.w-0{
-  width: 0px;
-}
-
 .max-w-lg{
   max-width: 32rem;
+}
+
+.max-w-none{
+  max-width: none;
 }
 
 .flex-auto{
@@ -641,10 +632,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .grow{
   flex-grow: 1;
-}
-
-.basis-0{
-  flex-basis: 0px;
 }
 
 .border-separate{

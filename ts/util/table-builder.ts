@@ -1,4 +1,3 @@
-import * as Rest from "./rest-api";
 import { Dropdown, DropdownOption, BasicDropdownOption } from "./dropdown";
 
 import {
@@ -9,6 +8,7 @@ import {
   makeIcon,
   shadeElement,
 } from "./html-utils";
+import { post } from "./requests";
 import { TextInput } from "./text-input";
 
 type SortType = "number" | "text" | "date";
@@ -42,6 +42,7 @@ export interface FilterDefinition {
   type: FilterType; // either text or dropdown
   values?: string[]; // required for dropdown filters
 }
+
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   defaultSort: SortDefinition;
@@ -50,6 +51,7 @@ export interface TableDefinition<ParentType, ChildType> {
   columns: ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
 }
+
 class AcceptedFilter {
   element: HTMLElement;
   key: string;
@@ -98,10 +100,12 @@ export class TableBuilder<ParentType, ChildType> {
 
   sortColumn: string;
   sortDescending: boolean;
-  pageSize: number = 30;
+  pageSize: number = 10;
   pageNumber: number = 1;
   totalCount: number = 0;
   filteredCount: number = 0;
+  baseFilterKey: string | null;
+  baseFilterValue: string | null;
   acceptedFilters: AcceptedFilter[] = [];
 
   constructor(
@@ -115,6 +119,8 @@ export class TableBuilder<ParentType, ChildType> {
     if (container === null) {
       throw Error(`Container ID "${containerId}" not found on page`);
     }
+    this.baseFilterKey = container.getAttribute("data-detail-type");
+    this.baseFilterValue = container.getAttribute("data-detail-value");
     this.container = container;
   }
 
@@ -220,9 +226,10 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
+    filterContainer.classList.add("flex-auto", "items-center");
+    container.appendChild(filterContainer);
     const labelContainer = document.createElement("div");
     labelContainer.innerHTML = " ";
-    filterContainer.classList.add("flex-auto", "items-center");
     labelContainer.className = "flex-none items-center inline-block";
     if (!this.definition.filters) {
       // no filters for this table
@@ -260,7 +267,6 @@ export class TableBuilder<ParentType, ChildType> {
     );
     filterContainer.append(labelContainer);
     filterContainer.appendChild(addFilterDropdown.getTag());
-    container.appendChild(filterContainer);
   }
 
   private makeDropdownFilter(
@@ -367,14 +373,6 @@ export class TableBuilder<ParentType, ChildType> {
     };
   }
 
-  private makePageSizeOption(pageSize: number) {
-    return new BasicDropdownOption(pageSize.toString(), () => {
-      this.pageSize = pageSize;
-      this.pageNumber = 1; // TODO: calculate current page to include previous top item?
-      this.reload();
-    });
-  }
-
   private load(data?: ParentType[]) {
     const table = getElement(this.table);
     while (table.lastChild) {
@@ -394,7 +392,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
     const tbody = table.createTBody();
-    if (data) {
+    if (data && data.length) {
       data.forEach((parent) => {
         this.addDataRow(tbody, parent);
       });
@@ -408,9 +406,12 @@ export class TableBuilder<ParentType, ChildType> {
     this.acceptedFilters = this.acceptedFilters.filter(
       (filter) => filter.valid
     );
-    const response = await Rest.post(Rest.cases.query, {
+    const response = await post(this.definition.queryUrl, {
       pageSize: this.pageSize,
       pageNumber: this.pageNumber,
+      baseFilter: this.baseFilterKey
+        ? { key: this.baseFilterKey, value: this.baseFilterValue }
+        : null,
       filters: this.acceptedFilters.map((filter) => {
         return { key: filter.key, value: filter.value };
       }),
@@ -443,10 +444,11 @@ export class TableBuilder<ParentType, ChildType> {
       this.pageSize * this.pageNumber,
       data.filteredCount
     );
-    // TODO: if filtered, show totalCount too
-    getElement(
-      this.pageDescription
-    ).textContent = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
+    let pageDescriptionText = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
+    if (data.filteredCount < data.totalCount) {
+      pageDescriptionText += ` (filtered from ${data.totalCount})`;
+    }
+    getElement(this.pageDescription).textContent = pageDescriptionText;
   }
 
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {

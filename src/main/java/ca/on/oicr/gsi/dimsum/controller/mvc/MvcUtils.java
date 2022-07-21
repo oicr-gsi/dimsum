@@ -37,22 +37,28 @@ public class MvcUtils {
     return query.getDescending() == null ? false : query.getDescending();
   }
 
-  public static List<CaseFilter> parseCaseFilters(DataQuery query) {
+  public static CaseFilter parseBaseFilter(DataQuery query) {
+    if (query.getBaseFilter() == null) {
+      return null;
+    }
+    return parseCaseFilter(query.getBaseFilter());
+  }
 
+  public static List<CaseFilter> parseCaseFilters(DataQuery query) {
     List<KeyValuePair> queryFilters = query.getFilters();
     if (queryFilters == null || queryFilters.isEmpty()) {
       return null;
     }
-    List<CaseFilter> filters = new ArrayList<>();
-    for (KeyValuePair pair : queryFilters) {
-      try {
-        CaseFilterKey key = CaseFilterKey.valueOf(pair.getKey());
-        filters.add(new CaseFilter(key, pair.getValue()));
-      } catch (IllegalArgumentException e) {
-        throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
-      }
+    return queryFilters.stream().map(MvcUtils::parseCaseFilter).toList();
+  }
+
+  private static CaseFilter parseCaseFilter(KeyValuePair pair) {
+    try {
+      CaseFilterKey key = CaseFilterKey.valueOf(pair.getKey());
+      return new CaseFilter(key, pair.getValue());
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
     }
-    return filters;
   }
 
 }

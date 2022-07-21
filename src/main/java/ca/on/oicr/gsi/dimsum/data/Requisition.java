@@ -63,7 +63,7 @@ public class Requisition {
     return finalReports;
   }
 
-  public LocalDate getLatestActivity() {
+  public LocalDate getLatestActivityDate() {
     return latestActivityDate;
   }
 

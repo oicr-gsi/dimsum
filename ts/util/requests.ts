@@ -22,10 +22,3 @@ function getMetaContent(name: string) {
   }
   return tag.getAttribute("content");
 }
-
-const restBaseUrl = "/rest";
-
-const casesBaseUrl = restBaseUrl + "/cases";
-export const cases = {
-  query: casesBaseUrl,
-};

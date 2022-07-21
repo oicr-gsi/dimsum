@@ -36,7 +36,7 @@ public class CaseServiceTest {
 
   @org.junit.jupiter.api.Test
   public void testGetCases() {
-    TableData<Case> data = sut.getCases(10, 1, CaseSort.LAST_ACTIVITY, true, null);
+    TableData<Case> data = sut.getCases(10, 1, CaseSort.LAST_ACTIVITY, true, null, null);
     assertNotNull(data);
     assertEquals(2, data.getTotalCount());
     assertEquals(2, data.getFilteredCount());
@@ -46,7 +46,7 @@ public class CaseServiceTest {
 
   @org.junit.jupiter.api.Test
   public void testGetReceipts() {
-    TableData<Sample> data = sut.getReceipts(10, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getReceipts(10, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1N-A1", "1N-A2", "2N-A1", "2N-A2");
   }
 
@@ -54,13 +54,13 @@ public class CaseServiceTest {
   public void testGetReceiptsDistinct() {
     // Add duplicates and ensure they get removed from results
     addCase(caseData, 1);
-    TableData<Sample> data = sut.getReceipts(10, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getReceipts(10, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1N-A1", "1N-A2", "2N-A1", "2N-A2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetExtractions() {
-    TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1",
         "2B-B2");
   }
@@ -69,28 +69,28 @@ public class CaseServiceTest {
   public void testGetExtractionsDistinct() {
     // Add duplicates and ensure they get removed from results
     addCase(caseData, 1);
-    TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1",
         "2B-B2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetLibraryPreparations() {
-    TableData<Sample> data = sut.getLibraryPreparations(20, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getLibraryPreparations(20, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1A-C1", "1A-C2", "1B-C1", "1B-C2", "2A-C1", "2A-C2", "2B-C1",
         "2B-C2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetLibraryQualifications() {
-    TableData<Sample> data = sut.getLibraryQualifications(20, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getLibraryQualifications(20, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1A-D1", "1A-D2", "1B-D1", "1B-D2", "2A-D1", "2A-D2", "2B-D1",
         "2B-D2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetFullDepthSequencings() {
-    TableData<Sample> data = sut.getFullDepthSequencings(20, 1, SampleSort.NAME, true, null);
+    TableData<Sample> data = sut.getFullDepthSequencings(20, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1A-E1", "1A-E2", "1B-E1", "1B-E2", "2A-E1", "2A-E2", "2B-E1",
         "2B-E2");
   }
@@ -108,7 +108,8 @@ public class CaseServiceTest {
 
   @org.junit.jupiter.api.Test
   public void testGetRequisitions() {
-    TableData<Requisition> data = sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null);
+    TableData<Requisition> data =
+        sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null, null);
     assertContainsRequisitions(data, "REQ_1-1", "REQ_1-2", "REQ_2-1", "REQ_2-2");
   }
 
@@ -116,7 +117,8 @@ public class CaseServiceTest {
   public void testGetRequisitionsDistinct() {
     // Add duplicates and ensure they get removed from results
     addCase(caseData, 1);
-    TableData<Requisition> data = sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null);
+    TableData<Requisition> data =
+        sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null, null);
     assertContainsRequisitions(data, "REQ_1-1", "REQ_1-2", "REQ_2-1", "REQ_2-2");
   }
 
