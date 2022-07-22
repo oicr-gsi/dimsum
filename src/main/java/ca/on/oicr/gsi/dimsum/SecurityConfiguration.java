@@ -31,11 +31,18 @@ public class SecurityConfiguration {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(auth -> auth.antMatchers("/favicon.ico").permitAll()
-        .antMatchers("/css/**").permitAll().antMatchers("/js/**").permitAll().antMatchers("/img/**")
-        .permitAll().antMatchers("/libs/**").permitAll().antMatchers("/metrics").permitAll()
-        .antMatchers(LOGIN_URL).permitAll().anyRequest().authenticated()).saml2Login()
-        .loginPage(LOGIN_URL).and().saml2Logout(Customizer.withDefaults());
+    http.authorizeHttpRequests(auth -> auth
+        .antMatchers("/favicon.ico").permitAll()
+        .antMatchers("/css/**").permitAll()
+        .antMatchers("/js/**").permitAll()
+        .antMatchers("/img/**").permitAll()
+        .antMatchers("/libs/**").permitAll()
+        .antMatchers("/metrics").permitAll()
+        .antMatchers(LOGIN_URL).permitAll()
+        .anyRequest().authenticated())
+        .saml2Login()
+        .loginPage(LOGIN_URL)
+        .and().saml2Logout(Customizer.withDefaults());
     return http.build();
   }
 
@@ -48,7 +55,8 @@ public class SecurityConfiguration {
         Saml2X509Credential.signing(key, getCertificate(certificateFile));
     String logoutUrl = baseUrl + "/logout/saml2/slo";
     RelyingPartyRegistration registration =
-        RelyingPartyRegistrations.fromMetadataLocation(metadataUrl).registrationId("dimsum")
+        RelyingPartyRegistrations.fromMetadataLocation(metadataUrl)
+            .registrationId("dimsum")
             .entityId(baseUrl + "/saml2/service-provider-metadata/dimsum")
             .assertionConsumerServiceLocation(baseUrl + "/login/saml2/sso/dimsum")
             .singleLogoutServiceLocation(logoutUrl)
