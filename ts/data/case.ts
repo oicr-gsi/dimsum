@@ -94,16 +94,36 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   },
   filters: [
     {
-      title: "Pipeline",
-      key: "PIPELINE",
-      type: "dropdown",
-      values: siteConfig.pipelines,
+      title: "Assay",
+      key: "ASSAY",
+      type: "text",
+    },
+    {
+      title: "Donor",
+      key: "DONOR",
+      type: "text",
     },
     {
       title: "Pending",
       key: "PENDING",
       type: "dropdown",
       values: siteConfig.pendingStates,
+    },
+    {
+      title: "Pipeline",
+      key: "PIPELINE",
+      type: "dropdown",
+      values: siteConfig.pipelines,
+    },
+    {
+      title: "Project",
+      key: "PROJECT",
+      type: "text",
+    },
+    {
+      title: "Requisition",
+      key: "REQUISITION",
+      type: "text",
     },
   ],
   getChildren: (parent) => parent.tests,

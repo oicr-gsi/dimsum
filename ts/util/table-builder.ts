@@ -9,6 +9,7 @@ import {
   makeIcon,
   shadeElement,
 } from "./html-utils";
+import { TextInput } from "./text-input";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -39,7 +40,7 @@ export interface FilterDefinition {
   title: string; // user friendly label
   key: string; // internal use
   type: FilterType; // either text or dropdown
-  values: string[]; // required for dropdown filters
+  values?: string[]; // required for dropdown filters
 }
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
@@ -66,7 +67,7 @@ class AcceptedFilter {
     this.value = value;
     this.element = document.createElement("span");
     this.element.className =
-      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
+      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block mr-2";
     this.element.innerHTML = `${title}: ${value}`;
 
     const destroyFilterIcon = makeIcon("xmark");
@@ -219,59 +220,32 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
-    filterContainer.classList.add("flex-auto", "space-x-2", "items-center");
+    const labelContainer = document.createElement("div");
+    labelContainer.innerHTML = " ";
+    filterContainer.classList.add("flex-auto", "items-center");
+    labelContainer.className = "flex-none items-center inline-block";
     if (!this.definition.filters) {
       // no filters for this table
       return;
     }
 
     const filterIcon = makeIcon("filter");
-    filterIcon.classList.add("text-black");
+    filterIcon.classList.add("text-black", "mr-2");
     filterContainer.appendChild(filterIcon);
 
     let filterOptions: DropdownOption[] = [];
+    const reload = () => this.reload();
     this.definition.filters.forEach((filter) => {
       switch (filter.type) {
         case "dropdown":
-          // create all submenu options
-          const reload = () => this.reload();
-          const filterSuboptions = filter.values.map(
-            (value) =>
-              new BasicDropdownOption(value, (dropdown: Dropdown) => {
-                dropdown.getTag().remove();
-                const filterLabel = new AcceptedFilter(
-                  filter.title,
-                  filter.key,
-                  value,
-                  filterContainer,
-                  reload
-                );
-                // add filter to the menu bar
-                filterContainer.insertBefore(
-                  filterLabel.element,
-                  addFilterDropdown.getTag()
-                );
-                this.acceptedFilters.push(filterLabel);
-                reload();
-              })
-          );
-          // add filter (& its submenu) to the parent filter menu
           filterOptions.push(
-            new BasicDropdownOption(filter.title, () => {
-              const filterSuboptionsDropdown = new Dropdown(
-                filterSuboptions,
-                true,
-                filter.title
-              );
-              filterContainer.insertBefore(
-                filterSuboptionsDropdown.getTag(),
-                addFilterDropdown.getTag()
-              );
-            })
+            this.makeDropdownFilter(filter, labelContainer, reload)
           );
           break;
         case "text":
-          // TODO: make text filters
+          filterOptions.push(
+            this.makeTextInputFilter(filter, labelContainer, reload)
+          );
           break;
         default:
           throw new Error(`Unhandled filter type: ${filter.type}`);
@@ -284,8 +258,71 @@ export class TableBuilder<ParentType, ChildType> {
       undefined,
       "+ filter"
     );
-    filterContainer.append(addFilterDropdown.getTag());
+    filterContainer.append(labelContainer);
+    filterContainer.appendChild(addFilterDropdown.getTag());
     container.appendChild(filterContainer);
+  }
+
+  private makeDropdownFilter(
+    filter: FilterDefinition,
+    labelContainer: HTMLElement,
+    reload: () => {}
+  ) {
+    if (!filter.values || !filter.values.length) {
+      throw new Error(`Dropdown filter ${filter.key} has no dropdown options`);
+    }
+    // create all submenu options
+    const filterSuboptions = filter.values.map(
+      (value) =>
+        new BasicDropdownOption(value, (dropdown: Dropdown) => {
+          dropdown.getTag().remove();
+          const filterLabel = new AcceptedFilter(
+            filter.title,
+            filter.key,
+            value,
+            labelContainer,
+            reload
+          );
+          // add filter to the menu bar
+          labelContainer.appendChild(filterLabel.element);
+          this.acceptedFilters.push(filterLabel);
+          reload();
+        })
+    );
+    // add filter (& its submenu) to the parent filter menu
+
+    return new BasicDropdownOption(filter.title, () => {
+      const filterSuboptionsDropdown = new Dropdown(
+        filterSuboptions,
+        true,
+        filter.title
+      );
+      labelContainer.appendChild(filterSuboptionsDropdown.getTag());
+    });
+  }
+
+  private makeTextInputFilter(
+    filter: FilterDefinition,
+    labelContainer: HTMLElement,
+    reload: () => {}
+  ) {
+    const onClose = (textInput: TextInput) => {
+      const filterLabel = new AcceptedFilter(
+        filter.title,
+        filter.key,
+        textInput.getValue(),
+        labelContainer,
+        reload
+      );
+      textInput.getTag().remove();
+      labelContainer.appendChild(filterLabel.element);
+      this.acceptedFilters.push(filterLabel);
+      reload();
+    };
+    return new BasicDropdownOption(filter.title, () => {
+      const filterTextInput = new TextInput(filter.title, onClose);
+      labelContainer.appendChild(filterTextInput.getTag());
+    });
   }
 
   private addPagingControls(container: HTMLElement) {

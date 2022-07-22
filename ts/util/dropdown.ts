@@ -1,3 +1,5 @@
+import { makeClickout } from "./html-utils";
+
 export interface DropdownOption {
   selectable: boolean;
   text?: string; // text is required if option is selectable
@@ -35,7 +37,7 @@ export class Dropdown {
     this.dropdownContainer.classList.add("inline-block");
 
     const dropdownButton = makeDropdownButton();
-    const dropdownClickout = makeDropdownClickout();
+    const dropdownClickout = makeClickout();
     const dropdownMenuContainer = makeDropdownMenuContainer();
     const toggleMenu = () => {
       dropdownMenuContainer.classList.toggle("hidden");
@@ -101,11 +103,4 @@ function makeDropdownMenuContainer() {
   dropdownMenuContainer.className =
     "absolute hidden mt-2 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer";
   return dropdownMenuContainer;
-}
-
-function makeDropdownClickout() {
-  const clickout = document.createElement("button");
-  clickout.className =
-    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
-  return clickout;
 }
