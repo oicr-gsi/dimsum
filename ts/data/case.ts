@@ -1,8 +1,15 @@
 import { TableDefinition } from "../util/table-builder";
-import * as Rest from "../util/rest-api";
 import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
+import { getSampleQcStatus, Sample } from "./sample";
+import { QcStatus, qcStatuses } from "./qc-status";
+import {
+  getLatestRequisitionQc,
+  getRequisitionQcStatus,
+  Requisition,
+  RequisitionQc,
+} from "./requisition";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -21,26 +28,6 @@ export interface Run {
   name: string;
 }
 
-export interface Sample {
-  id: string;
-  name: string;
-  tissueOrigin: string;
-  tissueType: string;
-  timepoint: string;
-  groupId: string;
-  targetedSequencing: string;
-  createdDate: string;
-  run: Run;
-  qcPassed: boolean;
-  qcReason: string;
-  qcUser: string;
-  qcDate: string;
-  dataReviewPassed: boolean;
-  dataReviewUser: string;
-  dataReviewDate: string;
-  latestActivityDate: string;
-}
-
 export interface Test {
   name: string;
   tissueOrigin: string;
@@ -53,20 +40,6 @@ export interface Test {
   libraryQualifications: Sample[];
   fullDepthSequencings: Sample[];
   latestActivityDate: string;
-}
-
-export interface RequisitionQc {
-  qcPassed: boolean;
-  qcUser: string;
-  qcDate: string;
-}
-
-export interface Requisition {
-  id: number;
-  name: string;
-  informaticsReviews: RequisitionQc[];
-  draftReports: RequisitionQc[];
-  finalReports: RequisitionQc[];
 }
 
 export interface Case {
@@ -86,7 +59,7 @@ export interface Case {
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
-  queryUrl: Rest.cases.query,
+  queryUrl: urls.rest.cases,
   defaultSort: {
     columnTitle: "Latest Activity",
     descending: true,
@@ -135,7 +108,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         kase.projects.forEach((project) => {
           const nameDiv = document.createElement("div");
           nameDiv.className = "flex flex-row space-x-2 items-center";
-          addLink(nameDiv, project.name, "#");
+          addLink(nameDiv, project.name, urls.dimsum.project(project.name));
           addMisoIcon(nameDiv, urls.miso.project(project.name));
           fragment.appendChild(nameDiv);
 
@@ -430,7 +403,7 @@ function samplePhaseComplete(samples: Sample[]) {
     samples.some(
       (sample) =>
         (sample.qcPassed === null &&
-          sample.qcReason !== statuses.topUp.label) ||
+          sample.qcReason !== qcStatuses.topUp.label) ||
         (sample.run && !sample.dataReviewDate)
     )
   ) {
@@ -513,7 +486,7 @@ function addSpace(fragment: DocumentFragment) {
 }
 
 function addConstructionIcon(phase: string, fragment: DocumentFragment) {
-  const icon = makeIcon(statuses.construction.icon);
+  const icon = makeIcon(qcStatuses.construction.icon);
   icon.title = `Pending ${phase}`;
   fragment.appendChild(icon);
 }
@@ -522,62 +495,9 @@ function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
 
-interface QcStatus {
-  label: string;
-  icon: string;
-  qcComplete: boolean;
-}
-
-type QcStatusKey =
-  | "construction"
-  | "analysis"
-  | "qc"
-  | "dataReview"
-  | "passed"
-  | "failed"
-  | "topUp";
-
-const statuses: Record<QcStatusKey, QcStatus> = {
-  construction: {
-    label: "Pending work",
-    icon: "road-barrier",
-    qcComplete: false,
-  },
-  analysis: {
-    label: "Pending analysis",
-    icon: "hourglass",
-    qcComplete: false,
-  },
-  qc: {
-    label: "Pending QC",
-    icon: "magnifying-glass",
-    qcComplete: false,
-  },
-  dataReview: {
-    label: "Pending data review",
-    icon: "glasses",
-    qcComplete: true,
-  },
-  passed: {
-    label: "Passed",
-    icon: "check",
-    qcComplete: true,
-  },
-  failed: {
-    label: "Failed",
-    icon: "xmark",
-    qcComplete: true,
-  },
-  topUp: {
-    label: "Top-up Required",
-    icon: "fill-drip",
-    qcComplete: true,
-  },
-};
-
 function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   samples.forEach((sample, i) => {
-    const status = getSampleStatus(sample);
+    const status = getSampleQcStatus(sample);
     const icon = makeIcon(status.icon);
     icon.title =
       (sample.run ? sample.run.name + " - " : "") +
@@ -589,32 +509,6 @@ function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   });
 }
 
-function getSampleStatus(sample: Sample): QcStatus {
-  const firstStatus = getFirstReviewStatus(sample);
-  if (sample.run && firstStatus.qcComplete) {
-    // run-libraries also have data review
-    if (!sample.dataReviewDate) {
-      return statuses.dataReview;
-    } else if (sample.dataReviewPassed === false) {
-      return statuses.failed;
-    }
-    // if data review is passed, first sign-off status is used
-  }
-  return firstStatus;
-}
-
-function getFirstReviewStatus(sample: Sample) {
-  if (sample.qcPassed === false) {
-    return statuses.failed;
-  } else if (sample.qcPassed === true) {
-    return statuses.passed;
-  } else if (sample.qcReason === "Top-up Required") {
-    return statuses.topUp;
-  } else {
-    return statuses.qc;
-  }
-}
-
 function addRequisitionIcons(
   requisitions: Requisition[],
   getQcs: (requisition: Requisition) => RequisitionQc[],
@@ -624,31 +518,13 @@ function addRequisitionIcons(
   requisitions.forEach((requisition) => {
     const qcs = getQcs(requisition);
     if (qcs.length) {
-      const status = getRequisitionQcStatus(qcs, previousComplete);
+      const status = getRequisitionQcStatus(qcs);
       addRequisitionIcon(requisition, status, fragment);
     } else if (previousComplete) {
-      const status = statuses.qc;
+      const status = qcStatuses.qc;
       addRequisitionIcon(requisition, status, fragment);
     }
   });
-}
-
-function getRequisitionQcStatus(
-  qcs: RequisitionQc[],
-  previousComplete: boolean
-) {
-  // return status of latest QC in-case there are multiple
-  if (!qcs.length) {
-    return statuses.qc;
-  }
-  const latest = getLatestRequisitionQc(qcs);
-  return latest.qcPassed ? statuses.passed : statuses.failed;
-}
-
-function getLatestRequisitionQc(qcs: RequisitionQc[]) {
-  return qcs.reduce((previous, current) =>
-    previous.qcDate > current.qcDate ? previous : current
-  );
 }
 
 function addRequisitionIcon(

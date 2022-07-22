@@ -47,7 +47,7 @@ public class Case {
     this.latestActivityDate = Stream
         .of(receipts.stream().map(Sample::getLatestActivityDate),
             tests.stream().map(Test::getLatestActivityDate),
-            requisitions.stream().map(Requisition::getLatestActivity))
+            requisitions.stream().map(Requisition::getLatestActivityDate))
         .flatMap(Function.identity()).filter(Objects::nonNull).max(LocalDate::compareTo)
         .orElse(null);
   }

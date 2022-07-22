@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${title}">Details</title>
+</head>
+
+<body>
+  <div layout:fragment="content">
+
+    <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">Details</h1>
+    <div id="casesTableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Receipts</h2>
+    <div id="receiptsTableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Extractions</h2>
+    <div id="extractionsTableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Library Preparations</h2>
+    <div id="libraryPreparationsTableContainer" th:data-detail-type="${detailType}"
+      th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Library Qualifications</h2>
+    <div id="libraryQualificationsTableContainer" th:data-detail-type="${detailType}"
+      th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Full Depth Sequencings</h2>
+    <div id="fullDepthSequencingsTableContainer" th:data-detail-type="${detailType}"
+      th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Informatics Reviews</h2>
+    <div id="informaticsReviewsTableContainer" th:data-detail-type="${detailType}"
+      th:data-detail-value="${detailValue}"></div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Draft Reports</h2>
+    <div id="draftReportsTableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}">
+    </div>
+
+    <h2 class="text-green-200 font-sarabun font-light font text-24 mt-8">Final Reports</h2>
+    <div id="finalReportsTableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}">
+    </div>
+
+    <script src="/js/details.js"></script>
+
+  </div>
+</body>
+
+</html>

@@ -6,6 +6,7 @@ public class DataQuery {
 
   private int pageNumber;
   private int pageSize;
+  private KeyValuePair baseFilter;
   private List<KeyValuePair> filters;
   private String sortColumn;
   private Boolean descending;
@@ -24,6 +25,14 @@ public class DataQuery {
 
   public void setPageSize(int pageSize) {
     this.pageSize = pageSize;
+  }
+
+  public KeyValuePair getBaseFilter() {
+    return baseFilter;
+  }
+
+  public void setBaseFilter(KeyValuePair baseFilter) {
+    this.baseFilter = baseFilter;
   }
 
   public List<KeyValuePair> getFilters() {

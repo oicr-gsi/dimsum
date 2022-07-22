@@ -1,7 +1,7 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -19,6 +19,8 @@ public class Sample {
   private final String groupId;
   private final String targetedSequencing;
   private final LocalDate createdDate;
+  private final BigDecimal volume;
+  private final BigDecimal concentration;
   private final Run run;
   private final Boolean qcPassed;
   private final String qcReason;
@@ -38,6 +40,8 @@ public class Sample {
     this.groupId = builder.groupId;
     this.targetedSequencing = builder.targetedSequencing;
     this.createdDate = requireNonNull(builder.createdDate);
+    this.volume = builder.volume;
+    this.concentration = builder.concentration;
     this.run = builder.run;
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
@@ -80,6 +84,14 @@ public class Sample {
 
   public LocalDate getCreatedDate() {
     return createdDate;
+  }
+
+  public BigDecimal getVolume() {
+    return volume;
+  }
+
+  public BigDecimal getConcentration() {
+    return concentration;
   }
 
   public Run getRun() {
@@ -145,6 +157,8 @@ public class Sample {
     private String groupId;
     private String targetedSequencing;
     private LocalDate createdDate;
+    private BigDecimal volume;
+    private BigDecimal concentration;
     private Run run;
     private Boolean qcPassed;
     private String qcReason;
@@ -191,6 +205,16 @@ public class Sample {
 
     public Builder createdDate(LocalDate createdDate) {
       this.createdDate = createdDate;
+      return this;
+    }
+
+    public Builder volume(BigDecimal volume) {
+      this.volume = volume;
+      return this;
+    }
+
+    public Builder concentration(BigDecimal concentration) {
+      this.concentration = concentration;
       return this;
     }
 

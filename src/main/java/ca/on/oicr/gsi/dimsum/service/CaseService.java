@@ -75,17 +75,21 @@ public class CaseService {
     return Duration.between(caseData.getTimestamp(), ZonedDateTime.now());
   }
 
-  public List<Case> getCases() {
+  public List<Case> getCases(CaseFilter baseFilter) {
     if (caseData == null) {
       throw new IllegalStateException("Cases have not been loaded yet");
     }
-    return caseData.getCases();
+    if (baseFilter != null) {
+      return caseData.getCases().stream().filter(baseFilter.predicate()).toList();
+    } else {
+      return caseData.getCases();
+    }
   }
 
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
-      Collection<CaseFilter> filters) {
-    List<Case> allCases = getCases();
-    Stream<Case> stream = applyFilters(allCases, filters);
+      CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    List<Case> baseCases = getCases(baseFilter);
+    Stream<Case> stream = applyFilters(baseCases, filters);
 
     if (sort == null) {
       sort = CaseSort.LAST_ACTIVITY;
@@ -97,39 +101,39 @@ public class CaseService {
         stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
 
     TableData<Case> data = new TableData<>();
-    data.setTotalCount(allCases.size());
-    data.setFilteredCount(applyFilters(allCases, filters).count());
+    data.setTotalCount(baseCases.size());
+    data.setFilteredCount(applyFilters(baseCases, filters).count());
     data.setItems(filteredCases);
     return data;
   }
 
   public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, Collection<CaseFilter> filters) {
-    return getSamples(pageSize, pageNumber, sort, descending, filters,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
         (kase) -> kase.getReceipts().stream());
   }
 
   public TableData<Sample> getExtractions(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, Collection<CaseFilter> filters) {
-    return getSamples(pageSize, pageNumber, sort, descending, filters,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
         getTestSampleStream(Test::getExtractions));
   }
 
   public TableData<Sample> getLibraryPreparations(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, Collection<CaseFilter> filters) {
-    return getSamples(pageSize, pageNumber, sort, descending, filters,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
         getTestSampleStream(Test::getLibraryPreparations));
   }
 
   public TableData<Sample> getLibraryQualifications(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, Collection<CaseFilter> filters) {
-    return getSamples(pageSize, pageNumber, sort, descending, filters,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
         getTestSampleStream(Test::getLibraryQualifications));
   }
 
   public TableData<Sample> getFullDepthSequencings(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, Collection<CaseFilter> filters) {
-    return getSamples(pageSize, pageNumber, sort, descending, filters,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
         getTestSampleStream(Test::getFullDepthSequencings));
   }
 
@@ -139,34 +143,29 @@ public class CaseService {
   }
 
   private TableData<Sample> getSamples(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, Collection<CaseFilter> filters,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
       Function<Case, Stream<Sample>> getSampleStream) {
-    long sampleCount =
-        applyFilters(getCases(), filters).flatMap(getSampleStream).distinct().count();
-    List<Sample> filteredSamples = applyFilters(getCases(), filters).flatMap(getSampleStream)
-        .distinct().sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList();
-
+    List<Case> cases = getCases(baseFilter);
     TableData<Sample> data = new TableData<>();
-    data.setTotalCount(sampleCount);
-    data.setFilteredCount(sampleCount);
-    data.setItems(filteredSamples);
+    data.setTotalCount(cases.stream().flatMap(getSampleStream).distinct().count());
+    data.setFilteredCount(applyFilters(cases, filters).flatMap(getSampleStream).distinct().count());
+    data.setItems(applyFilters(cases, filters).flatMap(getSampleStream).distinct()
+        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
     return data;
   }
 
   public TableData<Requisition> getRequisitions(int pageSize, int pageNumber, RequisitionSort sort,
-      boolean descending, Collection<CaseFilter> filters) {
-    long requisitionCount = applyFilters(getCases(), filters)
-        .flatMap(kase -> kase.getRequisitions().stream()).distinct().count();
-    List<Requisition> filteredRequisitions =
-        applyFilters(getCases(), filters).flatMap(kase -> kase.getRequisitions().stream())
-            .distinct().sorted(descending ? sort.comparator().reversed() : sort.comparator())
-            .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList();
-
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    List<Case> cases = getCases(baseFilter);
     TableData<Requisition> data = new TableData<>();
-    data.setTotalCount(requisitionCount);
-    data.setFilteredCount(requisitionCount);
-    data.setItems(filteredRequisitions);
+    data.setTotalCount(
+        cases.stream().flatMap(kase -> kase.getRequisitions().stream()).distinct().count());
+    data.setFilteredCount(applyFilters(cases, filters)
+        .flatMap(kase -> kase.getRequisitions().stream()).distinct().count());
+    data.setItems(applyFilters(cases, filters).flatMap(kase -> kase.getRequisitions().stream())
+        .distinct().sorted(descending ? sort.comparator().reversed() : sort.comparator())
+        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
     return data;
   }
 

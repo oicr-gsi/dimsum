@@ -51,15 +51,17 @@ public class SampleRestController {
   @FunctionalInterface
   private interface SampleGetter {
     public TableData<Sample> get(int pageSize, int pageNumber, SampleSort sort, boolean descending,
-        Collection<CaseFilter> filters);
+        CaseFilter baseFilter, Collection<CaseFilter> filters);
   }
 
   private TableData<Sample> getSamples(DataQuery query, SampleGetter getter) {
     validateDataQuery(query);
     SampleSort sort = parseSort(query, SampleSort::getByLabel);
     boolean descending = parseDescending(query);
+    CaseFilter baseFilter = parseBaseFilter(query);
     List<CaseFilter> filters = parseCaseFilters(query);
-    return getter.get(query.getPageSize(), query.getPageNumber(), sort, descending, filters);
+    return getter.get(query.getPageSize(), query.getPageNumber(), sort, descending, baseFilter,
+        filters);
   }
 
 }

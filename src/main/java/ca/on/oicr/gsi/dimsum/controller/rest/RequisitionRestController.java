@@ -26,9 +26,10 @@ public class RequisitionRestController {
     validateDataQuery(query);
     RequisitionSort sort = parseSort(query, RequisitionSort::getByLabel);
     boolean descending = parseDescending(query);
+    CaseFilter baseFilter = parseBaseFilter(query);
     List<CaseFilter> filters = parseCaseFilters(query);
     return caseService.getRequisitions(query.getPageSize(), query.getPageNumber(), sort, descending,
-        filters);
+        baseFilter, filters);
   }
 
 
