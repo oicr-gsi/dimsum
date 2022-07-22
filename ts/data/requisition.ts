@@ -1,4 +1,4 @@
-import { makeIcon, makeNameDiv } from "../util/html-utils";
+import { CellStatus, makeIcon, makeNameDiv } from "../util/html-utils";
 import {
   ColumnDefinition,
   SortDefinition,
@@ -77,6 +77,7 @@ export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
       addParentContents(requisition, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     latestActivityColumn,
   ],
@@ -121,4 +122,8 @@ function addTodoIcon(fragment: DocumentFragment) {
   const icon = makeIcon("person-digging");
   icon.title = "We're working on it!";
   fragment.appendChild(icon);
+}
+
+function todoHighlight(): CellStatus {
+  return "na";
 }

@@ -1,4 +1,9 @@
-import { addMisoIcon, makeIcon, makeNameDiv } from "../util/html-utils";
+import {
+  addMisoIcon,
+  CellStatus,
+  makeIcon,
+  makeNameDiv,
+} from "../util/html-utils";
 import {
   ColumnDefinition,
   SortDefinition,
@@ -81,6 +86,7 @@ const designColumn: ColumnDefinition<Sample, void> = {
   addParentContents(sample, fragment) {
     addTodoIcon(fragment); // TODO
   },
+  getCellHighlight: todoHighlight,
 };
 
 const sequencingAttributesColumn: ColumnDefinition<Sample, void> = {
@@ -92,9 +98,7 @@ const sequencingAttributesColumn: ColumnDefinition<Sample, void> = {
       fragment.appendChild(document.createTextNode("N/A"));
     }
   },
-  getCellHighlight(sample) {
-    return sample.run ? null : "na";
-  },
+  getCellHighlight: todoHighlight,
 };
 
 const latestActivityColumn: ColumnDefinition<Sample, void> = {
@@ -116,12 +120,14 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     {
       title: "Secondary ID",
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     tissueAttributesColumn,
     {
@@ -129,6 +135,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     latestActivityColumn,
   ],
@@ -146,12 +153,14 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     {
       title: "(Metric Columns)",
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     latestActivityColumn,
   ],
@@ -170,6 +179,7 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     latestActivityColumn,
   ],
@@ -189,6 +199,7 @@ export const libraryQualificationsDefinition: TableDefinition<Sample, void> = {
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     latestActivityColumn,
   ],
@@ -208,6 +219,7 @@ export const fullDepthSequencingDefinition: TableDefinition<Sample, void> = {
       addParentContents(sample, fragment) {
         addTodoIcon(fragment); // TODO
       },
+      getCellHighlight: todoHighlight,
     },
     latestActivityColumn,
   ],
@@ -243,4 +255,8 @@ function addTodoIcon(fragment: DocumentFragment) {
   const icon = makeIcon("person-digging");
   icon.title = "We're working on it!";
   fragment.appendChild(icon);
+}
+
+function todoHighlight(): CellStatus {
+  return "na";
 }
