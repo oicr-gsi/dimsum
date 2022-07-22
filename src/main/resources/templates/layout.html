@@ -19,17 +19,18 @@
 
 <body class="flex flex-col min-h-screen">
   <div id="header">
-    <nav class="flex justify-end space-x-4 items-center m-4 border-b-2 border-grey-200">
-      <div class="flex-grow">
-        <div class="flex">
-          <a class="shrink" href="."><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a>
-        </div>
+    <nav class="flex items-end m-4 border-b-2 border-grey-200">
+      <div class="grow">
+        <div class="flex shrink"><a href="."><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a></div>
       </div>
-      <a href="https://github.com/oicr-gsi/dimsum" target="_blank" rel="noopener noreferrer"
-        class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">
-        help</a>
-      <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
-        class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">report a problem</a>
+      <div class="flex grow justify-center text-green-200 font-sarabun font-light font text-24 cursor-default"
+        th:text="${instanceName}"></div>
+      <div class="flex grow justify-end"> <a href="https://github.com/oicr-gsi/dimsum" target="_blank"
+          rel="noopener noreferrer" class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">
+          help</a>
+        <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
+          class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">report a problem</a>
+      </div>
       <span sec:authorize="isAuthenticated()" sec:authentication="name"
         class="font-inter text-16 px-3 py-2 text-black cursor-default"></span>
       <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
