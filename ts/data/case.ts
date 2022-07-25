@@ -35,6 +35,8 @@ export interface Test {
   timepoint: string;
   groupId: string;
   targetedSequencing: string;
+  extractionSkipped: boolean;
+  libraryPreparationSkipped: boolean;
   extractions: Sample[];
   libraryPreparations: Sample[];
   libraryQualifications: Sample[];
@@ -208,6 +210,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (handleNaSamplePhase(kase, test.extractions, fragment)) {
           return;
         }
+        if (!test.extractions.length && test.extractionSkipped) {
+          addNaText(fragment);
+          return;
+        }
         addSampleIcons(test.extractions, fragment);
         if (
           samplePhaseComplete(kase.receipts) &&
@@ -221,6 +227,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
       getCellHighlight(kase, test) {
         test = assertNotNull(test);
+        if (!test.extractions.length && test.extractionSkipped) {
+          return "na";
+        }
         return getSamplePhaseHighlight(kase, test.extractions);
       },
     },
@@ -229,6 +238,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       child: true,
       addChildContents(test, kase, fragment) {
         if (handleNaSamplePhase(kase, test.libraryPreparations, fragment)) {
+          return;
+        }
+        if (
+          !test.libraryPreparations.length &&
+          test.libraryPreparationSkipped
+        ) {
+          addNaText(fragment);
           return;
         }
         addSampleIcons(test.libraryPreparations, fragment);
@@ -244,6 +260,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
       getCellHighlight(kase, test) {
         test = assertNotNull(test);
+        if (
+          !test.libraryPreparations.length &&
+          test.libraryPreparationSkipped
+        ) {
+          return "na";
+        }
         return getSamplePhaseHighlight(kase, test.libraryPreparations);
       },
     },

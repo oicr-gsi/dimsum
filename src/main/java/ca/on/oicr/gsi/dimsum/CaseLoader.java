@@ -268,11 +268,15 @@ public class CaseLoader {
     }
     List<Test> tests = new ArrayList<>();
     for (JsonNode testNode : testsNode) {
-      tests.add(new Test.Builder().name(parseString(testNode, "name", true))
+      tests.add(new Test.Builder()
+          .name(parseString(testNode, "name", true))
           .tissueOrigin(parseString(testNode, "tissue_origin"))
           .tissueType(parseString(testNode, "tissue_type"))
-          .timepoint(parseString(testNode, "timepoint")).groupId(parseString(testNode, "group_id"))
+          .timepoint(parseString(testNode, "timepoint"))
+          .groupId(parseString(testNode, "group_id"))
           .targetedSequencing(parseString(testNode, "targeted_sequencing"))
+          .extractionSkipped(parseBoolean(testNode, "extraction_skipped"))
+          .libraryPreparationSkipped(parseBoolean(testNode, "library_preparation_skipped"))
           .extractions(parseIdsAndGet(testNode, "extraction_ids", JsonNode::asText, samplesById))
           .libraryPreparations(
               parseIdsAndGet(testNode, "library_preparation_ids", JsonNode::asText, samplesById))
