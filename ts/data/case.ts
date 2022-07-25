@@ -124,7 +124,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       addParentContents(kase, fragment) {
         const nameDiv = document.createElement("div");
         nameDiv.className = "flex flex-row space-x-2 items-center";
-        addLink(nameDiv, kase.donor.name, "#");
+        addLink(nameDiv, kase.donor.name, urls.dimsum.donor(kase.donor.name));
         addMisoIcon(nameDiv, urls.miso.sample(kase.donor.id));
         fragment.appendChild(nameDiv);
 
