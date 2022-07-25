@@ -276,7 +276,6 @@ export class TableBuilder<ParentType, ChildType> {
             value,
             reload
           );
-          console.log(filterContainer.lastChild);
           // add filter label to the menu bar
           filterContainer.insertBefore(
             filterLabel.element,
@@ -312,7 +311,6 @@ export class TableBuilder<ParentType, ChildType> {
         textInput.getValue(),
         reload
       );
-      console.log(filterContainer.lastChild);
       textInput.getTag().remove();
       filterContainer.insertBefore(
         filterLabel.element,
