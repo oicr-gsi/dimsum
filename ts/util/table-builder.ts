@@ -58,18 +58,12 @@ class AcceptedFilter {
   value: string;
   valid: boolean = true;
 
-  constructor(
-    title: string,
-    key: string,
-    value: string,
-    container: HTMLElement,
-    onRemove: () => {}
-  ) {
+  constructor(title: string, key: string, value: string, onRemove: () => {}) {
     this.key = key;
     this.value = value;
     this.element = document.createElement("span");
     this.element.className =
-      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block mr-2";
+      "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
     this.element.innerHTML = `${title}: ${value}`;
 
     const destroyFilterIcon = makeIcon("xmark");
@@ -85,8 +79,6 @@ class AcceptedFilter {
       onRemove();
     };
     this.element.appendChild(destroyFilterIcon);
-
-    container.appendChild(this.element);
   }
 }
 
@@ -226,18 +218,15 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
-    filterContainer.classList.add("flex-auto", "items-center");
+    filterContainer.classList.add("flex-auto", "items-center", "space-x-2");
     container.appendChild(filterContainer);
-    const labelContainer = document.createElement("div");
-    labelContainer.innerHTML = " ";
-    labelContainer.className = "flex-none items-center inline-block";
     if (!this.definition.filters) {
       // no filters for this table
       return;
     }
 
     const filterIcon = makeIcon("filter");
-    filterIcon.classList.add("text-black", "mr-2");
+    filterIcon.classList.add("text-black");
     filterContainer.appendChild(filterIcon);
 
     let filterOptions: DropdownOption[] = [];
@@ -246,12 +235,12 @@ export class TableBuilder<ParentType, ChildType> {
       switch (filter.type) {
         case "dropdown":
           filterOptions.push(
-            this.makeDropdownFilter(filter, labelContainer, reload)
+            this.makeDropdownFilter(filter, filterContainer, reload)
           );
           break;
         case "text":
           filterOptions.push(
-            this.makeTextInputFilter(filter, labelContainer, reload)
+            this.makeTextInputFilter(filter, filterContainer, reload)
           );
           break;
         default:
@@ -265,13 +254,12 @@ export class TableBuilder<ParentType, ChildType> {
       undefined,
       "+ filter"
     );
-    filterContainer.append(labelContainer);
     filterContainer.appendChild(addFilterDropdown.getTag());
   }
 
   private makeDropdownFilter(
     filter: FilterDefinition,
-    labelContainer: HTMLElement,
+    filterContainer: HTMLElement,
     reload: () => {}
   ) {
     if (!filter.values || !filter.values.length) {
@@ -286,30 +274,35 @@ export class TableBuilder<ParentType, ChildType> {
             filter.title,
             filter.key,
             value,
-            labelContainer,
             reload
           );
-          // add filter to the menu bar
-          labelContainer.appendChild(filterLabel.element);
+          console.log(filterContainer.lastChild);
+          // add filter label to the menu bar
+          filterContainer.insertBefore(
+            filterLabel.element,
+            filterContainer.lastChild
+          );
           this.acceptedFilters.push(filterLabel);
           reload();
         })
     );
     // add filter (& its submenu) to the parent filter menu
-
     return new BasicDropdownOption(filter.title, () => {
       const filterSuboptionsDropdown = new Dropdown(
         filterSuboptions,
         true,
         filter.title
       );
-      labelContainer.appendChild(filterSuboptionsDropdown.getTag());
+      filterContainer.insertBefore(
+        filterSuboptionsDropdown.getTag(),
+        filterContainer.lastChild
+      );
     });
   }
 
   private makeTextInputFilter(
     filter: FilterDefinition,
-    labelContainer: HTMLElement,
+    filterContainer: HTMLElement,
     reload: () => {}
   ) {
     const onClose = (textInput: TextInput) => {
@@ -317,17 +310,23 @@ export class TableBuilder<ParentType, ChildType> {
         filter.title,
         filter.key,
         textInput.getValue(),
-        labelContainer,
         reload
       );
+      console.log(filterContainer.lastChild);
       textInput.getTag().remove();
-      labelContainer.appendChild(filterLabel.element);
+      filterContainer.insertBefore(
+        filterLabel.element,
+        filterContainer.lastChild
+      );
       this.acceptedFilters.push(filterLabel);
       reload();
     };
     return new BasicDropdownOption(filter.title, () => {
       const filterTextInput = new TextInput(filter.title, onClose);
-      labelContainer.appendChild(filterTextInput.getTag());
+      filterContainer.insertBefore(
+        filterTextInput.getTag(),
+        filterContainer.lastChild
+      );
     });
   }
 
@@ -335,6 +334,10 @@ export class TableBuilder<ParentType, ChildType> {
     const pagingContainer = document.createElement("div");
     pagingContainer.classList.add("flex-none", "space-x-2");
     container.appendChild(pagingContainer);
+
+    const pagingIcon = makeIcon("book-open");
+    pagingIcon.classList.add("text-black");
+    pagingContainer.appendChild(pagingIcon);
 
     const pageSizeOptions = [10, 30, 50, 75, 100, 250, 500, 1000].map(
       (pageSize) =>

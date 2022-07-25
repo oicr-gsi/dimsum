@@ -13,7 +13,7 @@ export class TextInput {
     textInputClickout.classList.toggle("hidden");
 
     this.container.className =
-      "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2 mr-2";
+      "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2";
     this.textField.className =
       "ring-0 border-0 outline-0 rounded-sm relative z-10 px-1 w-4";
     submitIcon.classList.add(
