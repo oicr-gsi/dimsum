@@ -13,6 +13,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "rootDir": "./ts/",
+    "sourceMap": true,
     "strict": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
