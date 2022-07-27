@@ -43,6 +43,7 @@ export interface Test {
 }
 
 export interface Case {
+  id: string;
   projects: Project[];
   donor: Donor;
   assayName: string;
@@ -149,7 +150,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       sortType: "text",
       addParentContents(kase, fragment) {
         const assayDiv = document.createElement("div");
-        addLink(assayDiv, kase.assayName, "#");
+        addLink(assayDiv, kase.assayName, urls.dimsum.case(kase.id));
         fragment.appendChild(assayDiv);
         if (kase.stopped) {
           const stoppedDiv = document.createElement("div");

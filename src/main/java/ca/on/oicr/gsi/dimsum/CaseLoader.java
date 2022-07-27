@@ -215,13 +215,16 @@ public class CaseLoader {
       Map<Long, Requisition> requisitionsById) throws DataParseException, IOException {
     return loadFromJsonArrayFile(fileReader, json -> {
       String donorId = parseString(json, "donor_id", true);
-      return new Case.Builder().donor(donorsById.get(donorId))
+      return new Case.Builder()
+          .id(parseString(json, "id", true))
+          .donor(donorsById.get(donorId))
           .projects(parseProjects(json, "project_names", projectsByName))
           .assayName(parseString(json, "assay_name", true))
           .assayDescription(parseString(json, "assay_description", true))
           .tissueOrigin(parseString(json, "tissue_origin", true))
           .tissueType(parseString(json, "tissue_type", true))
-          .timepoint(parseString(json, "timepoint")).stopped(parseBoolean(json, "stopped"))
+          .timepoint(parseString(json, "timepoint"))
+          .stopped(parseBoolean(json, "stopped"))
           .receipts(parseIdsAndGet(json, "receipt_ids", JsonNode::asText, samplesById))
           .tests(parseTests(json, "assay_tests", samplesById))
           .requisitions(parseIdsAndGet(json, "requisition_ids", JsonNode::asLong, requisitionsById))

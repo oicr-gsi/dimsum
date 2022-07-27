@@ -16,6 +16,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public class Case {
 
+  private final String id;
   private final Donor donor;
   private final Set<Project> projects;
   private final String assayName;
@@ -31,6 +32,7 @@ public class Case {
   private final LocalDate latestActivityDate;
 
   private Case(Builder builder) {
+    this.id = requireNonNull(builder.id);
     this.donor = requireNonNull(builder.donor);
     this.projects = unmodifiableSet(builder.projects);
     this.assayName = requireNonNull(builder.assayName);
@@ -50,6 +52,10 @@ public class Case {
             requisitions.stream().map(Requisition::getLatestActivityDate))
         .flatMap(Function.identity()).filter(Objects::nonNull).max(LocalDate::compareTo)
         .orElse(null);
+  }
+
+  public String getId() {
+    return id;
   }
 
   public Donor getDonor() {
@@ -106,6 +112,7 @@ public class Case {
 
   public static class Builder {
 
+    private String id;
     private Donor donor;
     private Set<Project> projects;
     private String assayName;
@@ -117,6 +124,11 @@ public class Case {
     private List<Sample> receipts;
     private List<Test> tests;
     private List<Requisition> requisitions;
+
+    public Builder id(String id) {
+      this.id = id;
+      return this;
+    }
 
     public Builder donor(Donor donor) {
       this.donor = donor;

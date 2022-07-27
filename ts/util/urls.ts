@@ -4,6 +4,7 @@ const restBaseUrl = "/rest";
 
 export const urls = {
   dimsum: {
+    case: (id: string) => `/cases/${id}`,
     donor: (name: string) => `/donors/${name}`,
     project: (name: string) => `/projects/${name}`,
   },
