@@ -506,6 +506,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   }
 }
 
+.invisible{
+  visibility: hidden;
+}
+
 .fixed{
   position: fixed;
 }
@@ -525,6 +529,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   left: 0px;
 }
 
+.z-40{
+  z-index: 40;
+}
+
+.z-50{
+  z-index: 50;
+}
+
 .z-10{
   z-index: 10;
 }
@@ -535,6 +547,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .m-4{
   margin: 1rem;
+}
+
+.m-2{
+  margin: 0.5rem;
 }
 
 .my-1{
@@ -557,32 +573,37 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-bottom: 5rem;
 }
 
+.my-2{
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .mt-8{
   margin-top: 2rem;
-}
-
-.mt-4{
-  margin-top: 1rem;
-}
-
-.mt-2{
-  margin-top: 0.5rem;
-}
-
-.ml-2{
-  margin-left: 0.5rem;
 }
 
 .ml-4{
   margin-left: 1rem;
 }
 
-.inline-block{
-  display: inline-block;
+.mt-2{
+  margin-top: 0.5rem;
 }
 
-.inline{
-  display: inline;
+.mt-4{
+  margin-top: 1rem;
+}
+
+.ml-2{
+  margin-left: 0.5rem;
+}
+
+.block{
+  display: block;
+}
+
+.inline-block{
+  display: inline-block;
 }
 
 .flex{
@@ -591,6 +612,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .table{
   display: table;
+}
+
+.grid{
+  display: grid;
 }
 
 .hidden{
@@ -663,8 +688,24 @@ Ensure the default browser behavior of the `hidden` attribute.
   cursor: pointer;
 }
 
+.cursor-move{
+  cursor: move;
+}
+
+.grid-flow-col{
+  grid-auto-flow: column;
+}
+
+.grid-rows-4{
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+}
+
 .flex-row{
   flex-direction: row;
+}
+
+.flex-row-reverse{
+  flex-direction: row-reverse;
 }
 
 .flex-col{
@@ -677,6 +718,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .items-center{
   align-items: center;
+}
+
+.gap-2{
+  gap: 0.5rem;
 }
 
 .space-x-2 > :not([hidden]) ~ :not([hidden]){
@@ -729,6 +774,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-top-width: 1px;
 }
 
+.border-b-1{
+  border-bottom-width: 1px;
+}
+
 .border-grey-200{
   --tw-border-opacity: 1;
   border-color: rgb(170 176 184 / var(--tw-border-opacity));
@@ -764,6 +813,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(223 132 132 / var(--tw-bg-opacity));
 }
 
+.bg-white{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
 .p-2{
   padding: 0.5rem;
 }
@@ -776,14 +830,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding: 1rem;
 }
 
-.py-1{
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-}
-
 .px-2{
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+}
+
+.py-1{
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
 .px-8{
@@ -794,10 +848,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .px-1{
   padding-left: 0.25rem;
   padding-right: 0.25rem;
-}
-
-.pl-2{
-  padding-left: 0.5rem;
 }
 
 .pl-4{
@@ -812,20 +862,8 @@ Ensure the default browser behavior of the `hidden` attribute.
   text-align: center;
 }
 
-.align-baseline{
-  vertical-align: baseline;
-}
-
-.align-bottom{
-  vertical-align: bottom;
-}
-
 .align-text-top{
   vertical-align: text-top;
-}
-
-.align-text-bottom{
-  vertical-align: text-bottom;
 }
 
 .font-sarabun{
@@ -880,6 +918,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-weight: 700;
 }
 
+.font-thin{
+  font-weight: 100;
+}
+
 .text-green-200{
   --tw-text-opacity: 1;
   color: rgb(91 158 90 / var(--tw-text-opacity));
@@ -903,6 +945,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-red{
   --tw-text-opacity: 1;
   color: rgb(223 132 132 / var(--tw-text-opacity));
+}
+
+.text-grey-200{
+  --tw-text-opacity: 1;
+  color: rgb(170 176 184 / var(--tw-text-opacity));
 }
 
 .outline-0{
@@ -957,14 +1004,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(91 158 90 / var(--tw-bg-opacity));
 }
 
-.hover\:text-green-200:hover{
-  --tw-text-opacity: 1;
-  color: rgb(91 158 90 / var(--tw-text-opacity));
-}
-
 .hover\:text-white:hover{
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.hover\:text-green-200:hover{
+  --tw-text-opacity: 1;
+  color: rgb(91 158 90 / var(--tw-text-opacity));
 }
 
 .hover\:underline:hover{
