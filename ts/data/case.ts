@@ -157,6 +157,16 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           stoppedDiv.appendChild(document.createTextNode("CASE STOPPED"));
           fragment.appendChild(stoppedDiv);
         }
+        kase.requisitions.forEach((requisition) => {
+          const requisitionDiv = document.createElement("div");
+          addLink(
+            requisitionDiv,
+            requisition.name,
+            urls.dimsum.requisition(requisition.id)
+          );
+          addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
+          fragment.appendChild(requisitionDiv);
+        });
       },
     },
     {
