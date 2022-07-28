@@ -3,8 +3,8 @@ package ca.on.oicr.gsi.dimsum.controller.rest;
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +23,7 @@ public class RunRestController {
   @Autowired
   private CaseService caseService;
 
-  @GetMapping("/{runName}/library-qualifications")
+  @PostMapping("/{runName}/library-qualifications")
   public TableData<Sample> getLibraryQualifications(@PathVariable String runName,
       @RequestBody DataQuery query) {
     checkRunExists(runName);
@@ -33,7 +33,7 @@ public class RunRestController {
         query.getPageNumber(), sort, descending);
   }
 
-  @GetMapping("/{runName}/full-depth-sequencings")
+  @PostMapping("/{runName}/full-depth-sequencings")
   public TableData<Sample> getFullDepthSequencings(@PathVariable String runName,
       @RequestBody DataQuery query) {
     checkRunExists(runName);

@@ -297,10 +297,9 @@ public class CaseLoader {
     for (Case kase : cases) {
       for (Test test : kase.getTests()) {
         for (Sample sample : test.getLibraryQualifications()) {
-          if (sample.getRun() == null) {
-            continue;
+          if (sample.getRun() != null) {
+            addRunLibrary(map, sample, RunAndLibraries.Builder::addLibraryQualification);
           }
-          addRunLibrary(map, sample, RunAndLibraries.Builder::addLibraryQualification);
         }
         for (Sample sample : test.getFullDepthSequencings()) {
           addRunLibrary(map, sample, RunAndLibraries.Builder::addFullDepthSequencing);
