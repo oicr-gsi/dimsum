@@ -31,12 +31,12 @@
         th:text="${instanceName}"></div>
 
       <div class="flex-1">
-        <form id="logout" action="/logout" method="POST">
+        <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <input type="submit" value="log out"
             class="font-inter text-16 px-2 py-1 my-1 ml-4 text-black hover:bg-green-200 hover:text-white bg-grey-100 rounded-lg float-right" />
         </form>
-        <span sec:authentication="name"
+        <span sec:authorize="isAuthenticated()" sec:authentication="name"
           class="font-inter text-16 text-black cursor-default float-right pl-4 inline-block mt-2"></span>
         <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
           class="font-inter text-16 text-black hover:text-green-200 float-right pl-4 inline-block mt-2">report
