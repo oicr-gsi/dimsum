@@ -7,6 +7,7 @@ export const urls = {
     donor: (name: string) => `/donors/${name}`,
     project: (name: string) => `/projects/${name}`,
     requisition: (id: number) => `/requisitions/${id}`,
+    run: (name: string) => `/runs/${name}`,
   },
   rest: {
     cases: `${restBaseUrl}/cases`,
@@ -16,6 +17,12 @@ export const urls = {
     libraryQualifications: `${restBaseUrl}/library-qualifications`,
     fullDepthSequencings: `${restBaseUrl}/full-depth-sequencings`,
     requisitions: `${restBaseUrl}/requisitions`,
+    runs: {
+      libraryQualifications: (runName: string) =>
+        `${restBaseUrl}/runs/${runName}/library-qualifications`,
+      fullDepthSequencings: (runName: string) =>
+        `${restBaseUrl}/runs/${runName}/full-depth-sequencings`,
+    },
   },
   miso: {
     sample: function (sampleId: string) {
@@ -37,7 +44,7 @@ export const urls = {
       }
     },
     project: (shortName: string) => makeMisoUrl("project/shortname", shortName),
-    run: (runId: number) => makeMisoUrl("run", runId),
+    run: (runName: string) => makeMisoUrl("run/alias", runName),
     requisition: (requisitionId: number) =>
       makeMisoUrl("requisition", requisitionId),
   },

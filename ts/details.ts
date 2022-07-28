@@ -6,12 +6,13 @@ import {
 } from "./data/requisition";
 import {
   extractionDefinition,
-  fullDepthSequencingDefinition,
+  getFullDepthSequencingsDefinition,
+  getLibraryQualificationsDefinition,
   libraryPreparationDefinition,
-  libraryQualificationsDefinition,
   receiptDefinition,
 } from "./data/sample";
 import { TableBuilder } from "./util/table-builder";
+import { urls } from "./util/urls";
 
 new TableBuilder(caseDefinition, "casesTableContainer").build();
 new TableBuilder(receiptDefinition, "receiptsTableContainer").build();
@@ -21,11 +22,11 @@ new TableBuilder(
   "libraryPreparationsTableContainer"
 ).build();
 new TableBuilder(
-  libraryQualificationsDefinition,
+  getLibraryQualificationsDefinition(urls.rest.libraryQualifications),
   "libraryQualificationsTableContainer"
 ).build();
 new TableBuilder(
-  fullDepthSequencingDefinition,
+  getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings),
   "fullDepthSequencingsTableContainer"
 ).build();
 new TableBuilder(

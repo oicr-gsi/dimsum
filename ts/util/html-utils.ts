@@ -89,12 +89,16 @@ export function makeClickout() {
   return clickout;
 }
 
-export function makeNameDiv(name: string, misoUrl: string) {
+export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-2 items-center";
-  const nameSpan = document.createElement("span");
-  nameSpan.innerText = name;
-  div.appendChild(nameSpan);
+  if (dimsumUrl) {
+    addLink(div, name, dimsumUrl);
+  } else {
+    const nameSpan = document.createElement("span");
+    nameSpan.innerText = name;
+    div.appendChild(nameSpan);
+  }
   addMisoIcon(div, misoUrl);
   return div;
 }

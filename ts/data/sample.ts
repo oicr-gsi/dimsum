@@ -60,7 +60,10 @@ const nameColumn: ColumnDefinition<Sample, void> = {
   addParentContents(sample, fragment) {
     fragment.appendChild(makeNameDiv(sample.name, urls.miso.sample(sample.id)));
     if (sample.run) {
-      fragment.appendChild(makeNameDiv(sample.run.name, "#")); // TODO: correct MISO link
+      const runName = sample.run.name;
+      fragment.appendChild(
+        makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+      );
       // TODO: add Dashi icon link
     }
   },
@@ -185,45 +188,53 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   ],
 };
 
-export const libraryQualificationsDefinition: TableDefinition<Sample, void> = {
-  queryUrl: urls.rest.libraryQualifications,
-  defaultSort: defaultSort,
-  columns: [
-    qcStatusColumn,
-    nameColumn,
-    tissueAttributesColumn,
-    designColumn,
-    sequencingAttributesColumn,
-    {
-      title: "(Metric Columns)",
-      addParentContents(sample, fragment) {
-        addTodoIcon(fragment); // TODO
+export function getLibraryQualificationsDefinition(
+  queryUrl: string
+): TableDefinition<Sample, void> {
+  return {
+    queryUrl: queryUrl,
+    defaultSort: defaultSort,
+    columns: [
+      qcStatusColumn,
+      nameColumn,
+      tissueAttributesColumn,
+      designColumn,
+      sequencingAttributesColumn,
+      {
+        title: "(Metric Columns)",
+        addParentContents(sample, fragment) {
+          addTodoIcon(fragment); // TODO
+        },
+        getCellHighlight: todoHighlight,
       },
-      getCellHighlight: todoHighlight,
-    },
-    latestActivityColumn,
-  ],
-};
+      latestActivityColumn,
+    ],
+  };
+}
 
-export const fullDepthSequencingDefinition: TableDefinition<Sample, void> = {
-  queryUrl: urls.rest.fullDepthSequencings,
-  defaultSort: defaultSort,
-  columns: [
-    qcStatusColumn,
-    nameColumn,
-    tissueAttributesColumn,
-    designColumn,
-    sequencingAttributesColumn,
-    {
-      title: "(Metric Columns)",
-      addParentContents(sample, fragment) {
-        addTodoIcon(fragment); // TODO
+export function getFullDepthSequencingsDefinition(
+  queryUrl: string
+): TableDefinition<Sample, void> {
+  return {
+    queryUrl: queryUrl,
+    defaultSort: defaultSort,
+    columns: [
+      qcStatusColumn,
+      nameColumn,
+      tissueAttributesColumn,
+      designColumn,
+      sequencingAttributesColumn,
+      {
+        title: "(Metric Columns)",
+        addParentContents(sample, fragment) {
+          addTodoIcon(fragment); // TODO
+        },
+        getCellHighlight: todoHighlight,
       },
-      getCellHighlight: todoHighlight,
-    },
-    latestActivityColumn,
-  ],
-};
+      latestActivityColumn,
+    ],
+  };
+}
 
 export function getSampleQcStatus(sample: Sample): QcStatus {
   const firstStatus = getFirstReviewStatus(sample);
