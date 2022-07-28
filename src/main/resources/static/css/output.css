@@ -548,6 +548,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-bottom: 5rem;
 }
 
+.my-1{
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
 .mt-8{
   margin-top: 2rem;
 }
@@ -574,6 +579,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .table{
   display: table;
+}
+
+.grid{
+  display: grid;
 }
 
 .hidden{
@@ -626,10 +635,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   flex-shrink: 1;
 }
 
-.grow{
-  flex-grow: 1;
-}
-
 .border-separate{
   border-collapse: separate;
 }
@@ -640,6 +645,18 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .cursor-pointer{
   cursor: pointer;
+}
+
+.grid-flow-col{
+  grid-auto-flow: column;
+}
+
+.grid-cols-3{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-rows-1{
+  grid-template-rows: repeat(1, minmax(0, 1fr));
 }
 
 .flex-row{
@@ -670,6 +687,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-4 > :not([hidden]) ~ :not([hidden]){
+  --tw-space-x-reverse: 0;
+  margin-right: calc(1rem * var(--tw-space-x-reverse));
+  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
 .overflow-auto{
