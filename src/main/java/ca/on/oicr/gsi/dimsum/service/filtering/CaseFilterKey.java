@@ -24,7 +24,9 @@ public enum CaseFilterKey {
   PROJECT(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getName().equals(string))),
   REQUISITION(string -> kase -> kase.getRequisitions().stream()
-      .anyMatch(req -> req.getName().startsWith(string)));
+      .anyMatch(req -> req.getName().startsWith(string))),
+  REQUISITION_ID(string -> kase -> kase.getRequisitions().stream()
+      .anyMatch(req -> req.getId() == Long.parseLong(string)));
   // @formatter:on
 
   private final Function<String, Predicate<Case>> create;
