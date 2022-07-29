@@ -132,7 +132,7 @@ public class Sample {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(id, run);
   }
 
   @Override
@@ -144,7 +144,8 @@ public class Sample {
     if (getClass() != obj.getClass())
       return false;
     Sample other = (Sample) obj;
-    return Objects.equals(id, other.id);
+    return Objects.equals(id, other.id)
+        && Objects.equals(run, other.run);
   }
 
   public static class Builder {

@@ -6,6 +6,8 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
@@ -26,9 +28,11 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -186,6 +190,39 @@ public class CaseService {
       }
     }
     return stream;
+  }
+
+  public RunAndLibraries getRunAndLibraries(String name) {
+    return caseData.getRunAndLibraries(name);
+  }
+
+  public TableData<Sample> getLibraryQualificationsForRun(String runName, int pageSize,
+      int pageNumber, SampleSort sort, boolean descending) {
+    return getRunLibraries(runName, pageSize, pageNumber, sort, descending,
+        RunAndLibraries::getLibraryQualifications);
+  }
+
+  public TableData<Sample> getFullDepthSequencingsForRun(String runName, int pageSize,
+      int pageNumber, SampleSort sort, boolean descending) {
+    return getRunLibraries(runName, pageSize, pageNumber, sort, descending,
+        RunAndLibraries::getFullDepthSequencings);
+  }
+
+  private TableData<Sample> getRunLibraries(String runName, int pageSize,
+      int pageNumber, SampleSort sort, boolean descending,
+      Function<RunAndLibraries, Set<Sample>> getSamples) {
+    RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
+    Set<Sample> samples = runAndLibraries == null ? Collections.emptySet()
+        : getSamples.apply(runAndLibraries);
+    TableData<Sample> data = new TableData<>();
+    data.setTotalCount(samples.size());
+    data.setFilteredCount(samples.size());
+    data.setItems(samples.stream()
+        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+        .skip(pageSize * (pageNumber - 1))
+        .limit(pageSize)
+        .toList());
+    return data;
   }
 
   @Scheduled(fixedDelay = 1L, timeUnit = TimeUnit.MINUTES)

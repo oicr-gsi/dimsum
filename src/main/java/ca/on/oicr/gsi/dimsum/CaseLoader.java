@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -111,11 +112,12 @@ public class CaseLoader {
       Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
       List<Case> cases =
           loadCases(caseReader, projectsByName, samplesById, donorsById, requisitionsById);
+      Map<String, RunAndLibraries> runsByName = sortRuns(cases);
       if (refreshTimer != null) {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
       log.debug(String.format("Completed loading %d cases.", cases.size()));
-      return new CaseData(cases, afterTimestamp);
+      return new CaseData(cases, runsByName, afterTimestamp);
     }
   }
 
@@ -155,16 +157,21 @@ public class CaseLoader {
             .name(parseString(json, "oicr_internal_name", true))
             .tissueOrigin(parseString(json, "tissue_origin", true))
             .tissueType(parseString(json, "tissue_type", true))
-            .timepoint(parseString(json, "timepoint")).groupId(parseString(json, "group_id"))
+            .timepoint(parseString(json, "timepoint"))
+            .groupId(parseString(json, "group_id"))
             .targetedSequencing(parseString(json, "targeted_sequencing"))
-            .createdDate(parseSampleCreatedDate(json)).run(parseRun(json))
+            .createdDate(parseSampleCreatedDate(json))
+            .run(parseRun(json))
             .volume(parseDecimal(json, "volume", false))
             .concentration(parseDecimal(json, "concentration", false))
-            .qcPassed(parseQcPassed(json, "qc_state")).qcReason(parseString(json, "qc_reason"))
-            .qcUser(parseString(json, "qc_user")).qcDate(parseDate(json, "qc_date"))
+            .qcPassed(parseQcPassed(json, "qc_state"))
+            .qcReason(parseString(json, "qc_reason"))
+            .qcUser(parseString(json, "qc_user"))
+            .qcDate(parseDate(json, "qc_date"))
             .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
             .dataReviewUser(parseString(json, "data_review_user"))
-            .dataReviewDate(parseDate(json, "data_review_date")).build());
+            .dataReviewDate(parseDate(json, "data_review_date"))
+            .build());
 
     return samples.stream().collect(Collectors.toMap(Sample::getId, Function.identity()));
   }
@@ -283,6 +290,34 @@ public class CaseLoader {
           .build());
     }
     return tests;
+  }
+
+  private Map<String, RunAndLibraries> sortRuns(List<Case> cases) {
+    Map<String, RunAndLibraries.Builder> map = new HashMap<>();
+    for (Case kase : cases) {
+      for (Test test : kase.getTests()) {
+        for (Sample sample : test.getLibraryQualifications()) {
+          if (sample.getRun() != null) {
+            addRunLibrary(map, sample, RunAndLibraries.Builder::addLibraryQualification);
+          }
+        }
+        for (Sample sample : test.getFullDepthSequencings()) {
+          addRunLibrary(map, sample, RunAndLibraries.Builder::addFullDepthSequencing);
+        }
+      }
+    }
+    return map.values().stream()
+        .map(RunAndLibraries.Builder::build)
+        .collect(Collectors.toMap(x -> x.getRun().getName(), Function.identity()));
+  }
+
+  private void addRunLibrary(Map<String, RunAndLibraries.Builder> map, Sample sample,
+      BiConsumer<RunAndLibraries.Builder, Sample> addSample) {
+    String runName = sample.getRun().getName();
+    if (!map.containsKey(runName)) {
+      map.put(runName, new RunAndLibraries.Builder().run(sample.getRun()));
+    }
+    addSample.accept(map.get(runName), sample);
   }
 
   private static String parseString(JsonNode json, String fieldName) throws DataParseException {
