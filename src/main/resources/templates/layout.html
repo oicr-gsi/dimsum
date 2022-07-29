@@ -20,24 +20,32 @@
 <body class="flex flex-col min-h-screen">
   <div id="header">
     <nav class="flex items-end m-4 border-b-2 border-grey-200">
-      <div class="grow">
-        <div class="flex shrink"><a href="/"><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a></div>
+
+      <div class="flex-1">
+        <div class="shrink">
+          <a href="/"><img th:src="@{/img/dimsum_logo.svg}" class="w-32" /></a>
+        </div>
       </div>
-      <div class="flex grow justify-center text-green-200 font-sarabun font-light font text-24 cursor-default"
+
+      <div class="flex-none text-green-200 font-sarabun font-light font text-24 cursor-default"
         th:text="${instanceName}"></div>
-      <div class="flex grow justify-end"> <a href="https://github.com/oicr-gsi/dimsum" target="_blank"
-          rel="noopener noreferrer" class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">
-          help</a>
+
+      <div class="flex-1">
+        <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <input type="submit" value="log out"
+            class="font-inter text-16 px-2 py-1 my-1 ml-4 text-black hover:bg-green-200 hover:text-white bg-grey-100 rounded-lg float-right" />
+        </form>
+        <span sec:authorize="isAuthenticated()" sec:authentication="name"
+          class="font-inter text-16 text-black cursor-default float-right pl-4 inline-block mt-2"></span>
         <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
-          class="font-inter text-16 px-3 py-2 text-black hover:text-green-200">report a problem</a>
+          class="font-inter text-16 text-black hover:text-green-200 float-right pl-4 inline-block mt-2">report
+          a problem</a>
+        <a href="https://github.com/oicr-gsi/dimsum" target="_blank" rel="noopener noreferrer"
+          class="font-inter text-16 text-black hover:text-green-200 float-right inline-block mt-2">
+          help</a>
+
       </div>
-      <span sec:authorize="isAuthenticated()" sec:authentication="name"
-        class="font-inter text-16 px-3 py-2 text-black cursor-default"></span>
-      <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <input type="submit" value="log out"
-          class="font-inter text-16 px-2 py-1 text-black hover:bg-green-200 hover:text-white bg-grey-100 rounded-lg" />
-      </form>
     </nav>
   </div>
 
