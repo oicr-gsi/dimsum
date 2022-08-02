@@ -609,6 +609,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: 8rem;
 }
 
+.w-6{
+  width: 1.5rem;
+}
+
 .w-fit{
   width: -webkit-fit-content;
   width: -moz-fit-content;
