@@ -10,6 +10,7 @@ public enum CaseFilterKey {
   // @formatter:off
   ASSAY(string -> kase -> kase.getAssayName().startsWith(string)
       || kase.getAssayDescription().startsWith(string)),
+  CASE_ID(string -> kase -> kase.getId().equals(string)),
   DONOR(string -> kase -> kase.getDonor().getName().startsWith(string)
       || kase.getDonor().getExternalName().contains(string)),
   PENDING(string -> {
