@@ -20,6 +20,8 @@ public class Test {
   private final String timepoint;
   private final String groupId;
   private final String targetedSequencing;
+  private final boolean extractionSkipped;
+  private final boolean libraryPreparationSkipped;
   private final List<Sample> extractions;
   private final List<Sample> libraryPreparations;
   private final List<Sample> libraryQualifications;
@@ -33,6 +35,8 @@ public class Test {
     this.timepoint = builder.timepoint;
     this.groupId = builder.groupId;
     this.targetedSequencing = builder.targetedSequencing;
+    this.extractionSkipped = builder.extractionSkipped;
+    this.libraryPreparationSkipped = builder.libraryPreparationSkipped;
     this.extractions =
         builder.extractions == null ? emptyList() : unmodifiableList(builder.extractions);
     this.libraryPreparations = builder.libraryPreparations == null ? emptyList()
@@ -72,6 +76,14 @@ public class Test {
     return targetedSequencing;
   }
 
+  public boolean isExtractionSkipped() {
+    return extractionSkipped;
+  }
+
+  public boolean isLibraryPreparationSkipped() {
+    return libraryPreparationSkipped;
+  }
+
   public List<Sample> getExtractions() {
     return extractions;
   }
@@ -100,6 +112,8 @@ public class Test {
     private String timepoint;
     private String groupId;
     private String targetedSequencing;
+    private boolean extractionSkipped;
+    private boolean libraryPreparationSkipped;
     private List<Sample> extractions;
     private List<Sample> libraryPreparations;
     private List<Sample> libraryQualifications;
@@ -132,6 +146,16 @@ public class Test {
 
     public Builder targetedSequencing(String targetedSequencing) {
       this.targetedSequencing = targetedSequencing;
+      return this;
+    }
+
+    public Builder extractionSkipped(boolean extractionSkipped) {
+      this.extractionSkipped = extractionSkipped;
+      return this;
+    }
+
+    public Builder libraryPreparationSkipped(boolean libraryPreparationSkipped) {
+      this.libraryPreparationSkipped = libraryPreparationSkipped;
       return this;
     }
 

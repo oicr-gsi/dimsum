@@ -25,6 +25,8 @@
         "timepoint": null,
         "group_id": "proj-extnl_BC",
         "targeted_sequencing": null,
+        "extraction_skipped": false,
+        "library_preparation_skipped": false,
         "extraction_ids": [
           "SAM413593"
         ],
@@ -46,6 +48,8 @@
         "timepoint": null,
         "group_id": "proj-extnl_1_5",
         "targeted_sequencing": null,
+        "extraction_skipped": false,
+        "library_preparation_skipped": false,
         "extraction_ids": [
           "SAM413648"
         ],
@@ -66,6 +70,8 @@
         "timepoint": null,
         "group_id": "proj-extnl_1_5",
         "targeted_sequencing": null,
+        "extraction_skipped": false,
+        "library_preparation_skipped": false,
         "extraction_ids": [
           "SAM413735"
         ],
