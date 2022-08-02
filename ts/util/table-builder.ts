@@ -8,6 +8,7 @@ import {
   makeIcon,
   shadeElement,
 } from "./html-utils";
+import { toggleLegend } from "./legend";
 import { post } from "./requests";
 import { TextInput } from "./text-input";
 
@@ -141,12 +142,21 @@ export class TableBuilder<ParentType, ChildType> {
       "rounded-xl",
       "overflow-hidden"
     );
-
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
+
+    const bottomControlsContainer = document.createElement("div");
+    bottomControlsContainer.className =
+      "flex flex-row-reverse mt-4 items-top space-x-2";
+    this.addActionButtons(bottomControlsContainer);
+    this.container.appendChild(bottomControlsContainer);
+
     this.load();
-    // TODO: add action buttons
     this.reload();
+  }
+
+  private addActionButtons(container: HTMLElement) {
+    this.addLegendControls(container);
   }
 
   private addSortControls(container: HTMLElement) {
@@ -372,6 +382,15 @@ export class TableBuilder<ParentType, ChildType> {
       this.pageNumber++;
       this.reload();
     };
+  }
+
+  private addLegendControls(container: HTMLElement) {
+    const legendButton = document.createElement("button");
+    legendButton.className =
+      "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
+    legendButton.innerHTML = "Legend";
+    legendButton.onclick = toggleLegend;
+    container.appendChild(legendButton);
   }
 
   private load(data?: ParentType[]) {
