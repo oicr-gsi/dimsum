@@ -6,7 +6,6 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
-import ca.on.oicr.gsi.dimsum.data.Run;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
@@ -109,6 +108,27 @@ public class CaseService {
     data.setFilteredCount(applyFilters(baseCases, filters).count());
     data.setItems(filteredCases);
     return data;
+  }
+
+  public Set<String> getMatchingAssayNames(String prefix) {
+    return getMatchingNames(caseData.getAssayNames(), prefix);
+  }
+
+  public Set<String> getMatchingRequisitionNames(String prefix) {
+    return getMatchingNames(caseData.getRequisitionNames(), prefix);
+  }
+
+  public Set<String> getMatchingProjectNames(String prefix) {
+    return getMatchingNames(caseData.getProjectNames(), prefix);
+  }
+
+  public Set<String> getMatchingDonorNames(String prefix) {
+    return getMatchingNames(caseData.getDonorNames(), prefix);
+  }
+
+  private Set<String> getMatchingNames(Set<String> set, String prefix) {
+    return set.stream().filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
   }
 
   public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,

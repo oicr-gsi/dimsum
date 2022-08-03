@@ -82,7 +82,7 @@ export class Dropdown {
     this.dropdownContainer.appendChild(dropdownMenuContainer);
   }
 
-  public getTag() {
+  public getContainerTag() {
     return this.dropdownContainer;
   }
 }

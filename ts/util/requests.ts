@@ -15,6 +15,16 @@ export function post(url: string, body: any) {
   });
 }
 
+export function get(url: string, params: Record<string, string>) {
+  let headers: any = {
+    "Content-Type": "application/json",
+  };
+  return fetch(`${url}?${new URLSearchParams(params).toString()}`, {
+    method: "GET",
+    headers: headers,
+  });
+}
+
 function getMetaContent(name: string) {
   const tag = document.querySelector(`meta[name=${name}]`);
   if (!tag) {
