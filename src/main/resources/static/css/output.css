@@ -630,12 +630,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   min-height: 100vh;
 }
 
-.w-32{
-  width: 8rem;
-}
-
 .w-6{
   width: 1.5rem;
+}
+
+.w-32{
+  width: 8rem;
 }
 
 .w-fit{
@@ -648,8 +648,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: 100%;
 }
 
-.w-4{
-  width: 1rem;
+.min-w-\[150px\]{
+  min-width: 150px;
+}
+
+.min-w-\[130px\]{
+  min-width: 130px;
 }
 
 .max-w-lg{

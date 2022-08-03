@@ -42,6 +42,7 @@ export interface FilterDefinition {
   key: string; // internal use
   type: FilterType; // either text or dropdown
   values?: string[]; // required for dropdown filters
+  autocompleteUrl?: string; // required for text filters w/autocomplete
 }
 
 export interface TableDefinition<ParentType, ChildType> {
@@ -191,7 +192,7 @@ export class TableBuilder<ParentType, ChildType> {
       undefined,
       defaultOption
     );
-    sortContainer.appendChild(sortDropdown.getTag());
+    sortContainer.appendChild(sortDropdown.getContainerTag());
   }
 
   private addSortOption(
@@ -265,7 +266,7 @@ export class TableBuilder<ParentType, ChildType> {
       undefined,
       "+ filter"
     );
-    filterContainer.appendChild(addFilterDropdown.getTag());
+    filterContainer.appendChild(addFilterDropdown.getContainerTag());
   }
 
   private makeDropdownFilter(
@@ -280,7 +281,7 @@ export class TableBuilder<ParentType, ChildType> {
     const filterSuboptions = filter.values.map(
       (value) =>
         new BasicDropdownOption(value, (dropdown: Dropdown) => {
-          dropdown.getTag().remove();
+          dropdown.getContainerTag().remove();
           const filterLabel = new AcceptedFilter(
             filter.title,
             filter.key,
@@ -304,7 +305,7 @@ export class TableBuilder<ParentType, ChildType> {
         filter.title
       );
       filterContainer.insertBefore(
-        filterSuboptionsDropdown.getTag(),
+        filterSuboptionsDropdown.getContainerTag(),
         filterContainer.lastChild
       );
     });
@@ -322,7 +323,7 @@ export class TableBuilder<ParentType, ChildType> {
         textInput.getValue(),
         reload
       );
-      textInput.getTag().remove();
+      textInput.getContainerTag().remove();
       filterContainer.insertBefore(
         filterLabel.element,
         filterContainer.lastChild
@@ -331,9 +332,18 @@ export class TableBuilder<ParentType, ChildType> {
       reload();
     };
     return new BasicDropdownOption(filter.title, () => {
-      const filterTextInput = new TextInput(filter.title, onClose);
+      if (!filter.autocompleteUrl) {
+        throw new Error(
+          `Text input filter ${filter.title} has no autocomplete rest URL`
+        );
+      }
+      const filterTextInput = new TextInput(
+        filter.title,
+        onClose,
+        filter.autocompleteUrl
+      );
       filterContainer.insertBefore(
-        filterTextInput.getTag(),
+        filterTextInput.getContainerTag(),
         filterContainer.lastChild
       );
     });
@@ -365,7 +375,7 @@ export class TableBuilder<ParentType, ChildType> {
       "Items per page",
       this.pageSize.toString()
     );
-    pagingContainer.appendChild(pageSizeSelectDropdown.getTag());
+    pagingContainer.appendChild(pageSizeSelectDropdown.getContainerTag());
 
     this.pageDescription = document.createElement("span");
     this.pageDescription.className =

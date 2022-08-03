@@ -117,8 +117,34 @@ public class CaseLoader {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
       log.debug(String.format("Completed loading %d cases.", cases.size()));
-      return new CaseData(cases, runsByName, afterTimestamp);
+      return new CaseData(cases, runsByName, afterTimestamp, getAssayNames(cases),
+          getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
+          getDonorNames(donorsById));
     }
+  }
+
+  private Set<String> getAssayNames(List<Case> cases) {
+    Set<String> assayNames =
+        new HashSet<String>(cases.stream().map(Case::getAssayName).collect(Collectors.toSet()));
+    return assayNames;
+  }
+
+  private Set<String> getRequisitionNames(Map<Long, Requisition> requisitionsById) {
+    Set<String> sampleNames = new HashSet<String>(
+        requisitionsById.values().stream().map(Requisition::getName).collect(Collectors.toSet()));
+    return sampleNames;
+  }
+
+  private Set<String> getProjectNames(Map<String, Project> projectsByName) {
+    Set<String> projectNames =
+        new HashSet<String>(projectsByName.keySet().stream().collect(Collectors.toSet()));
+    return projectNames;
+  }
+
+  private Set<String> getDonorNames(Map<String, Donor> donorsById) {
+    Set<String> donorNames = new HashSet<String>(
+        donorsById.values().stream().map(Donor::getName).collect(Collectors.toSet()));
+    return donorNames;
   }
 
   protected FileReader getProjectReader() throws FileNotFoundException {

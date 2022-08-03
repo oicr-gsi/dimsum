@@ -73,11 +73,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Assay",
       key: "ASSAY",
       type: "text",
+      autocompleteUrl: urls.rest.autocomplete.assayNames,
     },
     {
       title: "Donor",
       key: "DONOR",
       type: "text",
+      autocompleteUrl: urls.rest.autocomplete.donorNames,
     },
     {
       title: "Pending",
@@ -95,11 +97,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Project",
       key: "PROJECT",
       type: "text",
+      autocompleteUrl: urls.rest.autocomplete.projectNames,
     },
     {
       title: "Requisition",
       key: "REQUISITION",
       type: "text",
+      autocompleteUrl: urls.rest.autocomplete.requisitionNames,
     },
   ],
   getChildren: (parent) => parent.tests,
