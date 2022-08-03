@@ -236,6 +236,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
 
     const filterIcon = makeIcon("filter");
+    filterIcon.title = "Filter";
     filterIcon.classList.add("text-black");
     filterContainer.appendChild(filterIcon);
 
@@ -344,6 +345,7 @@ export class TableBuilder<ParentType, ChildType> {
     container.appendChild(pagingContainer);
 
     const pagingIcon = makeIcon("book-open");
+    pagingIcon.title = "Page";
     pagingIcon.classList.add("text-black");
     pagingContainer.appendChild(pagingIcon);
 
