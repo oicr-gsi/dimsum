@@ -7,6 +7,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.data.Case;
@@ -21,6 +22,8 @@ public class RequisitionController {
 
   @Autowired
   private CaseService caseService;
+  @Autowired
+  private FrontEndConfig frontEndConfig;
 
   @GetMapping("/{requisitionId}")
   public String getRequisitionDetailsPage(@PathVariable String requisitionId, ModelMap model) {
@@ -37,9 +40,14 @@ public class RequisitionController {
         .filter(req -> req.getId() == Long.parseLong(requisitionId)).findAny().orElseThrow();
 
     model.put("title", String.format("%s Requisition Details", requisition.getName()));
+    model.put("titleLink", makeMisoRequisitionUrl(requisitionId));
     model.put("detailType", CaseFilterKey.REQUISITION_ID.name());
     model.put("detailValue", requisitionId);
     return "detail";
+  }
+
+  private String makeMisoRequisitionUrl(String requisitionId) {
+    return String.format("%s/miso/requisition/%s", frontEndConfig.getMisoUrl(), requisitionId);
   }
 
 }
