@@ -8,11 +8,11 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 public enum CaseFilterKey {
 
   // @formatter:off
-  ASSAY(string -> kase -> kase.getAssayName().startsWith(string)
-      || kase.getAssayDescription().startsWith(string)),
-  CASE_ID(string -> kase -> kase.getId().equals(string)),
-  DONOR(string -> kase -> kase.getDonor().getName().startsWith(string)
-      || kase.getDonor().getExternalName().contains(string)),
+  ASSAY(string -> kase -> kase.getAssayName().toLowerCase().startsWith(string.toLowerCase())
+      || kase.getAssayDescription().toLowerCase().startsWith(string.toLowerCase())),
+  CASE_ID(string -> kase -> kase.getId().toLowerCase().equals(string.toLowerCase())),
+  DONOR(string -> kase -> kase.getDonor().getName().toLowerCase().startsWith(string.toLowerCase())
+      || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),
   PENDING(string -> {
     PendingState state = PendingState.getByLabel(string);
     if (state == null) {
@@ -23,9 +23,9 @@ public enum CaseFilterKey {
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),
   PROJECT(string -> kase -> kase.getProjects().stream()
-      .anyMatch(project -> project.getName().equals(string))),
+      .anyMatch(project -> project.getName().equalsIgnoreCase(string))),
   REQUISITION(string -> kase -> kase.getRequisitions().stream()
-      .anyMatch(req -> req.getName().startsWith(string))),
+      .anyMatch(req -> req.getName().toLowerCase().startsWith(string.toLowerCase()))),
   REQUISITION_ID(string -> kase -> kase.getRequisitions().stream()
       .anyMatch(req -> req.getId() == Long.parseLong(string)));
   // @formatter:on

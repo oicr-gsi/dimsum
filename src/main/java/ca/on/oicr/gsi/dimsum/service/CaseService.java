@@ -111,23 +111,26 @@ public class CaseService {
   }
 
   public Set<String> getMatchingAssayNames(String prefix) {
-    return getMatchingNames(caseData.getAssayNames(), prefix);
+    return caseData.getAssayNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
   }
 
   public Set<String> getMatchingRequisitionNames(String prefix) {
-    return getMatchingNames(caseData.getRequisitionNames(), prefix);
+    return caseData.getRequisitionNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
   }
 
   public Set<String> getMatchingProjectNames(String prefix) {
-    return getMatchingNames(caseData.getProjectNames(), prefix);
+    return caseData.getProjectNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
   }
 
   public Set<String> getMatchingDonorNames(String prefix) {
-    return getMatchingNames(caseData.getDonorNames(), prefix);
-  }
-
-  private Set<String> getMatchingNames(Set<String> set, String prefix) {
-    return set.stream().filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+    return caseData.getDonorNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
   }
 
