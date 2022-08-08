@@ -59,14 +59,14 @@ public class CaseSortTest {
 
   @Test
   public void testSortByReceiptDateAscending() {
-    List<Case> cases = getCasesSorted(CaseSort.RECEIPT_DATE, false);
-    assertOrder(cases, Case::getEarliestReceiptDate, datesOrdered, false);
+    List<Case> cases = getCasesSorted(CaseSort.START_DATE, false);
+    assertOrder(cases, Case::getStartDate, datesOrdered, false);
   }
 
   @Test
   public void testSortByReceiptDateDescending() {
-    List<Case> cases = getCasesSorted(CaseSort.RECEIPT_DATE, true);
-    assertOrder(cases, Case::getEarliestReceiptDate, datesOrdered, true);
+    List<Case> cases = getCasesSorted(CaseSort.START_DATE, true);
+    assertOrder(cases, Case::getStartDate, datesOrdered, true);
   }
 
   @Test
@@ -108,7 +108,7 @@ public class CaseSortTest {
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(caseDonors[caseNumber]);
     when(kase.getDonor()).thenReturn(donor);
-    when(kase.getEarliestReceiptDate()).thenReturn(caseReceiptDates[caseNumber]);
+    when(kase.getStartDate()).thenReturn(caseReceiptDates[caseNumber]);
     when(kase.getLatestActivityDate()).thenReturn(caseActivityDates[caseNumber]);
     return kase;
   }

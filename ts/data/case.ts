@@ -55,7 +55,7 @@ export interface Case {
   timepoint: string;
   stopped: boolean;
   receipts: Sample[];
-  earliestReceiptDate: string;
+  startDate: string;
   tests: Test[];
   requisitions: Requisition[];
   latestActivityDate: string;
@@ -173,11 +173,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
     },
     {
-      title: "First Receipt",
+      title: "Start Date",
       sortType: "date",
       addParentContents(kase, fragment) {
         const dateDiv = document.createElement("div");
-        dateDiv.appendChild(document.createTextNode(kase.earliestReceiptDate));
+        dateDiv.appendChild(document.createTextNode(kase.startDate));
         fragment.appendChild(dateDiv);
 
         const elapsedDiv = document.createElement("div");
@@ -592,7 +592,7 @@ function getElapsedMessage(kase: Case) {
     endDate = new Date();
     message = "Ongoing";
   }
-  const startDate = new Date(kase.earliestReceiptDate);
+  const startDate = new Date(kase.startDate);
   const milliDiff = endDate.getTime() - startDate.getTime();
   const dayDiff = Math.ceil(milliDiff / dayMillis);
   return `(${message} ${dayDiff} days)`;
