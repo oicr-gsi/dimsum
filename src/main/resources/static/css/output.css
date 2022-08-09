@@ -598,6 +598,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-left: 0.5rem;
 }
 
+.mt-1{
+  margin-top: 0.25rem;
+}
+
+.mt-3{
+  margin-top: 0.75rem;
+}
+
 .block{
   display: block;
 }
@@ -618,6 +626,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   display: grid;
 }
 
+.contents{
+  display: contents;
+}
+
 .hidden{
   display: none;
 }
@@ -626,16 +638,22 @@ Ensure the default browser behavior of the `hidden` attribute.
   height: 100%;
 }
 
+.h-fit{
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+}
+
 .min-h-screen{
   min-height: 100vh;
 }
 
-.w-32{
-  width: 8rem;
-}
-
 .w-6{
   width: 1.5rem;
+}
+
+.w-32{
+  width: 8rem;
 }
 
 .w-fit{
@@ -692,8 +710,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   cursor: move;
 }
 
+.grid-flow-row{
+  grid-auto-flow: row;
+}
+
 .grid-flow-col{
   grid-auto-flow: column;
+}
+
+.grid-cols-2{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid-rows-4{
@@ -720,14 +746,38 @@ Ensure the default browser behavior of the `hidden` attribute.
   align-items: center;
 }
 
+.gap-4{
+  gap: 1rem;
+}
+
 .gap-2{
   gap: 0.5rem;
+}
+
+.gap-1{
+  gap: 0.25rem;
+}
+
+.gap-y-1{
+  row-gap: 0.25rem;
 }
 
 .space-x-2 > :not([hidden]) ~ :not([hidden]){
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-1 > :not([hidden]) ~ :not([hidden]){
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.25rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-y-1 > :not([hidden]) ~ :not([hidden]){
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
 .overflow-auto{
@@ -778,9 +828,18 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-bottom-width: 1px;
 }
 
+.border-dotted{
+  border-style: dotted;
+}
+
 .border-grey-200{
   --tw-border-opacity: 1;
   border-color: rgb(170 176 184 / var(--tw-border-opacity));
+}
+
+.border-green-200{
+  --tw-border-opacity: 1;
+  border-color: rgb(91 158 90 / var(--tw-border-opacity));
 }
 
 .bg-grey-100{
@@ -1033,4 +1092,8 @@ Ensure the default browser behavior of the `hidden` attribute.
 .disabled\:text-grey-200:disabled{
   --tw-text-opacity: 1;
   color: rgb(170 176 184 / var(--tw-text-opacity));
+}
+
+.group:hover .group-hover\:visible{
+  visibility: visible;
 }

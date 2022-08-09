@@ -1,5 +1,12 @@
 import { TableDefinition } from "../util/table-builder";
-import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
+import {
+  addLink,
+  makeIcon,
+  styleText,
+  addMisoIcon,
+  makeNameDiv,
+  addToolTip,
+} from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
 import { getSampleQcStatus, Sample } from "./sample";
@@ -532,14 +539,71 @@ function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   samples.forEach((sample, i) => {
     const status = getSampleQcStatus(sample);
     const icon = makeIcon(status.icon);
-    icon.title =
-      (sample.run ? sample.run.name + " - " : "") +
-      `${sample.name}: ${status.label}`; // TODO: more detailed popup
+    addToolTip(icon, makeSampleTooltip(sample));
     fragment.appendChild(icon);
     if (i < samples.length - 1) {
       fragment.appendChild(document.createTextNode(" "));
     }
   });
+}
+
+function makeSampleTooltip(sample: Sample) {
+  const toolTipConatiner = new DocumentFragment();
+  const topContainer = document.createElement("div");
+  topContainer.className = "flex flex-col space-y-1";
+  const bottomContainer = document.createElement("div");
+  bottomContainer.className =
+    "grid grid-cols-2 grid-flow-row gap-y-1 font-inter font-medium font-14 text-black mt-3";
+  // sample run links
+  if (sample.run) {
+    topContainer.appendChild(
+      makeNameDiv(
+        sample.run.name,
+        urls.miso.run(sample.run.name),
+        urls.dimsum.run(sample.run.name)
+      )
+    );
+  }
+  // sample name links
+  topContainer.appendChild(
+    makeNameDiv(sample.name, urls.miso.sample(sample.id))
+  );
+  // project links
+  const projectLabel = document.createElement("span");
+  projectLabel.innerHTML = "Project:";
+  const projectLink = makeNameDiv(
+    sample.project,
+    urls.miso.project(sample.project),
+    urls.dimsum.project(sample.project)
+  );
+  bottomContainer.appendChild(projectLabel);
+  // donor links
+  const donorLabel = document.createElement("span");
+  donorLabel.innerHTML = "Donor:";
+  const donorLinks = document.createElement("div");
+  donorLinks.className = "flex flex-col space-y-1";
+  donorLinks.appendChild(
+    makeNameDiv(
+      sample.donor.name,
+      urls.miso.sample(sample.donor.id),
+      urls.dimsum.donor(sample.donor.name)
+    )
+  );
+  const externalDonorName = document.createElement("span");
+  externalDonorName.innerHTML = sample.donor.externalName;
+  donorLinks.appendChild(externalDonorName);
+  // requisition links TODO
+  const requisitionLabel = document.createElement("span");
+  requisitionLabel.innerHTML = "Requisition:";
+
+  bottomContainer.appendChild(projectLabel);
+  bottomContainer.appendChild(projectLink);
+  bottomContainer.appendChild(donorLabel);
+  bottomContainer.appendChild(donorLinks);
+  bottomContainer.appendChild(requisitionLabel);
+  toolTipConatiner.appendChild(topContainer);
+  toolTipConatiner.appendChild(bottomContainer);
+  return toolTipConatiner;
 }
 
 function addRequisitionIcons(
@@ -566,8 +630,20 @@ function addRequisitionIcon(
   fragment: DocumentFragment
 ) {
   const icon = makeIcon(status.icon);
-  icon.title = `${requisition.name}: ${status.label}`; // TODO: more detailed popup
+  addToolTip(icon, makeRequisitionTooltip(requisition));
   fragment.appendChild(icon);
+}
+
+function makeRequisitionTooltip(requisition: Requisition) {
+  const toolTipConatiner = new DocumentFragment();
+  toolTipConatiner.appendChild(
+    makeNameDiv(
+      requisition.name,
+      urls.miso.requisition(requisition.id),
+      urls.dimsum.requisition(requisition.id)
+    )
+  );
+  return toolTipConatiner;
 }
 
 function getElapsedMessage(kase: Case) {

@@ -102,3 +102,12 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   addMisoIcon(div, misoUrl);
   return div;
 }
+
+export function addToolTip(target: HTMLElement, contents: DocumentFragment) {
+  target.classList.add("group");
+  const tipContainer = document.createElement("div");
+  tipContainer.className =
+    "absolute bg-white w-fit h-fit p-2 border-2 border-dotted border-green-200 font-inter font-14 font-medium group-hover:visible invisible";
+  tipContainer.appendChild(contents);
+  target.appendChild(tipContainer);
+}

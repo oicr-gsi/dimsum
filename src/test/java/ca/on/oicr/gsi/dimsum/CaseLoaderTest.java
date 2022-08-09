@@ -53,23 +53,6 @@ public class CaseLoaderTest {
   }
 
   @Test
-  public void testLoadSamples() throws Exception {
-    try (FileReader reader = sut.getSampleReader()) {
-      Map<String, Sample> samplesById = sut.loadSamples(reader);
-      assertEquals(20, samplesById.size());
-      assertSample(samplesById.get(testSampleId));
-    }
-  }
-
-  private void assertSample(Sample sample) {
-    assertNotNull(sample);
-    assertEquals(testSampleId, sample.getId());
-    assertEquals("PROJ_1289_Ly_R_nn_1-1", sample.getName());
-    assertEquals(Boolean.TRUE, sample.getQcPassed());
-    assertEquals(LocalDate.of(2021, 7, 19), sample.getQcDate());
-  }
-
-  @Test
   public void testLoadDonors() throws Exception {
     try (FileReader reader = sut.getDonorReader()) {
       Map<String, Donor> donorsById = sut.loadDonors(reader);
@@ -83,6 +66,24 @@ public class CaseLoaderTest {
     assertNotNull(donor);
     assertEquals(testDonorId, donor.getId());
     assertEquals("PROJ_1289", donor.getName());
+  }
+
+  @Test
+  public void testLoadSamples() throws Exception {
+    try (FileReader reader = sut.getSampleReader()) {
+      Map<String, Donor> donorsById = sut.loadDonors(reader);
+      Map<String, Sample> samplesById = sut.loadSamples(reader, donorsById);
+      assertEquals(20, samplesById.size());
+      assertSample(samplesById.get(testSampleId));
+    }
+  }
+
+  private void assertSample(Sample sample) {
+    assertNotNull(sample);
+    assertEquals(testSampleId, sample.getId());
+    assertEquals("PROJ_1289_Ly_R_nn_1-1", sample.getName());
+    assertEquals(Boolean.TRUE, sample.getQcPassed());
+    assertEquals(LocalDate.of(2021, 7, 19), sample.getQcDate());
   }
 
   @Test
