@@ -16,18 +16,23 @@ import { QcStatus, qcStatuses } from "./qc-status";
 export interface Sample {
   id: string;
   name: string;
+  requisitionId?: number;
+  requisitionName?: string;
   tissueOrigin: string;
   tissueType: string;
-  timepoint: string;
-  groupId: string;
+  timepoint?: string;
+  secondaryId?: string;
+  groupId?: string;
   project: string;
-  targetedSequencing: string;
+  nucleicAcidType?: string;
+  libraryDesignCode?: string;
+  targetedSequencing?: string;
   createdDate: string;
   volume?: number;
   concentration?: number;
-  run: Run;
+  run?: Run;
   donor: Donor;
-  qcPassed: boolean;
+  qcPassed?: boolean;
   qcReason: string;
   qcUser: string;
   qcDate: string;
@@ -89,21 +94,34 @@ const tissueAttributesColumn: ColumnDefinition<Sample, void> = {
 const designColumn: ColumnDefinition<Sample, void> = {
   title: "Design",
   addParentContents(sample, fragment) {
-    addTodoIcon(fragment); // TODO
+    if (sample.libraryDesignCode) {
+      fragment.append(document.createTextNode(sample.libraryDesignCode));
+    }
   },
-  getCellHighlight: todoHighlight,
 };
 
 const sequencingAttributesColumn: ColumnDefinition<Sample, void> = {
   title: "Sequencing Attributes",
   addParentContents(sample, fragment) {
     if (sample.run) {
-      addTodoIcon(fragment); // TODO
+      const flowCellContainer = document.createElement("div");
+      flowCellContainer.appendChild(
+        document.createTextNode(
+          `Flow cell: ${sample.run.containerModel || "unknown"}`
+        )
+      );
+      fragment.appendChild(flowCellContainer);
+      const parametersContainer = document.createElement("div");
+      parametersContainer.appendChild(
+        document.createTextNode(
+          `Parameters: ${sample.run.sequencingParameters || "unknown"}`
+        )
+      );
+      fragment.appendChild(parametersContainer);
     } else {
       fragment.appendChild(document.createTextNode("N/A"));
     }
   },
-  getCellHighlight: todoHighlight,
 };
 
 const latestActivityColumn: ColumnDefinition<Sample, void> = {
@@ -123,16 +141,24 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
     {
       title: "Requisition",
       addParentContents(sample, fragment) {
-        addTodoIcon(fragment); // TODO
+        if (sample.requisitionId && sample.requisitionName) {
+          fragment.appendChild(
+            makeNameDiv(
+              sample.requisitionName,
+              urls.miso.requisition(sample.requisitionId),
+              urls.dimsum.requisition(sample.requisitionId)
+            )
+          );
+        }
       },
-      getCellHighlight: todoHighlight,
     },
     {
       title: "Secondary ID",
       addParentContents(sample, fragment) {
-        addTodoIcon(fragment); // TODO
+        if (sample.secondaryId) {
+          fragment.append(document.createTextNode(sample.secondaryId));
+        }
       },
-      getCellHighlight: todoHighlight,
     },
     tissueAttributesColumn,
     {
@@ -156,9 +182,10 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
     {
       title: "Nucleic Acid Type",
       addParentContents(sample, fragment) {
-        addTodoIcon(fragment); // TODO
+        if (sample.nucleicAcidType) {
+          fragment.append(document.createTextNode(sample.nucleicAcidType));
+        }
       },
-      getCellHighlight: todoHighlight,
     },
     {
       title: "(Metric Columns)",

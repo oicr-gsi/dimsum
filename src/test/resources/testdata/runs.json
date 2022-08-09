@@ -1,0 +1,80 @@
+[
+  {
+    "id": 5459,
+    "name": "210805_M00753_0369_000000000-G8WYC",
+    "container_model": "PE-Micro MiSeq Flow Cell",
+    "sequencing_parameters": "Micro 2\u00d7151",
+    "completion_date": "2021-08-06T00:00:00-04:00",
+    "qc_state": "Ready",
+    "qc_user": "Technician One",
+    "qc_date": "2021-08-09",
+    "data_review_state": "Passed",
+    "data_review_user": "QA Manager",
+    "data_review_date": "2021-08-09"
+  },
+  {
+    "id": 5460,
+    "name": "210805_M00146_0312_000000000-DD4CF",
+    "container_model": "PE-Nano MiSeq Flow Cell",
+    "sequencing_parameters": "Nano 2\u00d7151",
+    "completion_date": "2021-08-06T00:00:00-04:00",
+    "qc_state": "Ready",
+    "qc_user": "Technician One",
+    "qc_date": "2021-08-06",
+    "data_review_state": "Passed",
+    "data_review_user": "QA Manager",
+    "data_review_date": "2021-08-09"
+  },
+  {
+    "id": 5467,
+    "name": "210809_M06816_0181_000000000-DD4R9",
+    "container_model": "PE-Nano MiSeq Flow Cell",
+    "sequencing_parameters": "Nano 2\u00d7151",
+    "completion_date": "2021-08-10T00:00:00-04:00",
+    "qc_state": "Ready",
+    "qc_user": "Technician One",
+    "qc_date": "2021-08-10",
+    "data_review_state": "Passed",
+    "data_review_user": "QA Manager",
+    "data_review_date": "2021-08-11"
+  },
+  {
+    "id": 5476,
+    "name": "210810_A00469_0195_BH2YF2DMXY",
+    "container_model": "S2",
+    "sequencing_parameters": "2\u00d7151",
+    "completion_date": "2021-08-12T00:00:00-04:00",
+    "qc_state": "Ready",
+    "qc_user": "Technician One",
+    "qc_date": "2021-08-12",
+    "data_review_state": "Passed",
+    "data_review_user": "Lab Manager",
+    "data_review_date": "2021-08-18"
+  },
+  {
+    "id": 5481,
+    "name": "210811_A00469_0196_AHFL35DRXY",
+    "container_model": "S1",
+    "sequencing_parameters": "2\u00d7101",
+    "completion_date": "2021-08-12T00:00:00-04:00",
+    "qc_state": "Ready",
+    "qc_user": "Technician One",
+    "qc_date": "2021-08-12",
+    "data_review_state": "Passed",
+    "data_review_user": "Lab Manager",
+    "data_review_date": "2021-08-18"
+  },
+  {
+    "id": 5540,
+    "name": "210914_A00469_0210_BHLFMGDSX2",
+    "container_model": "S4",
+    "sequencing_parameters": "2\u00d7151",
+    "completion_date": "2021-09-16T00:00:00-04:00",
+    "qc_state": "Ready",
+    "qc_user": "Technician One",
+    "qc_date": "2021-09-16",
+    "data_review_state": "Passed",
+    "data_review_user": "QA Manager",
+    "data_review_date": "2021-09-27"
+  }
+]

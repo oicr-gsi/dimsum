@@ -36,6 +36,7 @@ public class CaseLoader {
   private File caseFile;
   private File donorFile;
   private File requisitionFile;
+  private File runFile;
   private File sampleFile;
   private File timestampFile;
 
@@ -57,6 +58,7 @@ public class CaseLoader {
     caseFile = new File(dataDirectory, "cases.json");
     donorFile = new File(dataDirectory, "donors.json");
     requisitionFile = new File(dataDirectory, "requisitions.json");
+    runFile = new File(dataDirectory, "runs.json");
     sampleFile = new File(dataDirectory, "samples.json");
     timestampFile = new File(dataDirectory, "timestamp");
   }
@@ -96,6 +98,7 @@ public class CaseLoader {
         FileReader sampleReader = getSampleReader();
         FileReader donorReader = getDonorReader();
         FileReader requisitionReader = getRequisitionReader();
+        FileReader runReader = getRunReader();
         FileReader caseReader = getCaseReader();) {
       ZonedDateTime afterTimestamp = getDataTimestamp();
       if (afterTimestamp == null) {
@@ -108,8 +111,10 @@ public class CaseLoader {
       }
       Map<String, Project> projectsByName = loadProjects(projectReader);
       Map<String, Donor> donorsById = loadDonors(donorReader);
-      Map<String, Sample> samplesById = loadSamples(sampleReader, donorsById);
+      Map<Long, Run> runsById = loadRuns(runReader);
       Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
+      Map<String, Sample> samplesById =
+          loadSamples(sampleReader, donorsById, runsById, requisitionsById);
       List<Case> cases =
           loadCases(caseReader, projectsByName, samplesById, donorsById, requisitionsById);
       Map<String, RunAndLibraries> runsByName = sortRuns(cases);
@@ -163,6 +168,10 @@ public class CaseLoader {
     return new FileReader(requisitionFile);
   }
 
+  protected FileReader getRunReader() throws FileNotFoundException {
+    return new FileReader(runFile);
+  }
+
   protected FileReader getCaseReader() throws FileNotFoundException {
     return new FileReader(caseFile);
   }
@@ -176,32 +185,68 @@ public class CaseLoader {
     return projects.stream().collect(Collectors.toMap(Project::getName, Function.identity()));
   }
 
-  protected Map<String, Sample> loadSamples(FileReader fileReader, Map<String, Donor> donorsById)
-      throws DataParseException, IOException {
-    List<Sample> samples = loadFromJsonArrayFile(fileReader,
-        json -> new Sample.Builder().id(parseString(json, "sample_id", true))
-            .name(parseString(json, "oicr_internal_name", true))
-            .tissueOrigin(parseString(json, "tissue_origin", true))
-            .tissueType(parseString(json, "tissue_type", true))
-            .timepoint(parseString(json, "timepoint"))
-            .groupId(parseString(json, "group_id"))
-            .project(parseString(json, "project_name", true))
-            .targetedSequencing(parseString(json, "targeted_sequencing"))
-            .createdDate(parseSampleCreatedDate(json))
-            .run(parseRun(json))
-            .donor(donorsById.get(parseString(json, "donor_id")))
-            .volume(parseDecimal(json, "volume", false))
-            .concentration(parseDecimal(json, "concentration", false))
-            .qcPassed(parseQcPassed(json, "qc_state"))
-            .qcReason(parseString(json, "qc_reason"))
-            .qcUser(parseString(json, "qc_user"))
-            .qcDate(parseDate(json, "qc_date"))
-            .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
-            .dataReviewUser(parseString(json, "data_review_user"))
-            .dataReviewDate(parseDate(json, "data_review_date"))
-            .build());
+  protected Map<String, Sample> loadSamples(FileReader fileReader, Map<String, Donor> donorsById,
+      Map<Long, Run> runsById, Map<Long, Requisition> requisitionsById) throws DataParseException,
+      IOException {
+    List<Sample> samples = loadFromJsonArrayFile(fileReader, json -> {
+      Long runId = parseLong(json, "sequencing_run_id", false);
+      if (runId != null && !runsById.containsKey(runId)) {
+        throw new DataParseException(String.format("Run ID %d not found", runId));
+      }
+      Long requisitionId = parseLong(json, "requisition_id", false);
+      if (requisitionId != null && !requisitionsById.containsKey(requisitionId)) {
+        throw new DataParseException(String.format("Requisition ID %d not found", requisitionId));
+      }
+      return new Sample.Builder().id(parseString(json, "sample_id", true))
+          .name(parseString(json, "oicr_internal_name", true))
+          .requisitionId(requisitionId)
+          .requisitionName(
+              requisitionId == null ? null : requisitionsById.get(requisitionId).getName())
+          .tissueOrigin(parseString(json, "tissue_origin", true))
+          .tissueType(parseString(json, "tissue_type", true))
+          .timepoint(parseString(json, "timepoint"))
+          .secondaryId(parseString(json, "secondary_id"))
+          .groupId(parseString(json, "group_id"))
+          .project(parseString(json, "project_name", true))
+          .nucleicAcidType(parseString(json, "nucleic_acid_type"))
+          .libraryDesignCode(parseString(json, "library_design"))
+          .targetedSequencing(parseString(json, "targeted_sequencing"))
+          .createdDate(parseSampleCreatedDate(json))
+          .run(runsById.get(runId))
+          .donor(donorsById.get(parseString(json, "donor_id")))
+          .volume(parseDecimal(json, "volume", false))
+          .concentration(parseDecimal(json, "concentration", false))
+          .qcPassed(parseQcPassed(json, "qc_state"))
+          .qcReason(parseString(json, "qc_reason"))
+          .qcUser(parseString(json, "qc_user"))
+          .qcDate(parseDate(json, "qc_date"))
+          .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
+          .dataReviewUser(parseString(json, "data_review_user"))
+          .dataReviewDate(parseDate(json, "data_review_date"))
+          .build();
+    });
 
     return samples.stream().collect(Collectors.toMap(Sample::getId, Function.identity()));
+  }
+
+  protected Map<Long, Run> loadRuns(FileReader fileReader) throws DataParseException, IOException {
+    List<Run> runs = loadFromJsonArrayFile(fileReader, json -> {
+      return new Run.Builder()
+          .id(parseLong(json, "id", true))
+          .name(parseString(json, "name", true))
+          .containerModel(parseString(json, "container_model"))
+          .sequencingParameters(parseString(json, "sequencing_parameters"))
+          .completionDate(parseDate(json, "completion_date"))
+          .qcPassed(parseQcPassed(json, "qc_state"))
+          .qcUser(parseString(json, "qc_user"))
+          .qcDate(parseDate(json, "qc_date"))
+          .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
+          .dataReviewUser(parseString(json, "data_review_user"))
+          .dataReviewDate(parseDate(json, "data_review_date"))
+          .build();
+    });
+
+    return runs.stream().collect(Collectors.toMap(Run::getId, Function.identity()));
   }
 
   private static LocalDate parseSampleCreatedDate(JsonNode json) throws DataParseException {
@@ -214,11 +259,6 @@ public class CaseLoader {
       return createdDate;
     }
     return parseDate(json, "entered");
-  }
-
-  private static Run parseRun(JsonNode json) throws DataParseException {
-    String runName = parseString(json, "sequencing_run");
-    return runName == null ? null : new Run.Builder().name(runName).build();
   }
 
   protected Map<String, Donor> loadDonors(FileReader fileReader)

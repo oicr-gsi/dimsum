@@ -13,11 +13,16 @@ public class Sample {
 
   private final String id;
   private final String name;
+  private final Long requisitionId;
+  private final String requisitionName;
   private final String tissueOrigin;
   private final String tissueType;
   private final String timepoint;
+  private final String secondaryId;
   private final String groupId;
   private final String project;
+  private final String nucleicAcidType;
+  private final String libraryDesignCode;
   private final String targetedSequencing;
   private final LocalDate createdDate;
   private final BigDecimal volume;
@@ -36,11 +41,16 @@ public class Sample {
   private Sample(Builder builder) {
     this.id = requireNonNull(builder.id);
     this.name = requireNonNull(builder.name);
+    this.requisitionId = builder.requisitionId;
+    this.requisitionName = builder.requisitionName;
     this.tissueOrigin = requireNonNull(builder.tissueOrigin);
     this.tissueType = requireNonNull(builder.tissueType);
     this.timepoint = builder.timepoint;
+    this.secondaryId = builder.secondaryId;
     this.groupId = builder.groupId;
     this.project = requireNonNull(builder.project);
+    this.nucleicAcidType = builder.nucleicAcidType;
+    this.libraryDesignCode = builder.libraryDesignCode;
     this.targetedSequencing = builder.targetedSequencing;
     this.createdDate = requireNonNull(builder.createdDate);
     this.volume = builder.volume;
@@ -66,6 +76,14 @@ public class Sample {
     return name;
   }
 
+  public Long getRequisitionId() {
+    return requisitionId;
+  }
+
+  public String getRequisitionName() {
+    return requisitionName;
+  }
+
   public String getTissueOrigin() {
     return tissueOrigin;
   }
@@ -78,12 +96,24 @@ public class Sample {
     return timepoint;
   }
 
+  public String getSecondaryId() {
+    return secondaryId;
+  }
+
   public String getGroupId() {
     return groupId;
   }
 
   public String getProject() {
     return project;
+  }
+
+  public String getNucleicAcidType() {
+    return nucleicAcidType;
+  }
+
+  public String getLibraryDesignCode() {
+    return libraryDesignCode;
   }
 
   public String getTargetedSequencing() {
@@ -164,11 +194,16 @@ public class Sample {
 
     private String id;
     private String name;
+    private Long requisitionId;
+    private String requisitionName;
     private String tissueOrigin;
     private String tissueType;
     private String timepoint;
+    private String secondaryId;
     private String groupId;
     private String project;
+    private String nucleicAcidType;
+    private String libraryDesignCode;
     private String targetedSequencing;
     private LocalDate createdDate;
     private BigDecimal volume;
@@ -193,6 +228,16 @@ public class Sample {
       return this;
     }
 
+    public Builder requisitionId(Long requisitionId) {
+      this.requisitionId = requisitionId;
+      return this;
+    }
+
+    public Builder requisitionName(String requisitionName) {
+      this.requisitionName = requisitionName;
+      return this;
+    }
+
     public Builder tissueOrigin(String tissueOrigin) {
       this.tissueOrigin = tissueOrigin;
       return this;
@@ -208,6 +253,11 @@ public class Sample {
       return this;
     }
 
+    public Builder secondaryId(String secondaryId) {
+      this.secondaryId = secondaryId;
+      return this;
+    }
+
     public Builder groupId(String groupId) {
       this.groupId = groupId;
       return this;
@@ -215,6 +265,16 @@ public class Sample {
 
     public Builder project(String project) {
       this.project = project;
+      return this;
+    }
+
+    public Builder nucleicAcidType(String nucleicAcidType) {
+      this.nucleicAcidType = nucleicAcidType;
+      return this;
+    }
+
+    public Builder libraryDesignCode(String libraryDesignCode) {
+      this.libraryDesignCode = libraryDesignCode;
       return this;
     }
 

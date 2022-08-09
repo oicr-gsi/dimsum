@@ -32,7 +32,17 @@ export interface Donor {
 }
 
 export interface Run {
+  id: number;
   name: string;
+  containerModel?: string;
+  sequencingParameters?: string;
+  completionDate?: string;
+  qcPassed?: boolean;
+  qcUser?: string;
+  qcDate?: string;
+  dataReviewPassed?: boolean;
+  dataReviewUser?: string;
+  dataReviewDate?: string;
 }
 
 export interface Test {
@@ -593,7 +603,16 @@ function makeSampleTooltip(sample: Sample) {
     urls.dimsum.donor(sample.donor.name),
     sample.donor.externalName
   );
-  // TODO: add requisition links
+  // requisition links
+  if (sample.requisitionId && sample.requisitionName) {
+    addTooltipRow(
+      bottomContainer,
+      "Requisition",
+      sample.requisitionName,
+      urls.miso.requisition(sample.requisitionId),
+      urls.dimsum.requisition(sample.requisitionId)
+    );
+  }
   tooltipContainer.appendChild(topContainer);
   tooltipContainer.appendChild(bottomContainer);
   return tooltipContainer;
