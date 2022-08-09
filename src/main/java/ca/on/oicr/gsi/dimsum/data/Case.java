@@ -26,7 +26,7 @@ public class Case {
   private final String timepoint;
   private final boolean stopped;
   private final List<Sample> receipts;
-  private final LocalDate earliestReceiptDate;
+  private final LocalDate startDate;
   private final List<Test> tests;
   private final List<Requisition> requisitions;
   private final LocalDate latestActivityDate;
@@ -44,7 +44,9 @@ public class Case {
     this.receipts = unmodifiableList(builder.receipts);
     this.tests = unmodifiableList(builder.tests);
     this.requisitions = unmodifiableList(builder.requisitions);
-    this.earliestReceiptDate = builder.receipts.stream().map(Sample::getCreatedDate)
+    this.startDate = builder.receipts.stream()
+        .filter(sample -> !"R".equals(sample.getTissueType()))
+        .map(Sample::getCreatedDate)
         .min(LocalDate::compareTo).orElse(null);
     this.latestActivityDate = Stream
         .of(receipts.stream().map(Sample::getLatestActivityDate),
@@ -94,8 +96,8 @@ public class Case {
     return receipts;
   }
 
-  public LocalDate getEarliestReceiptDate() {
-    return earliestReceiptDate;
+  public LocalDate getStartDate() {
+    return startDate;
   }
 
   public List<Test> getTests() {

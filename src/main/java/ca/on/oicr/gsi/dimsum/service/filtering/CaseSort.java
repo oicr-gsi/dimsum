@@ -12,7 +12,7 @@ public enum CaseSort {
   // @formatter:off
   ASSAY("Assay", Comparator.comparing(Case::getAssayName)),
   DONOR("Donor", Comparator.comparing(kase -> kase.getDonor().getName())),
-  RECEIPT_DATE("First Receipt", Comparator.comparing(Case::getEarliestReceiptDate)),
+  START_DATE("Start Date", Comparator.comparing(Case::getStartDate)),
   LAST_ACTIVITY("Latest Activity", Comparator.comparing(Case::getLatestActivityDate));
   // @formatter:on
 
