@@ -71,7 +71,7 @@ public class CaseLoaderTest {
   @Test
   public void testLoadSamples() throws Exception {
     try (FileReader reader = sut.getSampleReader()) {
-      Map<String, Donor> donorsById = sut.loadDonors(reader);
+      Map<String, Donor> donorsById = sut.loadDonors(sut.getDonorReader());
       Map<String, Sample> samplesById = sut.loadSamples(reader, donorsById);
       assertEquals(20, samplesById.size());
       assertSample(samplesById.get(testSampleId));
