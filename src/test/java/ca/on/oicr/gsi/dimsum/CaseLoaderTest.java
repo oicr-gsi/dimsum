@@ -3,6 +3,7 @@ package ca.on.oicr.gsi.dimsum;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import ca.on.oicr.gsi.dimsum.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
 import java.time.*;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +62,21 @@ public class CaseLoaderTest {
       Donor donor = mock(Donor.class);
       when(donor.getId()).thenReturn("SAM413576");
       Map<String, Donor> donorsById = Map.of(donor.getId(), donor);
-      Map<String, Sample> samplesById = sut.loadSamples(reader, donorsById);
+
+      Map<Long, Run> runsById = new HashMap<>();
+      runsById.put(5459L, mock(Run.class));
+      runsById.put(5460L, mock(Run.class));
+      runsById.put(5467L, mock(Run.class));
+      runsById.put(5476L, mock(Run.class));
+      runsById.put(5481L, mock(Run.class));
+      runsById.put(5540L, mock(Run.class));
+
+      Requisition requisition = mock(Requisition.class);
+      when(requisition.getName()).thenReturn("REQ-1");
+      Map<Long, Requisition> requisitionsById = Collections.singletonMap(512L, requisition);
+
+      Map<String, Sample> samplesById =
+          sut.loadSamples(reader, donorsById, runsById, requisitionsById);
       assertEquals(20, samplesById.size());
       assertSample(samplesById.get(testSampleId));
     }
