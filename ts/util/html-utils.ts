@@ -104,14 +104,14 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
 }
 
 export function makeTooltip(target: HTMLElement, contents: DocumentFragment) {
-  const toolTipConatiner = document.createElement("div");
-  toolTipConatiner.className = "inline";
-  target.classList.add("group", "hover:text-green-200");
   const tooltipContainer = document.createElement("div");
-  tooltipContainer.className =
+  tooltipContainer.className = "inline";
+  target.classList.add("group", "hover:text-green-200");
+  const tooltipContentsContainer = document.createElement("div");
+  tooltipContentsContainer.className =
     "absolute -ml-8 bg-white w-fit h-fit p-2 border-2 border-dotted border-green-200 font-inter font-14 font-medium group-hover:visible group-hover:text-green-200 invisible";
-  tooltipContainer.appendChild(contents);
-  target.appendChild(tooltipContainer);
-  toolTipConatiner.appendChild(target);
-  return toolTipConatiner;
+  tooltipContentsContainer.appendChild(contents);
+  target.appendChild(tooltipContentsContainer);
+  tooltipContainer.appendChild(target);
+  return tooltipContainer;
 }

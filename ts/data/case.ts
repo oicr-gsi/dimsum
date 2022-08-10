@@ -550,7 +550,7 @@ function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
 }
 
 function makeSampleTooltip(sample: Sample) {
-  const toolTipConatiner = new DocumentFragment();
+  const tooltipContainer = new DocumentFragment();
   const topContainer = document.createElement("div");
   topContainer.className = "flex flex-col space-y-1 text-black";
   const bottomContainer = document.createElement("div");
@@ -591,9 +591,9 @@ function makeSampleTooltip(sample: Sample) {
     sample.donor.externalName
   );
   // TODO: add requisition links
-  toolTipConatiner.appendChild(topContainer);
-  toolTipConatiner.appendChild(bottomContainer);
-  return toolTipConatiner;
+  tooltipContainer.appendChild(topContainer);
+  tooltipContainer.appendChild(bottomContainer);
+  return tooltipContainer;
 }
 
 function addRequisitionIcons(
