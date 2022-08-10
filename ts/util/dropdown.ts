@@ -101,6 +101,6 @@ function makeDropdownButton() {
 function makeDropdownMenuContainer() {
   const dropdownMenuContainer = document.createElement("menu");
   dropdownMenuContainer.className =
-    "absolute hidden mt-2 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer";
+    "absolute hidden mt-2 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer z-10";
   return dropdownMenuContainer;
 }

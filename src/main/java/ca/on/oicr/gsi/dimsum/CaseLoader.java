@@ -159,7 +159,7 @@ public class CaseLoader {
             .tissueType(parseString(json, "tissue_type", true))
             .timepoint(parseString(json, "timepoint"))
             .groupId(parseString(json, "group_id"))
-            .project(parseString(json, "project_name"))
+            .project(parseString(json, "project_name", true))
             .targetedSequencing(parseString(json, "targeted_sequencing"))
             .createdDate(parseSampleCreatedDate(json))
             .run(parseRun(json))

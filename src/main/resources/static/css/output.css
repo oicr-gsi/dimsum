@@ -529,16 +529,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   left: 0px;
 }
 
+.z-10{
+  z-index: 10;
+}
+
 .z-40{
   z-index: 40;
 }
 
 .z-50{
   z-index: 50;
-}
-
-.z-10{
-  z-index: 10;
 }
 
 .float-right{
@@ -594,16 +594,20 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-top: 1rem;
 }
 
+.mt-3{
+  margin-top: 0.75rem;
+}
+
+.-ml-4{
+  margin-left: -1rem;
+}
+
 .ml-2{
   margin-left: 0.5rem;
 }
 
-.mt-1{
-  margin-top: 0.25rem;
-}
-
-.mt-3{
-  margin-top: 0.75rem;
+.-ml-8{
+  margin-left: -2rem;
 }
 
 .block{
@@ -612,6 +616,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .inline-block{
   display: inline-block;
+}
+
+.inline{
+  display: inline;
 }
 
 .flex{
@@ -746,16 +754,8 @@ Ensure the default browser behavior of the `hidden` attribute.
   align-items: center;
 }
 
-.gap-4{
-  gap: 1rem;
-}
-
 .gap-2{
   gap: 0.5rem;
-}
-
-.gap-1{
-  gap: 0.25rem;
 }
 
 .gap-y-1{
@@ -766,12 +766,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
-}
-
-.space-x-1 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-x-reverse: 0;
-  margin-right: calc(0.25rem * var(--tw-space-x-reverse));
-  margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
 .space-y-1 > :not([hidden]) ~ :not([hidden]){
@@ -1096,4 +1090,9 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .group:hover .group-hover\:visible{
   visibility: visible;
+}
+
+.group:hover .group-hover\:text-green-200{
+  --tw-text-opacity: 1;
+  color: rgb(91 158 90 / var(--tw-text-opacity));
 }

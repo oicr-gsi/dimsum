@@ -1,7 +1,8 @@
 package ca.on.oicr.gsi.dimsum;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import ca.on.oicr.gsi.dimsum.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +54,26 @@ public class CaseLoaderTest {
   }
 
   @Test
+  public void testLoadSamples() throws Exception {
+    try (FileReader reader = sut.getSampleReader()) {
+      Donor donor = mock(Donor.class);
+      when(donor.getId()).thenReturn("SAM413576");
+      Map<String, Donor> donorsById = Map.of(donor.getId(), donor);
+      Map<String, Sample> samplesById = sut.loadSamples(reader, donorsById);
+      assertEquals(20, samplesById.size());
+      assertSample(samplesById.get(testSampleId));
+    }
+  }
+
+  private void assertSample(Sample sample) {
+    assertNotNull(sample);
+    assertEquals(testSampleId, sample.getId());
+    assertEquals("PROJ_1289_Ly_R_nn_1-1", sample.getName());
+    assertEquals(Boolean.TRUE, sample.getQcPassed());
+    assertEquals(LocalDate.of(2021, 7, 19), sample.getQcDate());
+  }
+
+  @Test
   public void testLoadDonors() throws Exception {
     try (FileReader reader = sut.getDonorReader()) {
       Map<String, Donor> donorsById = sut.loadDonors(reader);
@@ -66,24 +87,6 @@ public class CaseLoaderTest {
     assertNotNull(donor);
     assertEquals(testDonorId, donor.getId());
     assertEquals("PROJ_1289", donor.getName());
-  }
-
-  @Test
-  public void testLoadSamples() throws Exception {
-    try (FileReader reader = sut.getSampleReader()) {
-      Map<String, Donor> donorsById = sut.loadDonors(sut.getDonorReader());
-      Map<String, Sample> samplesById = sut.loadSamples(reader, donorsById);
-      assertEquals(20, samplesById.size());
-      assertSample(samplesById.get(testSampleId));
-    }
-  }
-
-  private void assertSample(Sample sample) {
-    assertNotNull(sample);
-    assertEquals(testSampleId, sample.getId());
-    assertEquals("PROJ_1289_Ly_R_nn_1-1", sample.getName());
-    assertEquals(Boolean.TRUE, sample.getQcPassed());
-    assertEquals(LocalDate.of(2021, 7, 19), sample.getQcDate());
   }
 
   @Test

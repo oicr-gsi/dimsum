@@ -140,7 +140,8 @@ export class TableBuilder<ParentType, ChildType> {
       "border-grey-200",
       "border-2",
       "rounded-xl",
-      "overflow-hidden"
+      "overflow-hidden",
+      "relative"
     );
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);

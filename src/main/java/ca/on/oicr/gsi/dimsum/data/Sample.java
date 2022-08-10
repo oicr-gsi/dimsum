@@ -40,13 +40,13 @@ public class Sample {
     this.tissueType = requireNonNull(builder.tissueType);
     this.timepoint = builder.timepoint;
     this.groupId = builder.groupId;
-    this.project = builder.project;
+    this.project = requireNonNull(builder.project);
     this.targetedSequencing = builder.targetedSequencing;
     this.createdDate = requireNonNull(builder.createdDate);
     this.volume = builder.volume;
     this.concentration = builder.concentration;
     this.run = builder.run;
-    this.donor = builder.donor;
+    this.donor = requireNonNull(builder.donor);
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
     this.qcUser = builder.qcUser;

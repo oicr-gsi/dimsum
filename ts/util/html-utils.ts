@@ -85,7 +85,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
 export function makeClickout() {
   const clickout = document.createElement("button");
   clickout.className =
-    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
+    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden z-10";
   return clickout;
 }
 
@@ -103,11 +103,15 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   return div;
 }
 
-export function addToolTip(target: HTMLElement, contents: DocumentFragment) {
-  target.classList.add("group");
-  const tipContainer = document.createElement("div");
-  tipContainer.className =
-    "absolute bg-white w-fit h-fit p-2 border-2 border-dotted border-green-200 font-inter font-14 font-medium group-hover:visible invisible";
-  tipContainer.appendChild(contents);
-  target.appendChild(tipContainer);
+export function makeTooltip(target: HTMLElement, contents: DocumentFragment) {
+  const toolTipConatiner = document.createElement("div");
+  toolTipConatiner.className = "inline";
+  target.classList.add("group", "hover:text-green-200");
+  const tooltipContainer = document.createElement("div");
+  tooltipContainer.className =
+    "absolute -ml-8 bg-white w-fit h-fit p-2 border-2 border-dotted border-green-200 font-inter font-14 font-medium group-hover:visible group-hover:text-green-200 invisible";
+  tooltipContainer.appendChild(contents);
+  target.appendChild(tooltipContainer);
+  toolTipConatiner.appendChild(target);
+  return toolTipConatiner;
 }
