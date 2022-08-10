@@ -1,8 +1,10 @@
+import { getQcStatus } from "./data/qc-status";
 import {
   getFullDepthSequencingsDefinition,
   getLibraryQualificationsDefinition,
   Sample,
 } from "./data/sample";
+import { makeIcon, shadeElement } from "./util/html-utils";
 import { TableBuilder, TableDefinition } from "./util/table-builder";
 import { urls } from "./util/urls";
 
@@ -26,16 +28,29 @@ function makeTable(
   }
 }
 
+const runQcCell = document.getElementById("runStatus");
+if (!runQcCell) {
+  throw new Error("Run QC cell missing");
+}
+const statusString = runQcCell.getAttribute("data-run-status");
+const status = getQcStatus(statusString);
+const icon = makeIcon(status.icon);
+icon.title = status.label;
+runQcCell.appendChild(icon);
+shadeElement(runQcCell, status.cellStatus);
+
 makeTable(
   "libraryQualificationsTableContainer",
   getLibraryQualificationsDefinition(
-    urls.rest.runs.libraryQualifications(runName)
+    urls.rest.runs.libraryQualifications(runName),
+    false
   )
 );
 
 makeTable(
   "fullDepthSequencingsTableContainer",
   getFullDepthSequencingsDefinition(
-    urls.rest.runs.fullDepthSequencings(runName)
+    urls.rest.runs.fullDepthSequencings(runName),
+    false
   )
 );

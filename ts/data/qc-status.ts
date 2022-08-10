@@ -1,13 +1,20 @@
 import { CellStatus } from "../util/html-utils";
 
-type QcStatusKey =
-  | "construction"
-  | "analysis"
-  | "qc"
-  | "dataReview"
-  | "passed"
-  | "failed"
-  | "topUp";
+enum qcStatusKeyEnum {
+  "construction",
+  "analysis",
+  "qc",
+  "dataReview",
+  "passed",
+  "failed",
+  "topUp",
+}
+
+type QcStatusKey = keyof typeof qcStatusKeyEnum;
+
+function isQcStatusKey(str: string): str is QcStatusKey {
+  return str in qcStatusKeyEnum;
+}
 
 export interface QcStatus {
   label: string;
@@ -59,3 +66,12 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     cellStatus: "warning",
   },
 };
+
+export function getQcStatus(key?: string | null): QcStatus {
+  if (key && isQcStatusKey(key)) {
+    const goodKey: QcStatusKey = key;
+    return qcStatuses[goodKey];
+  } else {
+    throw new Error(`Invalid QC status key: ${key}`);
+  }
+}
