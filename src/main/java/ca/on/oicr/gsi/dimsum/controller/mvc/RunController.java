@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
+import ca.on.oicr.gsi.dimsum.data.Run;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
@@ -23,12 +24,31 @@ public class RunController {
     if (runAndLibraries == null) {
       throw new NotFoundException(String.format("No data found for run %s", runName));
     }
+    String runStatus = getRunStatus(runAndLibraries.getRun());
     model.put("title", String.format("%s Run Details", runName));
-    model.put("runName", runName);
-    // TODO: add sequencing attributes to display at top of page
+    model.put("run", runAndLibraries.getRun());
+    model.put("runStatus", runStatus);
     model.put("showLibraryQualifications", !runAndLibraries.getLibraryQualifications().isEmpty());
     model.put("showFullDepthSequencings", !runAndLibraries.getFullDepthSequencings().isEmpty());
     return "run";
+  }
+
+  private static String getRunStatus(Run run) {
+    // must return a QcStatusKey from qc-status.ts
+    if (run.getQcPassed() != null) {
+      if (run.getDataReviewPassed() == null) {
+        return "dataReview";
+      } else if (!run.getDataReviewPassed()) {
+        return "failed";
+      }
+    }
+    if (run.getQcPassed() == null) {
+      return "qc";
+    } else if (run.getQcPassed()) {
+      return "passed";
+    } else {
+      return "failed";
+    }
   }
 
 }

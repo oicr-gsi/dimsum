@@ -13,19 +13,40 @@
       <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">
         Run Details
       </h1>
-      <a id="misoRunLink" th:data-run-name="${runName}">
+      <a id="misoRunLink" th:data-run-name="${run.name}">
         <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
       </a>
     </div>
 
-    <!-- TODO: list sequencing attributes -->
+    <table class="w-full text-14 text-black font-medium font-inter border-separate border-spacing-0
+        border-grey-200 border-2 rounded-xl overflow-hidden mt-8">
+      <tr>
+        <th class="p-4 text-white font-semibold bg-grey-300 text-left align-text-top w-0
+            min-w-[200px] whitespace-nowrap">QC</th>
+        <td id="runStatus" th:data-run-status="${runStatus}" class="p-4 border-grey-200 border-l-1 text-left
+            align-text-top"></td>
+      </tr>
+      <tr>
+        <th class="p-4 border-grey-200 border-t-1 text-white font-semibold bg-grey-300 text-left
+            align-text-top whitespace-nowrap">Flow Cell</th>
+        <td class="p-4 border-grey-200 border-t-1 border-l-1 text-left align-text-top" th:text="${run.containerModel}">
+          (flow cell model)
+        </td>
+      </tr>
+      <tr>
+        <th class="p-4 border-grey-200 border-t-1 text-white font-semibold bg-grey-300 text-left
+            align-text-top whitespace-nowrap">Parameters</th>
+        <td class="p-4 border-grey-200 border-t-1 border-l-1 text-left align-text-top"
+          th:text="${run.sequencingParameters}">(sequencing parameters)</td>
+      </tr>
+    </table>
 
-    <h2 th:if="${showLibraryQualifications}" class="text-green-200 font-sarabun font-light font text-24 mt-8">Library
-      Qualifications</h2>
+    <h2 th:if="${showLibraryQualifications}" class="text-green-200 font-sarabun font-light font
+        text-24 mt-8">Library Qualifications</h2>
     <div th:if="${showLibraryQualifications}" id="libraryQualificationsTableContainer"></div>
 
-    <h2 th:if="${showFullDepthSequencings}" class="text-green-200 font-sarabun font-light font text-24 mt-8">Full Depth
-      Sequencings</h2>
+    <h2 th:if="${showFullDepthSequencings}" class="text-green-200 font-sarabun font-light font
+        text-24 mt-8">Full Depth Sequencings</h2>
     <div th:if="${showFullDepthSequencings}" id="fullDepthSequencingsTableContainer"></div>
 
     <script src="/js/run.js"></script>

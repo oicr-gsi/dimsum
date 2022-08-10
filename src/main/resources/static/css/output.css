@@ -614,30 +614,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-left: -2rem;
 }
 
-.-ml-1{
-  margin-left: -0.25rem;
-}
-
-.-ml-0\.5{
-  margin-left: -0.125rem;
-}
-
-.-ml-0{
-  margin-left: -0px;
-}
-
-.-mt-0\.5{
-  margin-top: -0.125rem;
-}
-
-.-mt-0{
-  margin-top: -0px;
-}
-
-.-mt-1{
-  margin-top: -0.25rem;
-}
-
 .block{
   display: block;
 }
@@ -682,14 +658,22 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: 8rem;
 }
 
+.w-full{
+  width: 100%;
+}
+
+.w-0{
+  width: 0px;
+}
+
 .w-fit{
   width: -webkit-fit-content;
   width: -moz-fit-content;
   width: fit-content;
 }
 
-.w-full{
-  width: 100%;
+.min-w-\[200px\]{
+  min-width: 200px;
 }
 
 .min-w-\[150px\]{
@@ -800,16 +784,20 @@ Ensure the default browser behavior of the `hidden` attribute.
   overflow: hidden;
 }
 
+.whitespace-nowrap{
+  white-space: nowrap;
+}
+
 .rounded-lg{
   border-radius: 0.5rem;
 }
 
-.rounded-md{
-  border-radius: 0.375rem;
-}
-
 .rounded-xl{
   border-radius: 0.75rem;
+}
+
+.rounded-md{
+  border-radius: 0.375rem;
 }
 
 .rounded-sm{
@@ -893,12 +881,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   padding: 0.5rem;
 }
 
-.p-1{
-  padding: 0.25rem;
-}
-
 .p-4{
   padding: 1rem;
+}
+
+.p-1{
+  padding: 0.25rem;
 }
 
 .p-3{
@@ -969,12 +957,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-size: 40px;
 }
 
-.text-12{
-  font-size: 12px;
-}
-
 .text-14{
   font-size: 14px;
+}
+
+.text-12{
+  font-size: 12px;
 }
 
 .font-light{

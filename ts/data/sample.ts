@@ -62,20 +62,24 @@ const qcStatusColumn: ColumnDefinition<Sample, void> = {
   },
 };
 
-const nameColumn: ColumnDefinition<Sample, void> = {
-  title: "Name",
-  addParentContents(sample, fragment) {
-    fragment.appendChild(makeNameDiv(sample.name, urls.miso.sample(sample.id)));
-    if (sample.run) {
-      const runName = sample.run.name;
+function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
+  return {
+    title: "Name",
+    addParentContents(sample, fragment) {
       fragment.appendChild(
-        makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+        makeNameDiv(sample.name, urls.miso.sample(sample.id))
       );
-      // TODO: add Dashi icon link
-    }
-  },
-  sortType: "text",
-};
+      if (includeRun && sample.run) {
+        const runName = sample.run.name;
+        fragment.appendChild(
+          makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+        );
+        // TODO: add Dashi icon link
+      }
+    },
+    sortType: "text",
+  };
+}
 
 const tissueAttributesColumn: ColumnDefinition<Sample, void> = {
   title: "Tissue Attributes",
@@ -137,7 +141,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
   defaultSort: defaultSort,
   columns: [
     qcStatusColumn,
-    nameColumn,
+    makeNameColumn(false),
     {
       title: "Requisition",
       addParentContents(sample, fragment) {
@@ -177,7 +181,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
   defaultSort: defaultSort,
   columns: [
     qcStatusColumn,
-    nameColumn,
+    makeNameColumn(false),
     tissueAttributesColumn,
     {
       title: "Nucleic Acid Type",
@@ -203,7 +207,7 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   defaultSort: defaultSort,
   columns: [
     qcStatusColumn,
-    nameColumn,
+    makeNameColumn(false),
     tissueAttributesColumn,
     designColumn,
     {
@@ -218,50 +222,58 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
 };
 
 export function getLibraryQualificationsDefinition(
-  queryUrl: string
+  queryUrl: string,
+  includeSequencingAttributes: boolean
 ): TableDefinition<Sample, void> {
+  const columns: ColumnDefinition<Sample, void>[] = [
+    qcStatusColumn,
+    makeNameColumn(includeSequencingAttributes),
+    tissueAttributesColumn,
+    designColumn,
+    {
+      title: "(Metric Columns)",
+      addParentContents(sample, fragment) {
+        addTodoIcon(fragment); // TODO
+      },
+      getCellHighlight: todoHighlight,
+    },
+    latestActivityColumn,
+  ];
+  if (includeSequencingAttributes) {
+    columns.splice(4, 0, sequencingAttributesColumn);
+  }
   return {
     queryUrl: queryUrl,
     defaultSort: defaultSort,
-    columns: [
-      qcStatusColumn,
-      nameColumn,
-      tissueAttributesColumn,
-      designColumn,
-      sequencingAttributesColumn,
-      {
-        title: "(Metric Columns)",
-        addParentContents(sample, fragment) {
-          addTodoIcon(fragment); // TODO
-        },
-        getCellHighlight: todoHighlight,
-      },
-      latestActivityColumn,
-    ],
+    columns: columns,
   };
 }
 
 export function getFullDepthSequencingsDefinition(
-  queryUrl: string
+  queryUrl: string,
+  includeSequencingAttributes: boolean
 ): TableDefinition<Sample, void> {
+  const columns: ColumnDefinition<Sample, void>[] = [
+    qcStatusColumn,
+    makeNameColumn(includeSequencingAttributes),
+    tissueAttributesColumn,
+    designColumn,
+    {
+      title: "(Metric Columns)",
+      addParentContents(sample, fragment) {
+        addTodoIcon(fragment); // TODO
+      },
+      getCellHighlight: todoHighlight,
+    },
+    latestActivityColumn,
+  ];
+  if (includeSequencingAttributes) {
+    columns.splice(4, 0, sequencingAttributesColumn);
+  }
   return {
     queryUrl: queryUrl,
     defaultSort: defaultSort,
-    columns: [
-      qcStatusColumn,
-      nameColumn,
-      tissueAttributesColumn,
-      designColumn,
-      sequencingAttributesColumn,
-      {
-        title: "(Metric Columns)",
-        addParentContents(sample, fragment) {
-          addTodoIcon(fragment); // TODO
-        },
-        getCellHighlight: todoHighlight,
-      },
-      latestActivityColumn,
-    ],
+    columns: columns,
   };
 }
 

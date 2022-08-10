@@ -22,11 +22,11 @@ new TableBuilder(
   "libraryPreparationsTableContainer"
 ).build();
 new TableBuilder(
-  getLibraryQualificationsDefinition(urls.rest.libraryQualifications),
+  getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true),
   "libraryQualificationsTableContainer"
 ).build();
 new TableBuilder(
-  getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings),
+  getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
   "fullDepthSequencingsTableContainer"
 ).build();
 new TableBuilder(
