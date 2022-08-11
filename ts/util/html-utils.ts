@@ -8,7 +8,14 @@ export function addColumnHeader(
   th.className =
     "p-4 text-white font-semibold bg-grey-300 text-left align-text-top" +
     (index > 0 ? " border-grey-200 border-l-1" : "");
-  th.appendChild(document.createTextNode(header));
+
+  // allow line-wrapping on "/" character
+  header.split("/").forEach((part, index, arr) => {
+    th.appendChild(document.createTextNode(`${index > 0 ? "/" : ""}${part}`));
+    if (index < arr.length - 1) {
+      th.appendChild(document.createElement("wbr"));
+    }
+  });
   thead.appendChild(th);
 }
 
