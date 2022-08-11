@@ -627,15 +627,11 @@ function addRequisitionIcon(
 }
 
 function makeRequisitionTooltip(requisition: Requisition) {
-  const tooltipContainer = new DocumentFragment();
-  tooltipContainer.appendChild(
-    makeNameDiv(
-      requisition.name,
-      urls.miso.requisition(requisition.id),
-      urls.dimsum.requisition(requisition.id)
-    )
+  return makeNameDiv(
+    requisition.name,
+    urls.miso.requisition(requisition.id),
+    urls.dimsum.requisition(requisition.id)
   );
-  return tooltipContainer;
 }
 
 function addTooltipRow(
@@ -644,16 +640,16 @@ function addTooltipRow(
   name: string,
   misoUrl: string,
   dimsumUrl?: string,
-  externalDonorName?: string
+  additionalText?: string
 ) {
   const labelContainer = document.createElement("span");
   labelContainer.innerHTML = `${label}:`;
   const valueContainer = document.createElement("div");
   valueContainer.appendChild(makeNameDiv(name, misoUrl, dimsumUrl));
-  if (externalDonorName) {
+  if (additionalText) {
     const externalDonorNameContainer = document.createElement("span");
     externalDonorNameContainer.className = "block";
-    externalDonorNameContainer.innerHTML = externalDonorName;
+    externalDonorNameContainer.innerHTML = additionalText;
     valueContainer.appendChild(externalDonorNameContainer);
   }
   container.appendChild(labelContainer);

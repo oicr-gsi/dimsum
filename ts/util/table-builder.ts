@@ -126,7 +126,8 @@ export class TableBuilder<ParentType, ChildType> {
     this.container.appendChild(topControlsContainer);
 
     const tableContainer = document.createElement("div");
-    tableContainer.className = "mt-4 overflow-auto";
+    tableContainer.className =
+      "mt-4 overflow-x-auto overflow-y:hidden relative";
     this.table = document.createElement("table");
     // set global default styling settings
     this.table.classList.add(
@@ -140,8 +141,7 @@ export class TableBuilder<ParentType, ChildType> {
       "border-grey-200",
       "border-2",
       "rounded-xl",
-      "overflow-hidden",
-      "relative"
+      "overflow-hidden"
     );
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
