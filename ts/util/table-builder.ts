@@ -127,7 +127,7 @@ export class TableBuilder<ParentType, ChildType> {
 
     const tableContainer = document.createElement("div");
     tableContainer.className =
-      "mt-4 overflow-x-auto overflow-y:hidden relative";
+      "mt-4 overflow-x-auto overflow-y-hidden relative";
     this.table = document.createElement("table");
     // set global default styling settings
     this.table.classList.add(

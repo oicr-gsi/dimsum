@@ -602,12 +602,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-left: -2rem;
 }
 
-.ml-2{
-  margin-left: 0.5rem;
-}
-
 .-mt-1{
   margin-top: -0.25rem;
+}
+
+.ml-2{
+  margin-left: 0.5rem;
 }
 
 .block{
@@ -780,6 +780,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .overflow-x-auto{
   overflow-x: auto;
+}
+
+.overflow-y-hidden{
+  overflow-y: hidden;
 }
 
 .rounded-lg{
@@ -1005,16 +1009,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(170 176 184 / var(--tw-text-opacity));
 }
 
-.opacity-0{
-  opacity: 0;
-}
-
-.shadow-sm{
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
 .outline-0{
   outline-width: 0px;
 }
@@ -1056,16 +1050,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .\!filter{
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow) !important;
-}
-
-.transition-opacity{
-  transition-property: opacity;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-.duration-300{
-  transition-duration: 300ms;
 }
 
 .border-spacing-0 {
