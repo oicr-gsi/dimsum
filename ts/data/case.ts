@@ -8,7 +8,7 @@ import {
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
-import { getSampleQcStatus, Sample } from "./sample";
+import { getQcStatus, Sample } from "./sample";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   getLatestRequisitionQc,
@@ -31,18 +31,22 @@ export interface Donor {
   externalName: string;
 }
 
-export interface Run {
-  id: number;
-  name: string;
-  containerModel?: string;
-  sequencingParameters?: string;
-  completionDate?: string;
+export interface Qcable {
   qcPassed?: boolean;
+  qcReason?: string;
   qcUser?: string;
   qcDate?: string;
   dataReviewPassed?: boolean;
   dataReviewUser?: string;
   dataReviewDate?: string;
+}
+
+export interface Run extends Qcable {
+  id: number;
+  name: string;
+  containerModel?: string;
+  sequencingParameters?: string;
+  completionDate?: string;
 }
 
 export interface Test {
@@ -551,11 +555,11 @@ function addNaText(fragment: DocumentFragment) {
 
 function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   samples.forEach((sample, i) => {
-    const status = getSampleQcStatus(sample);
-    const tooltipIcon = makeIcon(status.icon);
+    const status = getQcStatus(sample);
+    const icon = makeIcon(status.icon);
     const tooltipInstance = Tooltip.getInstance();
-    tooltipInstance.addTarget(tooltipIcon, makeSampleTooltip(sample));
-    fragment.appendChild(tooltipIcon);
+    tooltipInstance.addTarget(icon, makeSampleTooltip(sample));
+    fragment.appendChild(icon);
     if (i < samples.length - 1) {
       fragment.appendChild(document.createTextNode(" "));
     }

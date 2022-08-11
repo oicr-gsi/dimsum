@@ -21,6 +21,7 @@ export interface QcStatus {
   icon: string;
   qcComplete: boolean;
   cellStatus?: CellStatus;
+  priority: number; // lower wins when combining multiple statuses (run-libraries)
 }
 
 export const qcStatuses: Record<QcStatusKey, QcStatus> = {
@@ -29,41 +30,48 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     icon: "road-barrier",
     qcComplete: false,
     cellStatus: "warning",
+    priority: 0,
   },
   analysis: {
     label: "Pending analysis",
     icon: "hourglass",
     qcComplete: false,
     cellStatus: "warning",
+    priority: 3,
   },
   qc: {
     label: "Pending QC",
     icon: "magnifying-glass",
     qcComplete: false,
     cellStatus: "warning",
+    priority: 4,
   },
   dataReview: {
     label: "Pending data review",
     icon: "glasses",
     qcComplete: true,
     cellStatus: "warning",
+    priority: 5,
   },
   passed: {
     label: "Passed",
     icon: "check",
     qcComplete: true,
+    priority: 7,
   },
   failed: {
     label: "Failed",
     icon: "xmark",
     qcComplete: true,
     cellStatus: "error",
+    priority: 1,
   },
   topUp: {
     label: "Top-up Required",
     icon: "fill-drip",
     qcComplete: true,
     cellStatus: "warning",
+    priority: 6,
   },
 };
 
