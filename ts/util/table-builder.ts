@@ -124,11 +124,11 @@ export class TableBuilder<ParentType, ChildType> {
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);
-
+    // tableWrapper allows tooltips to overflow without using additional scrollbars
     const tableWrapper = document.createElement("div");
     tableWrapper.className = "relative";
     const tableContainer = document.createElement("div");
-    tableContainer.className = "mt-4 overflow-x-auto overflow-x-hidden";
+    tableContainer.className = "mt-4 overflow-x-auto overflow-y-hidden";
     this.table = document.createElement("table");
     // set global default styling settings
     this.table.classList.add(
