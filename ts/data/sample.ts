@@ -1,19 +1,14 @@
-import {
-  addMisoIcon,
-  CellStatus,
-  makeIcon,
-  makeNameDiv,
-} from "../util/html-utils";
+import { CellStatus, makeIcon, makeNameDiv } from "../util/html-utils";
 import {
   ColumnDefinition,
   SortDefinition,
   TableDefinition,
 } from "../util/table-builder";
 import { urls } from "../util/urls";
-import { Donor, Run } from "./case";
+import { Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 
-export interface Sample {
+export interface Sample extends Qcable {
   id: string;
   name: string;
   requisitionId?: number;
@@ -32,13 +27,6 @@ export interface Sample {
   concentration?: number;
   run?: Run;
   donor: Donor;
-  qcPassed?: boolean;
-  qcReason: string;
-  qcUser: string;
-  qcDate: string;
-  dataReviewPassed: boolean;
-  dataReviewUser: string;
-  dataReviewDate: string;
   latestActivityDate: string;
 }
 
@@ -48,19 +36,24 @@ const defaultSort: SortDefinition = {
   type: "date",
 };
 
-const qcStatusColumn: ColumnDefinition<Sample, void> = {
-  title: "QC Status",
-  addParentContents(sample, fragment) {
-    const status = getSampleQcStatus(sample);
-    const icon = makeIcon(status.icon);
-    icon.title = status.label;
-    fragment.appendChild(icon);
-  },
-  getCellHighlight(sample) {
-    const status = getSampleQcStatus(sample);
-    return status.cellStatus || null;
-  },
-};
+function makeQcStatusColumn(
+  includeRun: boolean
+): ColumnDefinition<Sample, void> {
+  const getStatus = includeRun ? getQcStatus : getSampleQcStatus;
+  return {
+    title: "QC Status",
+    addParentContents(sample, fragment) {
+      const status = getStatus(sample);
+      const icon = makeIcon(status.icon);
+      icon.title = status.label;
+      fragment.appendChild(icon);
+    },
+    getCellHighlight(sample) {
+      const status = getStatus(sample);
+      return status.cellStatus || null;
+    },
+  };
+}
 
 function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   return {
@@ -140,7 +133,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
   defaultSort: defaultSort,
   columns: [
-    qcStatusColumn,
+    makeQcStatusColumn(false),
     makeNameColumn(false),
     {
       title: "Requisition",
@@ -180,7 +173,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
   defaultSort: defaultSort,
   columns: [
-    qcStatusColumn,
+    makeQcStatusColumn(false),
     makeNameColumn(false),
     tissueAttributesColumn,
     {
@@ -206,7 +199,7 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
   defaultSort: defaultSort,
   columns: [
-    qcStatusColumn,
+    makeQcStatusColumn(false),
     makeNameColumn(false),
     tissueAttributesColumn,
     designColumn,
@@ -226,7 +219,7 @@ export function getLibraryQualificationsDefinition(
   includeSequencingAttributes: boolean
 ): TableDefinition<Sample, void> {
   const columns: ColumnDefinition<Sample, void>[] = [
-    qcStatusColumn,
+    makeQcStatusColumn(includeSequencingAttributes),
     makeNameColumn(includeSequencingAttributes),
     tissueAttributesColumn,
     designColumn,
@@ -254,7 +247,7 @@ export function getFullDepthSequencingsDefinition(
   includeSequencingAttributes: boolean
 ): TableDefinition<Sample, void> {
   const columns: ColumnDefinition<Sample, void>[] = [
-    qcStatusColumn,
+    makeQcStatusColumn(includeSequencingAttributes),
     makeNameColumn(includeSequencingAttributes),
     tissueAttributesColumn,
     designColumn,
@@ -277,7 +270,20 @@ export function getFullDepthSequencingsDefinition(
   };
 }
 
+export function getQcStatus(sample: Sample): QcStatus {
+  const sampleStatus = getSampleQcStatus(sample);
+  if (sample.run) {
+    const runStatus = getRunQcStatus(sample.run);
+    return runStatus.priority < sampleStatus.priority
+      ? runStatus
+      : sampleStatus;
+  } else {
+    return sampleStatus;
+  }
+}
+
 export function getSampleQcStatus(sample: Sample): QcStatus {
+  // TODO: run vs sample QC.. add "priority" to qcStatuses?
   const firstStatus = getFirstReviewStatus(sample);
   if (sample.run && firstStatus.qcComplete) {
     // run-libraries also have data review
@@ -291,12 +297,25 @@ export function getSampleQcStatus(sample: Sample): QcStatus {
   return firstStatus;
 }
 
-function getFirstReviewStatus(sample: Sample) {
-  if (sample.qcPassed === false) {
+export function getRunQcStatus(run: Qcable): QcStatus {
+  const firstStatus = getFirstReviewStatus(run);
+  if (firstStatus.qcComplete) {
+    if (!run.dataReviewDate) {
+      return qcStatuses.dataReview;
+    } else if (run.dataReviewPassed === false) {
+      return qcStatuses.failed;
+    }
+    // if data review is passed, first sign-off status is used
+  }
+  return firstStatus;
+}
+
+function getFirstReviewStatus(qcable: Qcable) {
+  if (qcable.qcPassed === false) {
     return qcStatuses.failed;
-  } else if (sample.qcPassed === true) {
+  } else if (qcable.qcPassed === true) {
     return qcStatuses.passed;
-  } else if (sample.qcReason === "Top-up Required") {
+  } else if (qcable.qcReason === "Top-up Required") {
     return qcStatuses.topUp;
   } else {
     return qcStatuses.qc;
