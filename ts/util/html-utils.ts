@@ -16,7 +16,7 @@ export function addColumnHeader(
 export function makeCell(tr: HTMLTableRowElement, index: number) {
   const td = tr.insertCell();
   td.className =
-    "p-4 border-grey-200 border-t-1 text-left align-text-top" +
+    "p-3 border-grey-200 border-t-1 text-left align-text-top" +
     (index > 0 ? " border-l-1" : "");
   return td;
 }
