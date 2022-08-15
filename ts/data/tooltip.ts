@@ -12,7 +12,9 @@ class Tooltip {
       this.mouseOnIcon = true;
       const targetY = this.getOffset(target).bottom;
       const targetX = this.getOffset(target).left;
+      // empties tooltip container
       this.tooltipContainer.replaceChildren();
+      // node needs to be cloned since appendChild removes it
       this.tooltipContainer.appendChild(contents.cloneNode(true));
       this.tooltipContainer.style.top = targetY + "px";
       this.tooltipContainer.style.left = targetX + "px";
@@ -30,6 +32,7 @@ class Tooltip {
       this.mouseOnToolTip = false;
       this.update();
     };
+    // redundant maybe? icons are pretty small so this isn't an issue esp for vert scolling
     window.addEventListener("onscroll", () => {
       this.tooltipContainer.remove();
     });
@@ -72,6 +75,7 @@ class Tooltip {
   };
 
   // https://stackoverflow.com/questions/442404/retrieve-the-position-x-y-of-an-html-element
+  // used to get the position of an element relative to a scrolled window
   private getOffset(el: HTMLElement) {
     const rect = el.getBoundingClientRect();
     return {
@@ -81,6 +85,7 @@ class Tooltip {
   }
 }
 
+// A wrapper function since we don't use the tooltip class itself anywhere ATM
 export function makeTooltip(target: HTMLElement, contents: Node) {
   const tooltip = new Tooltip(target, contents);
   return target;
