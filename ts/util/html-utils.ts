@@ -102,16 +102,3 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   addMisoIcon(div, misoUrl);
   return div;
 }
-
-export function makeTooltip(target: HTMLElement, contents: Node) {
-  const tooltipContainer = document.createElement("div");
-  tooltipContainer.className = "inline group relative";
-  target.classList.add("group-hover:text-green-200");
-  const tooltipContentsContainer = document.createElement("div");
-  tooltipContentsContainer.className =
-    "absolute block z-20 -ml-8 -mt-1 bg-white w-fit h-fit p-2 border-2 border-dotted border-green-200 font-inter font-14 font-medium group-hover:visible group-hover:text-green-200 invisible";
-  tooltipContentsContainer.appendChild(contents);
-  tooltipContainer.appendChild(target);
-  tooltipContainer.appendChild(tooltipContentsContainer);
-  return tooltipContainer;
-}

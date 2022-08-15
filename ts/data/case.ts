@@ -5,7 +5,6 @@ import {
   styleText,
   addMisoIcon,
   makeNameDiv,
-  makeTooltip,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -17,6 +16,7 @@ import {
   Requisition,
   RequisitionQc,
 } from "./requisition";
+import { makeTooltip } from "./tooltip";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
