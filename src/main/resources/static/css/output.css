@@ -533,10 +533,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   z-index: 10;
 }
 
-.z-20{
-  z-index: 20;
-}
-
 .z-40{
   z-index: 40;
 }
@@ -624,10 +620,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .inline-block{
   display: inline-block;
-}
-
-.inline{
-  display: inline;
 }
 
 .flex{
@@ -1098,10 +1090,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .disabled\:text-grey-200:disabled{
   --tw-text-opacity: 1;
   color: rgb(170 176 184 / var(--tw-text-opacity));
-}
-
-.group:hover .group-hover\:visible{
-  visibility: visible;
 }
 
 .group:hover .group-hover\:text-green-200{
