@@ -125,7 +125,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);
     const tableContainer = document.createElement("div");
-    tableContainer.className = "mt-4 overflow-x-auto overflow-y-hidden";
+    tableContainer.className = "mt-4 overflow-auto";
     this.table = document.createElement("table");
     // set global default styling settings
     this.table.classList.add(

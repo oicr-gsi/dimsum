@@ -1,13 +1,11 @@
 export class Tooltip {
   private static instance: Tooltip;
-  private mouseOnIcon: boolean;
-  private mouseOnToolTip: boolean;
+  private mouseOnIcon: boolean = false;
+  private mouseOnToolTip: boolean = false;
   private tooltipContainer: HTMLElement;
   private activeTarget?: HTMLElement;
 
   private constructor() {
-    this.mouseOnIcon = false;
-    this.mouseOnToolTip = false;
     this.tooltipContainer = this.getTootipContainer();
     this.tooltipContainer.onmouseenter = () => {
       this.mouseOnToolTip = true;
@@ -28,12 +26,8 @@ export class Tooltip {
     div.id = "tooltip";
     div.classList.add(
       "absolute",
-      "block",
       "-ml-8",
-      "-mt-1",
       "bg-white",
-      "w-fit",
-      "h-fit",
       "p-2",
       "border-2",
       "border-dotted",
@@ -67,6 +61,7 @@ export class Tooltip {
     } else {
       this.tooltipContainer.classList.add("invisible");
       this.activeTarget.classList.remove("text-green-200");
+      this.activeTarget = undefined;
     }
   }
   public static getInstance() {
