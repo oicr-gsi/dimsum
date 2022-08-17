@@ -61,7 +61,6 @@ export class Tooltip {
     } else {
       this.tooltipContainer.classList.add("invisible");
       this.activeTarget.classList.remove("text-green-200");
-      this.activeTarget = undefined;
     }
   }
   public static getInstance() {
