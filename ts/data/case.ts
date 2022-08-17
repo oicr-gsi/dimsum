@@ -16,7 +16,7 @@ import {
   Requisition,
   RequisitionQc,
 } from "./requisition";
-import { makeTooltip } from "./tooltip";
+import { Tooltip } from "./tooltip";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -538,10 +538,9 @@ function addNaText(fragment: DocumentFragment) {
 function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   samples.forEach((sample, i) => {
     const status = getSampleQcStatus(sample);
-    const tooltipIcon = makeTooltip(
-      makeIcon(status.icon),
-      makeSampleTooltip(sample)
-    );
+    const tooltipIcon = makeIcon(status.icon);
+    const tooltipInstance = Tooltip.getInstance();
+    tooltipInstance.addTarget(tooltipIcon, makeSampleTooltip(sample));
     fragment.appendChild(tooltipIcon);
     if (i < samples.length - 1) {
       fragment.appendChild(document.createTextNode(" "));
@@ -619,10 +618,9 @@ function addRequisitionIcon(
   status: QcStatus,
   fragment: DocumentFragment
 ) {
-  const tooltipIcon = makeTooltip(
-    makeIcon(status.icon),
-    makeRequisitionTooltip(requisition)
-  );
+  const tooltipIcon = makeIcon(status.icon);
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(tooltipIcon, makeRequisitionTooltip(requisition));
   fragment.appendChild(tooltipIcon);
 }
 

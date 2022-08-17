@@ -1,44 +1,21 @@
-class Tooltip {
+export class Tooltip {
+  private static instance: Tooltip;
   private mouseOnIcon: boolean;
   private mouseOnToolTip: boolean;
   private tooltipContainer: HTMLElement;
+  private activeTarget?: HTMLElement;
 
-  constructor(target: HTMLElement, contents: Node) {
+  private constructor() {
     this.mouseOnIcon = false;
     this.mouseOnToolTip = false;
     this.tooltipContainer = this.getTootipContainer();
-    target.onmouseenter = () => {
-      this.mouseOnIcon = true;
-      const targetY = this.getOffset(target).bottom;
-      const targetX = this.getOffset(target).left;
-      // node needs to be cloned since adding to DOM removes node argument
-      this.tooltipContainer.replaceChildren(contents.cloneNode(true));
-      this.tooltipContainer.style.top = targetY + "px";
-      this.tooltipContainer.style.left = targetX + "px";
-      update();
-    };
-    target.onmouseleave = () => {
-      this.mouseOnIcon = false;
-      update();
-    };
     this.tooltipContainer.onmouseenter = () => {
       this.mouseOnToolTip = true;
-      update();
+      this.update();
     };
     this.tooltipContainer.onmouseleave = () => {
       this.mouseOnToolTip = false;
-      update();
-    };
-
-    const update = () => {
-      console.log("update");
-      if (this.mouseOnIcon || this.mouseOnToolTip) {
-        this.tooltipContainer.classList.remove("invisible");
-        target.classList.add("text-green-200");
-      } else {
-        this.tooltipContainer.classList.add("invisible");
-        target.classList.remove("text-green-200");
-      }
+      this.update();
     };
   }
 
@@ -79,10 +56,42 @@ class Tooltip {
       bottom: rect.bottom + window.scrollY,
     };
   }
-}
 
-// A wrapper function since we don't use the tooltip class itself anywhere ATM
-export function makeTooltip(target: HTMLElement, contents: Node) {
-  const tooltip = new Tooltip(target, contents);
-  return target;
+  private update() {
+    if (!this.activeTarget) {
+      throw new Error("Tooltip called with no target elements");
+    }
+    if (this.mouseOnIcon || this.mouseOnToolTip) {
+      this.tooltipContainer.classList.remove("invisible");
+      this.activeTarget.classList.add("text-green-200");
+    } else {
+      this.tooltipContainer.classList.add("invisible");
+      this.activeTarget.classList.remove("text-green-200");
+    }
+  }
+  public static getInstance() {
+    if (!Tooltip.instance) {
+      Tooltip.instance = new Tooltip();
+    }
+    return Tooltip.instance;
+  }
+
+  public addTarget(target: HTMLElement, contents: Node) {
+    target.onmouseenter = () => {
+      this.mouseOnIcon = true;
+      this.activeTarget = target;
+      const targetHitBox = this.getOffset(target);
+      const targetY = targetHitBox.bottom;
+      const targetX = targetHitBox.left;
+      // node needs to be cloned since adding to DOM removes node argument
+      this.tooltipContainer.replaceChildren(contents.cloneNode(true));
+      this.tooltipContainer.style.top = targetY + "px";
+      this.tooltipContainer.style.left = targetX + "px";
+      this.update();
+    };
+    target.onmouseleave = () => {
+      this.mouseOnIcon = false;
+      this.update();
+    };
+  }
 }
