@@ -510,6 +510,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   visibility: hidden;
 }
 
+.static{
+  position: static;
+}
+
 .fixed{
   position: fixed;
 }
@@ -590,12 +594,48 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-top: 0.5rem;
 }
 
-.mt-4{
-  margin-top: 1rem;
+.mt-20{
+  margin-top: 5rem;
+}
+
+.mt-3{
+  margin-top: 0.75rem;
 }
 
 .ml-2{
   margin-left: 0.5rem;
+}
+
+.mt-4{
+  margin-top: 1rem;
+}
+
+.-ml-8{
+  margin-left: -2rem;
+}
+
+.-ml-1{
+  margin-left: -0.25rem;
+}
+
+.-ml-0\.5{
+  margin-left: -0.125rem;
+}
+
+.-ml-0{
+  margin-left: -0px;
+}
+
+.-mt-0\.5{
+  margin-top: -0.125rem;
+}
+
+.-mt-0{
+  margin-top: -0px;
+}
+
+.-mt-1{
+  margin-top: -0.25rem;
 }
 
 .block{
@@ -616,6 +656,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .grid{
   display: grid;
+}
+
+.contents{
+  display: contents;
 }
 
 .hidden{
@@ -692,8 +736,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   cursor: move;
 }
 
+.grid-flow-row{
+  grid-auto-flow: row;
+}
+
 .grid-flow-col{
   grid-auto-flow: column;
+}
+
+.grid-cols-2{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid-rows-4{
@@ -724,10 +776,20 @@ Ensure the default browser behavior of the `hidden` attribute.
   gap: 0.5rem;
 }
 
+.gap-y-1{
+  row-gap: 0.25rem;
+}
+
 .space-x-2 > :not([hidden]) ~ :not([hidden]){
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
   margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-y-1 > :not([hidden]) ~ :not([hidden]){
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
 .overflow-auto{
@@ -778,9 +840,18 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-bottom-width: 1px;
 }
 
+.border-dotted{
+  border-style: dotted;
+}
+
 .border-grey-200{
   --tw-border-opacity: 1;
   border-color: rgb(170 176 184 / var(--tw-border-opacity));
+}
+
+.border-green-200{
+  --tw-border-opacity: 1;
+  border-color: rgb(91 158 90 / var(--tw-border-opacity));
 }
 
 .bg-grey-100{

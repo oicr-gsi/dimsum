@@ -1,5 +1,11 @@
 import { TableDefinition } from "../util/table-builder";
-import { addLink, makeIcon, styleText, addMisoIcon } from "../util/html-utils";
+import {
+  addLink,
+  makeIcon,
+  styleText,
+  addMisoIcon,
+  makeNameDiv,
+} from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
 import { getSampleQcStatus, Sample } from "./sample";
@@ -10,6 +16,7 @@ import {
   Requisition,
   RequisitionQc,
 } from "./requisition";
+import { Tooltip } from "../util/tooltip";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -535,15 +542,61 @@ function addNaText(fragment: DocumentFragment) {
 function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
   samples.forEach((sample, i) => {
     const status = getSampleQcStatus(sample);
-    const icon = makeIcon(status.icon);
-    icon.title =
-      (sample.run ? sample.run.name + " - " : "") +
-      `${sample.name}: ${status.label}`; // TODO: more detailed popup
-    fragment.appendChild(icon);
+    const tooltipIcon = makeIcon(status.icon);
+    const tooltipInstance = Tooltip.getInstance();
+    tooltipInstance.addTarget(tooltipIcon, makeSampleTooltip(sample));
+    fragment.appendChild(tooltipIcon);
     if (i < samples.length - 1) {
       fragment.appendChild(document.createTextNode(" "));
     }
   });
+}
+
+function makeSampleTooltip(sample: Sample) {
+  const tooltipContainer = new DocumentFragment();
+  const topContainer = document.createElement("div");
+  topContainer.className = "flex flex-col space-y-1 text-black";
+  const bottomContainer = document.createElement("div");
+  bottomContainer.className =
+    "grid grid-cols-2 grid-flow-row gap-y-1 font-inter font-medium font-14 text-black mt-3";
+  // sample run links
+  if (sample.run) {
+    topContainer.appendChild(
+      makeNameDiv(
+        sample.run.name,
+        urls.miso.run(sample.run.name),
+        urls.dimsum.run(sample.run.name)
+      )
+    );
+  }
+  // sample name links
+  const sampleNameContainer = makeNameDiv(
+    sample.name,
+    urls.miso.sample(sample.id)
+  );
+  topContainer.appendChild(sampleNameContainer);
+
+  // project links
+  addTooltipRow(
+    bottomContainer,
+    "Project",
+    sample.project,
+    urls.miso.project(sample.project),
+    urls.dimsum.project(sample.project)
+  );
+  // donor links
+  addTooltipRow(
+    bottomContainer,
+    "Donor",
+    sample.donor.name,
+    urls.miso.sample(sample.donor.id),
+    urls.dimsum.donor(sample.donor.name),
+    sample.donor.externalName
+  );
+  // TODO: add requisition links
+  tooltipContainer.appendChild(topContainer);
+  tooltipContainer.appendChild(bottomContainer);
+  return tooltipContainer;
 }
 
 function addRequisitionIcons(
@@ -569,9 +622,40 @@ function addRequisitionIcon(
   status: QcStatus,
   fragment: DocumentFragment
 ) {
-  const icon = makeIcon(status.icon);
-  icon.title = `${requisition.name}: ${status.label}`; // TODO: more detailed popup
-  fragment.appendChild(icon);
+  const tooltipIcon = makeIcon(status.icon);
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(tooltipIcon, makeRequisitionTooltip(requisition));
+  fragment.appendChild(tooltipIcon);
+}
+
+function makeRequisitionTooltip(requisition: Requisition) {
+  return makeNameDiv(
+    requisition.name,
+    urls.miso.requisition(requisition.id),
+    urls.dimsum.requisition(requisition.id)
+  );
+}
+
+function addTooltipRow(
+  container: HTMLElement, // must be a two column grid
+  label: string,
+  name: string,
+  misoUrl: string,
+  dimsumUrl?: string,
+  additionalText?: string
+) {
+  const labelContainer = document.createElement("span");
+  labelContainer.innerHTML = `${label}:`;
+  const valueContainer = document.createElement("div");
+  valueContainer.appendChild(makeNameDiv(name, misoUrl, dimsumUrl));
+  if (additionalText) {
+    const externalDonorNameContainer = document.createElement("span");
+    externalDonorNameContainer.className = "block";
+    externalDonorNameContainer.innerHTML = additionalText;
+    valueContainer.appendChild(externalDonorNameContainer);
+  }
+  container.appendChild(labelContainer);
+  container.appendChild(valueContainer);
 }
 
 function getElapsedMessage(kase: Case) {

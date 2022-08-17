@@ -10,7 +10,7 @@ import {
   TableDefinition,
 } from "../util/table-builder";
 import { urls } from "../util/urls";
-import { Run } from "./case";
+import { Donor, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 
 export interface Sample {
@@ -20,11 +20,13 @@ export interface Sample {
   tissueType: string;
   timepoint: string;
   groupId: string;
+  project: string;
   targetedSequencing: string;
   createdDate: string;
   volume?: number;
   concentration?: number;
   run: Run;
+  donor: Donor;
   qcPassed: boolean;
   qcReason: string;
   qcUser: string;

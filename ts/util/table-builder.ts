@@ -125,7 +125,6 @@ export class TableBuilder<ParentType, ChildType> {
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);
-
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
     this.table = document.createElement("table");

@@ -107,8 +107,8 @@ public class CaseLoader {
         return load(previousTimestamp);
       }
       Map<String, Project> projectsByName = loadProjects(projectReader);
-      Map<String, Sample> samplesById = loadSamples(sampleReader);
       Map<String, Donor> donorsById = loadDonors(donorReader);
+      Map<String, Sample> samplesById = loadSamples(sampleReader, donorsById);
       Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
       List<Case> cases =
           loadCases(caseReader, projectsByName, samplesById, donorsById, requisitionsById);
@@ -176,7 +176,7 @@ public class CaseLoader {
     return projects.stream().collect(Collectors.toMap(Project::getName, Function.identity()));
   }
 
-  protected Map<String, Sample> loadSamples(FileReader fileReader)
+  protected Map<String, Sample> loadSamples(FileReader fileReader, Map<String, Donor> donorsById)
       throws DataParseException, IOException {
     List<Sample> samples = loadFromJsonArrayFile(fileReader,
         json -> new Sample.Builder().id(parseString(json, "sample_id", true))
@@ -185,9 +185,11 @@ public class CaseLoader {
             .tissueType(parseString(json, "tissue_type", true))
             .timepoint(parseString(json, "timepoint"))
             .groupId(parseString(json, "group_id"))
+            .project(parseString(json, "project_name", true))
             .targetedSequencing(parseString(json, "targeted_sequencing"))
             .createdDate(parseSampleCreatedDate(json))
             .run(parseRun(json))
+            .donor(donorsById.get(parseString(json, "donor_id")))
             .volume(parseDecimal(json, "volume", false))
             .concentration(parseDecimal(json, "concentration", false))
             .qcPassed(parseQcPassed(json, "qc_state"))

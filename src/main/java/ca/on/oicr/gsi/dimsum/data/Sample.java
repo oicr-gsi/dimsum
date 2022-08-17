@@ -17,11 +17,13 @@ public class Sample {
   private final String tissueType;
   private final String timepoint;
   private final String groupId;
+  private final String project;
   private final String targetedSequencing;
   private final LocalDate createdDate;
   private final BigDecimal volume;
   private final BigDecimal concentration;
   private final Run run;
+  private final Donor donor;
   private final Boolean qcPassed;
   private final String qcReason;
   private final String qcUser;
@@ -38,11 +40,13 @@ public class Sample {
     this.tissueType = requireNonNull(builder.tissueType);
     this.timepoint = builder.timepoint;
     this.groupId = builder.groupId;
+    this.project = requireNonNull(builder.project);
     this.targetedSequencing = builder.targetedSequencing;
     this.createdDate = requireNonNull(builder.createdDate);
     this.volume = builder.volume;
     this.concentration = builder.concentration;
     this.run = builder.run;
+    this.donor = requireNonNull(builder.donor);
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
     this.qcUser = builder.qcUser;
@@ -78,6 +82,10 @@ public class Sample {
     return groupId;
   }
 
+  public String getProject() {
+    return project;
+  }
+
   public String getTargetedSequencing() {
     return targetedSequencing;
   }
@@ -96,6 +104,10 @@ public class Sample {
 
   public Run getRun() {
     return run;
+  }
+
+  public Donor getDonor() {
+    return donor;
   }
 
   public Boolean getQcPassed() {
@@ -156,11 +168,13 @@ public class Sample {
     private String tissueType;
     private String timepoint;
     private String groupId;
+    private String project;
     private String targetedSequencing;
     private LocalDate createdDate;
     private BigDecimal volume;
     private BigDecimal concentration;
     private Run run;
+    private Donor donor;
     private Boolean qcPassed;
     private String qcReason;
     private String qcUser;
@@ -199,6 +213,11 @@ public class Sample {
       return this;
     }
 
+    public Builder project(String project) {
+      this.project = project;
+      return this;
+    }
+
     public Builder targetedSequencing(String targetedSequencing) {
       this.targetedSequencing = targetedSequencing;
       return this;
@@ -221,6 +240,11 @@ public class Sample {
 
     public Builder run(Run run) {
       this.run = run;
+      return this;
+    }
+
+    public Builder donor(Donor donor) {
+      this.donor = donor;
       return this;
     }
 

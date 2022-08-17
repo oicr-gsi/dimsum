@@ -11,6 +11,7 @@ import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.Donor;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
@@ -176,7 +177,9 @@ public class CaseServiceTest {
 
   private void addSample(Collection<Sample> collection, String name) {
     // Not using mocks because we're kind-of testing hashcode for distinct filters here too
-    collection.add(new Sample.Builder().id(name).name(name).tissueOrigin("To").tissueType("T")
+
+    collection.add(new Sample.Builder().id(name).name(name).donor(mock(Donor.class)).project("PROJ")
+        .tissueOrigin("To").tissueType("T")
         .createdDate(LocalDate.now()).build());
   }
 

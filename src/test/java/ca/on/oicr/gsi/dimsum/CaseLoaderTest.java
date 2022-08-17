@@ -1,7 +1,8 @@
 package ca.on.oicr.gsi.dimsum;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import ca.on.oicr.gsi.dimsum.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +56,10 @@ public class CaseLoaderTest {
   @Test
   public void testLoadSamples() throws Exception {
     try (FileReader reader = sut.getSampleReader()) {
-      Map<String, Sample> samplesById = sut.loadSamples(reader);
+      Donor donor = mock(Donor.class);
+      when(donor.getId()).thenReturn("SAM413576");
+      Map<String, Donor> donorsById = Map.of(donor.getId(), donor);
+      Map<String, Sample> samplesById = sut.loadSamples(reader, donorsById);
       assertEquals(20, samplesById.size());
       assertSample(samplesById.get(testSampleId));
     }
