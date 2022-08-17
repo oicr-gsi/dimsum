@@ -16,7 +16,7 @@ import {
   Requisition,
   RequisitionQc,
 } from "./requisition";
-import { Tooltip } from "./tooltip";
+import { Tooltip } from "../util/tooltip";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 

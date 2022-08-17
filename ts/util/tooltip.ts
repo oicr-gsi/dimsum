@@ -39,7 +39,7 @@ export class Tooltip {
       "border-dotted",
       "border-green-200",
       "font-inter",
-      "font-14",
+      "text-14",
       "font-medium",
       "invisible"
     );
