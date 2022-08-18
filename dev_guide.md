@@ -40,9 +40,15 @@ include a div with property `layout:fragment="content"` in the `body` to contain
 Elements from the `head` section of the main layout will be included before the `head` elements
 from the page template. The title from the page and layout will also be concatenated automatically.
 
+## Assets
+Custom svgs and other visual assets should go into `/src/main/resources/static/img`
+
+## Font Awesome
+Icons are sourced from [Font Awesome](https://fontawesome.com/). Dimsum strictly uses it's free solid variants for consistent branding.  
+
 ## Tailwind CSS
 
-[Tailwind](https://tailwindcss.com) is a utility-based CSS framework that has been configured for Dimsum's design systems. Styles are defined in `tailwind.config.js` and can be reused in different files.
+[Tailwind](https://tailwindcss.com) is a utility-based CSS framework that has been configured for Dimsum's design systems. Custom styles are defined in `tailwind.config.js` and can be reused in different files.
 
 The config currently scans `.html` and `.ts` files in the `templates` and `ts` directories. The generated CSS can be found in `/src/resources/static/css/output.css`. New templates not on this path should be added.
 
@@ -51,6 +57,8 @@ If you've updated any template files, use
 `npx tailwindcss -i src/main/resources/static/css/input.css -o src/main/resources/static/css/output.css --watch`
 
 before building/running as usual outlined in the [README](/README.md)
+
+Global styles independent of Tailwind should be added in `/src/resources/static/css/input.css`
 
 ## TypeScript
 
@@ -63,6 +71,13 @@ The page scripts to generate are defined in `module.exports.entry` in `webpack.c
 scripts are packaged as libraries to make any exports available to inline scripts in the HTML.
 TypeScript compiler config is in `tsconfig.json`.
 
+### Best practices
+
+When possible, re-use components and & utility functions. Some notable examples:
+- `urls.ts` should be used to generate links to Miso, Dashi, and elsewhere in Dimsum.
+- `html-utils.ts` has a variety of functions for making icons, adding links and more (see it's documentation for more details).
+- `requests.ts` contains `post` and `get` REST API request types.
+  
 ### JavaScript Library Dependencies
 
 JavaScript libraries may be included and used in TypeScript. To keep things cleaner, these

@@ -37,6 +37,7 @@ export function addLink(container: HTMLElement, text: string, url: string) {
   container.appendChild(a);
 }
 
+// adds a miso icon w/link to an element
 export function addMisoIcon(container: HTMLElement, url: string) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
@@ -49,6 +50,7 @@ export function addMisoIcon(container: HTMLElement, url: string) {
   container.appendChild(a);
 }
 
+// all supported cell statuses
 export type CellStatus = "na" | "stopped" | "warning" | "error";
 
 // map cell status to styles
@@ -66,6 +68,7 @@ export function shadeElement(element: HTMLElement, status?: CellStatus | null) {
   }
 }
 
+// all supported text styles
 export type TextStyle = "error";
 
 // styles container text to match appropriate text style
@@ -75,12 +78,14 @@ export function styleText(element: HTMLElement, style?: TextStyle | null) {
   }
 }
 
+// makes an icon with the corresponding font awesome name
 export function makeIcon(name: string) {
   const icon = document.createElement("i");
   icon.className = `fa-solid fa-${name}`;
   return icon;
 }
 
+// makes an icon button with the corresponding font awesome name
 export function addIconButton(container: HTMLElement, iconName: string) {
   const button = document.createElement("button");
   button.type = "button";
@@ -89,6 +94,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
   return button;
 }
 
+// makes a transparent button used to click out of dropdown inputs
 export function makeClickout() {
   const clickout = document.createElement("button");
   clickout.className =
@@ -96,6 +102,7 @@ export function makeClickout() {
   return clickout;
 }
 
+// makes a composite element with a miso icon and a possibly hyperlinked label
 export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-2 items-center";

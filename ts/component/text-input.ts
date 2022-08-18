@@ -1,5 +1,5 @@
-import { makeClickout, makeIcon } from "./html-utils";
-import { get } from "./requests";
+import { makeClickout, makeIcon } from "../util/html-utils";
+import { get } from "../util/requests";
 
 export class TextInput {
   private container: HTMLElement;

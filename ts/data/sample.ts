@@ -3,7 +3,7 @@ import {
   ColumnDefinition,
   SortDefinition,
   TableDefinition,
-} from "../util/table-builder";
+} from "../component/table-builder";
 import { urls } from "../util/urls";
 import { Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";

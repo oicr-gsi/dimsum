@@ -1,4 +1,4 @@
-import { TableDefinition } from "../util/table-builder";
+import { TableDefinition } from "../component/table-builder";
 import {
   addLink,
   makeIcon,
@@ -16,7 +16,7 @@ import {
   Requisition,
   RequisitionQc,
 } from "./requisition";
-import { Tooltip } from "../util/tooltip";
+import { Tooltip } from "../component/tooltip";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 

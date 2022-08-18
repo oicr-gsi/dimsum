@@ -7,9 +7,9 @@ import {
   CellStatus,
   makeIcon,
   shadeElement,
-} from "./html-utils";
+} from "../util/html-utils";
 import { toggleLegend } from "./legend";
-import { post } from "./requests";
+import { post } from "../util/requests";
 import { TextInput } from "./text-input";
 
 type SortType = "number" | "text" | "date";

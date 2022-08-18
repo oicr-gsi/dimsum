@@ -5,7 +5,7 @@ import {
   Sample,
 } from "./data/sample";
 import { makeIcon, shadeElement } from "./util/html-utils";
-import { TableBuilder, TableDefinition } from "./util/table-builder";
+import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { urls } from "./util/urls";
 
 const misoRunLink = document.getElementById("misoRunLink");
