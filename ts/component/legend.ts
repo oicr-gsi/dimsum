@@ -1,5 +1,5 @@
 import { qcStatuses } from "../data/qc-status";
-import { makeIcon } from "./html-utils";
+import { makeIcon } from "../util/html-utils";
 
 const legendId = "legend-container";
 class Legend {

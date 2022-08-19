@@ -1,4 +1,4 @@
-import { makeClickout } from "./html-utils";
+import { makeClickout } from "../util/html-utils";
 
 export interface DropdownOption {
   selectable: boolean;

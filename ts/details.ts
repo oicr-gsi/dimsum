@@ -11,7 +11,7 @@ import {
   libraryPreparationDefinition,
   receiptDefinition,
 } from "./data/sample";
-import { TableBuilder } from "./util/table-builder";
+import { TableBuilder } from "./component/table-builder";
 import { urls } from "./util/urls";
 
 new TableBuilder(caseDefinition, "casesTableContainer").build();
