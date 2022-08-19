@@ -85,7 +85,7 @@ export function makeIcon(name: string) {
   return icon;
 }
 
-// makes an icon button with the corresponding font awesome name
+// makes an icon button with the corresponding Font Awesome name
 export function addIconButton(container: HTMLElement, iconName: string) {
   const button = document.createElement("button");
   button.type = "button";

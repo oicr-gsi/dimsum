@@ -8,7 +8,7 @@ Dim Sum is a Spring Boot web app.
 - The [IoC container](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans)
   simplifies the creation of application components via dependency injection
 - Controller classes respond to web requests
-- The `static` directory contains project assets:
+- The `src/main/resources/static` contains assets that are served as static resources:
   - `css`: custom css (see [Tailwind](#tailwind-css))
   - `img`: images or svg's such as logos
   - `libs`: external libraries
@@ -62,7 +62,7 @@ If you've updated any template files, use
 
 before building/running as usual outlined in the [README](/README.md)
 
-**Tailwind should be used in most cases**. In the event that truly [custom styles](https://tailwindcss.com/docs/adding-custom-styles)
+**Tailwind should be used in most cases**. If truly [custom styles](https://tailwindcss.com/docs/adding-custom-styles)
 are needed, they can be defined in `/src/resources/static/css/input.css`.
 
 ## TypeScript
