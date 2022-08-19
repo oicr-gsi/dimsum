@@ -8,6 +8,11 @@ Dim Sum is a Spring Boot web app.
 - The [IoC container](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans)
   simplifies the creation of application components via dependency injection
 - Controller classes respond to web requests
+- The `static` directory contains project assets:
+  - `css`: custom css (see [Tailwind](#tailwind-css))
+  - `img`: images or svg's such as logos
+  - `libs`: external libraries
+  - `js`: generated javascript (see [Typescript](#typescript)) 
 
 ## Configuration
 
@@ -40,11 +45,10 @@ include a div with property `layout:fragment="content"` in the `body` to contain
 Elements from the `head` section of the main layout will be included before the `head` elements
 from the page template. The title from the page and layout will also be concatenated automatically.
 
-## Assets
-Custom svgs and other visual assets should go into `/src/main/resources/static/img`
 
 ## Font Awesome
-Icons are sourced from [Font Awesome](https://fontawesome.com/). Dimsum strictly uses it's free solid variants for consistent branding.  
+
+Icons are sourced from [Font Awesome](https://fontawesome.com/). Dimsum strictly uses its free solid variants for consistent branding.  
 
 ## Tailwind CSS
 
@@ -58,7 +62,8 @@ If you've updated any template files, use
 
 before building/running as usual outlined in the [README](/README.md)
 
-Global styles independent of Tailwind should be added in `/src/resources/static/css/input.css`
+**Tailwind should be used in most cases**. In the event that truly [custom styles](https://tailwindcss.com/docs/adding-custom-styles)
+are needed, they can be defined in `/src/resources/static/css/input.css`.
 
 ## TypeScript
 
@@ -74,9 +79,10 @@ TypeScript compiler config is in `tsconfig.json`.
 ### Best practices
 
 When possible, re-use components and & utility functions. Some notable examples:
-- `urls.ts` should be used to generate links to Miso, Dashi, and elsewhere in Dimsum.
-- `html-utils.ts` has a variety of functions for making icons, adding links and more (see it's documentation for more details).
-- `requests.ts` contains `post` and `get` REST API request types.
+
+- `urls.ts` should be used to generate all URLs.
+- `html-utils.ts` has a variety of functions for making icons, adding links and more (see its documentation for more details).
+- `requests.ts` contains functions for making HTTP requests.
   
 ### JavaScript Library Dependencies
 

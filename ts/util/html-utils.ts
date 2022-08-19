@@ -78,7 +78,7 @@ export function styleText(element: HTMLElement, style?: TextStyle | null) {
   }
 }
 
-// makes an icon with the corresponding font awesome name
+// makes an icon with the corresponding Font Awesome name
 export function makeIcon(name: string) {
   const icon = document.createElement("i");
   icon.className = `fa-solid fa-${name}`;
@@ -94,7 +94,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
   return button;
 }
 
-// makes a transparent button used to click out of dropdown inputs
+// makes a transparent button used to click out of user inputs
 export function makeClickout() {
   const clickout = document.createElement("button");
   clickout.className =
@@ -102,7 +102,7 @@ export function makeClickout() {
   return clickout;
 }
 
-// makes a composite element with a miso icon and a possibly hyperlinked label
+// makes a composite element with a MISO icon and a possibly hyperlinked label
 export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-2 items-center";
