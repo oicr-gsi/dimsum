@@ -317,15 +317,10 @@ function generateMetricColumns(
             addTodoIcon(fragment); // TODO: remove after Run Scanner metrics are integrated
           } else {
             if (sample.run) {
-              if (!sample.run.completionDate) {
-                fragment.appendChild(
-                  makeStatusIcon("hourglass-half", "Sequencing in Progress")
-                );
-              } else {
-                fragment.appendChild(
-                  makeStatusIcon("hourglass-half", "Pending Analysis")
-                );
-              }
+              const status = sample.run.completionDate
+                ? qcStatuses.analysis
+                : qcStatuses.sequencing;
+              fragment.appendChild(makeStatusIcon(status.icon, status.label));
             } else {
               fragment.appendChild(makeStatusIcon("question", "Not Found"));
             }
