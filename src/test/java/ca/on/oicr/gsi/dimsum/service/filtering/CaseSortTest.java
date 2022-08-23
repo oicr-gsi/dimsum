@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
-
+import ca.on.oicr.gsi.dimsum.data.Assay;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.Donor;
 
@@ -36,13 +36,13 @@ public class CaseSortTest {
   @Test
   public void testSortByAssayAscending() {
     List<Case> cases = getCasesSorted(CaseSort.ASSAY, false);
-    assertOrder(cases, Case::getAssayName, assaysOrdered, false);
+    assertOrder(cases, kase -> kase.getAssay().getName(), assaysOrdered, false);
   }
 
   @Test
   public void testSortByAssayDescending() {
     List<Case> cases = getCasesSorted(CaseSort.ASSAY, true);
-    assertOrder(cases, Case::getAssayName, assaysOrdered, true);
+    assertOrder(cases, kase -> kase.getAssay().getName(), assaysOrdered, true);
   }
 
   @Test
@@ -104,7 +104,9 @@ public class CaseSortTest {
 
   private static Case mockCase(int caseNumber) {
     Case kase = mock(Case.class);
-    when(kase.getAssayName()).thenReturn(caseAssays[caseNumber]);
+    Assay assay = mock(Assay.class);
+    when(assay.getName()).thenReturn(caseAssays[caseNumber]);
+    when(kase.getAssay()).thenReturn(assay);
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(caseDonors[caseNumber]);
     when(kase.getDonor()).thenReturn(donor);

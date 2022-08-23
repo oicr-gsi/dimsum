@@ -5,6 +5,7 @@ import {
   styleText,
   addMisoIcon,
   makeNameDiv,
+  addNaText,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -46,6 +47,8 @@ export interface Run extends Qcable {
   name: string;
   containerModel?: string;
   sequencingParameters?: string;
+  readLength?: number;
+  readLength2?: number;
   completionDate?: string;
 }
 
@@ -69,8 +72,7 @@ export interface Case {
   id: string;
   projects: Project[];
   donor: Donor;
-  assayName: string;
-  assayDescription: string;
+  assayId: number;
   tissueOrigin: string;
   tissueType: string;
   timepoint: string;
@@ -129,7 +131,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
-  columns: [
+  generateColumns: () => [
     {
       title: "Project",
       addParentContents(kase, fragment) {
@@ -177,7 +179,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       sortType: "text",
       addParentContents(kase, fragment) {
         const assayDiv = document.createElement("div");
-        addLink(assayDiv, kase.assayName, urls.dimsum.case(kase.id));
+        const assay = siteConfig.assaysById[kase.assayId];
+        addLink(assayDiv, assay.name, urls.dimsum.case(kase.id));
         fragment.appendChild(assayDiv);
         if (kase.stopped) {
           const stoppedDiv = document.createElement("div");
@@ -547,10 +550,6 @@ function addConstructionIcon(phase: string, fragment: DocumentFragment) {
   const icon = makeIcon(qcStatuses.construction.icon);
   icon.title = `Pending ${phase}`;
   fragment.appendChild(icon);
-}
-
-function addNaText(fragment: DocumentFragment) {
-  fragment.appendChild(document.createTextNode("N/A"));
 }
 
 function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {

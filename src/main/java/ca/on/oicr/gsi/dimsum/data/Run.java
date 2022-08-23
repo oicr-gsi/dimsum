@@ -12,6 +12,8 @@ public class Run {
   private final String name;
   private final String containerModel;
   private final String sequencingParameters;
+  private final Integer readLength;
+  private final Integer readLength2;
   private final LocalDate completionDate;
   private final Boolean qcPassed;
   private final String qcUser;
@@ -28,6 +30,8 @@ public class Run {
     this.name = requireNonNull(builder.name);
     this.containerModel = builder.containerModel;
     this.sequencingParameters = builder.sequencingParameters;
+    this.readLength = builder.readLength;
+    this.readLength2 = builder.readLength2;
     this.completionDate = builder.completionDate;
     this.qcPassed = builder.qcPassed;
     this.qcUser = builder.qcUser;
@@ -56,6 +60,14 @@ public class Run {
 
   public String getSequencingParameters() {
     return sequencingParameters;
+  }
+
+  public Integer getReadLength() {
+    return readLength;
+  }
+
+  public Integer getReadLength2() {
+    return readLength2;
   }
 
   public LocalDate getCompletionDate() {
@@ -104,6 +116,8 @@ public class Run {
     private String name;
     private String containerModel;
     private String sequencingParameters;
+    private Integer readLength;
+    private Integer readLength2;
     private LocalDate completionDate;
     private Boolean qcPassed;
     private String qcUser;
@@ -129,6 +143,16 @@ public class Run {
 
     public Builder sequencingParameters(String sequencingParameters) {
       this.sequencingParameters = sequencingParameters;
+      return this;
+    }
+
+    public Builder readLength(Integer readLength) {
+      this.readLength = readLength;
+      return this;
+    }
+
+    public Builder readLength2(Integer readLength2) {
+      this.readLength2 = readLength2;
       return this;
     }
 

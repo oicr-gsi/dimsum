@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileReader;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.time.*;
 import java.util.Collections;
@@ -124,6 +125,37 @@ public class CaseLoaderTest {
   }
 
   @Test
+  public void testLoadAssays() throws Exception {
+    try (FileReader reader = sut.getAssayReader()) {
+      Map<Long, Assay> assaysById = sut.loadAssays(reader);
+      assertEquals(1, assaysById.size());
+      Long assayId = 2L;
+      Assay assay = assaysById.get(assayId);
+      assertNotNull(assay);
+      assertEquals(assayId, assay.getId());
+      assertEquals("WGTS - 40XT/30XN", assay.getName());
+      assertEquals(6, assay.getMetricCategories().size());
+      assertNotNull(assay.getMetricCategories());
+      List<MetricSubcategory> subcategories =
+          assay.getMetricCategories().get(MetricCategory.LIBRARY_PREP);
+      assertNotNull(subcategories);
+      assertEquals(2, subcategories.size());
+      MetricSubcategory subcategory = subcategories.stream()
+          .filter(x -> "WT Library QC (Qubit, TS, FA)".equals(x.getName()))
+          .findAny()
+          .orElse(null);
+      assertNotNull(subcategory);
+      assertEquals("WT", subcategory.getLibraryDesignCode());
+      Metric metric = subcategory.getMetrics().stream()
+          .filter(x -> "Concentration (Qubit)".equals(x.getName()))
+          .findAny()
+          .orElse(null);
+      assertNotNull(metric);
+      assertEquals(new BigDecimal("0.7"), metric.getMinimum());
+    }
+  }
+
+  @Test
   public void testLoad() throws Exception {
     CaseData data = sut.load(null);
     assertNotNull(data);
@@ -143,7 +175,7 @@ public class CaseLoaderTest {
     Project project = kase.getProjects().iterator().next();
     assertProject(project);
 
-    assertEquals("WGTS - 40XT/30XN", kase.getAssayName());
+    assertEquals("WGTS - 40XT/30XN", kase.getAssay().getName());
 
     assertNotNull(kase.getReceipts());
     assertEquals(5, kase.getReceipts().size());

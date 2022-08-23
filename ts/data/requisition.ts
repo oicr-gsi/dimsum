@@ -16,6 +16,7 @@ export interface RequisitionQc {
 export interface Requisition {
   id: number;
   name: string;
+  assayId: number;
   informaticsReviews: RequisitionQc[];
   draftReports: RequisitionQc[];
   finalReports: RequisitionQc[];
@@ -69,7 +70,7 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
 export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
-  columns: [
+  generateColumns: () => [
     qcStatusColumn((requisition) => requisition.informaticsReviews),
     requisitionColumn,
     {
@@ -86,7 +87,7 @@ export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
 export const draftReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
-  columns: [
+  generateColumns: () => [
     qcStatusColumn((requisition) => requisition.draftReports),
     requisitionColumn,
     latestActivityColumn,
@@ -96,7 +97,7 @@ export const draftReportDefinition: TableDefinition<Requisition, void> = {
 export const finalReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
-  columns: [
+  generateColumns: () => [
     qcStatusColumn((requisition) => requisition.finalReports),
     requisitionColumn,
     latestActivityColumn,

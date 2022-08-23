@@ -256,9 +256,11 @@ public class CaseService {
       refreshFailures = 0;
       if (newData != null) {
         caseData = newData;
-        frontEndConfig
-            .setPipelines(newData.getCases().stream().flatMap(kase -> kase.getProjects().stream())
-                .map(Project::getPipeline).collect(Collectors.toSet()));
+        frontEndConfig.setPipelines(newData.getCases().stream()
+            .flatMap(kase -> kase.getProjects().stream())
+            .map(Project::getPipeline)
+            .collect(Collectors.toSet()));
+        frontEndConfig.setAssaysById(newData.getAssaysById());
       }
     } catch (Exception e) {
       refreshFailures++;

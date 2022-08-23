@@ -2,6 +2,7 @@
   {
     "id": 512,
     "name": "REQ-1",
+    "assay_id": 2,
     "stopped": false,
     "informatics_reviews": [
       {

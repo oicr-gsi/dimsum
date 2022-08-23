@@ -8,8 +8,8 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 public enum CaseFilterKey {
 
   // @formatter:off
-  ASSAY(string -> kase -> kase.getAssayName().toLowerCase().startsWith(string.toLowerCase())
-      || kase.getAssayDescription().toLowerCase().startsWith(string.toLowerCase())),
+  ASSAY(string -> kase -> kase.getAssay().getName().toLowerCase().startsWith(string.toLowerCase())
+      || kase.getAssay().getDescription().toLowerCase().startsWith(string.toLowerCase())),
   CASE_ID(string -> kase -> kase.getId().toLowerCase().equals(string.toLowerCase())),
   DONOR(string -> kase -> kase.getDonor().getName().toLowerCase().startsWith(string.toLowerCase())
       || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),

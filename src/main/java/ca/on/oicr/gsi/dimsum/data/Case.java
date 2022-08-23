@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Immutable
 public class Case {
@@ -19,8 +20,8 @@ public class Case {
   private final String id;
   private final Donor donor;
   private final Set<Project> projects;
-  private final String assayName;
-  private final String assayDescription;
+  private final Assay assay;
+  private final long assayId;
   private final String tissueOrigin;
   private final String tissueType;
   private final String timepoint;
@@ -35,8 +36,8 @@ public class Case {
     this.id = requireNonNull(builder.id);
     this.donor = requireNonNull(builder.donor);
     this.projects = unmodifiableSet(builder.projects);
-    this.assayName = requireNonNull(builder.assayName);
-    this.assayDescription = requireNonNull(builder.assayDescription);
+    this.assay = requireNonNull(builder.assay);
+    this.assayId = this.assay.getId();
     this.tissueOrigin = requireNonNull(builder.tissueOrigin);
     this.tissueType = requireNonNull(builder.tissueType);
     this.timepoint = builder.timepoint;
@@ -68,12 +69,13 @@ public class Case {
     return projects;
   }
 
-  public String getAssayName() {
-    return assayName;
+  @JsonIgnore
+  public Assay getAssay() {
+    return assay;
   }
 
-  public String getAssayDescription() {
-    return assayDescription;
+  public long getAssayId() {
+    return assayId;
   }
 
   public String getTissueOrigin() {
@@ -117,8 +119,7 @@ public class Case {
     private String id;
     private Donor donor;
     private Set<Project> projects;
-    private String assayName;
-    private String assayDescription;
+    private Assay assay;
     private String tissueOrigin;
     private String tissueType;
     private String timepoint;
@@ -142,13 +143,8 @@ public class Case {
       return this;
     }
 
-    public Builder assayName(String assayName) {
-      this.assayName = assayName;
-      return this;
-    }
-
-    public Builder assayDescription(String assayDescription) {
-      this.assayDescription = assayDescription;
+    public Builder assay(Assay assay) {
+      this.assay = assay;
       return this;
     }
 

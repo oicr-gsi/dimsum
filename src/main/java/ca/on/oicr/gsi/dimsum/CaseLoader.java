@@ -22,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -38,6 +39,7 @@ public class CaseLoader {
   private File requisitionFile;
   private File runFile;
   private File sampleFile;
+  private File assayFile;
   private File timestampFile;
 
   private Timer refreshTimer = null;
@@ -60,6 +62,7 @@ public class CaseLoader {
     requisitionFile = new File(dataDirectory, "requisitions.json");
     runFile = new File(dataDirectory, "runs.json");
     sampleFile = new File(dataDirectory, "samples.json");
+    assayFile = new File(dataDirectory, "assays.json");
     timestampFile = new File(dataDirectory, "timestamp");
   }
 
@@ -99,6 +102,7 @@ public class CaseLoader {
         FileReader donorReader = getDonorReader();
         FileReader requisitionReader = getRequisitionReader();
         FileReader runReader = getRunReader();
+        FileReader assayReader = getAssayReader();
         FileReader caseReader = getCaseReader();) {
       ZonedDateTime afterTimestamp = getDataTimestamp();
       if (afterTimestamp == null) {
@@ -115,41 +119,34 @@ public class CaseLoader {
       Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
       Map<String, Sample> samplesById =
           loadSamples(sampleReader, donorsById, runsById, requisitionsById);
-      List<Case> cases =
-          loadCases(caseReader, projectsByName, samplesById, donorsById, requisitionsById);
+      Map<Long, Assay> assaysById = loadAssays(assayReader);
+      List<Case> cases = loadCases(caseReader, projectsByName, samplesById, donorsById,
+          requisitionsById, assaysById);
       Map<String, RunAndLibraries> runsByName = sortRuns(cases);
       if (refreshTimer != null) {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
       log.debug(String.format("Completed loading %d cases.", cases.size()));
-      return new CaseData(cases, runsByName, afterTimestamp, getAssayNames(cases),
+      return new CaseData(cases, runsByName, assaysById, afterTimestamp, getAssayNames(assaysById),
           getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
           getDonorNames(donorsById));
     }
   }
 
-  private Set<String> getAssayNames(List<Case> cases) {
-    Set<String> assayNames =
-        new HashSet<String>(cases.stream().map(Case::getAssayName).collect(Collectors.toSet()));
-    return assayNames;
+  private Set<String> getAssayNames(Map<Long, Assay> assaysById) {
+    return assaysById.values().stream().map(Assay::getName).collect(Collectors.toSet());
   }
 
   private Set<String> getRequisitionNames(Map<Long, Requisition> requisitionsById) {
-    Set<String> sampleNames = new HashSet<String>(
-        requisitionsById.values().stream().map(Requisition::getName).collect(Collectors.toSet()));
-    return sampleNames;
+    return requisitionsById.values().stream().map(Requisition::getName).collect(Collectors.toSet());
   }
 
   private Set<String> getProjectNames(Map<String, Project> projectsByName) {
-    Set<String> projectNames =
-        new HashSet<String>(projectsByName.keySet().stream().collect(Collectors.toSet()));
-    return projectNames;
+    return projectsByName.keySet().stream().collect(Collectors.toSet());
   }
 
   private Set<String> getDonorNames(Map<String, Donor> donorsById) {
-    Set<String> donorNames = new HashSet<String>(
-        donorsById.values().stream().map(Donor::getName).collect(Collectors.toSet()));
-    return donorNames;
+    return donorsById.values().stream().map(Donor::getName).collect(Collectors.toSet());
   }
 
   protected FileReader getProjectReader() throws FileNotFoundException {
@@ -170,6 +167,10 @@ public class CaseLoader {
 
   protected FileReader getRunReader() throws FileNotFoundException {
     return new FileReader(runFile);
+  }
+
+  protected FileReader getAssayReader() throws FileNotFoundException {
+    return new FileReader(assayFile);
   }
 
   protected FileReader getCaseReader() throws FileNotFoundException {
@@ -199,23 +200,32 @@ public class CaseLoader {
       }
       return new Sample.Builder().id(parseString(json, "sample_id", true))
           .name(parseString(json, "oicr_internal_name", true))
-          .requisitionId(requisitionId)
-          .requisitionName(
-              requisitionId == null ? null : requisitionsById.get(requisitionId).getName())
+          .requisition(requisitionId == null ? null : requisitionsById.get(requisitionId))
           .tissueOrigin(parseString(json, "tissue_origin", true))
           .tissueType(parseString(json, "tissue_type", true))
+          .tissueMaterial(parseString(json, "tissue_material"))
           .timepoint(parseString(json, "timepoint"))
           .secondaryId(parseString(json, "secondary_id"))
           .groupId(parseString(json, "group_id"))
           .project(parseString(json, "project_name", true))
           .nucleicAcidType(parseString(json, "nucleic_acid_type"))
+          .librarySize(parseInteger(json, "library_size", false))
           .libraryDesignCode(parseString(json, "library_design"))
           .targetedSequencing(parseString(json, "targeted_sequencing"))
           .createdDate(parseSampleCreatedDate(json))
-          .run(runsById.get(runId))
-          .donor(donorsById.get(parseString(json, "donor_id")))
           .volume(parseDecimal(json, "volume", false))
           .concentration(parseDecimal(json, "concentration", false))
+          .concentrationUnits(parseString(json, "concentration_units", false))
+          .run(runsById.get(runId))
+          .donor(donorsById.get(parseString(json, "donor_id")))
+          .meanInsertSize(parseDecimal(json, "mean_insert", false))
+          .clustersPerSample(parseInteger(json, "clusters_per_sample", false))
+          .duplicationRate(parseDecimal(json, "duplication_rate", false))
+          .meanCoverageDeduplicated(parseDecimal(json, "mean_coverage_deduplicated", false))
+          .rRnaContamination(parseDecimal(json, "rrna_contamination", false))
+          .mappedToCoding(parseDecimal(json, "mapped_to_coding", false))
+          .rawCoverage(parseDecimal(json, "raw_coverage", false))
+          .onTargetReads(parseDecimal(json, "on_target_reads", false))
           .qcPassed(parseQcPassed(json, "qc_state"))
           .qcReason(parseString(json, "qc_reason"))
           .qcUser(parseString(json, "qc_user"))
@@ -236,6 +246,8 @@ public class CaseLoader {
           .name(parseString(json, "name", true))
           .containerModel(parseString(json, "container_model"))
           .sequencingParameters(parseString(json, "sequencing_parameters"))
+          .readLength(parseInteger(json, "read_length", false))
+          .readLength2(parseInteger(json, "read_length_2", false))
           .completionDate(parseDate(json, "completion_date"))
           .qcPassed(parseQcPassed(json, "qc_state"))
           .qcUser(parseString(json, "qc_user"))
@@ -274,8 +286,11 @@ public class CaseLoader {
   protected Map<Long, Requisition> loadRequisitions(FileReader fileReader)
       throws DataParseException, IOException {
     List<Requisition> requisitions = loadFromJsonArrayFile(fileReader, json -> {
-      Requisition requisition = new Requisition.Builder().id(parseLong(json, "id", true))
-          .name(parseString(json, "name", true)).stopped(parseBoolean(json, "stopped"))
+      Requisition requisition = new Requisition.Builder()
+          .id(parseLong(json, "id", true))
+          .name(parseString(json, "name", true))
+          .assayId(parseLong(json, "assay_id", true))
+          .stopped(parseBoolean(json, "stopped"))
           .informaticsReviews(parseRequisitionQcs(json, "informatics_reviews"))
           .draftReports(parseRequisitionQcs(json, "draft_reports"))
           .finalReports(parseRequisitionQcs(json, "final_reports")).build();
@@ -285,17 +300,89 @@ public class CaseLoader {
     return requisitions.stream().collect(Collectors.toMap(Requisition::getId, Function.identity()));
   }
 
+  protected Map<Long, Assay> loadAssays(FileReader fileReader)
+      throws DataParseException, IOException {
+    List<Assay> assays = loadFromJsonArrayFile(fileReader, json -> new Assay.Builder()
+        .id(parseLong(json, "id", true))
+        .name(parseString(json, "name", true))
+        .description(parseString(json, "description", false))
+        .version(parseString(json, "version", true))
+        .metricCategories(parseMetricCategories(json.get("metric_categories")))
+        .build());
+    return assays.stream().collect(Collectors.toMap(Assay::getId, Function.identity()));
+  }
+
+  private Map<MetricCategory, List<MetricSubcategory>> parseMetricCategories(JsonNode json)
+      throws DataParseException {
+    if (json == null || !json.isObject()) {
+      throw new DataParseException("Invalid assay metric categories");
+    }
+    Map<MetricCategory, List<MetricSubcategory>> map = new HashMap<>();
+    Iterator<Entry<String, JsonNode>> iterator = json.fields();
+    while (iterator.hasNext()) {
+      Entry<String, JsonNode> entry = iterator.next();
+      MetricCategory category = MetricCategory.valueOf(entry.getKey());
+      map.put(category, parseMetricSubcategories(entry.getValue()));
+    }
+    return map;
+  }
+
+  private List<MetricSubcategory> parseMetricSubcategories(JsonNode json)
+      throws DataParseException {
+    if (json == null || !json.isArray()) {
+      throw new DataParseException("Invalid metric subcategories");
+    }
+    List<MetricSubcategory> subcategories = new ArrayList<>();
+    for (JsonNode node : json) {
+      subcategories.add(new MetricSubcategory.Builder()
+          .name(parseString(node, "name", false))
+          .sortPriority(parseInteger(node, "sort_priority", false))
+          .libraryDesignCode(parseString(node, "library_design", false))
+          .metrics(parseMetrics(node.get("metrics")))
+          .build());
+    }
+    return subcategories;
+  }
+
+  private List<Metric> parseMetrics(JsonNode json) throws DataParseException {
+    if (json == null || !json.isArray()) {
+      throw new DataParseException("Invalid metrics");
+    }
+    List<Metric> metrics = new ArrayList<>();
+    for (JsonNode node : json) {
+      ThresholdType thresholdType = ThresholdType.valueOf(node.get("threshold_type").asText());
+      metrics.add(new Metric.Builder()
+          .name(parseString(node, "name", true))
+          .sortPriority(parseInteger(node, "sort_priority", false))
+          .minimum(parseDecimal(node, "minimum", false))
+          .maximum(parseDecimal(node, "maximum", false))
+          .units(parseString(node, "units", false))
+          .tissueMaterial(parseString(node, "tissue_material", false))
+          .tissueOrigin(parseString(node, "tissue_origin", false))
+          .tissueType(parseString(node, "tissue_type", false))
+          .negateTissueType(parseBoolean(node, "negate_tissue_type"))
+          .nucleicAcidType(parseString(node, "nucleic_acid_type", false))
+          .containerModel(parseString(node, "container_model", false))
+          .readLength(parseInteger(node, "read_length", false))
+          .readLength2(parseInteger(node, "read_length_2", false))
+          .thresholdType(thresholdType)
+          .build());
+    }
+    return metrics;
+  }
+
   private List<Case> loadCases(FileReader fileReader, Map<String, Project> projectsByName,
       Map<String, Sample> samplesById, Map<String, Donor> donorsById,
-      Map<Long, Requisition> requisitionsById) throws DataParseException, IOException {
+      Map<Long, Requisition> requisitionsById, Map<Long, Assay> assaysById)
+      throws DataParseException, IOException {
     return loadFromJsonArrayFile(fileReader, json -> {
       String donorId = parseString(json, "donor_id", true);
+      Long assayId = parseLong(json, "assay_id", true);
       return new Case.Builder()
           .id(parseString(json, "id", true))
           .donor(donorsById.get(donorId))
           .projects(parseProjects(json, "project_names", projectsByName))
-          .assayName(parseString(json, "assay_name", true))
-          .assayDescription(parseString(json, "assay_description", true))
+          .assay(assaysById.get(assayId))
           .tissueOrigin(parseString(json, "tissue_origin", true))
           .tissueType(parseString(json, "tissue_type", true))
           .timepoint(parseString(json, "timepoint"))
@@ -309,7 +396,7 @@ public class CaseLoader {
 
   private Set<Project> parseProjects(JsonNode json, String fieldName,
       Map<String, Project> projectsByName) throws DataParseException {
-    JsonNode projectsNode = json.get("project_names");
+    JsonNode projectsNode = json.get(fieldName);
     if (projectsNode == null || !projectsNode.isArray() || projectsNode.isEmpty()) {
       throw new DataParseException("Case has no projects");
     }
@@ -401,18 +488,23 @@ public class CaseLoader {
 
   private static String parseString(JsonNode json, String fieldName, boolean required)
       throws DataParseException {
-    JsonNode node = json.get(fieldName);
-    if (node == null || node.isNull()) {
-      if (required) {
-        throw new DataParseException(makeMissingFieldMessage(fieldName));
-      } else {
-        return null;
-      }
-    }
-    return node.asText();
+    JsonNode node = getNode(json, fieldName, required);
+    return node == null ? null : node.asText();
+  }
+
+  private static Integer parseInteger(JsonNode json, String fieldName, boolean required)
+      throws DataParseException {
+    JsonNode node = getNode(json, fieldName, required);
+    return node == null ? null : node.asInt();
   }
 
   private static Long parseLong(JsonNode json, String fieldName, boolean required)
+      throws DataParseException {
+    JsonNode node = getNode(json, fieldName, required);
+    return node == null ? null : node.asLong();
+  }
+
+  private static JsonNode getNode(JsonNode json, String fieldName, boolean required)
       throws DataParseException {
     JsonNode node = json.get(fieldName);
     if (node == null || node.isNull()) {
@@ -422,7 +514,7 @@ public class CaseLoader {
         return null;
       }
     } else {
-      return node.asLong();
+      return node;
     }
   }
 

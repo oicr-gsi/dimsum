@@ -15,20 +15,32 @@ public class Sample {
   private final String name;
   private final Long requisitionId;
   private final String requisitionName;
+  private final Long assayId;
   private final String tissueOrigin;
   private final String tissueType;
+  private final String tissueMaterial;
   private final String timepoint;
   private final String secondaryId;
   private final String groupId;
   private final String project;
   private final String nucleicAcidType;
+  private final Integer librarySize;
   private final String libraryDesignCode;
   private final String targetedSequencing;
   private final LocalDate createdDate;
   private final BigDecimal volume;
   private final BigDecimal concentration;
+  private final String concentrationUnits;
   private final Run run;
   private final Donor donor;
+  private final BigDecimal meanInsertSize;
+  private final Integer clustersPerSample; // AKA "Pass Filter Clusters" for full-depth (call ready)
+  private final BigDecimal duplicationRate;
+  private final BigDecimal meanCoverageDeduplicated;
+  private final BigDecimal rRnaContamination;
+  private final BigDecimal mappedToCoding;
+  private final BigDecimal rawCoverage;
+  private final BigDecimal onTargetReads;
   private final Boolean qcPassed;
   private final String qcReason;
   private final String qcUser;
@@ -41,22 +53,34 @@ public class Sample {
   private Sample(Builder builder) {
     this.id = requireNonNull(builder.id);
     this.name = requireNonNull(builder.name);
-    this.requisitionId = builder.requisitionId;
-    this.requisitionName = builder.requisitionName;
+    this.requisitionId = builder.requisition == null ? null : builder.requisition.getId();
+    this.requisitionName = builder.requisition == null ? null : builder.requisition.getName();
+    this.assayId = builder.requisition == null ? null : builder.requisition.getAssayId();
     this.tissueOrigin = requireNonNull(builder.tissueOrigin);
     this.tissueType = requireNonNull(builder.tissueType);
+    this.tissueMaterial = builder.tissueMaterial;
     this.timepoint = builder.timepoint;
     this.secondaryId = builder.secondaryId;
     this.groupId = builder.groupId;
     this.project = requireNonNull(builder.project);
     this.nucleicAcidType = builder.nucleicAcidType;
+    this.librarySize = builder.librarySize;
     this.libraryDesignCode = builder.libraryDesignCode;
     this.targetedSequencing = builder.targetedSequencing;
     this.createdDate = requireNonNull(builder.createdDate);
     this.volume = builder.volume;
     this.concentration = builder.concentration;
+    this.concentrationUnits = builder.concentrationUnits;
     this.run = builder.run;
     this.donor = requireNonNull(builder.donor);
+    this.meanInsertSize = builder.meanInsertSize;
+    this.clustersPerSample = builder.clustersPerSample;
+    this.duplicationRate = builder.duplicationRate;
+    this.meanCoverageDeduplicated = builder.meanCoverageDeduplicated;
+    this.rRnaContamination = builder.rRnaContamination;
+    this.mappedToCoding = builder.mappedToCoding;
+    this.rawCoverage = builder.rawCoverage;
+    this.onTargetReads = builder.onTargetReads;
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
     this.qcUser = builder.qcUser;
@@ -84,12 +108,20 @@ public class Sample {
     return requisitionName;
   }
 
+  public Long getAssayId() {
+    return assayId;
+  }
+
   public String getTissueOrigin() {
     return tissueOrigin;
   }
 
   public String getTissueType() {
     return tissueType;
+  }
+
+  public String getTissueMaterial() {
+    return tissueMaterial;
   }
 
   public String getTimepoint() {
@@ -112,6 +144,10 @@ public class Sample {
     return nucleicAcidType;
   }
 
+  public Integer getLibrarySize() {
+    return librarySize;
+  }
+
   public String getLibraryDesignCode() {
     return libraryDesignCode;
   }
@@ -132,12 +168,48 @@ public class Sample {
     return concentration;
   }
 
+  public String getConcentrationUnits() {
+    return concentrationUnits;
+  }
+
   public Run getRun() {
     return run;
   }
 
   public Donor getDonor() {
     return donor;
+  }
+
+  public BigDecimal getMeanInsertSize() {
+    return meanInsertSize;
+  }
+
+  public Integer getClustersPerSample() {
+    return clustersPerSample;
+  }
+
+  public BigDecimal getDuplicationRate() {
+    return duplicationRate;
+  }
+
+  public BigDecimal getMeanCoverageDeduplicated() {
+    return meanCoverageDeduplicated;
+  }
+
+  public BigDecimal getrRnaContamination() {
+    return rRnaContamination;
+  }
+
+  public BigDecimal getMappedToCoding() {
+    return mappedToCoding;
+  }
+
+  public BigDecimal getRawCoverage() {
+    return rawCoverage;
+  }
+
+  public BigDecimal getOnTargetReads() {
+    return onTargetReads;
   }
 
   public Boolean getQcPassed() {
@@ -194,22 +266,32 @@ public class Sample {
 
     private String id;
     private String name;
-    private Long requisitionId;
-    private String requisitionName;
+    private Requisition requisition;
     private String tissueOrigin;
     private String tissueType;
+    private String tissueMaterial;
     private String timepoint;
     private String secondaryId;
     private String groupId;
     private String project;
     private String nucleicAcidType;
+    private Integer librarySize;
     private String libraryDesignCode;
     private String targetedSequencing;
     private LocalDate createdDate;
     private BigDecimal volume;
     private BigDecimal concentration;
+    private String concentrationUnits;
     private Run run;
     private Donor donor;
+    private BigDecimal meanInsertSize;
+    private Integer clustersPerSample;
+    private BigDecimal duplicationRate;
+    private BigDecimal meanCoverageDeduplicated;
+    private BigDecimal rRnaContamination;
+    private BigDecimal mappedToCoding;
+    private BigDecimal rawCoverage;
+    private BigDecimal onTargetReads;
     private Boolean qcPassed;
     private String qcReason;
     private String qcUser;
@@ -228,13 +310,8 @@ public class Sample {
       return this;
     }
 
-    public Builder requisitionId(Long requisitionId) {
-      this.requisitionId = requisitionId;
-      return this;
-    }
-
-    public Builder requisitionName(String requisitionName) {
-      this.requisitionName = requisitionName;
+    public Builder requisition(Requisition requisition) {
+      this.requisition = requisition;
       return this;
     }
 
@@ -245,6 +322,11 @@ public class Sample {
 
     public Builder tissueType(String tissueType) {
       this.tissueType = tissueType;
+      return this;
+    }
+
+    public Builder tissueMaterial(String tissueMaterial) {
+      this.tissueMaterial = tissueMaterial;
       return this;
     }
 
@@ -273,6 +355,11 @@ public class Sample {
       return this;
     }
 
+    public Builder librarySize(Integer librarySize) {
+      this.librarySize = librarySize;
+      return this;
+    }
+
     public Builder libraryDesignCode(String libraryDesignCode) {
       this.libraryDesignCode = libraryDesignCode;
       return this;
@@ -298,6 +385,11 @@ public class Sample {
       return this;
     }
 
+    public Builder concentrationUnits(String concentrationUnits) {
+      this.concentrationUnits = concentrationUnits;
+      return this;
+    }
+
     public Builder run(Run run) {
       this.run = run;
       return this;
@@ -305,6 +397,46 @@ public class Sample {
 
     public Builder donor(Donor donor) {
       this.donor = donor;
+      return this;
+    }
+
+    public Builder meanInsertSize(BigDecimal meanInsertSize) {
+      this.meanInsertSize = meanInsertSize;
+      return this;
+    }
+
+    public Builder clustersPerSample(Integer clustersPerSample) {
+      this.clustersPerSample = clustersPerSample;
+      return this;
+    }
+
+    public Builder duplicationRate(BigDecimal duplicationRate) {
+      this.duplicationRate = duplicationRate;
+      return this;
+    }
+
+    public Builder meanCoverageDeduplicated(BigDecimal meanCoverageDeduplicated) {
+      this.meanCoverageDeduplicated = meanCoverageDeduplicated;
+      return this;
+    }
+
+    public Builder rRnaContamination(BigDecimal rRnaContamination) {
+      this.rRnaContamination = rRnaContamination;
+      return this;
+    }
+
+    public Builder mappedToCoding(BigDecimal mappedToCoding) {
+      this.mappedToCoding = mappedToCoding;
+      return this;
+    }
+
+    public Builder rawCoverage(BigDecimal rawCoverage) {
+      this.rawCoverage = rawCoverage;
+      return this;
+    }
+
+    public Builder onTargetReads(BigDecimal onTargetReads) {
+      this.onTargetReads = onTargetReads;
       return this;
     }
 
