@@ -15,6 +15,7 @@ public class CaseData {
 
   private final List<Case> cases;
   private final Map<String, RunAndLibraries> runsByName;
+  private final Map<Long, Assay> assaysById;
   private final ZonedDateTime timestamp;
   private final Set<String> assayNames;
   private final Set<String> requisitionNames;
@@ -24,10 +25,11 @@ public class CaseData {
 
 
   public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
-      ZonedDateTime timestamp, Set<String> assays, Set<String> requisitions,
-      Set<String> projects, Set<String> donors) {
+      Map<Long, Assay> assaysById, ZonedDateTime timestamp, Set<String> assays,
+      Set<String> requisitions, Set<String> projects, Set<String> donors) {
     this.cases = unmodifiableList(cases);
     this.runsByName = Collections.unmodifiableMap(runsByName);
+    this.assaysById = Collections.unmodifiableMap(assaysById);
     this.timestamp = requireNonNull(timestamp);
     this.assayNames = Collections.unmodifiableSet(assays);
     this.requisitionNames = Collections.unmodifiableSet(requisitions);
@@ -41,6 +43,10 @@ public class CaseData {
 
   public RunAndLibraries getRunAndLibraries(String runName) {
     return runsByName.get(runName);
+  }
+
+  public Map<Long, Assay> getAssaysById() {
+    return assaysById;
   }
 
   public ZonedDateTime getTimestamp() {

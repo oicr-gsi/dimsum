@@ -1,16 +1,12 @@
 [
   {
-    "id": "PROJ_1289_a8_Lv_M",
+    "id": "PROJ_1289_a2_Lv_M",
     "donor_id": "SAM413576",
-    "project_names": [
-      "PROJ"
-    ],
-    "assay_name": "WGTS - 40XT/30XN",
-    "assay_description": "Whole Genome and Transcriptome Sequencing (WGTS) - 40X Tumour, 30X Normal",
+    "project_names": ["PROJ"],
+    "assay_id": 2,
     "tissue_origin": "Lv",
     "tissue_type": "M",
     "timepoint": null,
-    "stopped": false,
     "receipt_ids": [
       "SAM413577",
       "SAM413641",
@@ -28,19 +24,10 @@
         "targeted_sequencing": null,
         "extraction_skipped": false,
         "library_preparation_skipped": false,
-        "extraction_ids": [
-          "SAM413593"
-        ],
-        "library_preparation_ids": [
-          "LIB75802"
-        ],
-        "library_qualification_ids": [
-          "5459_1_LDI73620",
-          "5467_1_LDI73620"
-        ],
-        "full_depth_sequencing_ids": [
-          "5476_1_LDI73620"
-        ]
+        "extraction_ids": ["SAM413593"],
+        "library_preparation_ids": ["LIB75802"],
+        "library_qualification_ids": ["5459_1_LDI73620", "5467_1_LDI73620"],
+        "full_depth_sequencing_ids": ["5476_1_LDI73620"]
       },
       {
         "name": "Tumour WT",
@@ -51,18 +38,10 @@
         "targeted_sequencing": null,
         "extraction_skipped": false,
         "library_preparation_skipped": false,
-        "extraction_ids": [
-          "SAM413648"
-        ],
-        "library_preparation_ids": [
-          "LIB76197"
-        ],
-        "library_qualification_ids": [
-          "5460_1_LDI73998"
-        ],
-        "full_depth_sequencing_ids": [
-          "5481_1_LDI73998"
-        ]
+        "extraction_ids": ["SAM413648"],
+        "library_preparation_ids": ["LIB76197"],
+        "library_qualification_ids": ["5460_1_LDI73998"],
+        "full_depth_sequencing_ids": ["5481_1_LDI73998"]
       },
       {
         "name": "Tumour WG",
@@ -73,24 +52,13 @@
         "targeted_sequencing": null,
         "extraction_skipped": false,
         "library_preparation_skipped": false,
-        "extraction_ids": [
-          "SAM413735"
-        ],
-        "library_preparation_ids": [
-          "LIB75803"
-        ],
-        "library_qualification_ids": [
-          "5459_1_LDI73621",
-          "5467_1_LDI73621"
-        ],
-        "full_depth_sequencing_ids": [
-          "5476_1_LDI73621",
-          "5540_1_LDI73621"
-        ]
+        "extraction_ids": ["SAM413735"],
+        "library_preparation_ids": ["LIB75803"],
+        "library_qualification_ids": ["5459_1_LDI73621", "5467_1_LDI73621"],
+        "full_depth_sequencing_ids": ["5476_1_LDI73621", "5540_1_LDI73621"]
       }
     ],
-    "requisition_ids": [
-      512
-    ]
+    "requisition_ids": [512],
+    "stopped": false
   }
 ]

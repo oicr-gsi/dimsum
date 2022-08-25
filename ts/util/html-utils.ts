@@ -116,3 +116,7 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
   addMisoIcon(div, misoUrl);
   return div;
 }
+
+export function addNaText(fragment: DocumentFragment) {
+  fragment.appendChild(document.createTextNode("N/A"));
+}

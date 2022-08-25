@@ -10,7 +10,7 @@ import ca.on.oicr.gsi.dimsum.data.Case;
 public enum CaseSort {
 
   // @formatter:off
-  ASSAY("Assay", Comparator.comparing(Case::getAssayName)),
+  ASSAY("Assay", Comparator.comparing(kase -> kase.getAssay().getName())),
   DONOR("Donor", Comparator.comparing(kase -> kase.getDonor().getName())),
   START_DATE("Start Date", Comparator.comparing(Case::getStartDate)),
   LAST_ACTIVITY("Latest Activity", Comparator.comparing(Case::getLatestActivityDate));

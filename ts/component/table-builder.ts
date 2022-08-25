@@ -50,7 +50,9 @@ export interface TableDefinition<ParentType, ChildType> {
   defaultSort: SortDefinition;
   filters?: FilterDefinition[];
   getChildren?: (parent: ParentType) => ChildType[];
-  columns: ColumnDefinition<ParentType, ChildType>[];
+  generateColumns: (
+    data?: ParentType[]
+  ) => ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
 }
 
@@ -92,6 +94,7 @@ export class TableBuilder<ParentType, ChildType> {
   pageLeftButton?: HTMLButtonElement;
   pageRightButton?: HTMLButtonElement;
 
+  columns: ColumnDefinition<ParentType, ChildType>[];
   sortColumn: string;
   sortDescending: boolean;
   pageSize: number = 10;
@@ -116,6 +119,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
     this.container = container;
+    this.columns = definition.generateColumns();
   }
 
   public build() {
@@ -171,7 +175,7 @@ export class TableBuilder<ParentType, ChildType> {
 
     // adds all dropdown items
     let dropdownOptions: DropdownOption[] = [];
-    this.definition.columns
+    this.columns
       .filter((column) => column.sortType)
       .forEach((column) => {
         dropdownOptions.push(this.addSortOption(column, false));
@@ -405,10 +409,9 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private load(data?: ParentType[]) {
+    this.columns = this.definition.generateColumns(data);
     const table = getElement(this.table);
-    while (table.lastChild) {
-      table.removeChild(table.lastChild);
-    }
+    table.replaceChildren();
     this.addTableHead(table);
     this.addTableBody(table, data);
   }
@@ -416,7 +419,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addTableHead(table: HTMLTableElement) {
     const thead = table.createTHead();
     const row = thead.insertRow();
-    this.definition.columns.forEach((column, i) => {
+    this.columns.forEach((column, i) => {
       addColumnHeader(row, column.title, i);
     });
   }
@@ -490,7 +493,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = this.addBodyRow(tbody, parent);
-    this.definition.columns.forEach((column, i) => {
+    this.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
           this.addChildCell(tr, column, children[0], parent, i);
@@ -511,7 +514,7 @@ export class TableBuilder<ParentType, ChildType> {
           return;
         }
         const tr = this.addBodyRow(tbody, parent);
-        this.definition.columns.forEach((column) => {
+        this.columns.forEach((column) => {
           if (column.child) {
             this.addChildCell(tr, column, child, parent, i);
           }
@@ -531,7 +534,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addNoDataRow(tbody: HTMLTableSectionElement) {
     const row = tbody.insertRow();
     const cell = makeCell(row, 0);
-    cell.colSpan = this.definition.columns.length;
+    cell.colSpan = this.columns.length;
     cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
   }

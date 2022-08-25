@@ -185,8 +185,11 @@ public class CaseServiceTest {
 
   private void addRequisition(Case kase, int caseNumber, int requisitionNumber) {
     // Not using mocks because we're kind-of testing hashcode for distinct filters here too
-    kase.getRequisitions().add(new Requisition.Builder().id(caseNumber * 100 + requisitionNumber)
-        .name(String.format("REQ_%d-%d", caseNumber, requisitionNumber)).build());
+    kase.getRequisitions().add(new Requisition.Builder()
+        .id(caseNumber * 100 + requisitionNumber)
+        .name(String.format("REQ_%d-%d", caseNumber, requisitionNumber))
+        .assayId(2L)
+        .build());
   }
 
 }

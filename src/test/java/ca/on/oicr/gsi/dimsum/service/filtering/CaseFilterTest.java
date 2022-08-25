@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-
+import ca.on.oicr.gsi.dimsum.data.Assay;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.Donor;
 import ca.on.oicr.gsi.dimsum.data.Project;
@@ -363,8 +363,10 @@ public class CaseFilterTest {
     when(donor.getName()).thenReturn(donorName);
     when(donor.getExternalName()).thenReturn(donorName);
     when(kase.getDonor()).thenReturn(donor);
-    when(kase.getAssayName()).thenReturn(assayName);
-    when(kase.getAssayDescription()).thenReturn(assayName);
+    Assay assay = mock(Assay.class);
+    when(assay.getName()).thenReturn(assayName);
+    when(assay.getDescription()).thenReturn(assayName);
+    when(kase.getAssay()).thenReturn(assay);
     when(kase.getProjects()).thenReturn(new HashSet<>());
     kase.getProjects().add(makeProject(projectName));
     when(kase.getReceipts()).thenReturn(new ArrayList<>());

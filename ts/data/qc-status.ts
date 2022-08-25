@@ -2,6 +2,7 @@ import { CellStatus } from "../util/html-utils";
 
 enum qcStatusKeyEnum {
   "construction",
+  "sequencing",
   "analysis",
   "qc",
   "dataReview",
@@ -32,9 +33,16 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     cellStatus: "warning",
     priority: 0,
   },
+  sequencing: {
+    label: "Sequencing in progress",
+    icon: "pen-to-square",
+    qcComplete: false,
+    cellStatus: "warning",
+    priority: 2,
+  },
   analysis: {
     label: "Pending analysis",
-    icon: "hourglass",
+    icon: "hourglass-half",
     qcComplete: false,
     cellStatus: "warning",
     priority: 3,
