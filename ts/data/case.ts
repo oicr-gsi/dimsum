@@ -42,14 +42,27 @@ export interface Qcable {
   dataReviewDate?: string;
 }
 
+export interface Lane {
+  laneNumber: number;
+  percentOverQ30Read1?: number;
+  percentOverQ30Read2?: number;
+  clustersPf?: number;
+  percentPfixRead1: number;
+  percentPfixRead2: number;
+}
+
 export interface Run extends Qcable {
   id: number;
   name: string;
   containerModel?: string;
+  joinedLanes: boolean;
   sequencingParameters?: string;
   readLength?: number;
   readLength2?: number;
   completionDate?: string;
+  percentOverQ30?: number;
+  clustersPf?: number;
+  lanes: Lane[];
 }
 
 export interface Test {

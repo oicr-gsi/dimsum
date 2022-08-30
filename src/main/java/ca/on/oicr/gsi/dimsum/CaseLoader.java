@@ -245,10 +245,14 @@ public class CaseLoader {
           .id(parseLong(json, "id", true))
           .name(parseString(json, "name", true))
           .containerModel(parseString(json, "container_model"))
+          .joinedLanes(parseBoolean(json, "joined_lanes"))
           .sequencingParameters(parseString(json, "sequencing_parameters"))
           .readLength(parseInteger(json, "read_length", false))
           .readLength2(parseInteger(json, "read_length_2", false))
           .completionDate(parseDate(json, "completion_date"))
+          .percentOverQ30(parseDecimal(json, "percent_over_q30", false))
+          .clustersPf(parseLong(json, "clusters_pf", false))
+          .lanes(parseLanes(json.get("lanes")))
           .qcPassed(parseQcPassed(json, "qc_state"))
           .qcUser(parseString(json, "qc_user"))
           .qcDate(parseDate(json, "qc_date"))
@@ -259,6 +263,31 @@ public class CaseLoader {
     });
 
     return runs.stream().collect(Collectors.toMap(Run::getId, Function.identity()));
+  }
+
+  private List<Lane> parseLanes(JsonNode json) throws DataParseException {
+    if (json == null || !json.isObject()) {
+      throw new DataParseException("Invalid run lanes");
+    }
+    List<Lane> lanes = new ArrayList<>();
+    Iterator<Entry<String, JsonNode>> iterator = json.fields();
+    while (iterator.hasNext()) {
+      Entry<String, JsonNode> entry = iterator.next();
+      Lane lane = parseLane(entry.getValue());
+      lanes.add(lane);
+    }
+    return lanes;
+  }
+
+  private Lane parseLane(JsonNode json) throws DataParseException {
+    return new Lane.Builder()
+        .laneNumber(parseInteger(json, "lane_number", true))
+        .percentOverQ30Read1(parseInteger(json, "percent_over_q30_read1", false))
+        .percentOverQ30Read2(parseInteger(json, "percent_over_q30_read2", false))
+        .clustersPf(parseLong(json, "clusters_pf", false))
+        .percentPfixRead1(parseDecimal(json, "percent_phix_read1", false))
+        .percentPfixRead2(parseDecimal(json, "percent_phix_read2", false))
+        .build();
   }
 
   private static LocalDate parseSampleCreatedDate(JsonNode json) throws DataParseException {

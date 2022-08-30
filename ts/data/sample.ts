@@ -287,6 +287,19 @@ function generateMetricColumns(
           addNaText(fragment);
           return;
         }
+        // handle metrics that have multiple values
+        switch (metricName) {
+          case "Bases Over Q30":
+            addQ30Contents(sample, metrics, fragment);
+            return;
+          case "Min Clusters (PF)":
+          case "Min Reads Delivered (PF)":
+            addClustersPfContents(sample, metrics, fragment);
+            return;
+          case "PhiX Control":
+            addPhixContents(sample, metrics, fragment);
+            return;
+        }
         if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
           // pass/fail based on QC status
           if (sample.qcPassed) {
@@ -306,24 +319,13 @@ function generateMetricColumns(
         }
         const value = getMetricValue(metricName, sample);
         if (value === null) {
-          if (
-            [
-              "Bases Over Q30",
-              "Min Clusters (PF)",
-              "PhiX Control",
-              "Min Reads Delivered (PF)",
-            ].includes(metricName)
-          ) {
-            addTodoIcon(fragment); // TODO: remove after Run Scanner metrics are integrated
+          if (sample.run) {
+            const status = sample.run.completionDate
+              ? qcStatuses.analysis
+              : qcStatuses.sequencing;
+            fragment.appendChild(makeStatusIcon(status.icon, status.label));
           } else {
-            if (sample.run) {
-              const status = sample.run.completionDate
-                ? qcStatuses.analysis
-                : qcStatuses.sequencing;
-              fragment.appendChild(makeStatusIcon(status.icon, status.label));
-            } else {
-              fragment.appendChild(makeStatusIcon("question", "Not Found"));
-            }
+            fragment.appendChild(makeNotFoundIcon());
           }
         } else {
           fragment.append(makeMetricDisplay(value, metrics));
@@ -333,6 +335,14 @@ function generateMetricColumns(
         const metrics = getMatchingMetrics(metricName, category, sample);
         if (!metrics || !metrics.length) {
           return "na";
+        }
+        // handle metrics that are checked against multiple values
+        switch (metricName) {
+          case "Min Clusters (PF)":
+          case "Min Reads Delivered (PF)":
+            return getClustersPfHighlight(sample, metrics);
+          case "PhiX Control":
+            return getPhixHighlight(sample, metrics);
         }
         if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
           if (sample.qcPassed) {
@@ -358,7 +368,300 @@ function generateMetricColumns(
     };
   });
 
-  function formatMetricValue(value: number, metrics: Metric[]) {
+  function addQ30Contents(
+    sample: Sample,
+    metrics: Metric[],
+    fragment: DocumentFragment
+  ) {
+    // run-level value is checked, but run and lane-level are both displayed
+    if (!sample.run || !sample.run.percentOverQ30) {
+      if (sample.run && !sample.run.completionDate) {
+        fragment.appendChild(makeSequencingIcon());
+      } else {
+        fragment.appendChild(makeNotFoundIcon());
+      }
+      return;
+    }
+    fragment.appendChild(makeMetricDisplay(sample.run.percentOverQ30, metrics));
+    sample.run.lanes.forEach((lane) => {
+      if (!lane.percentOverQ30Read1) {
+        return;
+      }
+      let text = sample.run?.lanes.length === 1 ? "" : `Ln${lane.laneNumber} `;
+      text += `R1: ${lane.percentOverQ30Read1}`;
+      if (lane.percentOverQ30Read2) {
+        text += ";";
+      }
+      if (lane.percentOverQ30Read2) {
+        text += ` R2: ${lane.percentOverQ30Read2}`;
+      }
+      const div = document.createElement("div");
+      div.classList.add("whitespace-nowrap");
+      div.appendChild(document.createTextNode(text));
+      fragment.appendChild(div);
+    });
+  }
+
+  function addClustersPfContents(
+    sample: Sample,
+    metrics: Metric[],
+    fragment: DocumentFragment
+  ) {
+    // For joined flowcells, run-level is checked
+    // For non-joined, each lane is checked
+    // Metric is sometimes specified "/lane", sometimes per run
+    if (!sample.run || !sample.run.clustersPf) {
+      if (sample.run && !sample.run.completionDate) {
+        fragment.appendChild(makeSequencingIcon());
+      } else {
+        fragment.appendChild(makeNotFoundIcon());
+      }
+      return;
+    }
+    const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
+    const perRunMetrics = separatedMetrics[0];
+    const perLaneMetrics = separatedMetrics[1];
+    const tooltipContents = document.createDocumentFragment();
+    if (perRunMetrics.length) {
+      // whether originally or not, these metrics are per run
+      perRunMetrics.forEach((metric) => {
+        const metricDiv = document.createElement("div");
+        metricDiv.innerText = getMetricRequirementText(metric);
+        tooltipContents.appendChild(metricDiv);
+      });
+    }
+    const runDiv = document.createElement("div");
+    const divisorUnit = getDivisorUnit(metrics);
+    runDiv.innerText = formatMetricValue(
+      sample.run.clustersPf,
+      metrics,
+      divisorUnit
+    );
+    const tooltip = Tooltip.getInstance();
+    if (perRunMetrics.length) {
+      tooltip.addTarget(runDiv, tooltipContents);
+    }
+    fragment.appendChild(runDiv);
+
+    if (sample.run.lanes.length > 1) {
+      const laneTooltipContents = document.createDocumentFragment();
+      // these metrics are per lane
+      perLaneMetrics.forEach((metric) => {
+        const metricDiv = document.createElement("div");
+        metricDiv.innerText = getMetricRequirementText(metric);
+        laneTooltipContents.appendChild(metricDiv);
+      });
+      sample.run.lanes.forEach((lane) => {
+        if (lane.clustersPf) {
+          const laneDiv = document.createElement("div");
+          laneDiv.classList.add("whitespace-nowrap");
+          laneDiv.innerText = `Ln${lane.laneNumber}: ${formatMetricValue(
+            lane.clustersPf,
+            metrics,
+            divisorUnit
+          )}`;
+          if (perLaneMetrics.length) {
+            tooltip.addTarget(laneDiv, laneTooltipContents.cloneNode(true));
+          }
+          fragment.appendChild(laneDiv);
+        }
+      });
+    }
+  }
+
+  function getClustersPfHighlight(
+    sample: Sample,
+    metrics: Metric[]
+  ): CellStatus | null {
+    if (!sample.run || !sample.run.clustersPf) {
+      return "warning";
+    }
+    const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
+    const perRunMetrics = separatedMetrics[0];
+    const perLaneMetrics = separatedMetrics[1];
+
+    const divisorUnit = getDivisorUnit(metrics);
+    const divisor = getDivisor(divisorUnit);
+
+    if (
+      perRunMetrics.length &&
+      anyFail(sample.run.clustersPf / divisor, perRunMetrics)
+    ) {
+      return "error";
+    }
+
+    if (perLaneMetrics.length) {
+      let highlight: CellStatus | null = null;
+      for (let i = 0; i < sample.run.lanes.length; i++) {
+        const lane = sample.run.lanes[i];
+        if (!lane.clustersPf) {
+          highlight = "warning";
+        } else if (anyFail(lane.clustersPf / divisor, perLaneMetrics)) {
+          return "error";
+        }
+      }
+      return highlight;
+    }
+
+    return null;
+  }
+
+  function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
+    let perLaneMetrics = metrics.filter(
+      (metric) => metric.units && metric.units.endsWith("/lane")
+    );
+    let perRunMetrics = metrics.filter(
+      (metric) => !metric.units || !metric.units.endsWith("/lane")
+    );
+    if (run.joinedLanes) {
+      // ALL metrics are per run. If specified per lane, multiply by lane count
+      perLaneMetrics.forEach((metric) => {
+        const perRunMetric = makePerRunFromLaneMetric(metric, run);
+        perRunMetrics.push(perRunMetric);
+      });
+      perLaneMetrics = [];
+    }
+    if (run.lanes.length === 1) {
+      // Treat all as per run since we won't show the lane metrics separately
+      perRunMetrics = metrics;
+      perLaneMetrics = [];
+    }
+    return [perRunMetrics, perLaneMetrics];
+  }
+
+  function makePerRunFromLaneMetric(perLaneMetric: Metric, run: Run) {
+    const perRunMetric: Metric = Object.assign({}, perLaneMetric);
+    if (perRunMetric.minimum) {
+      perRunMetric.minimum *= run.lanes.length;
+    }
+    if (perRunMetric.maximum) {
+      perRunMetric.maximum *= run.lanes.length;
+    }
+    if (!perRunMetric.units) {
+      throw new Error("Unexpected missing units");
+    }
+    const match = /^(.*)\/lane$/.exec(perRunMetric.units);
+    if (!match) {
+      throw new Error(`Unexpected metric units: ${perRunMetric.units}`);
+    }
+    perRunMetric.units = match[1];
+    return perRunMetric;
+  }
+
+  function getDivisorUnit(metrics: Metric[]) {
+    if (
+      metrics.some((metric) => metric.units && metric.units.startsWith("K"))
+    ) {
+      return "K";
+    } else if (
+      metrics.some((metric) => metric.units && metric.units.startsWith("M"))
+    ) {
+      return "M";
+    } else if (
+      metrics.some((metric) => metric.units && metric.units.startsWith("B"))
+    ) {
+      return "B";
+    }
+    return null;
+  }
+
+  function getDivisor(unit: string | null) {
+    switch (unit) {
+      case "K":
+        return 1000;
+      case "M":
+        return 1000000;
+      case "B":
+        return 1000000000;
+      default:
+        return 1;
+    }
+  }
+
+  function addPhixContents(
+    sample: Sample,
+    metrics: Metric[],
+    fragment: DocumentFragment
+  ) {
+    // There is no run-level metric, so we check each read of each lane
+    if (
+      !sample.run ||
+      !sample.run.lanes ||
+      !sample.run.lanes.length ||
+      sample.run.lanes.every((lane) => nullOrUndefined(lane.percentPfixRead1))
+    ) {
+      if (sample.run && !sample.run.completionDate) {
+        fragment.appendChild(makeSequencingIcon());
+      } else {
+        fragment.appendChild(makeNotFoundIcon());
+      }
+      return;
+    }
+
+    const tooltip = Tooltip.getInstance();
+    const laneTooltipContents = document.createDocumentFragment();
+    metrics.forEach((metric) => {
+      const metricDiv = document.createElement("div");
+      metricDiv.innerText = getMetricRequirementText(metric);
+      laneTooltipContents.appendChild(metricDiv);
+    });
+
+    const multipleLanes = sample.run.lanes.length > 1;
+    sample.run.lanes.forEach((lane) => {
+      const laneDiv = document.createElement("div");
+      laneDiv.classList.add("whitespace-nowrap");
+      let text = multipleLanes ? `Ln${lane.laneNumber}` : "";
+      if (nullOrUndefined(lane.percentPfixRead1)) {
+        const span = document.createElement("span");
+        span.innerText = text + ": ";
+        laneDiv.appendChild(span);
+        laneDiv.appendChild(makeNotFoundIcon());
+      } else {
+        if (multipleLanes) {
+          text += " ";
+        }
+        text += `R1: ${lane.percentPfixRead1}`;
+        if (!nullOrUndefined(lane.percentPfixRead2)) {
+          text += `; R2: ${lane.percentPfixRead2}`;
+        }
+        laneDiv.innerText = text;
+        tooltip.addTarget(laneDiv, laneTooltipContents);
+      }
+      fragment.appendChild(laneDiv);
+    });
+  }
+
+  function getPhixHighlight(
+    sample: Sample,
+    metrics: Metric[]
+  ): CellStatus | null {
+    if (
+      !sample.run ||
+      !sample.run.lanes ||
+      !sample.run.lanes.length ||
+      sample.run.lanes.some((lane) => nullOrUndefined(lane.percentPfixRead1))
+    ) {
+      return "warning";
+    }
+    if (
+      sample.run.lanes.some((lane) => {
+        return (
+          anyFail(lane.percentPfixRead1, metrics) ||
+          (!nullOrUndefined(lane.percentPfixRead2) &&
+            anyFail(lane.percentPfixRead2, metrics))
+        );
+      })
+    ) {
+      return "error";
+    }
+    return null;
+  }
+
+  function formatMetricValue(
+    value: number,
+    metrics: Metric[],
+    divisorUnit?: string | null
+  ) {
     const metricPlaces = Math.max(
       ...metrics.map((metric) =>
         Math.max(
@@ -367,10 +670,13 @@ function generateMetricColumns(
         )
       )
     );
+    if (divisorUnit) {
+      value = value / getDivisor(divisorUnit);
+    }
     if (metricPlaces === 0 && Number.isInteger(value)) {
-      return formatDecimal(value, 0);
+      return formatDecimal(value, 0) + (divisorUnit || "");
     } else {
-      return formatDecimal(value, metricPlaces + 1);
+      return formatDecimal(value, metricPlaces + 1) + (divisorUnit || "");
     }
   }
 
@@ -393,39 +699,50 @@ function generateMetricColumns(
   }
 
   function getMetricRequirementText(metric: Metric) {
+    let text = "Required: ";
     switch (metric.thresholdType) {
       case "GT":
-        return `> ${formatThreshold(metric.minimum)}`;
+        text += `> ${formatThreshold(metric.minimum)}`;
+        break;
       case "GE":
-        return `>= ${formatThreshold(metric.minimum)}`;
+        text += `>= ${formatThreshold(metric.minimum)}`;
+        break;
       case "LT":
-        return `< ${formatThreshold(metric.maximum)}`;
+        text += `< ${formatThreshold(metric.maximum)}`;
+        break;
       case "LE":
-        return `<= ${formatThreshold(metric.maximum)}`;
+        text += `<= ${formatThreshold(metric.maximum)}`;
+        break;
       case "BETWEEN":
-        return `Between ${formatThreshold(
+        text += `Between ${formatThreshold(
           metric.minimum
         )} and ${formatThreshold(metric.maximum)}`;
+        break;
       default:
         throw new Error(`Unexpected threshold type: ${metric.thresholdType}`);
     }
+    if (metric.units) {
+      text += metric.units;
+    }
+    return text;
   }
 
-  function makeMetricDisplay(value: number, metrics: Metric[]) {
+  function makeMetricDisplay(
+    value: number,
+    metrics: Metric[]
+  ): HTMLSpanElement {
     const displayValue = formatMetricValue(value, metrics);
-    const span = document.createElement("span");
-    span.innerText = displayValue;
+    const div = document.createElement("div");
+    div.innerText = displayValue;
     const tooltipFragment = document.createDocumentFragment();
     metrics.forEach((metric) => {
       const div = document.createElement("div");
-      div.innerText = `Required: ${getMetricRequirementText(metric)}${
-        metric.units || ""
-      }`;
+      div.innerText = getMetricRequirementText(metric);
       tooltipFragment.appendChild(div);
     });
     const tooltip = Tooltip.getInstance();
-    tooltip.addTarget(span, tooltipFragment);
-    return span;
+    tooltip.addTarget(div, tooltipFragment);
+    return div;
   }
 
   function anyFail(value: number, metrics: Metric[]): boolean {
@@ -684,23 +1001,13 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       }
     case "On Target Reads":
       return nullIfUndefined(sample.onTargetReads);
+    case "Bases Over Q30":
+      return sample.run ? nullIfUndefined(sample.run.percentOverQ30) : null;
   }
   if (/^Concentration/.test(metricName)) {
     return nullIfUndefined(sample.concentration);
   } else if (/^Avg Size Distribution/.test(metricName)) {
     return nullIfUndefined(sample.librarySize);
-  }
-  if (sample.run) {
-    switch (metricName) {
-      case "Bases Over Q30":
-        return null; // TODO: from Run Scanner
-      case "Min Clusters (PF)":
-        return null; // TODO: from Run Scanner
-      case "PhiX Control":
-        return null; // TODO: from Run Scanner
-      case "Min Reads Delivered (PF)":
-        return null; // TODO: from Run Scanner
-    }
   }
   return null;
 }
@@ -759,9 +1066,15 @@ function getFirstReviewStatus(qcable: Qcable) {
   }
 }
 
-function addTodoIcon(fragment: DocumentFragment) {
-  const icon = makeStatusIcon("person-digging", "We're working on it!");
-  fragment.appendChild(icon);
+function makeNotFoundIcon() {
+  return makeStatusIcon("question", "Not Found");
+}
+
+function makeSequencingIcon() {
+  return makeStatusIcon(
+    qcStatuses.sequencing.icon,
+    qcStatuses.sequencing.label
+  );
 }
 
 function makeStatusIcon(iconName: string, statusText: string) {
@@ -769,4 +1082,8 @@ function makeStatusIcon(iconName: string, statusText: string) {
   const tooltip = Tooltip.getInstance();
   tooltip.addTarget(icon, document.createTextNode(statusText));
   return icon;
+}
+
+function nullOrUndefined(value: any): boolean {
+  return value === undefined || value === null;
 }
