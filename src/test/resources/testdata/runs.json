@@ -3,78 +3,208 @@
     "id": 5459,
     "name": "210805_M00753_0369_000000000-G8WYC",
     "container_model": "PE-Micro MiSeq Flow Cell",
+    "joined_lanes": false,
     "sequencing_parameters": "Micro 2\u00d7151",
+    "read_length": 151,
+    "read_length_2": 151,
     "completion_date": "2021-08-06T00:00:00-04:00",
     "qc_state": "Ready",
     "qc_user": "Technician One",
     "qc_date": "2021-08-09",
     "data_review_state": "Passed",
     "data_review_user": "QA Manager",
-    "data_review_date": "2021-08-09"
+    "data_review_date": "2021-08-09",
+    "percent_over_q30": 92.45,
+    "clusters_pf": 4835207,
+    "lanes": {
+      "1": {
+        "lane_number": 1,
+        "percent_over_q30_read1": 95,
+        "percent_over_q30_read2": 90,
+        "clusters_pf": 4835207,
+        "percent_phix_read1": 0.43,
+        "percent_phix_read2": 0.41
+      }
+    }
   },
   {
     "id": 5460,
     "name": "210805_M00146_0312_000000000-DD4CF",
     "container_model": "PE-Nano MiSeq Flow Cell",
+    "joined_lanes": false,
     "sequencing_parameters": "Nano 2\u00d7151",
+    "read_length": 151,
+    "read_length_2": 151,
     "completion_date": "2021-08-06T00:00:00-04:00",
     "qc_state": "Ready",
     "qc_user": "Technician One",
     "qc_date": "2021-08-06",
     "data_review_state": "Passed",
     "data_review_user": "QA Manager",
-    "data_review_date": "2021-08-09"
+    "data_review_date": "2021-08-09",
+    "percent_over_q30": 93.0,
+    "clusters_pf": 965014,
+    "lanes": {
+      "1": {
+        "lane_number": 1,
+        "percent_over_q30_read1": 96,
+        "percent_over_q30_read2": 90,
+        "clusters_pf": 965014,
+        "percent_phix_read1": 0.86,
+        "percent_phix_read2": 0.83
+      }
+    }
   },
   {
     "id": 5467,
     "name": "210809_M06816_0181_000000000-DD4R9",
     "container_model": "PE-Nano MiSeq Flow Cell",
+    "joined_lanes": false,
     "sequencing_parameters": "Nano 2\u00d7151",
+    "read_length": 151,
+    "read_length_2": 151,
     "completion_date": "2021-08-10T00:00:00-04:00",
     "qc_state": "Ready",
     "qc_user": "Technician One",
     "qc_date": "2021-08-10",
     "data_review_state": "Passed",
     "data_review_user": "QA Manager",
-    "data_review_date": "2021-08-11"
+    "data_review_date": "2021-08-11",
+    "percent_over_q30": 95.43,
+    "clusters_pf": 1435837,
+    "lanes": {
+      "1": {
+        "lane_number": 1,
+        "percent_over_q30_read1": 97,
+        "percent_over_q30_read2": 94,
+        "clusters_pf": 1435837,
+        "percent_phix_read1": 0.29,
+        "percent_phix_read2": 0.28
+      }
+    }
   },
   {
     "id": 5476,
     "name": "210810_A00469_0195_BH2YF2DMXY",
     "container_model": "S2",
+    "joined_lanes": false,
     "sequencing_parameters": "2\u00d7151",
+    "read_length": 151,
+    "read_length_2": 151,
     "completion_date": "2021-08-12T00:00:00-04:00",
     "qc_state": "Ready",
     "qc_user": "Technician One",
     "qc_date": "2021-08-12",
     "data_review_state": "Passed",
     "data_review_user": "Lab Manager",
-    "data_review_date": "2021-08-18"
+    "data_review_date": "2021-08-18",
+    "percent_over_q30": 89.1,
+    "clusters_pf": 4361124864,
+    "lanes": {
+      "1": {
+        "lane_number": 1,
+        "percent_over_q30_read1": 90,
+        "percent_over_q30_read2": 88,
+        "clusters_pf": 2163613696,
+        "percent_phix_read1": 0.66,
+        "percent_phix_read2": 0.65
+      },
+      "2": {
+        "lane_number": 2,
+        "percent_over_q30_read1": 90,
+        "percent_over_q30_read2": 88,
+        "clusters_pf": 2197511424,
+        "percent_phix_read1": 0.66,
+        "percent_phix_read2": 0.65
+      }
+    }
   },
   {
     "id": 5481,
     "name": "210811_A00469_0196_AHFL35DRXY",
     "container_model": "S1",
+    "joined_lanes": false,
     "sequencing_parameters": "2\u00d7101",
+    "read_length": 101,
+    "read_length_2": 101,
     "completion_date": "2021-08-12T00:00:00-04:00",
     "qc_state": "Ready",
     "qc_user": "Technician One",
     "qc_date": "2021-08-12",
     "data_review_state": "Passed",
     "data_review_user": "Lab Manager",
-    "data_review_date": "2021-08-18"
+    "data_review_date": "2021-08-18",
+    "percent_over_q30": 92.97,
+    "clusters_pf": 2087202688,
+    "lanes": {
+      "1": {
+        "lane_number": 1,
+        "percent_over_q30_read1": 95,
+        "percent_over_q30_read2": 91,
+        "clusters_pf": 1043381376,
+        "percent_phix_read1": 1.8,
+        "percent_phix_read2": 1.8
+      },
+      "2": {
+        "lane_number": 2,
+        "percent_over_q30_read1": 95,
+        "percent_over_q30_read2": 91,
+        "clusters_pf": 1043821312,
+        "percent_phix_read1": 1.9,
+        "percent_phix_read2": 1.8
+      }
+    }
   },
   {
     "id": 5540,
     "name": "210914_A00469_0210_BHLFMGDSX2",
     "container_model": "S4",
+    "joined_lanes": false,
     "sequencing_parameters": "2\u00d7151",
+    "read_length": 151,
+    "read_length_2": 151,
     "completion_date": "2021-09-16T00:00:00-04:00",
     "qc_state": "Ready",
     "qc_user": "Technician One",
     "qc_date": "2021-09-16",
     "data_review_state": "Passed",
     "data_review_user": "QA Manager",
-    "data_review_date": "2021-09-27"
+    "data_review_date": "2021-09-27",
+    "percent_over_q30": 89.47,
+    "clusters_pf": 11014852608,
+    "lanes": {
+      "1": {
+        "lane_number": 1,
+        "percent_over_q30_read1": 91,
+        "percent_over_q30_read2": 89,
+        "clusters_pf": 2789968896,
+        "percent_phix_read1": 0.66,
+        "percent_phix_read2": 0.64
+      },
+      "2": {
+        "lane_number": 2,
+        "percent_over_q30_read1": 91,
+        "percent_over_q30_read2": 88,
+        "clusters_pf": 2752289536,
+        "percent_phix_read1": 0.65,
+        "percent_phix_read2": 0.63
+      },
+      "3": {
+        "lane_number": 3,
+        "percent_over_q30_read1": 91,
+        "percent_over_q30_read2": 88,
+        "clusters_pf": 2734044928,
+        "percent_phix_read1": 0.66,
+        "percent_phix_read2": 0.63
+      },
+      "4": {
+        "lane_number": 4,
+        "percent_over_q30_read1": 90,
+        "percent_over_q30_read2": 88,
+        "clusters_pf": 2738548480,
+        "percent_phix_read1": 0.65,
+        "percent_phix_read2": 0.63
+      }
+    }
   }
 ]

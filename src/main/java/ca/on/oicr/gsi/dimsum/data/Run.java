@@ -1,7 +1,10 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
@@ -11,10 +14,14 @@ public class Run {
   private final long id;
   private final String name;
   private final String containerModel;
+  private final boolean joinedLanes;
   private final String sequencingParameters;
   private final Integer readLength;
   private final Integer readLength2;
   private final LocalDate completionDate;
+  private final BigDecimal percentOverQ30;
+  private final Long clustersPf;
+  private final List<Lane> lanes;
   private final Boolean qcPassed;
   private final String qcUser;
   private final LocalDate qcDate;
@@ -29,10 +36,14 @@ public class Run {
     this.id = builder.id;
     this.name = requireNonNull(builder.name);
     this.containerModel = builder.containerModel;
+    this.joinedLanes = builder.joinedLanes;
     this.sequencingParameters = builder.sequencingParameters;
     this.readLength = builder.readLength;
     this.readLength2 = builder.readLength2;
     this.completionDate = builder.completionDate;
+    this.percentOverQ30 = builder.percentOverQ30;
+    this.clustersPf = builder.clustersPf;
+    this.lanes = Collections.unmodifiableList(requireNonNull(builder.lanes));
     this.qcPassed = builder.qcPassed;
     this.qcUser = builder.qcUser;
     this.qcDate = builder.qcDate;
@@ -49,13 +60,12 @@ public class Run {
     return name;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id);
-  }
-
   public String getContainerModel() {
     return containerModel;
+  }
+
+  public boolean hasJoinedLanes() {
+    return joinedLanes;
   }
 
   public String getSequencingParameters() {
@@ -72,6 +82,18 @@ public class Run {
 
   public LocalDate getCompletionDate() {
     return completionDate;
+  }
+
+  public BigDecimal getPercentOverQ30() {
+    return percentOverQ30;
+  }
+
+  public Long getClustersPf() {
+    return clustersPf;
+  }
+
+  public List<Lane> getLanes() {
+    return lanes;
   }
 
   public Boolean getQcPassed() {
@@ -99,6 +121,11 @@ public class Run {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(id);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
@@ -115,10 +142,14 @@ public class Run {
     private long id;
     private String name;
     private String containerModel;
+    private boolean joinedLanes;
     private String sequencingParameters;
     private Integer readLength;
     private Integer readLength2;
     private LocalDate completionDate;
+    private BigDecimal percentOverQ30;
+    private Long clustersPf;
+    private List<Lane> lanes;
     private Boolean qcPassed;
     private String qcUser;
     private LocalDate qcDate;
@@ -141,6 +172,11 @@ public class Run {
       return this;
     }
 
+    public Builder joinedLanes(boolean joinedLanes) {
+      this.joinedLanes = joinedLanes;
+      return this;
+    }
+
     public Builder sequencingParameters(String sequencingParameters) {
       this.sequencingParameters = sequencingParameters;
       return this;
@@ -158,6 +194,21 @@ public class Run {
 
     public Builder completionDate(LocalDate completionDate) {
       this.completionDate = completionDate;
+      return this;
+    }
+
+    public Builder percentOverQ30(BigDecimal percentOverQ30) {
+      this.percentOverQ30 = percentOverQ30;
+      return this;
+    }
+
+    public Builder clustersPf(Long clustersPf) {
+      this.clustersPf = clustersPf;
+      return this;
+    }
+
+    public Builder lanes(List<Lane> lanes) {
+      this.lanes = lanes;
       return this;
     }
 
