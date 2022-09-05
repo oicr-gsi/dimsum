@@ -1,4 +1,11 @@
-import { CellStatus, makeIcon, makeNameDiv } from "../util/html-utils";
+// Informatics Review Table
+import {
+  addLink,
+  CellStatus,
+  makeIcon,
+  addMisoIcon,
+  makeNameDiv
+} from "../util/html-utils";
 import {
   ColumnDefinition,
   SortDefinition,
@@ -49,12 +56,17 @@ function qcStatusColumn(
 
 const requisitionColumn: ColumnDefinition<Requisition, void> = {
   title: "Requisition",
-  addParentContents(requisition, fragment) {
-    fragment.appendChild(
-      makeNameDiv(requisition.name, urls.miso.requisition(requisition.id))
-    );
-  },
   sortType: "text",
+  addParentContents(requisition, fragment) {
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "flex flex-row space-x-2 items-center";
+    addLink(nameDiv, requisition.name, urls.dimsum.requisition(requisition.name));
+    addMisoIcon(nameDiv, urls.miso.requisition(requisition.id));
+    fragment.appendChild(nameDiv);
+//     fragment.appendChild(
+//       makeNameDiv(requisition.name, urls.miso.requisition(requisition.id))
+//     );
+  },
 };
 
 const latestActivityColumn: ColumnDefinition<Requisition, void> = {
