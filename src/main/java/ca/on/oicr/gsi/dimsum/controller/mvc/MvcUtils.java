@@ -1,6 +1,5 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
