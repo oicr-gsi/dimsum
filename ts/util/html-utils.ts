@@ -113,9 +113,7 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
     nameSpan.innerText = name;
     div.appendChild(nameSpan);
   }
-  if (misoUrl) {
-    addMisoIcon(div, misoUrl);
-  }
+  addMisoIcon(div, misoUrl);
   return div;
 }
 
