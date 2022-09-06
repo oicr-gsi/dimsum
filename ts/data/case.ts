@@ -174,7 +174,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const externalNameDiv = document.createElement("div");
         externalNameDiv.appendChild(document.createTextNode(kase.donor.externalName));
         const tooltipInstance = Tooltip.getInstance();
-        tooltipInstance.addTarget(externalNameDiv, makeNameDiv("External Name", "", ""));
+        tooltipInstance.addTarget(externalNameDiv, makeNameDiv("External Name", ""));
         fragment.appendChild(externalNameDiv);
 
         const tumourDetailDiv = document.createElement("div");
@@ -184,6 +184,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               (kase.timepoint ? " " + kase.timepoint : "")
           )
         );
+        tooltipInstance.addTarget(tumourDetailDiv, makeNameDiv("Timepoint", ""));
         fragment.appendChild(tumourDetailDiv);
       },
     },
