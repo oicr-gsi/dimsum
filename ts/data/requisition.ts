@@ -1,4 +1,3 @@
-// Informatics Review Table
 import {
   addLink,
   CellStatus,
@@ -58,11 +57,7 @@ const requisitionColumn: ColumnDefinition<Requisition, void> = {
   title: "Requisition",
   sortType: "text",
   addParentContents(requisition, fragment) {
-    const nameDiv = document.createElement("div");
-    nameDiv.className = "flex flex-row space-x-2 items-center";
-    addLink(nameDiv, requisition.name, urls.dimsum.requisition(requisition.id));
-    addMisoIcon(nameDiv, urls.miso.requisition(requisition.id));
-    fragment.appendChild(nameDiv);
+    fragment.appendChild(makeNameDiv(requisition.name, urls.miso.requisition(requisition.id), urls.dimsum.requisition(requisition.id)));
   },
 };
 
