@@ -79,8 +79,16 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   return {
     title: "Name",
     addParentContents(sample, fragment) {
+      var sampleName = sample.name;
+      if (sample.run && sample.run.lanes.length > 0) {
+        sampleName += "(";
+        sample.run.lanes.forEach((lane) => {
+          sampleName += "L" + lane.laneNumber;
+        });
+        sampleName += ")";
+      }
       fragment.appendChild(
-        makeNameDiv(sample.name, urls.miso.sample(sample.id))
+        makeNameDiv(sampleName, urls.miso.sample(sample.id))
       );
       if (includeRun && sample.run) {
         const runName = sample.run.name;
@@ -93,6 +101,26 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
     sortType: "text",
   };
 }
+
+//-----------------------------------------------------------------------------------
+// function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
+//   return {
+//     title: "Name",
+//     addParentContents(sample, fragment) {
+//       fragment.appendChild(
+//         makeNameDiv(sample.name, urls.miso.sample(sample.id))
+//       );
+//       if (includeRun && sample.run) {
+//         const runName = sample.run.name;
+//         fragment.appendChild(
+//           makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+//         );
+//         // TODO: add Dashi icon link
+//       }
+//     },
+//     sortType: "text",
+//   };
+// }
 
 const tissueAttributesColumn: ColumnDefinition<Sample, void> = {
   title: "Tissue Attributes",
