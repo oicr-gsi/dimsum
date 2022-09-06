@@ -121,6 +121,13 @@ public class CaseLoaderTest {
       assertEquals(1, qcs.size());
       RequisitionQc qc = qcs.get(0);
       assertTrue(qc.isQcPassed());
+      assertNotNull(requisition.getQcGroups());
+      assertEquals(3, requisition.getQcGroups().size());
+      RequisitionQcGroup qcGroup = requisition.getQcGroups().stream()
+          .filter(x -> "M".equals(x.getTissueType()) && "WG".equals(x.getLibraryDesignCode()))
+          .findAny().orElse(null);
+      assertNotNull(qcGroup);
+      assertEquals(new BigDecimal("87.6189"), qcGroup.getCallability());
     }
   }
 
