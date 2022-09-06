@@ -172,9 +172,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         fragment.appendChild(nameDiv);
 
         const externalNameDiv = document.createElement("div");
-        externalNameDiv.appendChild(
-          document.createTextNode(kase.donor.externalName)
-        );
+        externalNameDiv.appendChild(document.createTextNode(kase.donor.externalName));
+        const tooltipInstance = Tooltip.getInstance();
+        tooltipInstance.addTarget(externalNameDiv, makeNameDiv("External Name", "", ""));
         fragment.appendChild(externalNameDiv);
 
         const tumourDetailDiv = document.createElement("div");
@@ -251,6 +251,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (test.groupId) {
           const groupIdDiv = document.createElement("div");
           groupIdDiv.appendChild(document.createTextNode(test.groupId));
+          const tooltipInstance = Tooltip.getInstance();
+          tooltipInstance.addTarget(groupIdDiv, makeNameDiv("Group ID", "", ""));
           fragment.appendChild(groupIdDiv);
         }
       },
