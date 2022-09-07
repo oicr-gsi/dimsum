@@ -191,7 +191,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         );
         tooltipInstance.addTarget(
           tumourDetailDiv,
-          document.createTextNode("Timepoint")
+          document.createTextNode(
+            `Tissue Origin: ${kase.tissueOrigin}\n` +
+              `Tissue Type: ${kase.tissueType}` +
+              (kase.timepoint ? `\nTimepoint: ${kase.timepoint}` : "")
+          )
         );
         fragment.appendChild(tumourDetailDiv);
       },
