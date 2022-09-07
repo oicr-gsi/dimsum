@@ -189,14 +189,25 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               (kase.timepoint ? " " + kase.timepoint : "")
           )
         );
-        tooltipInstance.addTarget(
-          tumourDetailDiv,
+        const tooltipDiv = document.createElement("div");
+        const tissueOriginDiv = document.createElement("div");
+        tissueOriginDiv.appendChild(
+          document.createTextNode(`Tissue Origin: ${kase.tissueOrigin}`)
+        );
+        tooltipDiv.appendChild(tissueOriginDiv);
+        const tissueTypeDiv = document.createElement("div");
+        tissueTypeDiv.appendChild(
+          document.createTextNode(`Tissue Type: ${kase.tissueType}`)
+        );
+        tooltipDiv.appendChild(tissueTypeDiv);
+        const timepointDiv = document.createElement("div");
+        timepointDiv.appendChild(
           document.createTextNode(
-            `Tissue Origin: ${kase.tissueOrigin}\n` +
-              `Tissue Type: ${kase.tissueType}` +
-              (kase.timepoint ? `\nTimepoint: ${kase.timepoint}` : "")
+            kase.timepoint ? `\nTimepoint: ${kase.timepoint}` : ""
           )
         );
+        tooltipDiv.appendChild(timepointDiv);
+        tooltipInstance.addTarget(tumourDetailDiv, tooltipDiv);
         fragment.appendChild(tumourDetailDiv);
       },
     },
