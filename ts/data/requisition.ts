@@ -1,4 +1,10 @@
-import { CellStatus, makeIcon, makeNameDiv } from "../util/html-utils";
+import {
+  addLink,
+  CellStatus,
+  makeIcon,
+  addMisoIcon,
+  makeNameDiv
+} from "../util/html-utils";
 import {
   ColumnDefinition,
   SortDefinition,
@@ -49,12 +55,10 @@ function qcStatusColumn(
 
 const requisitionColumn: ColumnDefinition<Requisition, void> = {
   title: "Requisition",
-  addParentContents(requisition, fragment) {
-    fragment.appendChild(
-      makeNameDiv(requisition.name, urls.miso.requisition(requisition.id))
-    );
-  },
   sortType: "text",
+  addParentContents(requisition, fragment) {
+    fragment.appendChild(makeNameDiv(requisition.name, urls.miso.requisition(requisition.id), urls.dimsum.requisition(requisition.id)));
+  },
 };
 
 const latestActivityColumn: ColumnDefinition<Requisition, void> = {
