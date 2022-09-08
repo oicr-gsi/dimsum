@@ -29,6 +29,7 @@ export const urls = {
       requisitionNames: `${restBaseUrl}/autocomplete/requisition-names`,
       projectNames: `${restBaseUrl}/autocomplete/project-names`,
       donorNames: `${restBaseUrl}/autocomplete/donor-names`,
+      runNames: `${restBaseUrl}/autocomplete/run-names`,
     },
   },
   miso: {
