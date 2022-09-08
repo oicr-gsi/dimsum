@@ -6,6 +6,7 @@ import {
   addMisoIcon,
   makeNameDiv,
   addNaText,
+  addTextDiv,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -190,23 +191,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           )
         );
         const tooltipDiv = document.createElement("div");
-        const tissueOriginDiv = document.createElement("div");
-        tissueOriginDiv.appendChild(
-          document.createTextNode(`Tissue Origin: ${kase.tissueOrigin}`)
-        );
-        tooltipDiv.appendChild(tissueOriginDiv);
-        const tissueTypeDiv = document.createElement("div");
-        tissueTypeDiv.appendChild(
-          document.createTextNode(`Tissue Type: ${kase.tissueType}`)
-        );
-        tooltipDiv.appendChild(tissueTypeDiv);
-        const timepointDiv = document.createElement("div");
-        timepointDiv.appendChild(
-          document.createTextNode(
-            kase.timepoint ? `\nTimepoint: ${kase.timepoint}` : ""
-          )
-        );
-        tooltipDiv.appendChild(timepointDiv);
+        addTextDiv(`Tissue Origin: ${kase.tissueOrigin}`, tooltipDiv);
+        addTextDiv(`Tissue Type: ${kase.tissueType}`, tooltipDiv);
+        if (kase.timepoint) {
+          addTextDiv(`Timepoint: ${kase.timepoint}`, tooltipDiv);
+        }
         tooltipInstance.addTarget(tumourDetailDiv, tooltipDiv);
         fragment.appendChild(tumourDetailDiv);
       },
