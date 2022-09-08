@@ -18,8 +18,8 @@
 </head>
 
 <body class="flex flex-col min-h-screen">
-  <div id="header">
-    <nav class="flex items-end m-4 border-b-2 border-grey-200">
+  <div id="header" class="m-4">
+    <div class="flex items-end border-b-2 border-grey-200">
 
       <div class="flex-1">
         <div class="shrink">
@@ -46,6 +46,9 @@
           help</a>
 
       </div>
+    </div>
+    <nav class="text-right">
+      <a th:href="@{/notifications}" class="text-green-200 font-bold hover:underline">Notifications</a>
     </nav>
   </div>
 

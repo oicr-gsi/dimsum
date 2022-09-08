@@ -598,10 +598,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-top: 5rem;
 }
 
-.mt-3{
-  margin-top: 0.75rem;
-}
-
 .ml-2{
   margin-left: 0.5rem;
 }
@@ -612,6 +608,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .-ml-8{
   margin-left: -2rem;
+}
+
+.mt-3{
+  margin-top: 0.75rem;
 }
 
 .block{
@@ -857,6 +857,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(127 133 140 / var(--tw-bg-opacity));
 }
 
+.bg-white{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
 .bg-grey-150{
   --tw-bg-opacity: 1;
   background-color: rgb(203 207 214 / var(--tw-bg-opacity));
@@ -870,11 +875,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .bg-red{
   --tw-bg-opacity: 1;
   background-color: rgb(223 132 132 / var(--tw-bg-opacity));
-}
-
-.bg-white{
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
 .p-2{
@@ -925,6 +925,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   text-align: center;
 }
 
+.text-right{
+  text-align: right;
+}
+
 .align-text-top{
   vertical-align: text-top;
 }
@@ -969,16 +973,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-weight: 300;
 }
 
+.font-bold{
+  font-weight: 700;
+}
+
 .font-medium{
   font-weight: 500;
 }
 
 .font-semibold{
   font-weight: 600;
-}
-
-.font-bold{
-  font-weight: 700;
 }
 
 .font-thin{
@@ -1000,6 +1004,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+.text-grey-200{
+  --tw-text-opacity: 1;
+  color: rgb(170 176 184 / var(--tw-text-opacity));
+}
+
 .text-grey-300{
   --tw-text-opacity: 1;
   color: rgb(127 133 140 / var(--tw-text-opacity));
@@ -1008,11 +1017,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-red{
   --tw-text-opacity: 1;
   color: rgb(223 132 132 / var(--tw-text-opacity));
-}
-
-.text-grey-200{
-  --tw-text-opacity: 1;
-  color: rgb(170 176 184 / var(--tw-text-opacity));
 }
 
 .outline-0{
