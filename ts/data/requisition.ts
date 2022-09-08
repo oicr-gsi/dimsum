@@ -1,10 +1,4 @@
-import {
-  addLink,
-  CellStatus,
-  makeIcon,
-  addMisoIcon,
-  makeNameDiv
-} from "../util/html-utils";
+import { addNaText, makeIcon, makeNameDiv } from "../util/html-utils";
 import {
   ColumnDefinition,
   SortDefinition,
@@ -12,6 +6,25 @@ import {
 } from "../component/table-builder";
 import { urls } from "../util/urls";
 import { qcStatuses } from "./qc-status";
+import {
+  anyFail,
+  getMetricNames,
+  makeMetricDisplay,
+  makeNotFoundIcon,
+  nullIfUndefined,
+} from "../util/metrics";
+import { siteConfig } from "../util/site-config";
+import { Metric, MetricSubcategory } from "./assay";
+
+export interface RequisitionQcGroup {
+  tissueOrigin: string;
+  tissueType: string;
+  libraryDesignCode: string;
+  groupId?: string;
+  purity?: number;
+  collapsedCoverage?: number;
+  callability?: number;
+}
 
 export interface RequisitionQc {
   qcPassed: boolean;
@@ -23,6 +36,7 @@ export interface Requisition {
   id: number;
   name: string;
   assayId: number;
+  qcGroups: RequisitionQcGroup[];
   informaticsReviews: RequisitionQc[];
   draftReports: RequisitionQc[];
   finalReports: RequisitionQc[];
@@ -57,7 +71,13 @@ const requisitionColumn: ColumnDefinition<Requisition, void> = {
   title: "Requisition",
   sortType: "text",
   addParentContents(requisition, fragment) {
-    fragment.appendChild(makeNameDiv(requisition.name, urls.miso.requisition(requisition.id), urls.dimsum.requisition(requisition.id)));
+    fragment.appendChild(
+      makeNameDiv(
+        requisition.name,
+        urls.miso.requisition(requisition.id),
+        urls.dimsum.requisition(requisition.id)
+      )
+    );
   },
 };
 
@@ -74,16 +94,10 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
 export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
-  generateColumns: () => [
+  generateColumns: (data?: Requisition[]) => [
     qcStatusColumn((requisition) => requisition.informaticsReviews),
     requisitionColumn,
-    {
-      title: "(Metric Columns)",
-      addParentContents(requisition, fragment) {
-        addTodoIcon(fragment); // TODO
-      },
-      getCellHighlight: todoHighlight,
-    },
+    ...generateMetricColumns(data),
     latestActivityColumn,
   ],
 };
@@ -108,6 +122,153 @@ export const finalReportDefinition: TableDefinition<Requisition, void> = {
   ],
 };
 
+function generateMetricColumns(
+  requisitions?: Requisition[]
+): ColumnDefinition<Requisition, void>[] {
+  if (!requisitions) {
+    return [];
+  }
+  const assayIds = requisitions
+    .map((requisition) => requisition.assayId || 0)
+    .filter((assayId) => assayId > 0);
+  const metricNames = getMetricNames("INFORMATICS", assayIds);
+  return metricNames.map((metricName) => {
+    return {
+      title: metricName,
+      addParentContents(requisition, fragment) {
+        if (metricName === "Trimming; Minimum base quality Q") {
+          fragment.appendChild(
+            document.createTextNode("Standard pipeline removes reads below Q30")
+          );
+        } else if (!requisition.qcGroups.length) {
+          fragment.appendChild(makeNotFoundIcon());
+        } else {
+          let anyApplicable = false;
+          requisition.qcGroups.forEach((qcGroup) => {
+            const metrics = getMatchingMetrics(
+              metricName,
+              requisition,
+              qcGroup
+            );
+            if (metrics && metrics.length) {
+              anyApplicable = true;
+              const value = getMetricValue(metricName, qcGroup);
+              const div = document.createElement("div");
+              const prefix =
+                requisition.qcGroups.length > 1
+                  ? `${makeQcGroupLabel(qcGroup)}: `
+                  : "";
+              if (value === null) {
+                const span = document.createElement("span");
+                span.innerText = prefix;
+                div.appendChild(span);
+                div.appendChild(makeNotFoundIcon());
+              } else {
+                div.appendChild(makeMetricDisplay(value, metrics, prefix));
+              }
+              fragment.appendChild(div);
+            }
+          });
+          if (!anyApplicable) {
+            addNaText(fragment);
+          }
+        }
+      },
+      getCellHighlight(requisition) {
+        if (metricName === "Trimming; Minimum base quality Q") {
+          return null;
+        } else if (!requisition.qcGroups.length) {
+          return "warning";
+        }
+        let anyApplicable = false;
+        for (let i = 0; i < requisition.qcGroups.length; i++) {
+          const qcGroup = requisition.qcGroups[i];
+          const metrics = getMatchingMetrics(metricName, requisition, qcGroup);
+          if (!metrics || !metrics.length) {
+            continue;
+          }
+          anyApplicable = true;
+          const value = getMetricValue(metricName, qcGroup);
+          if (value === null) {
+            return "warning";
+          } else if (anyFail(value, metrics)) {
+            return "error";
+          }
+        }
+        return anyApplicable ? null : "na";
+      },
+    };
+  });
+}
+
+function makeQcGroupLabel(qcGroup: RequisitionQcGroup) {
+  let label = `${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
+  if (qcGroup.groupId) {
+    label += ` - ${qcGroup.groupId}`;
+  }
+  return label;
+}
+
+function getMetricValue(
+  metricName: string,
+  qcGroup: RequisitionQcGroup
+): number | null {
+  switch (metricName) {
+    case "Inferred Tumour Purity":
+      return nullIfUndefined(qcGroup.purity);
+    case "Collapsed Coverage":
+      return nullIfUndefined(qcGroup.collapsedCoverage);
+    case "Callability (exonic space); Target bases above 30X":
+      return nullIfUndefined(qcGroup.callability);
+    default:
+      return null;
+  }
+}
+
+function getMatchingMetrics(
+  metricName: string,
+  requisition: Requisition,
+  qcGroup: RequisitionQcGroup
+): Metric[] | null {
+  if (!requisition.assayId) {
+    return null;
+  }
+  return siteConfig.assaysById[requisition.assayId].metricCategories[
+    "INFORMATICS"
+  ]
+    .filter((subcategory) => subcategoryApplies(subcategory, qcGroup))
+    .flatMap((subcategory) => subcategory.metrics)
+    .filter(
+      (metric) => metric.name === metricName && metricApplies(metric, qcGroup)
+    );
+}
+
+function subcategoryApplies(
+  subcategory: MetricSubcategory,
+  qcGroup: RequisitionQcGroup
+): boolean {
+  return (
+    !subcategory.libraryDesignCode ||
+    subcategory.libraryDesignCode === qcGroup.libraryDesignCode
+  );
+}
+
+function metricApplies(metric: Metric, qcGroup: RequisitionQcGroup): boolean {
+  if (metric.tissueOrigin && metric.tissueOrigin !== qcGroup.tissueOrigin) {
+    return false;
+  }
+  if (metric.tissueType) {
+    if (metric.negateTissueType) {
+      if (metric.tissueType === qcGroup.tissueType) {
+        return false;
+      }
+    } else if (metric.tissueType !== qcGroup.tissueType) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function getRequisitionQcStatus(qcs: RequisitionQc[]) {
   // return status of latest QC in-case there are multiple
   if (!qcs.length) {
@@ -121,14 +282,4 @@ export function getLatestRequisitionQc(qcs: RequisitionQc[]) {
   return qcs.reduce((previous, current) =>
     previous.qcDate > current.qcDate ? previous : current
   );
-}
-
-function addTodoIcon(fragment: DocumentFragment) {
-  const icon = makeIcon("person-digging");
-  icon.title = "We're working on it!";
-  fragment.appendChild(icon);
-}
-
-function todoHighlight(): CellStatus {
-  return "na";
 }

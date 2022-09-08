@@ -15,6 +15,18 @@ import { urls } from "../util/urls";
 import { Metric, MetricCategory, MetricSubcategory } from "./assay";
 import { Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
+import {
+  anyFail,
+  formatMetricValue,
+  getDivisor,
+  getDivisorUnit,
+  getMetricNames,
+  getMetricRequirementText,
+  makeMetricDisplay,
+  makeNotFoundIcon,
+  makeStatusIcon,
+  nullIfUndefined,
+} from "../util/metrics";
 
 export interface Sample extends Qcable {
   id: string;
@@ -277,7 +289,10 @@ function generateMetricColumns(
   if (!samples) {
     return [];
   }
-  const metricNames = getMetricNames(category, samples);
+  const assayIds: number[] = samples
+    .map((sample) => sample.assayId || 0)
+    .filter((assayId) => assayId > 0);
+  const metricNames = getMetricNames(category, assayIds);
   return metricNames.map((metricName) => {
     return {
       title: metricName,
@@ -548,36 +563,6 @@ function generateMetricColumns(
     return perRunMetric;
   }
 
-  function getDivisorUnit(metrics: Metric[]) {
-    if (
-      metrics.some((metric) => metric.units && metric.units.startsWith("K"))
-    ) {
-      return "K";
-    } else if (
-      metrics.some((metric) => metric.units && metric.units.startsWith("M"))
-    ) {
-      return "M";
-    } else if (
-      metrics.some((metric) => metric.units && metric.units.startsWith("B"))
-    ) {
-      return "B";
-    }
-    return null;
-  }
-
-  function getDivisor(unit: string | null) {
-    switch (unit) {
-      case "K":
-        return 1000;
-      case "M":
-        return 1000000;
-      case "B":
-        return 1000000000;
-      default:
-        return 1;
-    }
-  }
-
   function addPhixContents(
     sample: Sample,
     metrics: Metric[],
@@ -655,169 +640,6 @@ function generateMetricColumns(
       return "error";
     }
     return null;
-  }
-
-  function formatMetricValue(
-    value: number,
-    metrics: Metric[],
-    divisorUnit?: string | null
-  ) {
-    const metricPlaces = Math.max(
-      ...metrics.map((metric) =>
-        Math.max(
-          countDecimalPlaces(metric.minimum),
-          countDecimalPlaces(metric.maximum)
-        )
-      )
-    );
-    if (divisorUnit) {
-      value = value / getDivisor(divisorUnit);
-    }
-    if (metricPlaces === 0 && Number.isInteger(value)) {
-      return formatDecimal(value, 0) + (divisorUnit || "");
-    } else {
-      return formatDecimal(value, metricPlaces + 1) + (divisorUnit || "");
-    }
-  }
-
-  function formatDecimal(value: number, decimalPlaces?: number) {
-    return value.toLocaleString("en-CA", {
-      minimumFractionDigits: decimalPlaces,
-      maximumFractionDigits: decimalPlaces,
-    });
-  }
-
-  function formatThreshold(value?: number) {
-    if (!value) {
-      return "Unknown";
-    }
-    if (Number.isInteger(value)) {
-      return formatDecimal(value, 0);
-    } else {
-      return formatDecimal(value);
-    }
-  }
-
-  function getMetricRequirementText(metric: Metric) {
-    let text = "Required: ";
-    switch (metric.thresholdType) {
-      case "GT":
-        text += `> ${formatThreshold(metric.minimum)}`;
-        break;
-      case "GE":
-        text += `>= ${formatThreshold(metric.minimum)}`;
-        break;
-      case "LT":
-        text += `< ${formatThreshold(metric.maximum)}`;
-        break;
-      case "LE":
-        text += `<= ${formatThreshold(metric.maximum)}`;
-        break;
-      case "BETWEEN":
-        text += `Between ${formatThreshold(
-          metric.minimum
-        )} and ${formatThreshold(metric.maximum)}`;
-        break;
-      default:
-        throw new Error(`Unexpected threshold type: ${metric.thresholdType}`);
-    }
-    if (metric.units) {
-      text += metric.units;
-    }
-    return text;
-  }
-
-  function makeMetricDisplay(
-    value: number,
-    metrics: Metric[]
-  ): HTMLSpanElement {
-    const displayValue = formatMetricValue(value, metrics);
-    const div = document.createElement("div");
-    div.innerText = displayValue;
-    const tooltipFragment = document.createDocumentFragment();
-    metrics.forEach((metric) => {
-      const div = document.createElement("div");
-      div.innerText = getMetricRequirementText(metric);
-      tooltipFragment.appendChild(div);
-    });
-    const tooltip = Tooltip.getInstance();
-    tooltip.addTarget(div, tooltipFragment);
-    return div;
-  }
-
-  function anyFail(value: number, metrics: Metric[]): boolean {
-    for (let i = 0; i < metrics.length; i++) {
-      switch (metrics[i].thresholdType) {
-        case "LT": {
-          const max = metrics[i].maximum;
-          if (max !== undefined && max !== null) {
-            if (value >= max) {
-              return true;
-            }
-          }
-          break;
-        }
-        case "LE": {
-          const max = metrics[i].maximum;
-          if (max !== undefined && max !== null) {
-            if (value > max) {
-              return true;
-            }
-          }
-          break;
-        }
-        case "GT": {
-          const min = metrics[i].minimum;
-          if (min !== undefined && min !== null) {
-            if (value <= min) {
-              return true;
-            }
-          }
-          break;
-        }
-        case "GE": {
-          const min = metrics[i].minimum;
-          if (min !== undefined && min !== null) {
-            if (value < min) {
-              return true;
-            }
-          }
-          break;
-        }
-        case "BETWEEN": {
-          const min = metrics[i].minimum;
-          if (min !== undefined && min !== null) {
-            if (value < min) {
-              return true;
-            }
-          }
-          const max = metrics[i].maximum;
-          if (max !== undefined && max !== null) {
-            if (value > max) {
-              return true;
-            }
-          }
-          break;
-        }
-        default:
-          throw new Error(
-            `Unexpected threshold type: ${metrics[i].thresholdType}`
-          );
-      }
-    }
-    return false;
-  }
-
-  function countDecimalPlaces(num?: number) {
-    if (!num) {
-      return 0;
-    }
-    const string = num + "";
-    if (!string.includes(".")) {
-      return 0;
-    }
-    const i = string.indexOf(".");
-    return string.length - i - 1;
   }
 
   function getMatchingMetrics(
@@ -912,63 +734,6 @@ function metricApplies(metric: Metric, sample: Sample): boolean {
   return true;
 }
 
-function getMetricNames(category: MetricCategory, samples: Sample[]): string[] {
-  const assays = samples
-    .map((sample) => sample.assayId)
-    .filter((assayId) => assayId)
-    .filter(unique)
-    .map((assayId) => {
-      if (!assayId) {
-        throw new Error("Unexpected error (undefined should be filtered)");
-      }
-      return siteConfig.assaysById[assayId];
-    });
-
-  const subcategories = assays
-    .filter(
-      (assay) =>
-        assay.metricCategories[category] &&
-        assay.metricCategories[category].length
-    )
-    .flatMap((assay) => assay.metricCategories[category]);
-
-  const subcategoryNames = subcategories
-    .sort(byPriority)
-    .map((subcategory) => subcategory.name || "")
-    .filter(unique);
-
-  const metricNames: string[] = [];
-  subcategoryNames
-    .map((subcategoryName) =>
-      // get all metrics from all matching subcategories
-      subcategories
-        .filter((subcategory) => (subcategory.name || "") === subcategoryName)
-        .flatMap((subcategory) => subcategory.metrics)
-    )
-    .forEach((metrics) => {
-      metrics.sort(byPriority).forEach((metric) => {
-        if (!metricNames.includes(metric.name)) {
-          metricNames.push(metric.name);
-        }
-      });
-    });
-
-  return metricNames;
-}
-
-function unique(item: any, index: number, arr: any[]) {
-  return arr.indexOf(item) === index;
-}
-
-function byPriority(
-  a: MetricSubcategory | Metric,
-  b: MetricSubcategory | Metric
-) {
-  const sortPriorityA = a.sortPriority || -1;
-  const sortPriorityB = b.sortPriority || -1;
-  return sortPriorityA - sortPriorityB;
-}
-
 function getMetricValue(metricName: string, sample: Sample): number | null {
   switch (metricName) {
     case "Appropriate volume":
@@ -1010,9 +775,6 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
     return nullIfUndefined(sample.librarySize);
   }
   return null;
-}
-function nullIfUndefined(value: any) {
-  return value === undefined ? null : value;
 }
 
 export function getQcStatus(sample: Sample): QcStatus {
@@ -1066,22 +828,11 @@ function getFirstReviewStatus(qcable: Qcable) {
   }
 }
 
-function makeNotFoundIcon() {
-  return makeStatusIcon("question", "Not Found");
-}
-
 function makeSequencingIcon() {
   return makeStatusIcon(
     qcStatuses.sequencing.icon,
     qcStatuses.sequencing.label
   );
-}
-
-function makeStatusIcon(iconName: string, statusText: string) {
-  const icon = makeIcon(iconName);
-  const tooltip = Tooltip.getInstance();
-  tooltip.addTarget(icon, document.createTextNode(statusText));
-  return icon;
 }
 
 function nullOrUndefined(value: any): boolean {
