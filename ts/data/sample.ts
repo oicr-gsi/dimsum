@@ -48,6 +48,7 @@ export interface Sample extends Qcable {
   rawCoverage?: number;
   onTargetReads?: number;
   latestActivityDate: string;
+  sequencingLane: string;
 }
 
 const defaultSort: SortDefinition = {
@@ -87,7 +88,7 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
         fragment.appendChild(
           makeNameDiv(
             sample.sequencingLane
-              ? runName + "(" + sample.sequencingLane + ")"
+              ? runName + "(L" + sample.sequencingLane + ")"
               : runName,
             urls.miso.run(runName),
             urls.dimsum.run(runName)

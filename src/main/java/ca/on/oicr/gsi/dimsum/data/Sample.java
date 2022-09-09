@@ -49,7 +49,7 @@ public class Sample {
   private final String dataReviewUser;
   private final LocalDate dataReviewDate;
   private final LocalDate latestActivityDate;
-  private final Integer sequencingLane;
+  private final String sequencingLane;
 
   private Sample(Builder builder) {
     this.id = requireNonNull(builder.id);
@@ -246,7 +246,7 @@ public class Sample {
     return latestActivityDate;
   }
 
-  public Integer getSequencingLane() {
+  public String getSequencingLane() {
     return sequencingLane;
   }
 
@@ -305,7 +305,7 @@ public class Sample {
     private Boolean dataReviewPassed;
     private String dataReviewUser;
     private LocalDate dataReviewDate;
-    private Integer sequencingLane;
+    private String sequencingLane;
 
     public Builder id(String id) {
       this.id = id;
@@ -482,7 +482,7 @@ public class Sample {
       return this;
     }
 
-    public Builder sequencingLane(Integer sequencingLane) {
+    public Builder sequencingLane(String sequencingLane) {
       this.sequencingLane = sequencingLane;
       return this;
     }
