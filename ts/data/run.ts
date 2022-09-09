@@ -10,7 +10,7 @@ export const runDefinition: TableDefinition<Run, void> = {
     urls.rest.runs.fullDepthSequencings.name &&
     urls.rest.runs.libraryQualifications.name,
   defaultSort: {
-    columnTitle: "Last Activity",
+    columnTitle: "Completion Date",
     descending: true,
     type: "date",
   },
@@ -28,7 +28,31 @@ export const runDefinition: TableDefinition<Run, void> = {
       values: siteConfig.pendingStates,
     },
   ],
-  generateColumns: () => [],
+  generateColumns(data) {
+    return [
+      {
+        title: "Run",
+        addParentContents(run, fragment) {
+          fragment.appendChild(
+            makeNameDiv(
+              run.name,
+              urls.miso.run(run.name),
+              urls.dimsum.run(run.name)
+            )
+          );
+        },
+      },
+      {
+        title: "Completion Date",
+        addParentContents(run, fragment) {
+          if (run.completionDate) {
+            fragment.appendChild(document.createTextNode(run.completionDate));
+          }
+        },
+        sortType: "date",
+      },
+    ];
+  },
 };
 
 /* FROM THE NOTIFICATION BRANCH
