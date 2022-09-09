@@ -79,21 +79,19 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   return {
     title: "Name",
     addParentContents(sample, fragment) {
-      var sampleName = sample.name;
-      if (sample.run && sample.run.lanes.length > 0) {
-        sampleName += "(";
-        sample.run.lanes.forEach((lane) => {
-          sampleName += "L" + lane.laneNumber;
-        });
-        sampleName += ")";
-      }
       fragment.appendChild(
-        makeNameDiv(sampleName, urls.miso.sample(sample.id))
+        makeNameDiv(sample.name, urls.miso.sample(sample.id))
       );
       if (includeRun && sample.run) {
         const runName = sample.run.name;
         fragment.appendChild(
-          makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+          makeNameDiv(
+            sample.sequencingLane
+              ? runName + "(" + sample.sequencingLane + ")"
+              : runName,
+            urls.miso.run(runName),
+            urls.dimsum.run(runName)
+          )
         );
         // TODO: add Dashi icon link
       }

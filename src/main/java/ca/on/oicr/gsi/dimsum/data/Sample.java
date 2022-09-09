@@ -49,6 +49,7 @@ public class Sample {
   private final String dataReviewUser;
   private final LocalDate dataReviewDate;
   private final LocalDate latestActivityDate;
+  private final Integer sequencingLane;
 
   private Sample(Builder builder) {
     this.id = requireNonNull(builder.id);
@@ -88,6 +89,7 @@ public class Sample {
     this.dataReviewPassed = builder.dataReviewPassed;
     this.dataReviewUser = builder.dataReviewUser;
     this.dataReviewDate = builder.dataReviewDate;
+    this.sequencingLane = builder.sequencingLane;
     this.latestActivityDate = Stream.of(createdDate, qcDate, dataReviewDate)
         .filter(Objects::nonNull).max(LocalDate::compareTo).orElseThrow();
   }
@@ -244,6 +246,10 @@ public class Sample {
     return latestActivityDate;
   }
 
+  public Integer getSequencingLane() {
+    return sequencingLane;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(id, run);
@@ -299,6 +305,7 @@ public class Sample {
     private Boolean dataReviewPassed;
     private String dataReviewUser;
     private LocalDate dataReviewDate;
+    private Integer sequencingLane;
 
     public Builder id(String id) {
       this.id = id;
@@ -472,6 +479,11 @@ public class Sample {
 
     public Builder dataReviewDate(LocalDate dataReviewDate) {
       this.dataReviewDate = dataReviewDate;
+      return this;
+    }
+
+    public Builder sequencingLane(Integer sequencingLane) {
+      this.sequencingLane = sequencingLane;
       return this;
     }
 

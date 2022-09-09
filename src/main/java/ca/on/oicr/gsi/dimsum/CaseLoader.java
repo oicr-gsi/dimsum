@@ -233,6 +233,7 @@ public class CaseLoader {
           .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))
           .dataReviewUser(parseString(json, "data_review_user"))
           .dataReviewDate(parseDate(json, "data_review_date"))
+          .sequencingLane(parseInteger(json, "sequencing_lane", false))
           .build();
     });
 
