@@ -1,5 +1,6 @@
 import { makeClickout, makeIcon } from "../util/html-utils";
 import { get } from "../util/requests";
+import { toggleLegend } from "./legend";
 
 export class TextInput {
   private container: HTMLElement;
@@ -33,7 +34,6 @@ export class TextInput {
       "relative",
       "z-10"
     );
-
     const submitTextInput = () => {
       if (this.textField.value) {
         textInputClickout.classList.toggle("hidden");
@@ -42,8 +42,20 @@ export class TextInput {
         this.textField.focus();
       }
     };
+    const toggleTextInput = () => {
+      this.container.classList.toggle("hidden");
+      this.container.classList.remove("ring-2");
+      textInputClickout.classList.toggle("hidden");
+    };
     submitIcon.onclick = submitTextInput;
-    textInputClickout.onclick = submitTextInput;
+    // Close text input field by clicking outside or hitting esc
+    textInputClickout.onclick = toggleTextInput;
+    textInputClickout.addEventListener("keypress", (event) => {
+      if (event.key === "Escape" || event.key === "Esc") {
+        console.log("DEBUG: " + event.key);
+        toggleTextInput();
+      }
+    });
     this.textField.addEventListener("keypress", (event) => {
       if (event.key === "Enter") {
         submitTextInput();

@@ -27,11 +27,14 @@ export class BasicDropdownOption implements DropdownOption {
 export class Dropdown {
   private dropdownContainer: HTMLElement;
 
+  // displayTemporary: set to true if the created dropdown menu can be removed
+  // (by user interaction or otherwise), else set to false (or undefined) if otherwise
   constructor(
     DropdownOptions: DropdownOption[],
     displaySelection: boolean,
     displayLabel?: string,
-    defaultOption?: string
+    defaultOption?: string,
+    displayTemporary?: boolean
   ) {
     this.dropdownContainer = document.createElement("div");
     this.dropdownContainer.classList.add("inline-block");
@@ -44,6 +47,13 @@ export class Dropdown {
       dropdownMenuContainer.classList.remove("ring-2");
       dropdownClickout.classList.toggle("hidden");
     };
+    const toggleDropdownButton = () => {
+      // toggle whether or not a labeled button is removed
+      if (displayTemporary) {
+        dropdownButton.classList.toggle("hidden");
+      }
+      toggleMenu();
+    };
     const invalidInput = () => {
       dropdownMenuContainer.classList.add(
         "ring-green-200",
@@ -53,8 +63,21 @@ export class Dropdown {
     };
     dropdownButton.onclick = toggleMenu;
     dropdownButton.innerHTML = makeDisplayText(displayLabel, defaultOption);
-    dropdownClickout.onclick = defaultOption ? toggleMenu : invalidInput;
+    // close dropdown menu by clicking outside of the menu or by hitting Esc
+    dropdownClickout.onclick = toggleDropdownButton;
+    dropdownClickout.addEventListener("keydown", (event) => {
+      // only remove the button in question if it is not already hidden
+      if (
+        (event.key === "Escape" || event.key === "Esc") &&
+        !dropdownButton.hidden &&
+        !dropdownClickout.hidden &&
+        !dropdownMenuContainer.hidden
+      ) {
+        toggleDropdownButton();
+      }
+    });
 
+    // circumvent disappearing buttons (unwanted behaviour) by checking whether the dropdown menu is meant to be "temporary"
     DropdownOptions.forEach((option) => {
       const li = document.createElement("li");
       option.render(li, this);
