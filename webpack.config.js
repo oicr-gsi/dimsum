@@ -7,6 +7,7 @@ module.exports = {
     index: "./ts/index.ts",
     details: "./ts/details.ts",
     notifications: "./ts/notifications.ts",
+    runList: "./ts/run-list.ts",
     run: "./ts/run.ts",
   },
   module: {

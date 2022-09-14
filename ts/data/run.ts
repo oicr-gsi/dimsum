@@ -22,6 +22,12 @@ export const runDefinition: TableDefinition<Run, void> = {
       autocompleteUrl: urls.rest.autocomplete.runNames,
     },
     {
+      title: "Project",
+      key: "PROJECT",
+      type: "text",
+      autocompleteUrl: urls.rest.autocomplete.projectNames,
+    },
+    {
       title: "Pending",
       key: "PENDING",
       type: "dropdown",
@@ -38,6 +44,18 @@ export const runDefinition: TableDefinition<Run, void> = {
               run.name,
               urls.miso.run(run.name),
               urls.dimsum.run(run.name)
+            )
+          );
+        },
+      },
+      {
+        title: "Project",
+        addParentContents(run, fragment) {
+          fragment.appendChild(
+            makeNameDiv(
+              run.name,
+              urls.miso.project(run.name),
+              urls.dimsum.project(run.name)
             )
           );
         },

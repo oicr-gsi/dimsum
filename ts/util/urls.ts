@@ -32,6 +32,7 @@ export const urls = {
       runNames: `${restBaseUrl}/autocomplete/run-names`,
     },
     notifications: `${restBaseUrl}/notifications`,
+    runList: `${restBaseUrl}/run-list`,
   },
   miso: {
     sample: function (sampleId: string) {
