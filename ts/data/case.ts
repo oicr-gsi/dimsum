@@ -6,6 +6,7 @@ import {
   addMisoIcon,
   makeNameDiv,
   addNaText,
+  addTextDiv,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -175,6 +176,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         externalNameDiv.appendChild(
           document.createTextNode(kase.donor.externalName)
         );
+        const tooltipInstance = Tooltip.getInstance();
+        tooltipInstance.addTarget(
+          externalNameDiv,
+          document.createTextNode("External Name")
+        );
         fragment.appendChild(externalNameDiv);
 
         const tumourDetailDiv = document.createElement("div");
@@ -184,6 +190,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               (kase.timepoint ? " " + kase.timepoint : "")
           )
         );
+        const tooltipDiv = document.createElement("div");
+        addTextDiv(`Tissue Origin: ${kase.tissueOrigin}`, tooltipDiv);
+        addTextDiv(`Tissue Type: ${kase.tissueType}`, tooltipDiv);
+        if (kase.timepoint) {
+          addTextDiv(`Timepoint: ${kase.timepoint}`, tooltipDiv);
+        }
+        tooltipInstance.addTarget(tumourDetailDiv, tooltipDiv);
         fragment.appendChild(tumourDetailDiv);
       },
     },
@@ -251,6 +264,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (test.groupId) {
           const groupIdDiv = document.createElement("div");
           groupIdDiv.appendChild(document.createTextNode(test.groupId));
+          const tooltipInstance = Tooltip.getInstance();
+          tooltipInstance.addTarget(
+            groupIdDiv,
+            document.createTextNode("Group ID")
+          );
           fragment.appendChild(groupIdDiv);
         }
       },

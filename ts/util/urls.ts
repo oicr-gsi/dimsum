@@ -31,6 +31,7 @@ export const urls = {
       donorNames: `${restBaseUrl}/autocomplete/donor-names`,
       runNames: `${restBaseUrl}/autocomplete/run-names`,
     },
+    notifications: `${restBaseUrl}/notifications`,
   },
   miso: {
     sample: function (sampleId: string) {

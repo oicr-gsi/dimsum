@@ -120,3 +120,9 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
 export function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
+
+export function addTextDiv(text: string, container: HTMLElement) {
+  const divContainer = document.createElement("div");
+  divContainer.appendChild(document.createTextNode(text));
+  container.appendChild(divContainer);
+}

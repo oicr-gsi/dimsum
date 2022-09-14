@@ -1,5 +1,23 @@
 package ca.on.oicr.gsi.dimsum.service;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.data.Case;
@@ -18,26 +36,6 @@ import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Service
 public class CaseService {
 
@@ -48,6 +46,9 @@ public class CaseService {
 
   @Autowired
   private FrontEndConfig frontEndConfig;
+
+  @Autowired
+  private NotificationManager notificationManager;
 
   private CaseData caseData;
 
@@ -72,20 +73,22 @@ public class CaseService {
   }
 
   public Duration getDataAge() {
-    if (caseData == null) {
+    CaseData currentData = caseData;
+    if (currentData == null) {
       return Duration.ZERO;
     }
-    return Duration.between(caseData.getTimestamp(), ZonedDateTime.now());
+    return Duration.between(currentData.getTimestamp(), ZonedDateTime.now());
   }
 
   public List<Case> getCases(CaseFilter baseFilter) {
-    if (caseData == null) {
+    CaseData currentData = caseData;
+    if (currentData == null) {
       throw new IllegalStateException("Cases have not been loaded yet");
     }
     if (baseFilter != null) {
-      return caseData.getCases().stream().filter(baseFilter.predicate()).toList();
+      return currentData.getCases().stream().filter(baseFilter.predicate()).toList();
     } else {
-      return caseData.getCases();
+      return currentData.getCases();
     }
   }
 
@@ -256,16 +259,21 @@ public class CaseService {
       refreshFailures = 0;
       if (newData != null) {
         caseData = newData;
-        frontEndConfig.setPipelines(newData.getCases().stream()
-            .flatMap(kase -> kase.getProjects().stream())
-            .map(Project::getPipeline)
-            .collect(Collectors.toSet()));
-        frontEndConfig.setAssaysById(newData.getAssaysById());
+        updateFrontEndConfig();
+        notificationManager.update(newData.getRunsAndLibrariesByName());
       }
     } catch (Exception e) {
       refreshFailures++;
       log.error("Failed to refresh case data", e);
     }
+  }
+
+  private void updateFrontEndConfig() {
+    frontEndConfig.setPipelines(caseData.getCases().stream()
+        .flatMap(kase -> kase.getProjects().stream())
+        .map(Project::getPipeline)
+        .collect(Collectors.toSet()));
+    frontEndConfig.setAssaysById(caseData.getAssaysById());
   }
 
 }

@@ -320,6 +320,7 @@ public class CaseLoader {
           .name(parseString(json, "name", true))
           .assayId(parseLong(json, "assay_id", true))
           .stopped(parseBoolean(json, "stopped"))
+          .qcGroups(parseRequisitionQcGroups(json.get("qc_groups")))
           .informaticsReviews(parseRequisitionQcs(json, "informatics_reviews"))
           .draftReports(parseRequisitionQcs(json, "draft_reports"))
           .finalReports(parseRequisitionQcs(json, "final_reports")).build();
@@ -560,6 +561,26 @@ public class CaseLoader {
       throws DataParseException {
     String stringValue = parseString(json, fieldName, required);
     return stringValue == null ? null : new BigDecimal(stringValue);
+  }
+
+  private static List<RequisitionQcGroup> parseRequisitionQcGroups(JsonNode json)
+      throws DataParseException {
+    if (json == null || !json.isArray()) {
+      throw new DataParseException("Invalid requisition qc_groups");
+    }
+    List<RequisitionQcGroup> qcGroups = new ArrayList<>();
+    for (JsonNode node : json) {
+      qcGroups.add(new RequisitionQcGroup.Builder()
+          .tissueOrigin(parseString(node, "tissue_origin", true))
+          .tissueType(parseString(node, "tissue_type", true))
+          .libraryDesignCode(parseString(node, "library_design", true))
+          .groupId(parseString(node, "group_id", false))
+          .purity(parseDecimal(node, "purity", false))
+          .collapsedCoverage(parseDecimal(node, "collapsed_coverage", false))
+          .callability(parseDecimal(node, "callability", false))
+          .build());
+    }
+    return qcGroups;
   }
 
   private static List<RequisitionQc> parseRequisitionQcs(JsonNode json, String fieldName)

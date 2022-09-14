@@ -4,6 +4,35 @@
     "name": "REQ-1",
     "assay_id": 2,
     "stopped": false,
+    "qc_groups": [
+      {
+        "tissue_origin": "Ly",
+        "tissue_type": "R",
+        "library_design": "WG",
+        "group_id": null,
+        "purity": null,
+        "collapsed_coverage": null,
+        "callability": null
+      },
+      {
+        "tissue_origin": "Lv",
+        "tissue_type": "M",
+        "library_design": "WT",
+        "group_id": null,
+        "purity": 65.0,
+        "collapsed_coverage": null,
+        "callability": null
+      },
+      {
+        "tissue_origin": "Lv",
+        "tissue_type": "M",
+        "library_design": "WG",
+        "group_id": null,
+        "purity": 65.0,
+        "collapsed_coverage": null,
+        "callability": 87.6189
+      }
+    ],
     "informatics_reviews": [
       {
         "qcable_type": "informatics_interpretation",
