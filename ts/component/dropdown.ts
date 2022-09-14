@@ -54,13 +54,7 @@ export class Dropdown {
       }
       toggleMenu();
     };
-    const invalidInput = () => {
-      dropdownMenuContainer.classList.add(
-        "ring-green-200",
-        "ring-2",
-        "ring-offset-1"
-      );
-    };
+
     dropdownButton.onclick = toggleMenu;
     dropdownButton.innerHTML = makeDisplayText(displayLabel, defaultOption);
     // close dropdown menu by clicking outside of the menu or by hitting Esc
