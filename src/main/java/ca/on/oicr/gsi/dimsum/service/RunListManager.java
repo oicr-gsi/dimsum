@@ -44,16 +44,17 @@ public class RunListManager {
   }
 
   public TableData<Run> getRuns(int pageSize, int pageNumber, RunSort sort, boolean descending) {
-    List<Run> sortedRuns =
-        runs.stream()
+    List<Run> currentRuns = runs;
+    List<Run> runs =
+        currentRuns.stream()
             .sorted(descending ? sort.comparator().reversed() : sort.comparator())
             .skip(pageSize * (pageNumber - 1))
             .limit(pageSize)
             .toList();
     TableData<Run> data = new TableData<>();
-    data.setTotalCount(sortedRuns.size());
-    data.setFilteredCount(sortedRuns.size());
-    data.setItems(sortedRuns);
+    data.setTotalCount(currentRuns.size());
+    data.setFilteredCount(currentRuns.size());
+    data.setItems(runs);
     return data;
   }
 

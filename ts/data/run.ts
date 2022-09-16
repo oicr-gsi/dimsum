@@ -1,14 +1,11 @@
 import { TableDefinition } from "../component/table-builder";
-import { makeNameDiv, addMisoIcon } from "../util/html-utils";
+import { makeNameDiv, addMisoIcon, addTextDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
-import { Run, Test } from "./case";
-import { Tooltip } from "../component/tooltip";
+import { Run } from "./case";
 import { siteConfig } from "../util/site-config";
 
 export const runDefinition: TableDefinition<Run, void> = {
-  queryUrl:
-    urls.rest.runs.fullDepthSequencings.name &&
-    urls.rest.runs.libraryQualifications.name,
+  queryUrl: urls.rest.notifications,
   defaultSort: {
     columnTitle: "Completion Date",
     descending: true,
@@ -47,18 +44,16 @@ export const runDefinition: TableDefinition<Run, void> = {
             )
           );
         },
+        sortType: "date",
       },
       {
+        // QUESTION: Project name is not present in the run json.
+        // Is there another way to get the project name?
         title: "Project",
         addParentContents(run, fragment) {
-          fragment.appendChild(
-            makeNameDiv(
-              run.name,
-              urls.miso.project(run.name),
-              urls.dimsum.project(run.name)
-            )
-          );
+          fragment.appendChild(document.createTextNode("PROJECT NAME HERE"));
         },
+        sortType: "date",
       },
       {
         title: "Completion Date",
@@ -72,45 +67,3 @@ export const runDefinition: TableDefinition<Run, void> = {
     ];
   },
 };
-
-/* FROM THE NOTIFICATION BRANCH
-import { TableDefinition } from "../component/table-builder";
-import { makeNameDiv } from "../util/html-utils";
-import { urls } from "../util/urls";
-import { Run } from "./case";
-
-export const notificationDefinition: TableDefinition<Run, void> = {
-  queryUrl: urls.rest.notifications,
-  defaultSort: {
-    columnTitle: "Completion Date",
-    descending: true,
-    type: "date",
-  },
-  generateColumns(data) {
-    return [
-      {
-        title: "Name",
-        addParentContents(run, fragment) {
-          fragment.appendChild(
-            makeNameDiv(
-              run.name,
-              urls.miso.run(run.name),
-              urls.dimsum.run(run.name)
-            )
-          );
-        },
-        sortType: "text",
-      },
-      {
-        title: "Completion Date",
-        addParentContents(run, fragment) {
-          if (run.completionDate) {
-            fragment.appendChild(document.createTextNode(run.completionDate));
-          }
-        },
-        sortType: "date",
-      },
-    ];
-  },
-};
-*/

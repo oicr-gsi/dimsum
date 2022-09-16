@@ -32,5 +32,4 @@ public class RunListRestController {
     }
     return runListManager.getRuns(query.getPageSize(), query.getPageNumber(), sort, descending);
   }
-
 }
