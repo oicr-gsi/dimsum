@@ -1,4 +1,5 @@
 import { makeClickout } from "../util/html-utils";
+import { appendFilter } from "../util/urls";
 
 export interface DropdownOption {
   selectable: boolean;
@@ -68,6 +69,22 @@ export class Dropdown {
               displayLabel,
               option.text
             );
+            if (displayLabel) {
+              // window.history.pushState(
+              //   window,
+              //   appendFilter(window.location.href, displayLabel, option.text)
+              // );
+              history.pushState(
+                { page: 1 },
+                "title 1",
+                `?${displayLabel}=${option.text}`
+              );
+              // window.location.href = appendFilter(
+              //   window.location.href,
+              //   displayLabel,
+              //   option.text
+              // );
+            }
           }
           toggleMenu();
         });

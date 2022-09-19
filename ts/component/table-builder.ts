@@ -11,6 +11,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
+import { appendFilter, removeFilter } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -81,6 +82,9 @@ class AcceptedFilter {
       this.valid = false;
       this.element.remove();
       onRemove();
+      // remove filter from url
+      // TODO: Alter url without reloading the page
+      window.location.href = removeFilter(window.location.href, key, value);
     };
     this.element.appendChild(destroyFilterIcon);
   }
@@ -119,6 +123,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
     this.container = container;
+    // prior to generating columns, given the table definition and its query url and filters, apply filters first
     this.columns = definition.generateColumns();
   }
 
@@ -146,6 +151,8 @@ export class TableBuilder<ParentType, ChildType> {
       "rounded-xl",
       "overflow-hidden"
     );
+
+    // given the queryUrl, get the filters and apply to the table(s) being built
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
 
@@ -167,7 +174,7 @@ export class TableBuilder<ParentType, ChildType> {
     const sortContainer = document.createElement("div");
     sortContainer.classList.add("flex-none", "space-x-2");
     container.appendChild(sortContainer);
-
+    // add sort icon
     const icon = makeIcon("sort");
     icon.title = "Sort";
     icon.classList.add("text-black");
@@ -238,7 +245,7 @@ export class TableBuilder<ParentType, ChildType> {
       // no filters for this table
       return;
     }
-
+    // add filter icon
     const filterIcon = makeIcon("filter");
     filterIcon.title = "Filter";
     filterIcon.classList.add("text-black");

@@ -1,4 +1,5 @@
 import { siteConfig } from "./site-config";
+import { toTitleCase } from "./html-utils";
 
 const restBaseUrl = "/rest";
 
@@ -81,6 +82,31 @@ function makeDashiSingleLaneUrl(designCode: string, runName: string) {
   }
 }
 
-function makeDashiRunUrl(report: string, runName: string) {
+export function makeDashiRunUrl(report: string, runName: string) {
   return `${siteConfig.dashiUrl}/${report}?run=${runName}`;
+}
+
+// append a filter query to url
+export function appendFilter(url: string, key: string, value: string) {
+  if (url.includes("?")) return `${url}&${key}=${value}`;
+  return `${url}?${key}=${value}`;
+}
+
+// append page number to url
+export function appendPageNumber(url: string, key: string, value: string) {
+  return "";
+}
+
+// append page size
+export function appendPageSize(url: string, key: string, value: string) {
+  return "";
+}
+
+export function removeFilter(url: string, key: string, value: string) {
+  // ensure filter passed in exists in the url
+  if (url.includes(value)) {
+    return url.replace(toTitleCase(key) + `=${value}`, "");
+  }
+  // TODO: Remove question mark if no filters are being applied
+  return url; // return original url if filter does not exist
 }

@@ -1,3 +1,5 @@
+import { textSpanContainsPosition } from "typescript";
+
 // adds a header cell to a table header
 export function addColumnHeader(
   thead: HTMLTableRowElement,
@@ -125,4 +127,11 @@ export function addTextDiv(text: string, container: HTMLElement) {
   const divContainer = document.createElement("div");
   divContainer.appendChild(document.createTextNode(text));
   container.appendChild(divContainer);
+}
+
+// transform given string to title case
+export function toTitleCase(text: string) {
+  return text.replace(/\w\S*/g, function (text) {
+    return text.charAt(0).toUpperCase() + text.substring(1).toLowerCase();
+  });
 }
