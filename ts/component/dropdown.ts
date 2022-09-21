@@ -1,4 +1,4 @@
-import { makeClickout } from "../util/html-utils";
+import { makeClickout, makeIcon } from "../util/html-utils";
 
 export interface DropdownOption {
   selectable: boolean;
@@ -52,7 +52,11 @@ export class Dropdown {
       );
     };
     dropdownButton.onclick = toggleMenu;
-    dropdownButton.innerHTML = makeDisplayText(displayLabel, defaultOption);
+    const dropdownButtonText = document.createElement("div");
+    dropdownButtonText.innerHTML = makeDisplayText(displayLabel, defaultOption);
+    dropdownButton.appendChild(dropdownButtonText);
+    dropdownButton.appendChild(makeIcon("caret-down"));
+    dropdownButton.className += `space-x-2`;
     dropdownClickout.onclick = defaultOption ? toggleMenu : invalidInput;
 
     DropdownOptions.forEach((option) => {
@@ -64,7 +68,7 @@ export class Dropdown {
             if (!option.text) {
               throw new Error("Selectable option has no text to display");
             }
-            dropdownButton.innerHTML = makeDisplayText(
+            dropdownButtonText.innerHTML = makeDisplayText(
               displayLabel,
               option.text
             );
