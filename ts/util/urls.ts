@@ -87,16 +87,6 @@ export function makeDashiRunUrl(report: string, runName: string) {
   return `${siteConfig.dashiUrl}/${report}?run=${runName}`;
 }
 
-// create the option url appendment (given the next url)
-export function makeUrlOption(nextUrl: string) {
-  // if there exists other filters, append current filter
-  if (window.location.href.includes("?")) {
-    return `&${nextUrl}`;
-  }
-  // else, no other filters exist, append current filter as the first
-  return `?${nextUrl}`;
-}
-
 // append url param to current url
 export function appendUrlParam(key: string, value: string) {
   console.log(`ADDING URL OPTION (key, value): (${key}, ${value})`);
@@ -135,63 +125,4 @@ export function removeUrlParam(key: string, value: string) {
     return `?${newParams.toString()}`;
   }
   return `${newParams.toString()}`;
-
-  // const values = params.getAll(toTitleCase(key));
-
-  // console.log(`VALUES ASSOCIATED WITH ${toTitleCase(key)} (key):`);
-  // values.forEach((v) => {
-  //   console.log(v);
-  // });
-
-  // const index = values.indexOf(value, 0);
-  // console.log(`INDEX OF ${value} (value): ${index}`);
-
-  // // ensure key-value pair exists prior to removal
-  // if (index > -1) {
-  //   values.splice(index, 1); // remove appropriate value
-  //   // reset key-value(s) pair in url
-  //   values.forEach((v) => {
-  //     params.set(key, v);
-  //   });
-  // }
-  // console.log(`FINAL: ${params.toString()}`);
-  // return `${params.toString()}`;
 }
-
-// MANUALLY APPEND AND REMOVE FILTER OPTIONS
-// export function appendUrlOption(url: string, key: string, value: string) {
-//   // if there exists other filters, append current filter
-//   if (window.location.href.includes("?")) {
-//     return `${url}&${key.replace(" ", "%")}=${value.replace(" ", "%")}`;
-//   }
-//   // else, no other filters exist, append current filter as the first
-//   return `${url}?${key.replace(" ", "%")}=${value.replace(" ", "%")}`;
-// }
-
-// export function removeUrlOption(url: string, key: string, value: string) {
-//   // ensure option passed in exists in the url and remove it
-//   if (url.includes(value.replace(" ", "%"))) {
-//     const option = `${toTitleCase(key.replace(" ", "%"))}=${value.replace(
-//       " ",
-//       "%"
-//     )}`;
-
-//     console.log(option);
-
-//     var searchParams = new URLSearchParams(window.location.href);
-
-//     console.log(searchParams.entries);
-//     console.log(searchParams.entries.length);
-
-//     if (searchParams.entries.length - 1 > 0) {
-//       // there exist other params besides the one we wish to remove,
-//       // remove the & appendment
-//       return url.replace(`&${option}`, "");
-//     } else if (searchParams.entries.length - 1 == 0) {
-//       // only this search param exists, remove ?
-//       return url.replace(`?${option}`, "");
-//     }
-//   }
-//   // return original url if option does not exist
-//   return url;
-// }
