@@ -11,7 +11,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
-import { removeUrlOption } from "../util/urls";
+import { removeUrlParam } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -88,10 +88,10 @@ class AcceptedFilter {
         info: `update url: remove ${nextUrl}`,
       };
       const nextTitle = `update page: remove ${nextUrl}`;
-      window.history.pushState(
+      window.history.replaceState(
         nextState,
         nextTitle,
-        removeUrlOption(key, value)
+        "http://localhost:8080/" + removeUrlParam(key, value)
       );
     };
     this.element.appendChild(destroyFilterIcon);

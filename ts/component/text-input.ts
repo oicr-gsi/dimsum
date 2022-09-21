@@ -1,4 +1,5 @@
 import { makeClickout, makeIcon } from "../util/html-utils";
+import { appendUrlParam } from "../util/urls";
 import { get } from "../util/requests";
 
 export class TextInput {
@@ -37,6 +38,22 @@ export class TextInput {
     const submitTextInput = () => {
       if (this.textField.value) {
         textInputClickout.classList.toggle("hidden");
+        // append param to url
+        const nextUrl = `${title.replace(
+          " ",
+          "+"
+        )}=${this.textField.value.replace(" ", "+")}`;
+        const nextState = {
+          info: `update url: append ${nextUrl}`,
+        };
+        const nextTitle = `update page: append ${nextUrl}`;
+        // pushState will create a new entry in the browser's history, without reloading
+        // append filters to url as appropriate
+        window.history.replaceState(
+          nextState,
+          nextTitle,
+          "http://localhost:8080/" + appendUrlParam(title, this.textField.value)
+        );
         onClose(this);
       } else {
         this.textField.focus();

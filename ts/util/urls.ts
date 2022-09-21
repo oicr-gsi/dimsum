@@ -97,20 +97,16 @@ export function makeUrlOption(nextUrl: string) {
   return `?${nextUrl}`;
 }
 
-// append url option to current url
-export function appendUrlOption(key: string, value: string) {
+// append url param to current url
+export function appendUrlParam(key: string, value: string) {
+  console.log(`ADDING URL OPTION (key, value): (${key}, ${value})`);
   var params = new URL(document.location.href).searchParams;
   params.append(key, value);
   return `?${params.toString()}`;
 }
 
-// remove url option from current url
-// 1. get all entires in current url
-// 2. identify the appropriate kvp
-// 3. remove the kvp
-// 4. recreate params list with the altered entries list
-// 5. return this new searchParams list
-export function removeUrlOption(key: string, value: string) {
+// remove url param from current url
+export function removeUrlParam(key: string, value: string) {
   console.log(`REMOVING URL OPTION (key, value): (${key}, ${value})`);
   var params = new URL(document.location.href).searchParams;
 
@@ -119,26 +115,47 @@ export function removeUrlOption(key: string, value: string) {
     console.log(`${k}, ${v}`);
   });
 
-  const values = params.getAll(toTitleCase(key));
-
-  console.log(`VALUES ASSOCIATED WITH ${toTitleCase(key)} (key):`);
-  values.forEach((v) => {
-    console.log(v);
-  });
-
-  const index = values.indexOf(value, 0);
-  console.log(`INDEX OF ${value} (value): ${index}`);
-
-  // ensure key-value pair exists prior to removal
-  if (index > -1) {
-    values.splice(index, 1); // remove appropriate value
-    // reset key-value(s) pair in url
-    values.forEach((v) => {
-      params.set(key, v);
-    });
+  var newParams = new URLSearchParams();
+  var paramCount = 0;
+  for (const [k, v] of params.entries()) {
+    if (k !== toTitleCase(key) || v !== value) {
+      // create new search params list, excluding the one we would like to delete
+      newParams.append(k, v);
+      ++paramCount;
+    }
   }
-  console.log(`FINAL: ${params.toString()}`);
-  return `${params.toString()}`;
+
+  console.log("AFTER REMOVAL");
+  newParams.forEach((k, v) => {
+    console.log(`${k}, ${v}`);
+  });
+  console.log(`paramCount: ${paramCount}`);
+
+  if (paramCount > 0) {
+    return `?${newParams.toString()}`;
+  }
+  return `${newParams.toString()}`;
+
+  // const values = params.getAll(toTitleCase(key));
+
+  // console.log(`VALUES ASSOCIATED WITH ${toTitleCase(key)} (key):`);
+  // values.forEach((v) => {
+  //   console.log(v);
+  // });
+
+  // const index = values.indexOf(value, 0);
+  // console.log(`INDEX OF ${value} (value): ${index}`);
+
+  // // ensure key-value pair exists prior to removal
+  // if (index > -1) {
+  //   values.splice(index, 1); // remove appropriate value
+  //   // reset key-value(s) pair in url
+  //   values.forEach((v) => {
+  //     params.set(key, v);
+  //   });
+  // }
+  // console.log(`FINAL: ${params.toString()}`);
+  // return `${params.toString()}`;
 }
 
 // MANUALLY APPEND AND REMOVE FILTER OPTIONS
