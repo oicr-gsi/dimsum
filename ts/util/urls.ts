@@ -97,6 +97,9 @@ export function appendUrlParam(key: string, value: string) {
 
 // remove url param from current url
 export function removeUrlParam(key: string, value: string) {
+  // TODO: when for e.g. the page size, we don't want to append more and
+  // more page sizes. find way to simply change the items listed number
+  // rather than keep appending params
   console.log(`REMOVING URL OPTION (key, value): (${key}, ${value})`);
   var params = new URL(document.location.href).searchParams;
 

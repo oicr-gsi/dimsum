@@ -160,7 +160,6 @@ export class TableBuilder<ParentType, ChildType> {
       "overflow-hidden"
     );
 
-    // given the queryUrl, get the filters and apply to the table(s) being built
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
 
