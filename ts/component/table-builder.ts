@@ -11,7 +11,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
-import { appendFilter, removeFilter } from "../util/urls";
+import { removeUrlOption } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -82,9 +82,17 @@ class AcceptedFilter {
       this.valid = false;
       this.element.remove();
       onRemove();
-      // remove filter from url
-      // TODO: Alter url without reloading the page
-      window.location.href = removeFilter(window.location.href, key, value);
+      // replace spaces in filter and options with %
+      const nextUrl = `${key.replace(" ", "%")}=${value.replace(" ", "%")}`;
+      const nextState = {
+        info: `update url: remove ${nextUrl}`,
+      };
+      const nextTitle = `update page: remove ${nextUrl}`;
+      window.history.pushState(
+        nextState,
+        nextTitle,
+        removeUrlOption(key, value)
+      );
     };
     this.element.appendChild(destroyFilterIcon);
   }

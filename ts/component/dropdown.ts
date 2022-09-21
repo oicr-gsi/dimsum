@@ -1,5 +1,5 @@
 import { makeClickout } from "../util/html-utils";
-import { appendFilter } from "../util/urls";
+import { appendUrlOption, makeUrlOption } from "../util/urls";
 
 export interface DropdownOption {
   selectable: boolean;
@@ -70,20 +70,23 @@ export class Dropdown {
               option.text
             );
             if (displayLabel) {
-              // window.history.pushState(
-              //   window,
-              //   appendFilter(window.location.href, displayLabel, option.text)
-              // );
-              history.pushState(
-                { page: 1 },
-                "title 1",
-                `?${displayLabel}=${option.text}`
+              // replace spaces in filter and options with %
+              const nextUrl = `${displayLabel.replace(
+                " ",
+                "%"
+              )}=${option.text.replace(" ", "%")}`;
+              const nextState = {
+                info: `update url: append ${nextUrl}`,
+              };
+              const nextTitle = `update page: append ${nextUrl}`;
+              // pushState will create a new entry in the browser's history, without reloading
+              // append filters to url as appropriate
+              window.history.pushState(
+                nextState,
+                nextTitle,
+                window.location.href +
+                  appendUrlOption(displayLabel, option.text)
               );
-              // window.location.href = appendFilter(
-              //   window.location.href,
-              //   displayLabel,
-              //   option.text
-              // );
             }
           }
           toggleMenu();
