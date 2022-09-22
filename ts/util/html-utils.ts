@@ -121,7 +121,7 @@ export function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
 
-export function addTextDiv(text: string, container: HTMLElement) {
+export function addTextDiv(text: string, container: Node) {
   const divContainer = document.createElement("div");
   divContainer.appendChild(document.createTextNode(text));
   container.appendChild(divContainer);
