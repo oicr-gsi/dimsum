@@ -90,6 +90,7 @@ export class TableBuilder<ParentType, ChildType> {
   definition: TableDefinition<ParentType, ChildType>;
   container: HTMLElement;
   table?: HTMLTableElement;
+  thead?: HTMLTableSectionElement;
   pageDescription?: HTMLSpanElement;
   pageLeftButton?: HTMLButtonElement;
   pageRightButton?: HTMLButtonElement;
@@ -156,6 +157,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.container.appendChild(bottomControlsContainer);
 
     this.load();
+    this.setupScrollListener();
     this.reload();
   }
 
@@ -417,8 +419,9 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addTableHead(table: HTMLTableElement) {
-    const thead = table.createTHead();
-    const row = thead.insertRow();
+    this.thead = table.createTHead();
+    this.thead.className = "relative";
+    const row = this.thead.insertRow();
     this.columns.forEach((column, i) => {
       addColumnHeader(row, column.title, i);
     });
@@ -433,6 +436,24 @@ export class TableBuilder<ParentType, ChildType> {
     } else {
       this.addNoDataRow(tbody);
     }
+  }
+
+  private setupScrollListener() {
+    document.addEventListener("scroll", (event) => {
+      const table = getElement(this.table);
+      const thead = getElement(this.thead);
+      const tableRect = table.getBoundingClientRect();
+      if (tableRect.y >= 0) {
+        thead.style.top = "0";
+        return;
+      }
+      const headRect = thead.getBoundingClientRect();
+      if (headRect.height - 2 > tableRect.bottom) {
+        thead.style.top = tableRect.height - headRect.height + "px";
+      } else {
+        thead.style.top = tableRect.top * -1 - 2 + "px";
+      }
+    });
   }
 
   private async reload() {
