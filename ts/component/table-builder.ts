@@ -131,7 +131,6 @@ export class TableBuilder<ParentType, ChildType> {
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
     this.container = container;
-    // prior to generating columns, given the table definition and its query url and filters, apply filters first
     this.columns = definition.generateColumns();
   }
 
@@ -168,6 +167,12 @@ export class TableBuilder<ParentType, ChildType> {
       "flex flex-row-reverse mt-4 items-top space-x-2";
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
+
+    // prior to loading the columns, fetch and apply search params
+    const params = new URL(document.location.href).searchParams;
+    params.forEach((param) => {
+      // create accepted filter for each search param
+    });
 
     this.load();
     this.reload();
@@ -449,6 +454,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
   }
 
+  /////////////
   private async reload() {
     this.showLoading();
     this.acceptedFilters = this.acceptedFilters.filter(
