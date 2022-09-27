@@ -56,7 +56,6 @@ export class Dropdown {
     dropdownButtonText.innerHTML = makeDisplayText(displayLabel, defaultOption);
     dropdownButton.appendChild(dropdownButtonText);
     dropdownButton.appendChild(makeIcon("caret-down"));
-    dropdownButton.className += `space-x-2`;
     dropdownClickout.onclick = defaultOption ? toggleMenu : invalidInput;
 
     DropdownOptions.forEach((option) => {
