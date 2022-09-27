@@ -590,7 +590,7 @@ function makeSampleTooltip(sample: Sample) {
     topContainer.appendChild(
       makeNameDiv(
         sample.sequencingLane
-          ? sample.run.name + "(L" + sample.sequencingLane + ")"
+          ? sample.run.name + " (L" + sample.sequencingLane + ")"
           : sample.run.name,
         urls.miso.run(sample.run.name),
         urls.dimsum.run(sample.run.name)

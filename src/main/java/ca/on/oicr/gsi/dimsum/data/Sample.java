@@ -252,7 +252,7 @@ public class Sample {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, run);
+    return Objects.hash(id, run, sequencingLane);
   }
 
   @Override
@@ -265,7 +265,8 @@ public class Sample {
       return false;
     Sample other = (Sample) obj;
     return Objects.equals(id, other.id)
-        && Objects.equals(run, other.run);
+        && Objects.equals(run, other.run)
+        && Objects.equals(sequencingLane, other.sequencingLane);
   }
 
   public static class Builder {
