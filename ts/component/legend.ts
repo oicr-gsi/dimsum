@@ -28,7 +28,6 @@ class Legend {
       "text-24",
       "m-2",
       "mx-4",
-      "z-50",
       "relative",
       "cursor-pointer"
     );
