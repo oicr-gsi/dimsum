@@ -64,6 +64,7 @@ class AcceptedFilter {
   valid: boolean = true;
 
   constructor(title: string, key: string, value: string, onRemove: () => {}) {
+    console.log("CONSTRUCTING: " + key + " || " + value);
     this.key = key;
     this.value = value;
     this.element = document.createElement("span");
@@ -169,12 +170,23 @@ export class TableBuilder<ParentType, ChildType> {
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
 
-    // prior to loading the columns, fetch and apply search params
+    // prior to (re)loading the columns, fetch and apply search params
     const params = new URL(document.location.href).searchParams;
-    params.forEach((param) => {
-      // create accepted filter for each search param
-    });
 
+    console.log("DEBUG----------------------------------------");
+    params.forEach((value, key) => {
+      console.log(
+        "title: " +
+          key +
+          " || key: " +
+          key.toUpperCase() +
+          " || value: " +
+          value
+      );
+      this.acceptedFilters.push(
+        new AcceptedFilter(key, key.toUpperCase(), value, this.reload)
+      );
+    });
     this.load();
     this.setupScrollListener();
     this.reload();
@@ -476,6 +488,7 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private async reload() {
+    console.log("RELOADING...");
     this.showLoading();
     this.acceptedFilters = this.acceptedFilters.filter(
       (filter) => filter.valid
