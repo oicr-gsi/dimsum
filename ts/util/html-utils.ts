@@ -81,7 +81,7 @@ export function styleText(element: HTMLElement, style?: TextStyle | null) {
 // makes an icon with the corresponding Font Awesome name
 export function makeIcon(name: string) {
   const icon = document.createElement("i");
-  icon.className = `fa-solid fa-${name} items-center`;
+  icon.className = `fa-solid fa-${name}`;
   return icon;
 }
 
