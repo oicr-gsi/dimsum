@@ -88,7 +88,7 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
         fragment.appendChild(
           makeNameDiv(
             sample.sequencingLane
-              ? runName + "(L" + sample.sequencingLane + ")"
+              ? runName + " (L" + sample.sequencingLane + ")"
               : runName,
             urls.miso.run(runName),
             urls.dimsum.run(runName)
