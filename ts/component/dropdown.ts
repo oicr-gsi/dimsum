@@ -47,39 +47,42 @@ export class Dropdown {
       dropdownMenuContainer.classList.remove("ring-2");
       dropdownClickout.classList.toggle("hidden");
     };
-    const toggleDropdownButton = () => {
-      // toggle whether or not a labeled button is removed
-      if (displayTemporary) {
-        dropdownButton.classList.toggle("hidden");
-      }
-      toggleMenu();
-    };
     dropdownButton.onclick = toggleMenu;
     dropdownButton.innerHTML = makeDisplayText(displayLabel, defaultOption);
     // close dropdown menu by clicking outside of the menu or by hitting Esc
-    dropdownClickout.onclick = toggleDropdownButton;
-    document.addEventListener("keydown", (event) => {
-      // only remove the button in question if it is not already hidden
-      if (event.key === "Esc" || event.key === "Escape") {
-        const menuHidden = dropdownMenuContainer.classList.contains("hidden");
-        const clickoutHidden = dropdownClickout.classList.contains("hidden");
-        if (displayTemporary) {
-          // dropdown button is temporary, hide its corresponding elements if they are visible
-          if (
-            !dropdownButton.classList.contains("hidden") &&
-            !menuHidden &&
-            !clickoutHidden
-          ) {
-            toggleDropdownButton();
-          }
-        } else {
-          // button is NOT temporary, hide its corresponding elements if they are visible
-          if (!menuHidden && !clickoutHidden) {
-            toggleMenu();
+    dropdownClickout.onclick = () => {
+      if (displayTemporary && !dropdownButton.classList.contains("hidden")) {
+        dropdownButton.remove();
+      }
+      toggleMenu();
+    };
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        // only remove the button in question if it is not already hidden
+        if (event.key === "Esc" || event.key === "Escape") {
+          const menuHidden = dropdownMenuContainer.classList.contains("hidden");
+          const clickoutHidden = dropdownClickout.classList.contains("hidden");
+          if (displayTemporary) {
+            // dropdown button is temporary, remove it and its corresponding elements
+            if (
+              !dropdownButton.classList.contains("hidden") &&
+              !menuHidden &&
+              !clickoutHidden
+            ) {
+              dropdownMenuContainer.remove();
+              dropdownButton.remove();
+            }
+          } else {
+            // button is NOT temporary, hide its corresponding elements if they are visible
+            if (!menuHidden && !clickoutHidden) {
+              toggleMenu();
+            }
           }
         }
-      }
-    });
+      },
+      displayTemporary ? { once: true } : false
+    );
 
     DropdownOptions.forEach((option) => {
       const li = document.createElement("li");

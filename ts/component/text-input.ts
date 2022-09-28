@@ -1,6 +1,5 @@
 import { makeClickout, makeIcon } from "../util/html-utils";
 import { get } from "../util/requests";
-import { toggleLegend } from "./legend";
 
 export class TextInput {
   private container: HTMLElement;
@@ -42,19 +41,8 @@ export class TextInput {
         this.textField.focus();
       }
     };
-    const toggleTextInput = () => {
-      this.container.classList.toggle("hidden");
-      this.container.classList.remove("ring-2");
-      textInputClickout.classList.toggle("hidden");
-    };
+
     submitIcon.onclick = submitTextInput;
-    // Close text input field by clicking outside or hitting esc
-    textInputClickout.onclick = toggleTextInput;
-    textInputClickout.addEventListener("keypress", (event) => {
-      if (event.key === "Escape" || event.key === "Esc") {
-        toggleTextInput();
-      }
-    });
     this.textField.addEventListener("keypress", (event) => {
       if (event.key === "Enter") {
         submitTextInput();
@@ -75,19 +63,26 @@ export class TextInput {
         this.loadAutocomplete(queryUrl);
       }
     });
+    // close text input field by clicking outside or hitting esc
+    textInputClickout.onclick = () => {
+      this.container.remove();
+    };
 
-    // hide text input box by hitting Esc
-    document.addEventListener("keydown", (event) => {
-      // only remove the text input box in question if it is not already hidden
-      if (event.key === "Esc" || event.key === "Escape") {
-        const containerHidden = this.container.classList.contains("hidden");
-        const textFieldHidden = this.textField.classList.contains("hidden");
-        // hide text input fields' corresponding elements if they are visible
-        if (!containerHidden && !textFieldHidden) {
-          toggleTextInput();
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        // only remove the text input box in question if it is not already hidden
+        if (event.key === "Esc" || event.key === "Escape") {
+          const containerHidden = this.container.classList.contains("hidden");
+          const textFieldHidden = this.textField.classList.contains("hidden");
+          // remove text input field corresponding elements if they are visible
+          if (!containerHidden && !textFieldHidden) {
+            this.container.remove();
+          }
         }
-      }
-    });
+      },
+      { once: true } // remove event listener immediately once event occurs
+    );
 
     this.container.append(label);
     this.container.appendChild(this.textField);
