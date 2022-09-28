@@ -52,7 +52,6 @@ export class TextInput {
     textInputClickout.onclick = toggleTextInput;
     textInputClickout.addEventListener("keypress", (event) => {
       if (event.key === "Escape" || event.key === "Esc") {
-        console.log("DEBUG: " + event.key);
         toggleTextInput();
       }
     });
@@ -74,6 +73,19 @@ export class TextInput {
       } else {
         // value was user-typed, display autcomplete suggestion list
         this.loadAutocomplete(queryUrl);
+      }
+    });
+
+    // hide text input box by hitting Esc
+    document.addEventListener("keydown", (event) => {
+      // only remove the text input box in question if it is not already hidden
+      if (event.key === "Esc" || event.key === "Escape") {
+        const containerHidden = this.container.classList.contains("hidden");
+        const textFieldHidden = this.textField.classList.contains("hidden");
+        // hide text input fields' corresponding elements if they are visible
+        if (!containerHidden && !textFieldHidden) {
+          toggleTextInput();
+        }
       }
     });
 
