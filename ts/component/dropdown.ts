@@ -54,24 +54,33 @@ export class Dropdown {
       }
       toggleMenu();
     };
-
     dropdownButton.onclick = toggleMenu;
     dropdownButton.innerHTML = makeDisplayText(displayLabel, defaultOption);
     // close dropdown menu by clicking outside of the menu or by hitting Esc
     dropdownClickout.onclick = toggleDropdownButton;
-    dropdownClickout.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", (event) => {
       // only remove the button in question if it is not already hidden
-      if (
-        (event.key === "Escape" || event.key === "Esc") &&
-        !dropdownButton.hidden &&
-        !dropdownClickout.hidden &&
-        !dropdownMenuContainer.hidden
-      ) {
-        toggleDropdownButton();
+      if (event.key === "Esc" || event.key === "Escape") {
+        const menuHidden = dropdownMenuContainer.classList.contains("hidden");
+        const clickoutHidden = dropdownClickout.classList.contains("hidden");
+        if (displayTemporary) {
+          // dropdown button is temporary, hide its corresponding elements if they are visible
+          if (
+            !dropdownButton.classList.contains("hidden") &&
+            !menuHidden &&
+            !clickoutHidden
+          ) {
+            toggleDropdownButton();
+          }
+        } else {
+          // button is NOT temporary, hide its corresponding elements if they are visible
+          if (!menuHidden && !clickoutHidden) {
+            toggleMenu();
+          }
+        }
       }
     });
 
-    // circumvent disappearing buttons (unwanted behaviour) by checking whether the dropdown menu is meant to be "temporary"
     DropdownOptions.forEach((option) => {
       const li = document.createElement("li");
       option.render(li, this);
