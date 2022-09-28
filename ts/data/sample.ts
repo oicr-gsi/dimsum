@@ -60,6 +60,7 @@ export interface Sample extends Qcable {
   rawCoverage?: number;
   onTargetReads?: number;
   latestActivityDate: string;
+  sequencingLane: string;
 }
 
 const defaultSort: SortDefinition = {
@@ -97,7 +98,13 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
       if (includeRun && sample.run) {
         const runName = sample.run.name;
         fragment.appendChild(
-          makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+          makeNameDiv(
+            sample.sequencingLane
+              ? runName + " (L" + sample.sequencingLane + ")"
+              : runName,
+            urls.miso.run(runName),
+            urls.dimsum.run(runName)
+          )
         );
         // TODO: add Dashi icon link
       }
