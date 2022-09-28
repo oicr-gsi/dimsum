@@ -25,14 +25,9 @@ export class TextInput {
     this.container.className =
       "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2";
     this.textField.className =
-      "ring-0 border-0 outline-0 rounded-sm relative z-10 px-1 min-w-[150px]";
+      "ring-0 border-0 outline-0 rounded-sm relative px-1 min-w-[150px]";
     this.textField.setAttribute("size", "10");
-    submitIcon.classList.add(
-      "text-black",
-      "hover:text-green",
-      "relative",
-      "z-10"
-    );
+    submitIcon.classList.add("text-black", "hover:text-green", "relative");
     const submitTextInput = () => {
       if (this.textField.value) {
         textInputClickout.classList.toggle("hidden");

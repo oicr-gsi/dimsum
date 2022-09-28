@@ -1,4 +1,4 @@
-import { makeClickout } from "../util/html-utils";
+import { makeClickout, makeIcon } from "../util/html-utils";
 
 export interface DropdownOption {
   selectable: boolean;
@@ -40,6 +40,12 @@ export class Dropdown {
     this.dropdownContainer.classList.add("inline-block");
 
     const dropdownButton = makeDropdownButton();
+
+    const dropdownButtonText = document.createElement("div");
+    dropdownButtonText.innerHTML = makeDisplayText(displayLabel, defaultOption);
+    dropdownButton.appendChild(dropdownButtonText);
+    dropdownButton.appendChild(makeIcon("caret-down"));
+
     const dropdownClickout = makeClickout();
     const dropdownMenuContainer = makeDropdownMenuContainer();
     const toggleMenu = () => {
@@ -47,8 +53,8 @@ export class Dropdown {
       dropdownMenuContainer.classList.remove("ring-2");
       dropdownClickout.classList.toggle("hidden");
     };
+
     dropdownButton.onclick = toggleMenu;
-    dropdownButton.innerHTML = makeDisplayText(displayLabel, defaultOption);
     // close dropdown menu by clicking outside of the menu or by hitting Esc
     dropdownClickout.onclick = () => {
       if (displayTemporary && !dropdownButton.classList.contains("hidden")) {
@@ -93,7 +99,7 @@ export class Dropdown {
             if (!option.text) {
               throw new Error("Selectable option has no text to display");
             }
-            dropdownButton.innerHTML = makeDisplayText(
+            dropdownButtonText.innerHTML = makeDisplayText(
               displayLabel,
               option.text
             );
@@ -130,6 +136,6 @@ function makeDropdownButton() {
 function makeDropdownMenuContainer() {
   const dropdownMenuContainer = document.createElement("menu");
   dropdownMenuContainer.className =
-    "absolute hidden mt-2 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer";
+    "absolute hidden mt-2 w-fit rounded-md p-1 bg-grey-100 font-inter font-medium text-black text-12 drop-shadow-lg cursor-pointer z-40";
   return dropdownMenuContainer;
 }

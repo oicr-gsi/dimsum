@@ -98,7 +98,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
 export function makeClickout() {
   const clickout = document.createElement("button");
   clickout.className =
-    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
+    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden z-10";
   return clickout;
 }
 
@@ -121,7 +121,7 @@ export function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
 
-export function addTextDiv(text: string, container: HTMLElement) {
+export function addTextDiv(text: string, container: Node) {
   const divContainer = document.createElement("div");
   divContainer.appendChild(document.createTextNode(text));
   container.appendChild(divContainer);
