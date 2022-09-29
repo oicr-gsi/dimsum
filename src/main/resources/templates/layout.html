@@ -47,7 +47,7 @@
 
       </div>
     </div>
-    <nav class="text-right">
+    <nav th:unless="${hideNav}" class="text-right">
       <a th:href="@{/notifications}" class="text-green-200 font-bold hover:underline">Notifications</a>
     </nav>
   </div>
