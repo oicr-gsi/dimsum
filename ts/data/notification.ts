@@ -1,9 +1,19 @@
 import { TableDefinition } from "../component/table-builder";
-import { makeNameDiv } from "../util/html-utils";
+import { makeIcon, makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { Run } from "./case";
+import { MetricCategory } from "./assay";
+import { getRunQcStatus } from "./sample";
 
-export const notificationDefinition: TableDefinition<Run, void> = {
+interface Notification {
+  run: Run;
+  metricCategory: MetricCategory;
+  pendingAnalysisCount: number;
+  pendingQcCount: number;
+  pendingDataReviewCount: number;
+}
+
+export const notificationDefinition: TableDefinition<Notification, void> = {
   queryUrl: urls.rest.notifications,
   defaultSort: {
     columnTitle: "Completion Date",
@@ -13,13 +23,14 @@ export const notificationDefinition: TableDefinition<Run, void> = {
   generateColumns(data) {
     return [
       {
-        title: "Name",
-        addParentContents(run, fragment) {
+        title: "Run",
+        addParentContents(notification, fragment) {
+          const runName = notification.run.name;
           fragment.appendChild(
             makeNameDiv(
-              run.name,
-              urls.miso.run(run.name),
-              urls.dimsum.run(run.name)
+              runName,
+              urls.miso.run(runName),
+              urls.dimsum.run(runName)
             )
           );
         },
@@ -27,13 +38,70 @@ export const notificationDefinition: TableDefinition<Run, void> = {
       },
       {
         title: "Completion Date",
-        addParentContents(run, fragment) {
-          if (run.completionDate) {
-            fragment.appendChild(document.createTextNode(run.completionDate));
+        addParentContents(notification, fragment) {
+          const completionDate = notification.run.completionDate;
+          if (completionDate) {
+            fragment.appendChild(document.createTextNode(completionDate));
           }
         },
         sortType: "date",
       },
+      {
+        title: "QC Gate",
+        addParentContents(notification, fragment) {
+          switch (notification.metricCategory) {
+            case "LIBRARY_QUALIFICATION":
+              addText(fragment, "Library Qualification");
+              break;
+            case "FULL_DEPTH_SEQUENCING":
+              addText(fragment, "Full-Depth Sequencing");
+              break;
+            default:
+              addText(fragment, "unknwon/error");
+          }
+        },
+      },
+      {
+        title: "Run QC",
+        addParentContents(notification, fragment) {
+          const status = getRunQcStatus(notification.run);
+          const icon = makeIcon(status.icon);
+          icon.title = status.label;
+          fragment.appendChild(icon);
+        },
+        getCellHighlight(notification) {
+          const status = getRunQcStatus(notification.run);
+          return status.cellStatus || null;
+        },
+      },
+      {
+        title: "Libraries Pending Analysis",
+        addParentContents(notification, fragment) {
+          addText(fragment, notification.pendingAnalysisCount.toString());
+        },
+      },
+      {
+        title: "Libraries Pending QC",
+        addParentContents(notification, fragment) {
+          addText(fragment, notification.pendingQcCount.toString());
+        },
+        getCellHighlight(notification) {
+          return notification.pendingQcCount ? "warning" : null;
+        },
+      },
+      {
+        title: "Libraries Pending Data Review",
+        addParentContents(notification, fragment) {
+          addText(fragment, notification.pendingDataReviewCount.toString());
+        },
+        getCellHighlight(notification) {
+          return notification.pendingDataReviewCount ? "warning" : null;
+        },
+      },
     ];
   },
 };
+
+function addText(element: Node, text: string) {
+  element.appendChild(document.createTextNode(text));
+}
