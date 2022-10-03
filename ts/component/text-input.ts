@@ -58,26 +58,22 @@ export class TextInput {
         this.loadAutocomplete(queryUrl);
       }
     });
+
+    var handleKeydown = (event: KeyboardEvent) => {
+      // only remove the text input box in question if it is not already hidden
+      if (event.key === "Esc" || event.key === "Escape") {
+        // remove text input field corresponding elements if they are visible
+        this.container.remove();
+        document.removeEventListener("keydown", handleKeydown);
+      }
+    };
     // close text input field by clicking outside or hitting esc
     textInputClickout.onclick = () => {
       this.container.remove();
+      document.removeEventListener("keydown", handleKeydown);
     };
 
-    document.addEventListener(
-      "keydown",
-      (event) => {
-        // only remove the text input box in question if it is not already hidden
-        if (event.key === "Esc" || event.key === "Escape") {
-          const containerHidden = this.container.classList.contains("hidden");
-          const textFieldHidden = this.textField.classList.contains("hidden");
-          // remove text input field corresponding elements if they are visible
-          if (!containerHidden && !textFieldHidden) {
-            this.container.remove();
-          }
-        }
-      },
-      { once: true } // remove event listener immediately once event occurs
-    );
+    document.addEventListener("keydown", handleKeydown);
 
     this.container.append(label);
     this.container.appendChild(this.textField);

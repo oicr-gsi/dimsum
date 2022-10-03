@@ -67,14 +67,12 @@ export class Dropdown {
           }
         }
         document.removeEventListener("keydown", handleKeydown);
-        console.log("REMOVE ON HANDLE");
       }
     };
 
     dropdownButton.onclick = () => {
       toggleMenu();
       if (!dropdownMenuContainer.classList.contains("hidden")) {
-        console.log("ADDED ON DROPDOWN CLICK");
         document.addEventListener("keydown", handleKeydown);
       }
     };
@@ -84,13 +82,11 @@ export class Dropdown {
         this.dropdownContainer.remove();
       }
       toggleMenu();
-      console.log("REMOVED ON CLICKOUT");
       document.removeEventListener("keydown", handleKeydown);
     };
     // create an additional event listener for temporary buttons
     if (displayTemporary) {
       document.addEventListener("keydown", handleKeydown);
-      console.log("ADD ON TEMP BUTTON");
     }
 
     DropdownOptions.forEach((option) => {
@@ -110,7 +106,6 @@ export class Dropdown {
           toggleMenu();
           if (dropdownMenuContainer.classList.contains("hidden")) {
             document.removeEventListener("keydown", handleKeydown);
-            console.log("REMOVED ON CHOICE");
           }
         });
       }
