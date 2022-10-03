@@ -47,7 +47,7 @@ export class TextInput {
         window.history.replaceState(
           nextState,
           nextTitle,
-          "http://localhost:8080/" + appendUrlParam(title, this.textField.value)
+          window.location.origin + appendUrlParam(title, this.textField.value)
         );
         onClose(this);
       } else {

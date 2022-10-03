@@ -86,7 +86,7 @@ export class Dropdown {
               window.history.replaceState(
                 nextState,
                 nextTitle,
-                "http://localhost:8080/" +
+                window.location.origin +
                   appendUrlParam(displayLabel, option.text)
               );
             }

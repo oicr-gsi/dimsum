@@ -92,7 +92,7 @@ class AcceptedFilter {
       window.history.replaceState(
         nextState,
         nextTitle,
-        "http://localhost:8080/" + removeUrlParam(key, value)
+        window.location.origin + removeUrlParam(key, value)
       );
     };
     this.element.appendChild(destroyFilterIcon);
@@ -139,6 +139,25 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
+
+    // prior to (re)loading the columns, fetch and apply search params
+    const params = new URL(document.location.href).searchParams;
+
+    console.log("DEBUG----------------------------------------");
+    params.forEach((value, key) => {
+      console.log(
+        "title: " +
+          key +
+          " || key: " +
+          key.toUpperCase() +
+          " || value: " +
+          value
+      );
+      this.acceptedFilters.push(
+        new AcceptedFilter(key, key.toUpperCase(), value, this.reload)
+      );
+    });
+
     this.addSortControls(topControlsContainer);
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
@@ -170,23 +189,6 @@ export class TableBuilder<ParentType, ChildType> {
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
 
-    // prior to (re)loading the columns, fetch and apply search params
-    const params = new URL(document.location.href).searchParams;
-
-    console.log("DEBUG----------------------------------------");
-    params.forEach((value, key) => {
-      console.log(
-        "title: " +
-          key +
-          " || key: " +
-          key.toUpperCase() +
-          " || value: " +
-          value
-      );
-      this.acceptedFilters.push(
-        new AcceptedFilter(key, key.toUpperCase(), value, this.reload)
-      );
-    });
     this.load();
     this.setupScrollListener();
     this.reload();
