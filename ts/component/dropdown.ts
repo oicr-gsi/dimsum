@@ -26,7 +26,6 @@ export class BasicDropdownOption implements DropdownOption {
 
 export class Dropdown {
   private dropdownContainer: HTMLElement;
-
   // displayTemporary: set to true if the created dropdown menu can be removed
   // (by user interaction or otherwise), else set to false (or undefined) if otherwise
   constructor(
@@ -54,41 +53,45 @@ export class Dropdown {
       dropdownClickout.classList.toggle("hidden");
     };
 
-    dropdownButton.onclick = toggleMenu;
+    var handleKeydown = (event: KeyboardEvent) => {
+      // only remove the button in question if it is not already hidden
+      if (event.key === "Esc" || event.key === "Escape") {
+        if (displayTemporary) {
+          this.dropdownContainer.remove();
+        } else {
+          if (
+            !dropdownMenuContainer.classList.contains("hidden") &&
+            !dropdownClickout.classList.contains("hidden")
+          ) {
+            toggleMenu();
+          }
+        }
+        document.removeEventListener("keydown", handleKeydown);
+        console.log("REMOVE ON HANDLE");
+      }
+    };
+
+    dropdownButton.onclick = () => {
+      toggleMenu();
+      if (!dropdownMenuContainer.classList.contains("hidden")) {
+        console.log("ADDED ON DROPDOWN CLICK");
+        document.addEventListener("keydown", handleKeydown);
+      }
+    };
     // close dropdown menu by clicking outside of the menu or by hitting Esc
     dropdownClickout.onclick = () => {
       if (displayTemporary && !dropdownButton.classList.contains("hidden")) {
-        dropdownButton.remove();
+        this.dropdownContainer.remove();
       }
       toggleMenu();
+      console.log("REMOVED ON CLICKOUT");
+      document.removeEventListener("keydown", handleKeydown);
     };
-    document.addEventListener(
-      "keydown",
-      (event) => {
-        // only remove the button in question if it is not already hidden
-        if (event.key === "Esc" || event.key === "Escape") {
-          const menuHidden = dropdownMenuContainer.classList.contains("hidden");
-          const clickoutHidden = dropdownClickout.classList.contains("hidden");
-          if (displayTemporary) {
-            // dropdown button is temporary, remove it and its corresponding elements
-            if (
-              !dropdownButton.classList.contains("hidden") &&
-              !menuHidden &&
-              !clickoutHidden
-            ) {
-              dropdownMenuContainer.remove();
-              dropdownButton.remove();
-            }
-          } else {
-            // button is NOT temporary, hide its corresponding elements if they are visible
-            if (!menuHidden && !clickoutHidden) {
-              toggleMenu();
-            }
-          }
-        }
-      },
-      displayTemporary ? { once: true } : false
-    );
+    // create an additional event listener for temporary buttons
+    if (displayTemporary) {
+      document.addEventListener("keydown", handleKeydown);
+      console.log("ADD ON TEMP BUTTON");
+    }
 
     DropdownOptions.forEach((option) => {
       const li = document.createElement("li");
@@ -105,6 +108,10 @@ export class Dropdown {
             );
           }
           toggleMenu();
+          if (dropdownMenuContainer.classList.contains("hidden")) {
+            document.removeEventListener("keydown", handleKeydown);
+            console.log("REMOVED ON CHOICE");
+          }
         });
       }
       dropdownMenuContainer.appendChild(li);
@@ -119,6 +126,9 @@ export class Dropdown {
 
   public getContainerTag() {
     return this.dropdownContainer;
+  }
+  public getDisplayTemporary() {
+    return this.getDisplayTemporary;
   }
 }
 
