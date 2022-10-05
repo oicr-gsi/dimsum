@@ -88,12 +88,21 @@ function makeQcStatusColumn(
   };
 }
 
-function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
+function makeNameColumn(
+  includeRun: boolean,
+  includeLane?: boolean
+): ColumnDefinition<Sample, void> {
   return {
     title: "Name",
     addParentContents(sample, fragment) {
       fragment.appendChild(
-        makeNameDiv(sample.name, urls.miso.sample(sample.id))
+        makeNameDiv(
+          sample.name +
+            (includeLane && sample.sequencingLane
+              ? " (L" + sample.sequencingLane + ")"
+              : ""),
+          urls.miso.sample(sample.id)
+        )
       );
       if (includeRun && sample.run) {
         const runName = sample.run.name;
@@ -241,9 +250,35 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   },
 };
 
+// ORIGINAL
+// export function getLibraryQualificationsDefinition(
+//   queryUrl: string,
+//   includeSequencingAttributes: boolean
+// ): TableDefinition<Sample, void> {
+//   return {
+//     queryUrl: queryUrl,
+//     defaultSort: defaultSort,
+//     generateColumns(data) {
+//       const columns: ColumnDefinition<Sample, void>[] = [
+//         makeQcStatusColumn(includeSequencingAttributes),
+//         makeNameColumn(includeSequencingAttributes),
+//         tissueAttributesColumn,
+//         designColumn,
+//         ...generateMetricColumns("LIBRARY_QUALIFICATION", data),
+//         latestActivityColumn,
+//       ];
+//       if (includeSequencingAttributes) {
+//         columns.splice(4, 0, sequencingAttributesColumn);
+//       }
+//       return columns;
+//     },
+//   };
+// }
+
 export function getLibraryQualificationsDefinition(
   queryUrl: string,
-  includeSequencingAttributes: boolean
+  includeSequencingAttributes: boolean,
+  includeLane?: boolean
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
@@ -251,7 +286,7 @@ export function getLibraryQualificationsDefinition(
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
-        makeNameColumn(includeSequencingAttributes),
+        makeNameColumn(includeSequencingAttributes, includeLane),
         tissueAttributesColumn,
         designColumn,
         ...generateMetricColumns("LIBRARY_QUALIFICATION", data),
@@ -267,7 +302,8 @@ export function getLibraryQualificationsDefinition(
 
 export function getFullDepthSequencingsDefinition(
   queryUrl: string,
-  includeSequencingAttributes: boolean
+  includeSequencingAttributes: boolean,
+  includeLane?: boolean
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
@@ -275,7 +311,7 @@ export function getFullDepthSequencingsDefinition(
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
-        makeNameColumn(includeSequencingAttributes),
+        makeNameColumn(includeSequencingAttributes, includeLane),
         tissueAttributesColumn,
         designColumn,
         ...generateMetricColumns("FULL_DEPTH_SEQUENCING", data),

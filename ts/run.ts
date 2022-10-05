@@ -43,7 +43,8 @@ makeTable(
   "libraryQualificationsTableContainer",
   getLibraryQualificationsDefinition(
     urls.rest.runs.libraryQualifications(runName),
-    false
+    false,
+    true
   )
 );
 
@@ -51,6 +52,7 @@ makeTable(
   "fullDepthSequencingsTableContainer",
   getFullDepthSequencingsDefinition(
     urls.rest.runs.fullDepthSequencings(runName),
-    false
+    false,
+    true
   )
 );
