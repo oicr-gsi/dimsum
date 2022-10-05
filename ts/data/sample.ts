@@ -250,31 +250,6 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   },
 };
 
-// ORIGINAL
-// export function getLibraryQualificationsDefinition(
-//   queryUrl: string,
-//   includeSequencingAttributes: boolean
-// ): TableDefinition<Sample, void> {
-//   return {
-//     queryUrl: queryUrl,
-//     defaultSort: defaultSort,
-//     generateColumns(data) {
-//       const columns: ColumnDefinition<Sample, void>[] = [
-//         makeQcStatusColumn(includeSequencingAttributes),
-//         makeNameColumn(includeSequencingAttributes),
-//         tissueAttributesColumn,
-//         designColumn,
-//         ...generateMetricColumns("LIBRARY_QUALIFICATION", data),
-//         latestActivityColumn,
-//       ];
-//       if (includeSequencingAttributes) {
-//         columns.splice(4, 0, sequencingAttributesColumn);
-//       }
-//       return columns;
-//     },
-//   };
-// }
-
 export function getLibraryQualificationsDefinition(
   queryUrl: string,
   includeSequencingAttributes: boolean,
