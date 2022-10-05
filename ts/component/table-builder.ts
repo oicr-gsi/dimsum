@@ -340,7 +340,9 @@ export class TableBuilder<ParentType, ChildType> {
       const filterSuboptionsDropdown = new Dropdown(
         filterSuboptions,
         true,
-        filter.title
+        filter.title,
+        undefined,
+        true
       );
       filterContainer.insertBefore(
         filterSuboptionsDropdown.getContainerTag(),

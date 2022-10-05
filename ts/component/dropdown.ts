@@ -32,7 +32,8 @@ export class Dropdown {
     DropdownOptions: DropdownOption[],
     displaySelection: boolean,
     displayLabel?: string,
-    defaultOption?: string
+    defaultOption?: string,
+    displayTemporary?: boolean
   ) {
     this.dropdownContainer = document.createElement("div");
     this.dropdownContainer.classList.add("inline-block");
@@ -72,7 +73,7 @@ export class Dropdown {
               displayLabel,
               option.text
             );
-            if (displayLabel) {
+            if (displayLabel && displayTemporary) {
               const nextUrl = `${displayLabel.replace(
                 " ",
                 "+"
