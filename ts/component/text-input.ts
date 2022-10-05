@@ -30,19 +30,26 @@ export class TextInput {
     submitIcon.classList.add("text-black", "hover:text-green", "relative");
     const submitTextInput = () => {
       if (this.textField.value) {
-        textInputClickout.classList.toggle("hidden");
+        // can submit entered text
         onClose(this);
+        // remove event listeners for submission and esc
+        this.textField.removeEventListener("keypress", handleSubmit);
+        textInputClickout.remove(); // remove clickout
+        document.removeEventListener("keydown", handleEsc);
       } else {
         this.textField.focus();
       }
     };
 
-    submitIcon.onclick = submitTextInput;
-    this.textField.addEventListener("keypress", (event) => {
+    var handleSubmit = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         submitTextInput();
       }
-    });
+    };
+
+    submitIcon.onclick = submitTextInput;
+    this.textField.addEventListener("keypress", handleSubmit);
+
     this.textField.addEventListener("input", () => {
       this.styleValidity();
       this.textField.setAttribute(
@@ -59,21 +66,23 @@ export class TextInput {
       }
     });
 
-    var handleKeydown = (event: KeyboardEvent) => {
+    var handleEsc = (event: KeyboardEvent) => {
       // only remove the text input box in question if it is not already hidden
       if (event.key === "Esc" || event.key === "Escape") {
         // remove text input field corresponding elements if they are visible
         this.container.remove();
-        document.removeEventListener("keydown", handleKeydown);
+        this.textField.removeEventListener("keypress", handleSubmit);
+        document.removeEventListener("keydown", handleEsc);
       }
     };
     // close text input field by clicking outside or hitting esc
     textInputClickout.onclick = () => {
       this.container.remove();
-      document.removeEventListener("keydown", handleKeydown);
+      this.textField.removeEventListener("keypress", handleSubmit);
+      document.removeEventListener("keydown", handleEsc);
     };
 
-    document.addEventListener("keydown", handleKeydown);
+    document.addEventListener("keydown", handleEsc);
 
     this.container.append(label);
     this.container.appendChild(this.textField);
