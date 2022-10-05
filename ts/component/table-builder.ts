@@ -11,8 +11,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
-import { removeUrlParam } from "../util/urls";
-import { JSDocContainer } from "typescript";
+import { removeUrlParam, getBaseUrl } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -92,7 +91,7 @@ class AcceptedFilter {
       window.history.replaceState(
         nextState,
         nextTitle,
-        window.location.origin + removeUrlParam(key, value)
+        getBaseUrl() + removeUrlParam(key, value)
       );
     };
     this.element.appendChild(destroyFilterIcon);

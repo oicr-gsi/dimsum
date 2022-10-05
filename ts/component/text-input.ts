@@ -1,5 +1,5 @@
 import { makeClickout, makeIcon } from "../util/html-utils";
-import { appendUrlParam } from "../util/urls";
+import { appendUrlParam, getBaseUrl } from "../util/urls";
 import { get } from "../util/requests";
 
 export class TextInput {
@@ -47,7 +47,7 @@ export class TextInput {
         window.history.replaceState(
           nextState,
           nextTitle,
-          window.location.origin + appendUrlParam(title, this.textField.value)
+          getBaseUrl() + appendUrlParam(title, this.textField.value)
         );
         onClose(this);
       } else {

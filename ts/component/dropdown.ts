@@ -1,5 +1,5 @@
 import { makeClickout, makeIcon } from "../util/html-utils";
-import { appendUrlParam } from "../util/urls";
+import { appendUrlParam, getBaseUrl } from "../util/urls";
 
 export interface DropdownOption {
   selectable: boolean;
@@ -87,8 +87,7 @@ export class Dropdown {
               window.history.replaceState(
                 nextState,
                 nextTitle,
-                window.location.origin +
-                  appendUrlParam(displayLabel, option.text)
+                getBaseUrl() + appendUrlParam(displayLabel, option.text)
               );
             }
           }

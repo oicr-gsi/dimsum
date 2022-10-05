@@ -87,9 +87,18 @@ export function makeDashiRunUrl(report: string, runName: string) {
   return `${siteConfig.dashiUrl}/${report}?run=${runName}`;
 }
 
+export function getBaseUrl() {
+  var url = new URL(window.location.href).toString();
+  var query = url.indexOf("?", 0);
+  if (query == -1) {
+    return url;
+  } else {
+    return url.split("?").at(0);
+  }
+}
+
 // append url param to current url
 export function appendUrlParam(key: string, value: string) {
-  console.log(`ADDING URL OPTION (key, value): (${key}, ${value})`);
   var params = new URL(document.location.href).searchParams;
   params.append(key, value);
   return `?${params.toString()}`;
@@ -97,17 +106,7 @@ export function appendUrlParam(key: string, value: string) {
 
 // remove url param from current url
 export function removeUrlParam(key: string, value: string) {
-  // TODO: when for e.g. the page size, we don't want to append more and
-  // more page sizes. find way to simply change the items listed number
-  // rather than keep appending params
-  console.log(`REMOVING URL OPTION (key, value): (${key}, ${value})`);
   var params = new URL(document.location.href).searchParams;
-
-  console.log("BEFORE REMOVAL");
-  params.forEach((k, v) => {
-    console.log(`${k}, ${v}`);
-  });
-
   var newParams = new URLSearchParams();
   var paramCount = 0;
   for (const [k, v] of params.entries()) {
@@ -117,13 +116,6 @@ export function removeUrlParam(key: string, value: string) {
       ++paramCount;
     }
   }
-
-  console.log("AFTER REMOVAL");
-  newParams.forEach((k, v) => {
-    console.log(`${k}, ${v}`);
-  });
-  console.log(`paramCount: ${paramCount}`);
-
   if (paramCount > 0) {
     return `?${newParams.toString()}`;
   }
