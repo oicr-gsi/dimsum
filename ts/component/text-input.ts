@@ -20,14 +20,21 @@ export class TextInput {
     label.innerHTML = `${title}:`;
     const submitIcon = makeIcon("check");
     const textInputClickout = makeClickout();
+    textInputClickout.classList.add("z-10");
     textInputClickout.classList.toggle("hidden");
 
     this.container.className =
       "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2";
     this.textField.className =
-      "ring-0 border-0 outline-0 rounded-sm relative px-1 min-w-[150px]";
+      "ring-0 border-0 outline-0 rounded-sm relative px-1 min-w-[150px] z-40";
     this.textField.setAttribute("size", "10");
-    submitIcon.classList.add("text-black", "hover:text-green", "relative");
+    submitIcon.classList.add(
+      "text-black",
+      "hover:text-green",
+      "relative",
+      "z-40"
+    );
+
     const submitTextInput = () => {
       if (this.textField.value) {
         onClose(this);
