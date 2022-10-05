@@ -260,7 +260,7 @@ public class CaseService {
       if (newData != null) {
         caseData = newData;
         updateFrontEndConfig();
-        notificationManager.update(newData.getRunsAndLibrariesByName());
+        notificationManager.update(newData.getRunsAndLibrariesByName(), newData.getAssaysById());
       }
     } catch (Exception e) {
       refreshFailures++;
