@@ -12,6 +12,7 @@ import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
 import { removeUrlParam } from "../util/urls";
+import { JSDocContainer } from "typescript";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -64,7 +65,6 @@ class AcceptedFilter {
   valid: boolean = true;
 
   constructor(title: string, key: string, value: string, onRemove: () => {}) {
-    console.log("CONSTRUCTING: " + key + " || " + value);
     this.key = key;
     this.value = value;
     this.element = document.createElement("span");
@@ -140,26 +140,16 @@ export class TableBuilder<ParentType, ChildType> {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
 
-    // prior to (re)loading the columns, fetch and apply search params
+    this.addSortControls(topControlsContainer);
+    // prior to loading the filter controls, fetch search params
     const params = new URL(document.location.href).searchParams;
-
-    console.log("DEBUG----------------------------------------");
     params.forEach((value, key) => {
-      console.log(
-        "title: " +
-          key +
-          " || key: " +
-          key.toUpperCase() +
-          " || value: " +
-          value
-      );
+      const reload = () => this.reload();
       this.acceptedFilters.push(
-        new AcceptedFilter(key, key.toUpperCase(), value, this.reload)
+        new AcceptedFilter(key, key.toUpperCase(), value, reload)
       );
     });
-
-    this.addSortControls(topControlsContainer);
-    this.addFilterControls(topControlsContainer);
+    this.addFilterControls(topControlsContainer, this.acceptedFilters);
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);
     const tableContainer = document.createElement("div");
@@ -265,7 +255,10 @@ export class TableBuilder<ParentType, ChildType> {
     }
   }
 
-  private addFilterControls(container: HTMLElement) {
+  private addFilterControls(
+    container: HTMLElement,
+    acceptedFilters: AcceptedFilter[]
+  ) {
     const filterContainer = document.createElement("div");
     filterContainer.classList.add("flex-auto", "items-center", "space-x-2");
     container.appendChild(filterContainer);
@@ -278,6 +271,11 @@ export class TableBuilder<ParentType, ChildType> {
     filterIcon.title = "Filter";
     filterIcon.classList.add("text-black");
     filterContainer.appendChild(filterIcon);
+
+    // add pre-table build filters
+    for (var filter of acceptedFilters) {
+      filterContainer.appendChild(filter.element);
+    }
 
     let filterOptions: DropdownOption[] = [];
     const reload = () => this.reload();
