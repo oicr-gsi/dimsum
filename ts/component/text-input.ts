@@ -30,25 +30,19 @@ export class TextInput {
     submitIcon.classList.add("text-black", "hover:text-green", "relative");
     const submitTextInput = () => {
       if (this.textField.value) {
-        // can submit entered text
         onClose(this);
-        // remove event listeners for submission and esc
-        this.textField.removeEventListener("keypress", handleSubmit);
-        textInputClickout.remove(); // remove clickout
         document.removeEventListener("keydown", handleEsc);
       } else {
         this.textField.focus();
       }
     };
 
-    var handleSubmit = (event: KeyboardEvent) => {
+    submitIcon.onclick = submitTextInput;
+    this.textField.addEventListener("keypress", (event) => {
       if (event.key === "Enter") {
         submitTextInput();
       }
-    };
-
-    submitIcon.onclick = submitTextInput;
-    this.textField.addEventListener("keypress", handleSubmit);
+    });
 
     this.textField.addEventListener("input", () => {
       this.styleValidity();
@@ -71,14 +65,12 @@ export class TextInput {
       if (event.key === "Esc" || event.key === "Escape") {
         // remove text input field corresponding elements if they are visible
         this.container.remove();
-        this.textField.removeEventListener("keypress", handleSubmit);
         document.removeEventListener("keydown", handleEsc);
       }
     };
     // close text input field by clicking outside or hitting esc
     textInputClickout.onclick = () => {
       this.container.remove();
-      this.textField.removeEventListener("keypress", handleSubmit);
       document.removeEventListener("keydown", handleEsc);
     };
 
