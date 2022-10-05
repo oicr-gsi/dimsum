@@ -57,7 +57,7 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
               addText(fragment, "Full-Depth Sequencing");
               break;
             default:
-              addText(fragment, "unknwon/error");
+              addText(fragment, "unknown/error");
           }
         },
       },
