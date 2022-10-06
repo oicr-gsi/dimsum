@@ -7,6 +7,7 @@ import {
 import { siteConfig } from "../util/site-config";
 import {
   ColumnDefinition,
+  legendAction,
   SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
@@ -177,6 +178,7 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
     return [
       makeQcStatusColumn(false),
@@ -213,6 +215,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns(data) {
     return [
       makeQcStatusColumn(false),
@@ -235,6 +238,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns(data) {
     return [
       makeQcStatusColumn(false),
@@ -254,6 +258,7 @@ export function getLibraryQualificationsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: defaultSort,
+    staticActions: [legendAction],
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
@@ -278,6 +283,7 @@ export function getFullDepthSequencingsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: defaultSort,
+    staticActions: [legendAction],
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
