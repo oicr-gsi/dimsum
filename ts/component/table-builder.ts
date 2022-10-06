@@ -45,6 +45,11 @@ export interface FilterDefinition {
   autocompleteUrl?: string; // required for text filters w/autocomplete
 }
 
+export interface StaticAction {
+  title: string;
+  handler: () => void;
+}
+
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   defaultSort: SortDefinition;
@@ -54,6 +59,7 @@ export interface TableDefinition<ParentType, ChildType> {
     data?: ParentType[]
   ) => ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
+  staticActions?: StaticAction[];
 }
 
 class AcceptedFilter {
@@ -162,7 +168,24 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addActionButtons(container: HTMLElement) {
-    this.addLegendControls(container);
+    if (this.definition.staticActions) {
+      this.definition.staticActions.forEach((action) => {
+        this.addActionButton(container, action.title, action.handler);
+      });
+    }
+  }
+
+  private addActionButton(
+    container: HTMLElement,
+    title: string,
+    handler: () => void
+  ) {
+    const button = document.createElement("button");
+    button.className =
+      "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
+    button.innerText = title;
+    button.onclick = handler;
+    container.appendChild(button);
   }
 
   private addSortControls(container: HTMLElement) {
@@ -401,15 +424,6 @@ export class TableBuilder<ParentType, ChildType> {
     };
   }
 
-  private addLegendControls(container: HTMLElement) {
-    const legendButton = document.createElement("button");
-    legendButton.className =
-      "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
-    legendButton.innerHTML = "Legend";
-    legendButton.onclick = toggleLegend;
-    container.appendChild(legendButton);
-  }
-
   private load(data?: ParentType[]) {
     this.columns = this.definition.generateColumns(data);
     const table = getElement(this.table);
@@ -613,3 +627,8 @@ function getElement<Type>(element?: Type) {
     throw new Error("Missing element");
   }
 }
+
+export const legendAction: StaticAction = {
+  title: "Legend",
+  handler: toggleLegend,
+};

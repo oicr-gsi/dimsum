@@ -1,4 +1,4 @@
-import { TableDefinition } from "../component/table-builder";
+import { legendAction, TableDefinition } from "../component/table-builder";
 import { makeIcon, makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { Run } from "./case";
@@ -20,6 +20,7 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
     descending: true,
     type: "date",
   },
+  staticActions: [legendAction],
   generateColumns(data) {
     return [
       {
