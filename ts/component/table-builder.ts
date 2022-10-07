@@ -1,5 +1,4 @@
 import { Dropdown, DropdownOption, BasicDropdownOption } from "./dropdown";
-
 import {
   makeCell,
   addColumnHeader,
@@ -11,7 +10,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
-import { removeUrlParam, getBaseUrl } from "../util/urls";
+import { appendUrlParam, removeUrlParam, getBaseUrl } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -326,6 +325,19 @@ export class TableBuilder<ParentType, ChildType> {
             filterContainer.lastChild
           );
           this.acceptedFilters.push(filterLabel);
+          // append chosen filter option to url
+          const uriEncode = encodeURIComponent(filter.key);
+          const nextState = {
+            info: `update url: append ${uriEncode}`,
+          };
+          const nextTitle = `update page: append ${uriEncode}`;
+          // pushState will create a new entry in the browser's history, without reloading
+          // append filters to url as appropriate
+          window.history.replaceState(
+            nextState,
+            nextTitle,
+            getBaseUrl() + appendUrlParam(filter.title, value)
+          );
           reload();
         })
     );
