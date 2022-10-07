@@ -88,13 +88,7 @@ export function makeDashiRunUrl(report: string, runName: string) {
 }
 
 export function getBaseUrl() {
-  var url = new URL(window.location.href).toString();
-  var query = url.indexOf("?", 0);
-  if (query == -1) {
-    return url;
-  } else {
-    return url.split("?").at(0);
-  }
+  return window.location.origin + window.location.pathname;
 }
 
 // append url param to current url

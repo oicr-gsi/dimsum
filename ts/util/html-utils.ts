@@ -1,5 +1,3 @@
-import { textSpanContainsPosition } from "typescript";
-
 // adds a header cell to a table header
 export function addColumnHeader(
   thead: HTMLTableRowElement,

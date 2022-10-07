@@ -148,7 +148,7 @@ export class TableBuilder<ParentType, ChildType> {
         new AcceptedFilter(key, key.toUpperCase(), value, reload)
       );
     });
-    this.addFilterControls(topControlsContainer, this.acceptedFilters);
+    this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);
     const tableContainer = document.createElement("div");
@@ -254,10 +254,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
   }
 
-  private addFilterControls(
-    container: HTMLElement,
-    acceptedFilters: AcceptedFilter[]
-  ) {
+  private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
     filterContainer.classList.add("flex-auto", "items-center", "space-x-2");
     container.appendChild(filterContainer);
@@ -272,7 +269,7 @@ export class TableBuilder<ParentType, ChildType> {
     filterContainer.appendChild(filterIcon);
 
     // add pre-table build filters
-    for (var filter of acceptedFilters) {
+    for (var filter of this.acceptedFilters) {
       filterContainer.appendChild(filter.element);
     }
 
@@ -489,7 +486,6 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private async reload() {
-    console.log("RELOADING...");
     this.showLoading();
     this.acceptedFilters = this.acceptedFilters.filter(
       (filter) => filter.valid

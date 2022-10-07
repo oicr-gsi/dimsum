@@ -74,14 +74,12 @@ export class Dropdown {
               option.text
             );
             if (displayLabel && displayTemporary) {
-              const nextUrl = `${displayLabel.replace(
-                " ",
-                "+"
-              )}=${option.text.replace(" ", "+")}`;
+              // append param to url
+              const uriEncode = encodeURIComponent(option.text);
               const nextState = {
-                info: `update url: append ${nextUrl}`,
+                info: `update url: append ${uriEncode}`,
               };
-              const nextTitle = `update page: append ${nextUrl}`;
+              const nextTitle = `update page: append ${uriEncode}`;
               // pushState will create a new entry in the browser's history, without reloading
               // append filters to url as appropriate
               window.history.replaceState(

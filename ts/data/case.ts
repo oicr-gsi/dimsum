@@ -1,4 +1,4 @@
-import { SortDefinition, TableDefinition } from "../component/table-builder";
+import { TableDefinition } from "../component/table-builder";
 import {
   addLink,
   makeIcon,

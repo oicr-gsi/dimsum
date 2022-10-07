@@ -14,6 +14,16 @@ import {
 import { TableBuilder } from "./component/table-builder";
 import { urls } from "./util/urls";
 
+// // parse params
+// // prior to loading the filter controls, fetch search params
+// const params = new URL(document.location.href).searchParams;
+// params.forEach((value, key) => {
+//   const reload = () => this.reload();
+//   this.acceptedFilters.push(
+//     new AcceptedFilter(key, key.toUpperCase(), value, reload)
+//   );
+// });
+
 new TableBuilder(caseDefinition, "casesTableContainer").build();
 new TableBuilder(receiptDefinition, "receiptsTableContainer").build();
 new TableBuilder(extractionDefinition, "extractionsTableContainer").build();

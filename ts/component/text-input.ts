@@ -34,14 +34,11 @@ export class TextInput {
       if (this.textField.value) {
         textInputClickout.classList.toggle("hidden");
         // append param to url
-        const nextUrl = `${title.replace(
-          " ",
-          "+"
-        )}=${this.textField.value.replace(" ", "+")}`;
+        const uriEncode = encodeURIComponent(this.textField.value);
         const nextState = {
-          info: `update url: append ${nextUrl}`,
+          info: `update url: append ${uriEncode}`,
         };
-        const nextTitle = `update page: append ${nextUrl}`;
+        const nextTitle = `update page: append ${uriEncode}`;
         // pushState will create a new entry in the browser's history, without reloading
         // append filters to url as appropriate
         window.history.replaceState(
