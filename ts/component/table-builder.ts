@@ -50,6 +50,11 @@ export interface StaticAction {
   handler: () => void;
 }
 
+export interface BulkAction<ParentType> {
+  title: string;
+  handler: (items: Set<ParentType>) => void;
+}
+
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   defaultSort: SortDefinition;
@@ -60,6 +65,7 @@ export interface TableDefinition<ParentType, ChildType> {
   ) => ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
   staticActions?: StaticAction[];
+  bulkActions?: BulkAction<ParentType>[];
 }
 
 class AcceptedFilter {
@@ -111,6 +117,9 @@ export class TableBuilder<ParentType, ChildType> {
   baseFilterKey: string | null;
   baseFilterValue: string | null;
   acceptedFilters: AcceptedFilter[] = [];
+  allItems: ParentType[] = [];
+  selectedItems: Set<ParentType> = new Set<ParentType>();
+  selectAllCheckbox?: HTMLInputElement;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
@@ -158,7 +167,7 @@ export class TableBuilder<ParentType, ChildType> {
 
     const bottomControlsContainer = document.createElement("div");
     bottomControlsContainer.className =
-      "flex flex-row-reverse mt-4 items-top space-x-2";
+      "flex justify-end mt-4 items-top space-x-2";
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
 
@@ -168,6 +177,13 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addActionButtons(container: HTMLElement) {
+    if (this.definition.bulkActions) {
+      this.definition.bulkActions.forEach((action) => {
+        this.addActionButton(container, action.title, () => {
+          action.handler(this.selectedItems);
+        });
+      });
+    }
     if (this.definition.staticActions) {
       this.definition.staticActions.forEach((action) => {
         this.addActionButton(container, action.title, action.handler);
@@ -430,15 +446,53 @@ export class TableBuilder<ParentType, ChildType> {
     table.replaceChildren();
     this.addTableHead(table);
     this.addTableBody(table, data);
+    this.allItems = data || [];
+    this.selectedItems = new Set<ParentType>();
   }
 
   private addTableHead(table: HTMLTableElement) {
     this.thead = table.createTHead();
     this.thead.className = "relative";
     const row = this.thead.insertRow();
+    if (this.definition.bulkActions) {
+      this.addSelectAllHeader(row);
+    } else {
+      this.selectAllCheckbox = undefined;
+    }
     this.columns.forEach((column, i) => {
-      addColumnHeader(row, column.title, i);
+      addColumnHeader(
+        row,
+        column.title,
+        i == 0 && !this.definition.bulkActions
+      );
     });
+  }
+
+  private addSelectAllHeader(thead: HTMLTableRowElement) {
+    const th = document.createElement("th");
+    th.className =
+      "p-4 text-white font-semibold bg-grey-300 text-left align-text-top";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.onchange = (event) => {
+      this.toggleSelectAll(checkbox.checked);
+    };
+    this.selectAllCheckbox = checkbox;
+    th.appendChild(checkbox);
+    thead.appendChild(th);
+  }
+
+  private toggleSelectAll(select: boolean) {
+    if (select) {
+      this.allItems.forEach((item) => this.selectedItems.add(item));
+    } else {
+      this.selectedItems = new Set<ParentType>();
+    }
+    const rowSelects = this.container.getElementsByClassName("row-select");
+    Array.prototype.forEach.call(
+      rowSelects,
+      (rowSelect) => (rowSelect.checked = select)
+    );
   }
 
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
@@ -521,19 +575,21 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {
-    // TODO: keep track of "hideIfEmpty" columns
     let children: ChildType[] = [];
     if (this.definition.getChildren) {
       children = this.definition.getChildren(parent);
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = this.addBodyRow(tbody, parent);
+    if (this.definition.bulkActions) {
+      this.addRowSelectCell(tr, parent);
+    }
     this.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
           this.addChildCell(tr, column, children[0], parent, i);
         } else {
-          const td = makeCell(tr, i);
+          const td = makeCell(tr, i == 0 && !this.definition.bulkActions);
           shadeElement(td, "na");
           td.appendChild(document.createTextNode("N/A"));
         }
@@ -568,10 +624,28 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addNoDataRow(tbody: HTMLTableSectionElement) {
     const row = tbody.insertRow();
-    const cell = makeCell(row, 0);
-    cell.colSpan = this.columns.length;
+    const cell = makeCell(row, true);
+    cell.colSpan = this.columns.length + (this.definition.bulkActions ? 1 : 0);
     cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
+  }
+
+  private addRowSelectCell(tr: HTMLTableRowElement, item: ParentType) {
+    const td = makeCell(tr, true);
+    const checkbox = document.createElement("input");
+    checkbox.className = "row-select";
+    checkbox.type = "checkbox";
+    checkbox.onchange = (event) => {
+      if (checkbox.checked) {
+        this.selectedItems.add(item);
+      } else {
+        if (this.selectAllCheckbox) {
+          this.selectAllCheckbox.checked = false;
+          this.selectedItems.delete(item);
+        }
+      }
+    };
+    td.appendChild(checkbox);
   }
 
   private addParentCell(
@@ -586,7 +660,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as parent, but doesn't define addParentContents`
       );
     }
-    const td = makeCell(tr, index);
+    const td = makeCell(tr, index == 0 && !this.definition.bulkActions);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, null));
     }
@@ -610,7 +684,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as child, but doesn't define getChildContents`
       );
     }
-    const td = makeCell(tr, index);
+    const td = makeCell(tr, index == 0 && !this.definition.bulkActions);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, child));
     }

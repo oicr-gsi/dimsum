@@ -736,10 +736,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   flex-direction: row;
 }
 
-.flex-row-reverse{
-  flex-direction: row-reverse;
-}
-
 .flex-col{
   flex-direction: column;
 }
@@ -750,6 +746,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .items-center{
   align-items: center;
+}
+
+.justify-end{
+  justify-content: flex-end;
 }
 
 .gap-2{
