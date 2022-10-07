@@ -375,6 +375,19 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
       this.acceptedFilters.push(filterLabel);
+      // append param to url
+      const uriEncode = encodeURIComponent(filter.title);
+      const nextState = {
+        info: `update url: append ${uriEncode}`,
+      };
+      const nextTitle = `update page: append ${uriEncode}`;
+      // pushState will create a new entry in the browser's history, without reloading
+      // append filters to url as appropriate
+      window.history.replaceState(
+        nextState,
+        nextTitle,
+        getBaseUrl() + appendUrlParam(filter.title, textInput.getValue())
+      );
       reload();
     };
     return new BasicDropdownOption(filter.title, () => {

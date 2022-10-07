@@ -33,19 +33,6 @@ export class TextInput {
     const submitTextInput = () => {
       if (this.textField.value) {
         textInputClickout.classList.toggle("hidden");
-        // append param to url
-        const uriEncode = encodeURIComponent(this.textField.value);
-        const nextState = {
-          info: `update url: append ${uriEncode}`,
-        };
-        const nextTitle = `update page: append ${uriEncode}`;
-        // pushState will create a new entry in the browser's history, without reloading
-        // append filters to url as appropriate
-        window.history.replaceState(
-          nextState,
-          nextTitle,
-          getBaseUrl() + appendUrlParam(title, this.textField.value)
-        );
         onClose(this);
       } else {
         this.textField.focus();
