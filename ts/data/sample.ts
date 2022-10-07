@@ -88,17 +88,14 @@ function makeQcStatusColumn(
   };
 }
 
-function makeNameColumn(
-  includeRun: boolean,
-  includeLane?: boolean
-): ColumnDefinition<Sample, void> {
+function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   return {
     title: "Name",
     addParentContents(sample, fragment) {
       fragment.appendChild(
         makeNameDiv(
           sample.name +
-            (includeLane && sample.sequencingLane
+            (!includeRun && sample.sequencingLane
               ? " (L" + sample.sequencingLane + ")"
               : ""),
           urls.miso.sample(sample.id)
@@ -252,8 +249,7 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
 
 export function getLibraryQualificationsDefinition(
   queryUrl: string,
-  includeSequencingAttributes: boolean,
-  includeLane?: boolean
+  includeSequencingAttributes: boolean
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
@@ -261,7 +257,7 @@ export function getLibraryQualificationsDefinition(
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
-        makeNameColumn(includeSequencingAttributes, includeLane),
+        makeNameColumn(includeSequencingAttributes),
         tissueAttributesColumn,
         designColumn,
         ...generateMetricColumns("LIBRARY_QUALIFICATION", data),
@@ -277,8 +273,7 @@ export function getLibraryQualificationsDefinition(
 
 export function getFullDepthSequencingsDefinition(
   queryUrl: string,
-  includeSequencingAttributes: boolean,
-  includeLane?: boolean
+  includeSequencingAttributes: boolean
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
@@ -286,7 +281,7 @@ export function getFullDepthSequencingsDefinition(
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
-        makeNameColumn(includeSequencingAttributes, includeLane),
+        makeNameColumn(includeSequencingAttributes),
         tissueAttributesColumn,
         designColumn,
         ...generateMetricColumns("FULL_DEPTH_SEQUENCING", data),
