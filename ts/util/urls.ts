@@ -1,6 +1,5 @@
 import { siteConfig } from "./site-config";
 import { toTitleCase } from "./html-utils";
-import { StringMappingType } from "typescript";
 
 const restBaseUrl = "/rest";
 
@@ -114,4 +113,19 @@ export function removeUrlParam(key: string, value: string) {
     return `?${newParams.toString()}`;
   }
   return `${newParams.toString()}`;
+}
+
+// update the current url search params (add or remove as specified)
+export function updateUrlParams(key: string, value: string, add?: boolean) {
+  // append chosen filter option to url
+  const uriEncode = encodeURIComponent(key);
+  var info = "update page: " + (add ? "append " : "remove ") + uriEncode;
+  const nextState = { info: info };
+  const nextTitle = info;
+  window.history.replaceState(
+    nextState,
+    nextTitle,
+    getBaseUrl() +
+      (add ? appendUrlParam(key, value) : removeUrlParam(key, value))
+  );
 }

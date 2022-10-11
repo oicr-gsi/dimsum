@@ -10,7 +10,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
-import { appendUrlParam, removeUrlParam, getBaseUrl } from "../util/urls";
+import { updateUrlParams } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -81,17 +81,7 @@ class AcceptedFilter {
       this.valid = false;
       this.element.remove();
       onRemove();
-      // replace spaces in filter and options with %
-      const nextUrl = `${key.replace(" ", "%")}=${value.replace(" ", "%")}`;
-      const nextState = {
-        info: `update url: remove ${nextUrl}`,
-      };
-      const nextTitle = `update page: remove ${nextUrl}`;
-      window.history.replaceState(
-        nextState,
-        nextTitle,
-        getBaseUrl() + removeUrlParam(key, value)
-      );
+      updateUrlParams(key, value, false);
     };
     this.element.appendChild(destroyFilterIcon);
   }
@@ -116,10 +106,13 @@ export class TableBuilder<ParentType, ChildType> {
   baseFilterKey: string | null;
   baseFilterValue: string | null;
   acceptedFilters: AcceptedFilter[] = [];
+  onFilterChange?: Function;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
-    containerId: string
+    containerId: string,
+    searchParams?: Map<string, string>,
+    onFilterChange?: Function
   ) {
     this.definition = definition;
     this.sortColumn = definition.defaultSort.columnTitle;
@@ -130,6 +123,24 @@ export class TableBuilder<ParentType, ChildType> {
     }
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
+    if (searchParams) {
+      searchParams.forEach((value, key) => {
+        // parse url search params and check for a matching key in table definition
+        if (
+          this.definition.filters?.find((f) => {
+            return f.title === key;
+          })
+        ) {
+          // create accepted filter if there is a matching key in table definition
+          this.acceptedFilters.push(
+            new AcceptedFilter(key, key.toUpperCase(), value, () =>
+              this.reload()
+            )
+          );
+        }
+      });
+    }
+    if (onFilterChange) this.onFilterChange = onFilterChange;
     this.container = container;
     this.columns = definition.generateColumns();
   }
@@ -139,14 +150,13 @@ export class TableBuilder<ParentType, ChildType> {
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
 
     this.addSortControls(topControlsContainer);
-    // prior to loading the filter controls, fetch search params
-    const params = new URL(document.location.href).searchParams;
-    params.forEach((value, key) => {
-      const reload = () => this.reload();
-      this.acceptedFilters.push(
-        new AcceptedFilter(key, key.toUpperCase(), value, reload)
-      );
-    });
+    // // prior to loading the filter controls, fetch search params
+    // const params = new URL(document.location.href).searchParams;
+    // params.forEach((value, key) => {
+    //   this.acceptedFilters.push(
+    //     new AcceptedFilter(key, key.toUpperCase(), value, () => this.reload())
+    //   );
+    // });
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);
@@ -325,19 +335,9 @@ export class TableBuilder<ParentType, ChildType> {
             filterContainer.lastChild
           );
           this.acceptedFilters.push(filterLabel);
-          // append chosen filter option to url
-          const uriEncode = encodeURIComponent(filter.key);
-          const nextState = {
-            info: `update url: append ${uriEncode}`,
-          };
-          const nextTitle = `update page: append ${uriEncode}`;
-          // pushState will create a new entry in the browser's history, without reloading
-          // append filters to url as appropriate
-          window.history.replaceState(
-            nextState,
-            nextTitle,
-            getBaseUrl() + appendUrlParam(filter.title, value)
-          );
+          if (this.onFilterChange) {
+            this.onFilterChange(filter.title, value, true);
+          }
           reload();
         })
     );
@@ -375,19 +375,9 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
       this.acceptedFilters.push(filterLabel);
-      // append param to url
-      const uriEncode = encodeURIComponent(filter.title);
-      const nextState = {
-        info: `update url: append ${uriEncode}`,
-      };
-      const nextTitle = `update page: append ${uriEncode}`;
-      // pushState will create a new entry in the browser's history, without reloading
-      // append filters to url as appropriate
-      window.history.replaceState(
-        nextState,
-        nextTitle,
-        getBaseUrl() + appendUrlParam(filter.title, textInput.getValue())
-      );
+      if (this.onFilterChange) {
+        this.onFilterChange(filter.title, textInput.getValue(), true);
+      }
       reload();
     };
     return new BasicDropdownOption(filter.title, () => {
