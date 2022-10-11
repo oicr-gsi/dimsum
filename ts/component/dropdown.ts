@@ -46,6 +46,7 @@ export class Dropdown {
     dropdownButton.appendChild(makeIcon("caret-down"));
 
     const dropdownClickout = makeClickout();
+    dropdownClickout.classList.add("z-10");
     const dropdownMenuContainer = makeDropdownMenuContainer();
     const toggleMenu = () => {
       dropdownMenuContainer.classList.toggle("hidden");

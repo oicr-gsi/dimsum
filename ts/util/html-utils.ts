@@ -98,7 +98,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
 export function makeClickout() {
   const clickout = document.createElement("button");
   clickout.className =
-    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden z-10";
+    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
   return clickout;
 }
 

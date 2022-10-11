@@ -20,7 +20,7 @@ export class TextInput {
     label.innerHTML = `${title}:`;
     const submitIcon = makeIcon("check");
     const textInputClickout = makeClickout();
-    textInputClickout.classList.add("z-10");
+    textInputClickout.classList.add("absolute", "z-10");
     textInputClickout.classList.toggle("hidden");
 
     this.container.className =
@@ -34,6 +34,7 @@ export class TextInput {
       "relative",
       "z-40"
     );
+    label.classList.add("relative", "z-40");
 
     const submitTextInput = () => {
       if (this.textField.value) {
