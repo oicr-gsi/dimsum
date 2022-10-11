@@ -594,6 +594,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-top: 5rem;
 }
 
+.mb-2{
+  margin-bottom: 0.5rem;
+}
+
 .ml-2{
   margin-left: 0.5rem;
 }
@@ -714,6 +718,14 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .cursor-move{
   cursor: move;
+}
+
+.list-inside{
+  list-style-position: inside;
+}
+
+.list-disc{
+  list-style-type: disc;
 }
 
 .grid-flow-row{
