@@ -20,21 +20,7 @@ export class TextInput {
     label.innerHTML = `${title}:`;
     const submitIcon = makeIcon("check");
     const textInputClickout = makeClickout();
-    textInputClickout.classList.add("absolute", "z-10");
     textInputClickout.classList.toggle("hidden");
-
-    this.container.className =
-      "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2";
-    this.textField.className =
-      "ring-0 border-0 outline-0 rounded-sm relative px-1 min-w-[150px] z-40";
-    this.textField.setAttribute("size", "10");
-    submitIcon.classList.add(
-      "text-black",
-      "hover:text-green",
-      "relative",
-      "z-40"
-    );
-    label.classList.add("relative", "z-40");
 
     const submitTextInput = () => {
       if (this.textField.value) {
@@ -84,10 +70,23 @@ export class TextInput {
 
     document.addEventListener("keydown", handleEsc);
 
-    this.container.append(label);
-    this.container.appendChild(this.textField);
+    this.container.className = "inline-block flex-auto items-center";
+    var textInputContainer = document.createElement("div");
+    textInputContainer.className =
+      "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2 relative z-40";
+    this.textField.className =
+      "ring-0 border-0 outline-0 rounded-sm px-1 min-w-[150px]";
+    this.textField.setAttribute("size", "10");
+    submitIcon.classList.add("text-black", "hover:text-green");
+
+    textInputContainer.append(label);
+    textInputContainer.appendChild(this.textField);
+    textInputContainer.appendChild(submitIcon);
+    // this.container.append(label);
+    // this.container.appendChild(this.textField);
+    this.container.append(textInputContainer);
     this.container.append(this.datalist);
-    this.container.appendChild(submitIcon);
+    // this.container.appendChild(submitIcon);
     this.container.appendChild(textInputClickout);
     // wait for browser to render element before setting focus
     window.setTimeout(() => this.textField.focus(), 0);
