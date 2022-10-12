@@ -111,7 +111,7 @@ export class TableBuilder<ParentType, ChildType> {
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
     containerId: string,
-    searchParams?: Map<string, string>,
+    searchParams?: string[][],
     onFilterChange?: Function
   ) {
     this.definition = definition;
@@ -124,12 +124,16 @@ export class TableBuilder<ParentType, ChildType> {
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
     if (searchParams) {
-      searchParams.forEach((value, key) => {
+      searchParams.forEach((p) => {
         // parse url search params and check for a matching key in table definition
+        var key = p.at(0);
+        var value = p.at(1);
         if (
           this.definition.filters?.find((f) => {
             return f.title === key;
-          })
+          }) &&
+          key &&
+          value
         ) {
           // create accepted filter if there is a matching key in table definition
           this.acceptedFilters.push(

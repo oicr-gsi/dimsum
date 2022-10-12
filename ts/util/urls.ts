@@ -90,6 +90,14 @@ export function getBaseUrl() {
   return window.location.origin + window.location.pathname;
 }
 
+export function getSearchParams() {
+  var searchParams = new Array<Array<string>>();
+  new URL(document.location.href).searchParams.forEach((value, key) => {
+    searchParams.push([key, value]);
+  });
+  return searchParams;
+}
+
 // append url param to current url
 export function appendUrlParam(key: string, value: string) {
   var params = new URL(document.location.href).searchParams;
