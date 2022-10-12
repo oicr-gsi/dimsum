@@ -56,6 +56,12 @@ export const runDefinition: TableDefinition<Run, void> = {
         sortType: "date",
       },
       {
+        title: "Start Date",
+        addParentContents(run, fragment) {
+          fragment.appendChild(document.createTextNode("START DATE HERE"));
+        },
+      },
+      {
         title: "Completion Date",
         addParentContents(run, fragment) {
           if (run.completionDate) {
