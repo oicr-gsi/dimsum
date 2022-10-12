@@ -295,33 +295,7 @@ export function getLibraryQualificationsDefinition(
       {
         title: "QC in MISO",
         handler(items) {
-          const missingAssay = items
-            .filter((x) => !x.assayId)
-            .map((x) => x.name)
-            .filter((x, i, arr) => arr.indexOf(x) === i);
-          if (missingAssay.length) {
-            const list = makeList(missingAssay, (x) => x);
-            showErrorDialog("Some libraries have no assay:", list);
-            return;
-          }
-          const groups = groupByAssayAndDesign(items);
-          if (groups.size > 1) {
-            const list = makeList(items, (x, i, arr) => {
-              if (arr.indexOf(x) !== i) {
-                return null;
-              }
-              // assayId can't actually be undefined here
-              const assay = siteConfig.assaysById[x.assayId || 0];
-              return `${x.name}: ${x.libraryDesignCode}; ${assay.name}`;
-            });
-            showErrorDialog(
-              "Libraries must have the same assay and design",
-              list
-            );
-            return;
-          }
-          // There can only be one group at this point
-          groups.forEach(qcInMiso);
+          qcInMiso(items, "LIBRARY_QUALIFICATION");
         },
       },
     ],
@@ -340,6 +314,66 @@ export function getLibraryQualificationsDefinition(
       return columns;
     },
   };
+}
+
+export function getFullDepthSequencingsDefinition(
+  queryUrl: string,
+  includeSequencingAttributes: boolean
+): TableDefinition<Sample, void> {
+  return {
+    queryUrl: queryUrl,
+    defaultSort: defaultSort,
+    staticActions: [legendAction],
+    bulkActions: [
+      {
+        title: "QC in MISO",
+        handler(items) {
+          qcInMiso(items, "FULL_DEPTH_SEQUENCING");
+        },
+      },
+    ],
+    generateColumns(data) {
+      const columns: ColumnDefinition<Sample, void>[] = [
+        makeQcStatusColumn(includeSequencingAttributes),
+        makeNameColumn(includeSequencingAttributes),
+        tissueAttributesColumn,
+        designColumn,
+        ...generateMetricColumns("FULL_DEPTH_SEQUENCING", data),
+        latestActivityColumn,
+      ];
+      if (includeSequencingAttributes) {
+        columns.splice(4, 0, sequencingAttributesColumn);
+      }
+      return columns;
+    },
+  };
+}
+
+function qcInMiso(items: Sample[], category: MetricCategory) {
+  const missingAssay = items
+    .filter((x) => !x.assayId)
+    .map((x) => x.name)
+    .filter((x, i, arr) => arr.indexOf(x) === i);
+  if (missingAssay.length) {
+    const list = makeList(missingAssay, (x) => x);
+    showErrorDialog("Some libraries have no assay:", list);
+    return;
+  }
+  const groups = groupByAssayAndDesign(items);
+  if (groups.size > 1) {
+    const list = makeList(items, (x, i, arr) => {
+      if (arr.indexOf(x) !== i) {
+        return null;
+      }
+      // assayId can't actually be undefined here
+      const assay = siteConfig.assaysById[x.assayId || 0];
+      return `${x.name}: ${x.libraryDesignCode}; ${assay.name}`;
+    });
+    showErrorDialog("Libraries must have the same assay and design", list);
+    return;
+  }
+  // There can only be one group at this point
+  groups.forEach((items) => openQcInMiso(items, category));
 }
 
 function makeList<Type>(
@@ -376,10 +410,10 @@ function groupByAssayAndDesign(samples: Sample[]) {
   return groups;
 }
 
-function qcInMiso(samples: Sample[]) {
+function openQcInMiso(samples: Sample[], category: MetricCategory) {
   const request: QcInMisoRequest = {
     report: "Dimsum",
-    library_aliquots: generateMetricData("LIBRARY_QUALIFICATION", samples),
+    library_aliquots: generateMetricData(category, samples),
   };
 
   const form = document.createElement("form");
@@ -395,31 +429,6 @@ function qcInMiso(samples: Sample[]) {
   document.body.appendChild(form);
   form.submit();
   form.remove();
-}
-
-export function getFullDepthSequencingsDefinition(
-  queryUrl: string,
-  includeSequencingAttributes: boolean
-): TableDefinition<Sample, void> {
-  return {
-    queryUrl: queryUrl,
-    defaultSort: defaultSort,
-    staticActions: [legendAction],
-    generateColumns(data) {
-      const columns: ColumnDefinition<Sample, void>[] = [
-        makeQcStatusColumn(includeSequencingAttributes),
-        makeNameColumn(includeSequencingAttributes),
-        tissueAttributesColumn,
-        designColumn,
-        ...generateMetricColumns("FULL_DEPTH_SEQUENCING", data),
-        latestActivityColumn,
-      ];
-      if (includeSequencingAttributes) {
-        columns.splice(4, 0, sequencingAttributesColumn);
-      }
-      return columns;
-    },
-  };
 }
 
 function generateMetricData(
@@ -441,7 +450,7 @@ function generateMetricData(
       name: extractLibraryName(sample.id),
       run_id: sample.run.id,
       partition: parseInt(sample.sequencingLane),
-      metrics: getSampleMetrics(sample, metricNames),
+      metrics: getSampleMetrics(sample, metricNames, category),
     });
   });
   return data;
@@ -449,19 +458,21 @@ function generateMetricData(
 
 function getSampleMetrics(
   sample: Sample,
-  metricNames: string[]
+  metricNames: string[],
+  category: MetricCategory
 ): MisoRunLibraryMetric[] {
   return metricNames
     .flatMap(
-      (metricName) =>
-        getMatchingMetrics(metricName, "LIBRARY_QUALIFICATION", sample) || []
+      (metricName) => getMatchingMetrics(metricName, category, sample) || []
     )
     .map((metric) => {
       const value = getMetricValue(metric.name, sample);
       const displayValue =
         value == null ? null : formatMetricValue(value, [metric]);
       const revisedValue =
-        displayValue == null ? null : parseFloat(displayValue.replace(",", ""));
+        displayValue == null
+          ? null
+          : parseFloat(displayValue.replaceAll(",", ""));
       return {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
