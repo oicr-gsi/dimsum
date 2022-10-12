@@ -64,6 +64,9 @@ export const urls = {
     singleLaneTar: (runName: string) => makeDashiSingleLaneUrl("tar", runName),
     singleLaneWgs: (runName: string) => makeDashiSingleLaneUrl("wgs", runName),
   },
+  jira: {
+    issue: (key: string) => `${siteConfig.jiraUrl}/browse/${key}`,
+  },
 };
 
 function makeMisoUrl(type: string, id: number | string) {

@@ -6,125 +6,257 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 import ca.on.oicr.gsi.dimsum.data.Assay;
+import ca.on.oicr.gsi.dimsum.data.IssueState;
 import ca.on.oicr.gsi.dimsum.data.Metric;
 import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.MetricSubcategory;
 import ca.on.oicr.gsi.dimsum.data.Notification;
 import ca.on.oicr.gsi.dimsum.data.Run;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.data.RunQcCommentSummary;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.service.filtering.NotificationSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
+import ca.on.oicr.gsi.dimsum.util.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 
 @Service
 public class NotificationManager {
 
   private static final Logger log = LoggerFactory.getLogger(NotificationManager.class);
 
-  private List<Notification> notifications = new ArrayList<>();
+  private static final String SUMMARY_SUFFIX_RUN_QC = " Run QC";
+  private static final Pattern SUMMARY_PATTERN_RUN_QC =
+      Pattern.compile("^(.+)" + SUMMARY_SUFFIX_RUN_QC + "$");
 
-  public void update(Map<String, RunAndLibraries> data, Map<Long, Assay> assaysById) {
-    List<Notification> newNotifications = updateExistingNotifications(data, assaysById);
-    newNotifications.addAll(createNewNotifications(data, assaysById));
-    notifications = newNotifications;
+  @Autowired(required = false)
+  private JiraService jiraService;
+
+  @Value("${baseurl}")
+  private String baseUrl;
+
+  private List<Notification> notifications = new ArrayList<>();
+  private int jiraErrors = 0;
+
+  public NotificationManager(@Autowired MeterRegistry meterRegistry) {
+    if (meterRegistry != null) {
+      Gauge.builder("jira_errors", this::getJiraErrors)
+          .description("Number of JIRA errors during last data refresh and notification sync")
+          .register(meterRegistry);
+    }
   }
 
-  private List<Notification> updateExistingNotifications(Map<String, RunAndLibraries> data,
-      Map<Long, Assay> assaysById) {
+  public void setBaseUrl(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  public void setJiraService(JiraService jiraService) {
+    this.jiraService = jiraService;
+  }
+
+  private int getJiraErrors() {
+    return jiraErrors;
+  }
+
+  public void update(Map<String, RunAndLibraries> data, Map<Long, Assay> assaysById) {
+    Counter jiraErrorCounter = new Counter();
+    Set<String> handledRunNames = new HashSet<>();
+    List<Notification> newNotifications =
+        updateOpenIssues(data, assaysById, handledRunNames, jiraErrorCounter);
+    newNotifications
+        .addAll(createOrReopenIssues(data, assaysById, handledRunNames, jiraErrorCounter));
+    notifications = newNotifications;
+    jiraErrors = jiraErrorCounter.getCount();
+  }
+
+  private List<Notification> updateOpenIssues(Map<String, RunAndLibraries> data,
+      Map<Long, Assay> assaysById, Set<String> handledRunNames, Counter jiraErrorCounter) {
     List<Notification> newNotifications = new ArrayList<>();
-    for (Notification notification : notifications) {
-      String runName = notification.getRun().getName();
-      RunAndLibraries runAndLibraries = data.get(runName);
-      if (runAndLibraries == null) {
-        log.warn("Orphaned notification - run not found: {}", runName);
+    if (jiraService == null) {
+      return newNotifications;
+    }
+    Iterable<Issue> issues = null;
+    try {
+      issues = jiraService.getOpenIssues(SUMMARY_SUFFIX_RUN_QC);
+    } catch (Exception e) {
+      jiraErrorCounter.increment();
+      log.error("Error fetching JIRA issues", e);
+      return newNotifications;
+    }
+    for (Issue issue : issues) {
+      String runName = parseRunNameFromSummary(issue);
+      if (runName == null) {
+        // Issue doesn't seem to match expected pattern; ignore
         continue;
       }
-      Notification newNotification =
-          makeNotification(runAndLibraries, notification.getMetricCategory(), assaysById);
-      if (newNotification == null) {
-        // QC is complete
-        log.debug("Clearing notification for run {}", runName);
-      } else {
-        newNotifications.add(newNotification);
-        if (newNotification.getPendingQcCount() > 0
-            || newNotification.getPendingDataReviewCount() > 0) {
-          // still pending QC
-          log.debug("Updating/maintaining notification for run {}", runName);
-        } else if (newNotification.getPendingAnalysisCount() > 0) {
-          // no pending QC, but still has samples pending analysis
-          log.debug("Pausing/maintaining notification for run {}", runName);
-        } else {
-          // all run-library QC is complete, but run is missing QC
-          log.debug("Updating/maintaining notification for run {} - Run QC needed", runName);
-        }
+      RunAndLibraries runAndLibraries = data.get(runName);
+      if (runAndLibraries == null) {
+        log.debug("Orphaned notification - run not found: {}", runName);
+        continue;
+      }
+      // track to avoid reprocessing later
+      handledRunNames.add(runName);
+      Notification notification =
+          makeNotification(runAndLibraries, assaysById, true, issue.getKey());
+      updateIssue(issue, notification, jiraErrorCounter);
+      if (notification != null && notification.requiresAction()) {
+        newNotifications.add(notification);
       }
     }
     return newNotifications;
   }
 
-  private List<Notification> createNewNotifications(Map<String, RunAndLibraries> data,
-      Map<Long, Assay> assaysById) {
-    List<Notification> newNotifications = new ArrayList<>();
+  private static String parseRunNameFromSummary(Issue issue) {
+    Matcher m = SUMMARY_PATTERN_RUN_QC.matcher(issue.getSummary());
+    if (m.matches()) {
+      return m.group(1);
+    } else {
+      return null;
+    }
+  }
 
-    // Library Qualification: create notification if
-    // 1. run has library qualifications
-    // 2. there is not already a lib.qual. notification for this run
-    // 3. ALL library qualifications have completed analysis
-    // 4. any library qualification or the run itself are pending QC or data review
+  private void updateIssue(Issue issue, Notification notification, Counter jiraErrorCounter) {
+    try {
+      if (notification == null) {
+        jiraService.closeIssue(issue, "All sign-offs have been completed.");
+        return;
+      }
+      IssueState issueState = jiraService.getIssueState(issue);
+      IssueState notificationState = notification.getIssueState();
+      if (issueState != notificationState) {
+        switch (notificationState) {
+          case OPEN:
+            jiraService.reopenIssue(issue, notification.makeComment(baseUrl));
+            return;
+          case PAUSED:
+            jiraService.pauseIssue(issue, notification.makeComment(baseUrl));
+            return;
+          case CLOSED:
+            jiraService.closeIssue(issue, notification.makeComment(baseUrl));
+            return;
+          default:
+            throw new IllegalStateException(
+                String.format("Unexpected notification state: %s", notificationState));
+        }
+      }
+      RunQcCommentSummary issueSummary = RunQcCommentSummary.findLatest(issue);
+      if (issueSummary == null || issueSummary.needsUpdate(notification)) {
+        jiraService.postComment(issue, notification.makeComment(baseUrl));
+      }
+    } catch (Exception e) {
+      jiraErrorCounter.increment();
+      log.error("Error updating JIRA issue %s".formatted(issue.getKey()), e);
+    }
+  }
+
+  private List<Notification> createOrReopenIssues(Map<String, RunAndLibraries> data,
+      Map<Long, Assay> assaysById, Set<String> handledRunNames, Counter jiraErrorCounter) {
+    List<Notification> newNotifications = new ArrayList<>();
     data.values().stream()
-        .filter(x -> !x.getLibraryQualifications().isEmpty()
-            && notifications.stream()
-                .noneMatch(existing -> existing.getRun().getId() == x.getRun().getId()
-                    && existing.getMetricCategory() == MetricCategory.LIBRARY_QUALIFICATION)
-            && x.getLibraryQualifications().stream()
-                .noneMatch(sample -> !metricsAvailable(sample, x.getRun(), assaysById,
-                    MetricCategory.LIBRARY_QUALIFICATION)))
-        .map(x -> makeNotification(x, MetricCategory.LIBRARY_QUALIFICATION, assaysById))
+        .filter(x -> !handledRunNames.contains(x.getRun().getName())
+            && (readyForLibraryQualificationQc(x, assaysById)
+                || readyForFullDepthQc(x, assaysById)))
+        .map(x -> makeNotification(x, assaysById, false, null))
         .filter(Objects::nonNull)
         .forEach(x -> {
-          log.debug("Creating notification for run {} (library qualification)",
-              x.getRun().getName());
-          newNotifications.add(x);
+          if (jiraService == null) {
+            newNotifications.add(x);
+            return;
+          }
+          String issueSummary = x.getRun().getName() + SUMMARY_SUFFIX_RUN_QC;
+          Issue issue = null;
+          try {
+            issue = jiraService.getIssue(issueSummary);
+          } catch (Exception e) {
+            jiraErrorCounter.increment();
+            log.error("Error searching for JIRA issue", e);
+            newNotifications.add(x);
+            return;
+          }
+          if (issue == null) {
+            try {
+              String newIssueKey = jiraService.createIssue(issueSummary, x.makeComment(baseUrl));
+              newNotifications.add(x.withIssueKey(newIssueKey));
+            } catch (Exception e) {
+              jiraErrorCounter.increment();
+              log.error("Error creating issue", e);
+              newNotifications.add(x);
+            }
+          } else {
+            IssueState issueState = jiraService.getIssueState(issue);
+            if (issueState != IssueState.OVERRIDDEN) {
+              updateIssue(issue, x, jiraErrorCounter);
+              newNotifications.add(x.withIssueKey(issue.getKey()));
+            }
+          }
         });
-    // Full Depth: create notification if
-    // 1. run has full depth sequencings
-    // 2. there is not already a full depth notification for this run
-    // 3. any full depth library has completed analysis
-    // 4. any full depth library or the run itself are pending QC or data review
-    data.values().stream()
-        .filter(x -> !x.getFullDepthSequencings().isEmpty()
-            && notifications.stream()
-                .noneMatch(existing -> existing.getRun().getId() == x.getRun().getId()
-                    && existing.getMetricCategory() == MetricCategory.FULL_DEPTH_SEQUENCING)
-            && x.getFullDepthSequencings().stream()
-                .anyMatch(sample -> metricsAvailable(sample, x.getRun(), assaysById,
-                    MetricCategory.FULL_DEPTH_SEQUENCING)))
-        .map(x -> makeNotification(x, MetricCategory.FULL_DEPTH_SEQUENCING, assaysById))
-        .filter(x -> Objects.nonNull(x)
-            && (x.getPendingQcCount() > 0 || x.getPendingDataReviewCount() > 0
-                || x.getRun().getDataReviewDate() == null))
-        .forEach(x -> {
-          log.debug("Creating notification for run {} (full depth)", x.getRun().getName());
-          newNotifications.add(x);
-        });
-
     return newNotifications;
   }
 
-  private Notification makeNotification(RunAndLibraries runAndLibraries, MetricCategory category,
+  protected boolean readyForLibraryQualificationQc(RunAndLibraries runAndLibraries,
       Map<Long, Assay> assaysById) {
-    Set<Sample> samples = getSamples(runAndLibraries, category).stream()
-        .filter(sample -> sample.getDataReviewDate() == null)
-        .collect(Collectors.toSet());
+    Set<Sample> libraries = runAndLibraries.getLibraryQualifications();
+    if (libraries.isEmpty()) {
+      return false;
+    }
+    Run run = runAndLibraries.getRun();
+    // "ready" if metrics for ALL libraries are available and ANY library or run sign-off is needed
+    return libraries.stream().allMatch(x -> metricsAvailable(x,
+        run, assaysById, MetricCategory.LIBRARY_QUALIFICATION))
+        && (libraries.stream().anyMatch(x -> x.getDataReviewDate() == null)
+            || run.getDataReviewDate() == null);
+  }
+
+  protected boolean readyForFullDepthQc(RunAndLibraries runAndLibraries,
+      Map<Long, Assay> assaysById) {
+    Set<Sample> libraries = runAndLibraries.getFullDepthSequencings();
+    if (libraries.isEmpty()) {
+      return false;
+    }
+    Run run = runAndLibraries.getRun();
+    final MetricCategory category = MetricCategory.FULL_DEPTH_SEQUENCING;
+    // "ready" if ANY library has metrics available AND ANY such library or the run needs sign-off
+    return libraries.stream().anyMatch(x -> metricsAvailable(x, run, assaysById, category)
+        && (x.getDataReviewDate() == null || run.getDataReviewDate() == null));
+  }
+
+  private Notification makeNotification(RunAndLibraries runAndLibraries,
+      Map<Long, Assay> assaysById, boolean returnIfPendingAnalysisOnly, String issueKey) {
     Run run = runAndLibraries.getRun();
     Set<Sample> pendingAnalysis = new HashSet<>();
     Set<Sample> pendingQc = new HashSet<>();
     Set<Sample> pendingDataReview = new HashSet<>();
+    sortSamples(runAndLibraries.getLibraryQualifications(), run, assaysById,
+        MetricCategory.LIBRARY_QUALIFICATION, pendingAnalysis, pendingQc, pendingDataReview);
+    sortSamples(runAndLibraries.getFullDepthSequencings(), run, assaysById,
+        MetricCategory.FULL_DEPTH_SEQUENCING, pendingAnalysis, pendingQc, pendingDataReview);
+
+    if (pendingQc.isEmpty() && pendingDataReview.isEmpty()
+        && run.getDataReviewDate() != null) {
+      if (returnIfPendingAnalysisOnly) {
+        if (pendingAnalysis.isEmpty()) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+    return new Notification(run, pendingAnalysis, pendingQc, pendingDataReview, issueKey);
+  }
+
+  private void sortSamples(Set<Sample> samples, Run run, Map<Long, Assay> assaysById,
+      MetricCategory category, Set<Sample> pendingAnalysis, Set<Sample> pendingQc,
+      Set<Sample> pendingDataReview) {
     for (Sample sample : samples) {
       if (sample.getDataReviewDate() != null) {
         continue;
@@ -135,23 +267,6 @@ public class NotificationManager {
       } else {
         pendingDataReview.add(sample);
       }
-    }
-    if (pendingAnalysis.isEmpty() && pendingQc.isEmpty() && pendingDataReview.isEmpty()
-        && run.getDataReviewDate() != null) {
-      return null;
-    }
-    return new Notification(run, category, pendingAnalysis, pendingQc, pendingDataReview);
-  }
-
-  private Set<Sample> getSamples(RunAndLibraries runAndLibraries, MetricCategory category) {
-    switch (category) {
-      case LIBRARY_QUALIFICATION:
-        return runAndLibraries.getLibraryQualifications();
-      case FULL_DEPTH_SEQUENCING:
-        return runAndLibraries.getFullDepthSequencings();
-      default:
-        throw new IllegalStateException(
-            String.format("Invalid notification category: %s", category));
     }
   }
 
@@ -171,7 +286,7 @@ public class NotificationManager {
     return data;
   }
 
-  private boolean metricsAvailable(Sample sample, Run run, Map<Long, Assay> assaysById,
+  protected boolean metricsAvailable(Sample sample, Run run, Map<Long, Assay> assaysById,
       MetricCategory metricCategory) {
     if (metricCategory != MetricCategory.LIBRARY_QUALIFICATION
         && metricCategory != MetricCategory.FULL_DEPTH_SEQUENCING) {
