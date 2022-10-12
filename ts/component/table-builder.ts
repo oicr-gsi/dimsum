@@ -154,13 +154,6 @@ export class TableBuilder<ParentType, ChildType> {
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
 
     this.addSortControls(topControlsContainer);
-    // // prior to loading the filter controls, fetch search params
-    // const params = new URL(document.location.href).searchParams;
-    // params.forEach((value, key) => {
-    //   this.acceptedFilters.push(
-    //     new AcceptedFilter(key, key.toUpperCase(), value, () => this.reload())
-    //   );
-    // });
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
     this.container.appendChild(topControlsContainer);

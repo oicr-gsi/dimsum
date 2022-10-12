@@ -1,5 +1,4 @@
 import { makeClickout, makeIcon } from "../util/html-utils";
-import { appendUrlParam, getBaseUrl } from "../util/urls";
 import { get } from "../util/requests";
 
 export class TextInput {
