@@ -82,11 +82,8 @@ export class TextInput {
     textInputContainer.append(label);
     textInputContainer.appendChild(this.textField);
     textInputContainer.appendChild(submitIcon);
-    // this.container.append(label);
-    // this.container.appendChild(this.textField);
     this.container.append(textInputContainer);
     this.container.append(this.datalist);
-    // this.container.appendChild(submitIcon);
     this.container.appendChild(textInputClickout);
     // wait for browser to render element before setting focus
     window.setTimeout(() => this.textField.focus(), 0);
