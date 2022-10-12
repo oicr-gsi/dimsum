@@ -30,7 +30,7 @@
       <div class="flex-none text-green-200 font-sarabun font-light font text-24 cursor-default"
         th:text="${instanceName}"></div>
 
-      <div class="flex-1">
+      <div>
         <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <input type="submit" value="log out"
@@ -47,9 +47,10 @@
 
       </div>
     </div>
-    <nav class="text-right">
-      <a th:href="@{/run-list}" class="text-green-200 font-bold hover:underline">Run List</a>
-      <a th:href="@{/notifications}" class="text-green-200 font-bold hover:underline">Notifications</a>
+    <nav class="text-right text-green-200 font-bold flex-1">
+      <a th:href="@{/run-list}" class="hover:underline">Runs</a>
+      <span> | </span>
+      <a th:href="@{/notifications}" class="hover:underline">Notifications</a>
     </nav>
   </div>
 
