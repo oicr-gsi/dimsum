@@ -1,7 +1,12 @@
 import { siteConfig } from "./site-config";
 import { toTitleCase } from "./html-utils";
+import { Pair } from "./pair";
 
 const restBaseUrl = "/rest";
+
+export interface Param extends Pair<string, string> {
+  title: string;
+}
 
 export const urls = {
   dimsum: {
@@ -91,9 +96,10 @@ export function getBaseUrl() {
 }
 
 export function getSearchParams() {
-  var searchParams = new Array<Array<string>>();
+  var searchParams = new Array<Pair<string, string>>();
   new URL(document.location.href).searchParams.forEach((value, key) => {
-    searchParams.push([key, value]);
+    var param: Pair<string, string> = { key: key, value: value };
+    searchParams.push(param);
   });
   return searchParams;
 }

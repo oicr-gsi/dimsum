@@ -9,8 +9,8 @@ import {
 } from "../util/html-utils";
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
+import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
-import { updateUrlParams } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -81,7 +81,6 @@ class AcceptedFilter {
       this.valid = false;
       this.element.remove();
       onRemove();
-      updateUrlParams(key, value, false);
     };
     this.element.appendChild(destroyFilterIcon);
   }
@@ -106,13 +105,13 @@ export class TableBuilder<ParentType, ChildType> {
   baseFilterKey: string | null;
   baseFilterValue: string | null;
   acceptedFilters: AcceptedFilter[] = [];
-  onFilterChange?: Function;
+  onFilterChange?: (key: string, value: string, add?: boolean) => {};
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
     containerId: string,
-    searchParams?: string[][],
-    onFilterChange?: Function
+    filterParams?: Array<Pair<string, string>>,
+    onFilterChange?: (key: string, value: string, add?: boolean) => {}
   ) {
     this.definition = definition;
     this.sortColumn = definition.defaultSort.columnTitle;
@@ -123,28 +122,27 @@ export class TableBuilder<ParentType, ChildType> {
     }
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
-    if (searchParams) {
-      searchParams.forEach((p) => {
-        // parse url search params and check for a matching key in table definition
-        var key = p.at(0);
-        var value = p.at(1);
-        if (
-          this.definition.filters?.find((f) => {
-            return f.title === key;
-          }) &&
-          key &&
-          value
-        ) {
-          // create accepted filter if there is a matching key in table definition
-          this.acceptedFilters.push(
-            new AcceptedFilter(key, key.toUpperCase(), value, () =>
-              this.reload()
-            )
-          );
-        }
+    if (filterParams) {
+      // create accepted filter if there is a matching key in table definition
+      filterParams.forEach((p) => {
+        this.definition.filters?.find((f) => {
+          if (f.key === p.key) {
+            // filter key is valid, create a new accepted filter
+            const onRemove = () => {
+              if (this.onFilterChange)
+                this.onFilterChange(p.key, p.value, true);
+              this.reload();
+            };
+            this.acceptedFilters.push(
+              new AcceptedFilter(f.title, f.key, p.value, () => onRemove)
+            );
+            return true;
+          }
+          return false;
+        });
       });
     }
-    if (onFilterChange) this.onFilterChange = onFilterChange;
+    this.onFilterChange = onFilterChange;
     this.container = container;
     this.columns = definition.generateColumns();
   }

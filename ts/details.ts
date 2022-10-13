@@ -18,7 +18,7 @@ new TableBuilder(
   caseDefinition,
   "casesTableContainer",
   getSearchParams(),
-  updateUrlParams
+  () => updateUrlParams
 ).build();
 
 new TableBuilder(receiptDefinition, "receiptsTableContainer").build();
