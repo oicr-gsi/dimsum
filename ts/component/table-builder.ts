@@ -11,6 +11,7 @@ import {
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
 import { TextInput } from "./text-input";
+import { showErrorDialog } from "./dialog";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -52,7 +53,7 @@ export interface StaticAction {
 
 export interface BulkAction<ParentType> {
   title: string;
-  handler: (items: Set<ParentType>) => void;
+  handler: (items: ParentType[]) => void;
 }
 
 export interface TableDefinition<ParentType, ChildType> {
@@ -180,7 +181,11 @@ export class TableBuilder<ParentType, ChildType> {
     if (this.definition.bulkActions) {
       this.definition.bulkActions.forEach((action) => {
         this.addActionButton(container, action.title, () => {
-          action.handler(this.selectedItems);
+          if (!this.selectedItems.size) {
+            showErrorDialog("No items selected");
+            return;
+          }
+          action.handler(Array.from(this.selectedItems));
         });
       });
     }

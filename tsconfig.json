@@ -4,8 +4,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": [
-      "es2020",
-      "dom"
+      "ES2021",
+      "DOM"
     ],
     "module": "es2020",
     "moduleResolution": "node",
