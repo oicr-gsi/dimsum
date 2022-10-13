@@ -350,25 +350,31 @@ export function getFullDepthSequencingsDefinition(
 }
 
 function qcInMiso(items: Sample[], category: MetricCategory) {
+  const missingRun = items.filter((x) => !x.run).map((x) => x.name);
+  if (missingRun.length) {
+    const list = makeList(missingRun);
+    showErrorDialog("Some items are not run-libraries:", list);
+    return;
+  }
   const missingAssay = items
     .filter((x) => !x.assayId)
     .map((x) => x.name)
-    .filter((x, i, arr) => arr.indexOf(x) === i);
+    .filter(unique);
   if (missingAssay.length) {
-    const list = makeList(missingAssay, (x) => x);
+    const list = makeList(missingAssay);
     showErrorDialog("Some libraries have no assay:", list);
     return;
   }
   const groups = groupByAssayAndDesign(items);
   if (groups.size > 1) {
-    const list = makeList(items, (x, i, arr) => {
-      if (arr.indexOf(x) !== i) {
-        return null;
-      }
-      // assayId can't actually be undefined here
-      const assay = siteConfig.assaysById[x.assayId || 0];
-      return `${x.name}: ${x.libraryDesignCode}; ${assay.name}`;
-    });
+    const strings = items
+      .map((x) => {
+        // assayId can't actually be undefined here
+        const assay = siteConfig.assaysById[x.assayId || 0];
+        return `${x.name}: ${x.libraryDesignCode}; ${assay.name}`;
+      })
+      .filter(unique);
+    const list = makeList(strings);
     showErrorDialog("Libraries must have the same assay and design", list);
     return;
   }
@@ -376,19 +382,17 @@ function qcInMiso(items: Sample[], category: MetricCategory) {
   groups.forEach((items) => openQcInMiso(items, category));
 }
 
-function makeList<Type>(
-  items: Type[],
-  toString: (item: Type, index: number, array: Type[]) => string | null
-): HTMLElement {
+function unique<Type>(item: Type, index: number, array: Type[]) {
+  return array.indexOf(item) === index;
+}
+
+function makeList<Type>(items: string[]): HTMLElement {
   const list = document.createElement("ul");
   list.className = "list-disc list-inside";
-  items.forEach((x, i, arr) => {
-    const value = toString(x, i, arr);
-    if (value !== null) {
-      const li = document.createElement("li");
-      li.innerText = value;
-      list.appendChild(li);
-    }
+  items.forEach((value) => {
+    const li = document.createElement("li");
+    li.innerText = value;
+    list.appendChild(li);
   });
   return list;
 }
