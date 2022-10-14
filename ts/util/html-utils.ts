@@ -2,12 +2,12 @@
 export function addColumnHeader(
   thead: HTMLTableRowElement,
   header: string,
-  index: number
+  firstColumn: boolean
 ) {
   const th = document.createElement("th");
   th.className =
     "p-4 text-white font-semibold bg-grey-300 text-left align-text-top" +
-    (index > 0 ? " border-grey-200 border-l-1" : "");
+    (firstColumn ? "" : " border-grey-200 border-l-1");
 
   // allow line-wrapping on "/" character
   header.split("/").forEach((part, index, arr) => {
@@ -20,11 +20,11 @@ export function addColumnHeader(
 }
 
 // adds a cell to a table row
-export function makeCell(tr: HTMLTableRowElement, index: number) {
+export function makeCell(tr: HTMLTableRowElement, firstColumn: boolean) {
   const td = tr.insertCell();
   td.className =
     "p-3 border-grey-200 border-t-1 text-left align-text-top" +
-    (index > 0 ? " border-l-1" : "");
+    (firstColumn ? "" : " border-l-1");
   return td;
 }
 

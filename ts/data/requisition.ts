@@ -6,6 +6,7 @@ import {
 } from "../util/html-utils";
 import {
   ColumnDefinition,
+  legendAction,
   SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
@@ -99,6 +100,7 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
 export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: (data?: Requisition[]) => [
     qcStatusColumn((requisition) => requisition.informaticsReviews),
     requisitionColumn,
@@ -110,6 +112,7 @@ export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
 export const draftReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.draftReports),
     requisitionColumn,
@@ -120,6 +123,7 @@ export const draftReportDefinition: TableDefinition<Requisition, void> = {
 export const finalReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.finalReports),
     requisitionColumn,

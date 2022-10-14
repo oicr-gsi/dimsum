@@ -1,4 +1,4 @@
-import { TableDefinition } from "../component/table-builder";
+import { legendAction, TableDefinition } from "../component/table-builder";
 import {
   addLink,
   makeIcon,
@@ -145,6 +145,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
+  staticActions: [legendAction],
   generateColumns: () => [
     {
       title: "Project",

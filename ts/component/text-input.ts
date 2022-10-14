@@ -22,28 +22,22 @@ export class TextInput {
     const textInputClickout = makeClickout();
     textInputClickout.classList.toggle("hidden");
 
-    this.container.className =
-      "font-inter font-medium text-12 text-black px-2 py-1 rounded-md ring-2 ring-offset-1 ring-red inline-block flex-auto items-center space-x-2";
-    this.textField.className =
-      "ring-0 border-0 outline-0 rounded-sm relative px-1 min-w-[150px]";
-    this.textField.setAttribute("size", "10");
-    submitIcon.classList.add("text-black", "hover:text-green", "relative");
-
     const submitTextInput = () => {
       if (this.textField.value) {
-        textInputClickout.classList.toggle("hidden");
         onClose(this);
+        document.removeEventListener("keydown", handleEsc);
       } else {
         this.textField.focus();
       }
     };
+
     submitIcon.onclick = submitTextInput;
-    textInputClickout.onclick = submitTextInput;
     this.textField.addEventListener("keypress", (event) => {
       if (event.key === "Enter") {
         submitTextInput();
       }
     });
+
     this.textField.addEventListener("input", () => {
       this.styleValidity();
       this.textField.setAttribute(
@@ -60,10 +54,37 @@ export class TextInput {
       }
     });
 
-    this.container.append(label);
-    this.container.appendChild(this.textField);
-    this.container.append(this.datalist);
-    this.container.appendChild(submitIcon);
+    var handleEsc = (event: KeyboardEvent) => {
+      // only remove the text input box in question if it is not already hidden
+      if (event.key === "Esc" || event.key === "Escape") {
+        // remove text input field corresponding elements if they are visible
+        this.container.remove();
+        document.removeEventListener("keydown", handleEsc);
+      }
+    };
+    // close text input field by clicking outside or hitting esc
+    textInputClickout.onclick = () => {
+      this.container.remove();
+      document.removeEventListener("keydown", handleEsc);
+    };
+
+    document.addEventListener("keydown", handleEsc);
+
+    this.container.className =
+      "inline-block flex-auto rounded-md ring-red ring-2 ring-offset-1";
+    var textInputContainer = document.createElement("div");
+    textInputContainer.className =
+      "font-inter font-medium text-12 text-black px-2 py-1 inline-block space-x-2 relative z-40";
+    this.textField.className =
+      "ring-0 border-0 outline-0 rounded-sm px-1 min-w-[150px]";
+    this.textField.setAttribute("size", "10");
+    submitIcon.classList.add("text-black", "hover:text-green");
+
+    textInputContainer.append(label);
+    textInputContainer.appendChild(this.textField);
+    textInputContainer.append(this.datalist);
+    textInputContainer.appendChild(submitIcon);
+    this.container.appendChild(textInputContainer);
     this.container.appendChild(textInputClickout);
     // wait for browser to render element before setting focus
     window.setTimeout(() => this.textField.focus(), 0);
