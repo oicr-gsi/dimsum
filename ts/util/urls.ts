@@ -117,7 +117,7 @@ export function removeUrlParam(key: string, value: string) {
   var newParams = new URLSearchParams();
   var paramCount = 0;
   for (const [k, v] of params.entries()) {
-    if (k !== toTitleCase(key) || v !== value) {
+    if (k !== key || v !== value) {
       // create new search params list, excluding the one we would like to delete
       newParams.append(k, v);
       ++paramCount;

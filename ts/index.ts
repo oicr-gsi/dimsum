@@ -6,5 +6,5 @@ new TableBuilder(
   caseDefinition,
   "casesTableContainer",
   getSearchParams(),
-  () => updateUrlParams
+  updateUrlParams
 ).build();

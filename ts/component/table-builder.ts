@@ -62,7 +62,7 @@ class AcceptedFilter {
   value: string;
   valid: boolean = true;
 
-  constructor(title: string, key: string, value: string, onRemove: () => {}) {
+  constructor(title: string, key: string, value: string, onRemove: () => void) {
     this.key = key;
     this.value = value;
     this.element = document.createElement("span");
@@ -105,13 +105,13 @@ export class TableBuilder<ParentType, ChildType> {
   baseFilterKey: string | null;
   baseFilterValue: string | null;
   acceptedFilters: AcceptedFilter[] = [];
-  onFilterChange?: (key: string, value: string, add?: boolean) => {};
+  onFilterChange?: (key: string, value: string, add?: boolean) => void;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
     containerId: string,
     filterParams?: Array<Pair<string, string>>,
-    onFilterChange?: (key: string, value: string, add?: boolean) => {}
+    onFilterChange?: (key: string, value: string, add?: boolean) => void
   ) {
     this.definition = definition;
     this.sortColumn = definition.defaultSort.columnTitle;
@@ -122,6 +122,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
+
     if (filterParams) {
       // create accepted filter if there is a matching key in table definition
       filterParams.forEach((p) => {
@@ -130,11 +131,11 @@ export class TableBuilder<ParentType, ChildType> {
             // filter key is valid, create a new accepted filter
             const onRemove = () => {
               if (this.onFilterChange)
-                this.onFilterChange(p.key, p.value, true);
+                this.onFilterChange(p.key, p.value, false);
               this.reload();
             };
             this.acceptedFilters.push(
-              new AcceptedFilter(f.title, f.key, p.value, () => onRemove)
+              new AcceptedFilter(f.title, f.key, p.value, onRemove)
             );
             return true;
           }
@@ -318,11 +319,16 @@ export class TableBuilder<ParentType, ChildType> {
       (value) =>
         new BasicDropdownOption(value, (dropdown: Dropdown) => {
           dropdown.getContainerTag().remove();
+          const onRemove = () => {
+            if (this.onFilterChange)
+              this.onFilterChange(filter.key, value, false);
+            reload();
+          };
           const filterLabel = new AcceptedFilter(
             filter.title,
             filter.key,
             value,
-            reload
+            onRemove
           );
           // add filter label to the menu bar
           filterContainer.insertBefore(
@@ -330,10 +336,11 @@ export class TableBuilder<ParentType, ChildType> {
             filterContainer.lastChild
           );
           this.acceptedFilters.push(filterLabel);
+          // update params
           if (this.onFilterChange) {
-            this.onFilterChange(filter.title, value, true);
+            this.onFilterChange(filter.key, value, true);
           }
-          reload();
+          reload(); // apply new filter
         })
     );
     // add filter (& its submenu) to the parent filter menu
@@ -358,11 +365,16 @@ export class TableBuilder<ParentType, ChildType> {
     reload: () => {}
   ) {
     const onClose = (textInput: TextInput) => {
+      const onRemove = () => {
+        if (this.onFilterChange)
+          this.onFilterChange(filter.key, textInput.getValue(), false);
+        reload();
+      };
       const filterLabel = new AcceptedFilter(
         filter.title,
         filter.key,
         textInput.getValue(),
-        reload
+        onRemove
       );
       textInput.getContainerTag().remove();
       filterContainer.insertBefore(
@@ -370,10 +382,11 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
       this.acceptedFilters.push(filterLabel);
+      // update params
       if (this.onFilterChange) {
-        this.onFilterChange(filter.title, textInput.getValue(), true);
+        this.onFilterChange(filter.key, textInput.getValue(), true);
       }
-      reload();
+      reload(); // apply new filter
     };
     return new BasicDropdownOption(filter.title, () => {
       if (!filter.autocompleteUrl) {
