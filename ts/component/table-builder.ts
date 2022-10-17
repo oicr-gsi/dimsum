@@ -142,7 +142,7 @@ export class TableBuilder<ParentType, ChildType> {
     if (filterParams) {
       // create accepted filter if there is a matching key in table definition
       filterParams.forEach((p) => {
-        this.definition.filters?.find((f) => {
+        this.definition.filters?.forEach((f) => {
           if (f.key === p.key) {
             // filter key is valid, create a new accepted filter
             const onRemove = () => {
@@ -153,9 +153,7 @@ export class TableBuilder<ParentType, ChildType> {
             this.acceptedFilters.push(
               new AcceptedFilter(f.title, f.key, p.value, onRemove)
             );
-            return true;
           }
-          return false;
         });
       });
     }

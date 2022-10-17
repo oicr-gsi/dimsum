@@ -5,10 +5,6 @@ import { Pair } from "./pair";
 const restBaseUrl = "/rest";
 const misoBaseUrl = `${siteConfig.misoUrl}/miso`;
 
-export interface Param extends Pair<string, string> {
-  title: string;
-}
-
 export const urls = {
   dimsum: {
     case: (id: string) => `/cases/${id}`,
