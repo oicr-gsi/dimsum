@@ -15,7 +15,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
 @RestController
-@RequestMapping("/rest/run-list")
+@RequestMapping("/rest/runs")
 public class RunListRestController {
 
   @Autowired

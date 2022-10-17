@@ -50,6 +50,9 @@ public class CaseService {
   @Autowired
   private NotificationManager notificationManager;
 
+  @Autowired
+  private RunListManager runListManager;
+
   private CaseData caseData;
 
   private int refreshFailures = 0;
@@ -261,6 +264,7 @@ public class CaseService {
         caseData = newData;
         updateFrontEndConfig();
         notificationManager.update(newData.getRunsAndLibrariesByName());
+        runListManager.update(newData.getRunsAndLibrariesByName());
       }
     } catch (Exception e) {
       refreshFailures++;

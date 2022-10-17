@@ -20,7 +20,7 @@ public class RunListManager {
 
   private List<Run> runs = new ArrayList<>();
 
-  private void update(Map<String, RunAndLibraries> data) {
+  public void update(Map<String, RunAndLibraries> data) {
     List<Run> newRuns = new ArrayList<>();
     for (Run run : runs) {
       String runName = run.getName();
@@ -36,9 +36,12 @@ public class RunListManager {
       }
     }
     List<Long> processedRunIds = runs.stream().map(x -> x.getId()).toList();
-    data.values().stream().filter(needsQc)
-        .filter(x -> !processedRunIds.contains(x.getRun().getId())).forEach(x -> {
+    data.values().stream()
+        .filter(needsQc)
+        .filter(x -> !processedRunIds.contains(x.getRun().getId()))
+        .forEach(x -> {
           log.debug("Creating run {}", x.getRun().getName());
+          newRuns.add(x.getRun());
         });
     this.runs = newRuns;
   }

@@ -5,6 +5,8 @@ import static java.util.Objects.requireNonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -30,6 +32,20 @@ public class RunAndLibraries {
 
   public Set<Sample> getFullDepthSequencings() {
     return fullDepthSequencings;
+  }
+
+  // get all projects associated with this run
+  public List<String> getProjects() {
+    List<String> projects = new ArrayList<>();
+    for (Sample sample : this.libraryQualifications) {
+      if (!projects.contains(sample.getProject()))
+        projects.add(sample.getProject());
+    }
+    for (Sample sample : this.fullDepthSequencings) {
+      if (!projects.contains(sample.getProject()))
+        projects.add(sample.getProject());
+    }
+    return projects;
   }
 
   public static class Builder {

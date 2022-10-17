@@ -711,7 +711,7 @@ function addTooltipRow(
   container.appendChild(valueContainer);
 }
 
-function getElapsedMessage(kase: Case) {
+export function getElapsedMessage(kase: Case) {
   let endDate;
   let message;
   if (
