@@ -15,42 +15,7 @@ import { TableBuilder } from "./component/table-builder";
 import { getSearchParams, updateUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 
-// new TableBuilder(
-//   caseDefinition,
-//   "casesTableContainer",
-//   getSearchParams(),
-//   updateUrlParams
-// ).build();
-
-// new TableBuilder(receiptDefinition, "receiptsTableContainer").build();
-
-// new TableBuilder(extractionDefinition, "extractionsTableContainer").build();
-
-// new TableBuilder(
-//   libraryPreparationDefinition,
-//   "libraryPreparationsTableContainer"
-// ).build();
-
-// new TableBuilder(
-//   getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true),
-//   "libraryQualificationsTableContainer"
-// ).build();
-
-// new TableBuilder(
-//   getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
-//   "fullDepthSequencingsTableContainer"
-// ).build();
-
-// new TableBuilder(
-//   informaticsReviewDefinition,
-//   "informaticsReviewsTableContainer"
-// ).build();
-
-// new TableBuilder(draftReportDefinition, "draftReportsTableContainer").build();
-
-// new TableBuilder(finalReportDefinition, "finalReportsTableContainer").build();
-
-const tableIds = [
+const tableContainerIds = [
   "casesTableContainer",
   "receiptsTableContainer",
   "extractionsTableContainer",
@@ -61,34 +26,50 @@ const tableIds = [
   "draftReportsTableContainer",
   "finalReportsTableContainer",
 ];
-
-const tables = [
-  new TableBuilder(
-    caseDefinition,
-    "casesTableContainer",
-    getSearchParams(),
-    updateUrlParams
-  ).build(),
-  new TableBuilder(receiptDefinition, "receiptsTableContainer").build(),
-  new TableBuilder(extractionDefinition, "extractionsTableContainer").build(),
-  new TableBuilder(
-    libraryPreparationDefinition,
-    "libraryPreparationsTableContainer"
-  ).build(),
-  new TableBuilder(
-    getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true),
-    "libraryQualificationsTableContainer"
-  ).build(),
-  new TableBuilder(
-    getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
-    "fullDepthSequencingsTableContainer"
-  ).build(),
-  new TableBuilder(
-    informaticsReviewDefinition,
-    "informaticsReviewsTableContainer"
-  ).build(),
-  new TableBuilder(draftReportDefinition, "draftReportsTableContainer").build(),
-  new TableBuilder(finalReportDefinition, "finalReportsTableContainer").build(),
+const tableTitles = [
+  "Cases",
+  "Receipts",
+  "Extractions",
+  "Library Preparations",
+  "Library Qualifications",
+  "Full Depth Sequencings",
+  "Informatics Reviews",
+  "Draft Reports",
+  "Final Reports",
 ];
+new TabBar(tableTitles, tableContainerIds, "tabBarContainer").build();
 
-new TabBar(tables, tableIds, "tabBarContainer");
+new TableBuilder(
+  caseDefinition,
+  "casesTableContainer",
+  getSearchParams(),
+  updateUrlParams
+).build();
+
+new TableBuilder(receiptDefinition, "receiptsTableContainer").build();
+
+new TableBuilder(extractionDefinition, "extractionsTableContainer").build();
+
+new TableBuilder(
+  libraryPreparationDefinition,
+  "libraryPreparationsTableContainer"
+).build();
+
+new TableBuilder(
+  getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true),
+  "libraryQualificationsTableContainer"
+).build();
+
+new TableBuilder(
+  getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
+  "fullDepthSequencingsTableContainer"
+).build();
+
+new TableBuilder(
+  informaticsReviewDefinition,
+  "informaticsReviewsTableContainer"
+).build();
+
+new TableBuilder(draftReportDefinition, "draftReportsTableContainer").build();
+
+new TableBuilder(finalReportDefinition, "finalReportsTableContainer").build();
