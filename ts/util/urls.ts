@@ -1,4 +1,6 @@
 import { siteConfig } from "./site-config";
+import { toTitleCase } from "./html-utils";
+import { Pair } from "./pair";
 
 const restBaseUrl = "/rest";
 const misoBaseUrl = `${siteConfig.misoUrl}/miso`;
@@ -81,6 +83,59 @@ function makeDashiSingleLaneUrl(designCode: string, runName: string) {
   }
 }
 
-function makeDashiRunUrl(report: string, runName: string) {
+export function makeDashiRunUrl(report: string, runName: string) {
   return `${siteConfig.dashiUrl}/${report}?run=${runName}`;
+}
+
+export function getBaseUrl() {
+  return window.location.origin + window.location.pathname;
+}
+
+export function getSearchParams() {
+  var searchParams = new Array<Pair<string, string>>();
+  new URL(document.location.href).searchParams.forEach((value, key) => {
+    var param: Pair<string, string> = { key: key, value: value };
+    searchParams.push(param);
+  });
+  return searchParams;
+}
+
+// append url param to current url
+export function appendUrlParam(key: string, value: string) {
+  var params = new URL(document.location.href).searchParams;
+  params.append(key, value);
+  return `?${params.toString()}`;
+}
+
+// remove url param from current url
+export function removeUrlParam(key: string, value: string) {
+  var params = new URL(document.location.href).searchParams;
+  var newParams = new URLSearchParams();
+  var paramCount = 0;
+  for (const [k, v] of params.entries()) {
+    if (k !== key || v !== value) {
+      // create new search params list, excluding the one we would like to delete
+      newParams.append(k, v);
+      ++paramCount;
+    }
+  }
+  if (paramCount > 0) {
+    return `?${newParams.toString()}`;
+  }
+  return `${newParams.toString()}`;
+}
+
+// update the current url search params (add or remove as specified)
+export function updateUrlParams(key: string, value: string, add?: boolean) {
+  // append chosen filter option to url
+  const uriEncode = encodeURIComponent(key);
+  var info = "update page: " + (add ? "append " : "remove ") + uriEncode;
+  const nextState = { info: info };
+  const nextTitle = info;
+  window.history.replaceState(
+    nextState,
+    nextTitle,
+    getBaseUrl() +
+      (add ? appendUrlParam(key, value) : removeUrlParam(key, value))
+  );
 }

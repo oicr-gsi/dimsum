@@ -126,3 +126,10 @@ export function addTextDiv(text: string, container: Node) {
   divContainer.appendChild(document.createTextNode(text));
   container.appendChild(divContainer);
 }
+
+// transform given string to title case
+export function toTitleCase(text: string) {
+  return text.replace(/\w\S*/g, function (text) {
+    return text.charAt(0).toUpperCase() + text.substring(1).toLowerCase();
+  });
+}

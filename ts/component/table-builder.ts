@@ -1,5 +1,4 @@
 import { Dropdown, DropdownOption, BasicDropdownOption } from "./dropdown";
-
 import {
   makeCell,
   addColumnHeader,
@@ -10,6 +9,7 @@ import {
 } from "../util/html-utils";
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
+import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
 
@@ -75,7 +75,7 @@ class AcceptedFilter {
   value: string;
   valid: boolean = true;
 
-  constructor(title: string, key: string, value: string, onRemove: () => {}) {
+  constructor(title: string, key: string, value: string, onRemove: () => void) {
     this.key = key;
     this.value = value;
     this.element = document.createElement("span");
@@ -121,10 +121,13 @@ export class TableBuilder<ParentType, ChildType> {
   allItems: ParentType[] = [];
   selectedItems: Set<ParentType> = new Set<ParentType>();
   selectAllCheckbox?: HTMLInputElement;
+  onFilterChange?: (key: string, value: string, add?: boolean) => void;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
-    containerId: string
+    containerId: string,
+    filterParams?: Array<Pair<string, string>>,
+    onFilterChange?: (key: string, value: string, add?: boolean) => void
   ) {
     this.definition = definition;
     this.sortColumn = definition.defaultSort.columnTitle;
@@ -135,6 +138,26 @@ export class TableBuilder<ParentType, ChildType> {
     }
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
+
+    if (filterParams) {
+      // create accepted filter if there is a matching key in table definition
+      filterParams.forEach((p) => {
+        this.definition.filters?.forEach((f) => {
+          if (f.key === p.key) {
+            // filter key is valid, create a new accepted filter
+            const onRemove = () => {
+              if (this.onFilterChange)
+                this.onFilterChange(p.key, p.value, false);
+              this.reload();
+            };
+            this.acceptedFilters.push(
+              new AcceptedFilter(f.title, f.key, p.value, onRemove)
+            );
+          }
+        });
+      });
+    }
+    this.onFilterChange = onFilterChange;
     this.container = container;
     this.columns = definition.generateColumns();
   }
@@ -142,6 +165,7 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
+
     this.addSortControls(topControlsContainer);
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
@@ -163,6 +187,7 @@ export class TableBuilder<ParentType, ChildType> {
       "rounded-xl",
       "overflow-hidden"
     );
+
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
 
@@ -213,7 +238,7 @@ export class TableBuilder<ParentType, ChildType> {
     const sortContainer = document.createElement("div");
     sortContainer.classList.add("flex-none", "space-x-2");
     container.appendChild(sortContainer);
-
+    // add sort icon
     const icon = makeIcon("sort");
     icon.title = "Sort";
     icon.classList.add("text-black");
@@ -284,11 +309,16 @@ export class TableBuilder<ParentType, ChildType> {
       // no filters for this table
       return;
     }
-
+    // add filter icon
     const filterIcon = makeIcon("filter");
     filterIcon.title = "Filter";
     filterIcon.classList.add("text-black");
     filterContainer.appendChild(filterIcon);
+
+    // add pre-table build filters
+    for (var filter of this.acceptedFilters) {
+      filterContainer.appendChild(filter.element);
+    }
 
     let filterOptions: DropdownOption[] = [];
     const reload = () => this.reload();
@@ -331,11 +361,16 @@ export class TableBuilder<ParentType, ChildType> {
       (value) =>
         new BasicDropdownOption(value, (dropdown: Dropdown) => {
           dropdown.getContainerTag().remove();
+          const onRemove = () => {
+            if (this.onFilterChange)
+              this.onFilterChange(filter.key, value, false);
+            reload();
+          };
           const filterLabel = new AcceptedFilter(
             filter.title,
             filter.key,
             value,
-            reload
+            onRemove
           );
           // add filter label to the menu bar
           filterContainer.insertBefore(
@@ -343,7 +378,11 @@ export class TableBuilder<ParentType, ChildType> {
             filterContainer.lastChild
           );
           this.acceptedFilters.push(filterLabel);
-          reload();
+          // update params
+          if (this.onFilterChange) {
+            this.onFilterChange(filter.key, value, true);
+          }
+          reload(); // apply new filter
         })
     );
     // add filter (& its submenu) to the parent filter menu
@@ -368,11 +407,16 @@ export class TableBuilder<ParentType, ChildType> {
     reload: () => {}
   ) {
     const onClose = (textInput: TextInput) => {
+      const onRemove = () => {
+        if (this.onFilterChange)
+          this.onFilterChange(filter.key, textInput.getValue(), false);
+        reload();
+      };
       const filterLabel = new AcceptedFilter(
         filter.title,
         filter.key,
         textInput.getValue(),
-        reload
+        onRemove
       );
       textInput.getContainerTag().remove();
       filterContainer.insertBefore(
@@ -380,7 +424,11 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
       this.acceptedFilters.push(filterLabel);
-      reload();
+      // update params
+      if (this.onFilterChange) {
+        this.onFilterChange(filter.key, textInput.getValue(), true);
+      }
+      reload(); // apply new filter
     };
     return new BasicDropdownOption(filter.title, () => {
       if (!filter.autocompleteUrl) {
