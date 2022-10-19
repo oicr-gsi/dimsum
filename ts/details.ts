@@ -37,7 +37,14 @@ const tableTitles = [
   "Draft Reports",
   "Final Reports",
 ];
-new TabBar(tableTitles, tableContainerIds, "tabBarContainer").build();
+
+// tabbed interface defaults to the cases table
+new TabBar(
+  tableTitles,
+  tableContainerIds,
+  "casesTableContainer",
+  "tabBarContainer"
+).build();
 
 new TableBuilder(
   caseDefinition,
