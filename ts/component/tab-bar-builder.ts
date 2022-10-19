@@ -14,6 +14,7 @@ class Tab {
     this.tableTitle = tableTitle;
     this.onSelect = onSelect;
     const button = document.createElement("button");
+    if (selected) this.selected = selected; // is the default tab
     button.className =
       "font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md";
     button.textContent = tableTitle;
@@ -29,8 +30,8 @@ class Tab {
         onSelect(tableContainerId);
       }
     };
-    this.styleButton();
     this.tabContainer = button;
+    this.styleButton();
   }
 
   // modifies the tab styling according to whether or not it has been selected
@@ -100,27 +101,27 @@ export class TabBar {
     this.reloadTables(this.defaultTableId); // show the default table
   }
 
-  // reload the shown tables
+  // reload: given the current active table, reload all tables and buttons
   public reloadTables(tableContainerId: string) {
-    console.log("RELOADING TABLES . . .");
+    console.log(`active table: ${tableContainerId}`);
+    console.log("RELOADING TABLES . . . . .");
+    // reset selected attribute of tabs to reflect current active table
     this.tabs.forEach((tab) => {
-      // not the selected tab, hide table and deselect
+      console.log(`current tab: ${tab.tableContainerId}`);
+      var table = document.getElementById(tab.tableContainerId);
       if (tab.tableContainerId !== tableContainerId) {
-        const table = document.getElementById(tab.tableContainerId);
-        table?.classList.replace("visible", "hidden");
+        console.log("hiding table . . .");
+        tab.selected = false;
+        if (!table?.classList.replace("visible", "hidden")) {
+          table?.classList.add("hidden");
+        }
       } else {
-        const table = document.getElementById(tableContainerId);
-        table?.classList.replace("hidden", "visible");
+        console.log("showing table . . .");
+        tab.selected = true;
+        if (!table?.classList.replace("hidden", "visible"))
+          table?.classList.add("visible");
       }
-    });
-
-    this.tableContainerIds.forEach((id) => {
-      const table = document.getElementById(id);
-      if (id === tableContainerId) {
-        table?.classList.replace("hidden", "visible");
-      } else {
-        table?.classList.replace("visible", "hidden");
-      }
+      tab.styleButton();
     });
   }
 }
