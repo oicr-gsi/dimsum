@@ -7,6 +7,7 @@ import {
 import { siteConfig } from "../util/site-config";
 import {
   ColumnDefinition,
+  legendAction,
   SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
@@ -22,11 +23,24 @@ import {
   getDivisorUnit,
   getMetricNames,
   getMetricRequirementText,
+  getSingleThreshold,
   makeMetricDisplay,
   makeNotFoundIcon,
   makeStatusIcon,
   nullIfUndefined,
 } from "../util/metrics";
+import { showErrorDialog } from "../component/dialog";
+
+const METRIC_LABEL_Q30 = "Bases Over Q30";
+const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
+const METRIC_LABEL_CLUSTERS_PF_2 = "Min Reads Delivered (PF)";
+const METRIC_LABEL_PHIX = "PhiX Control";
+const RUN_METRIC_LABELS = [
+  METRIC_LABEL_Q30,
+  METRIC_LABEL_CLUSTERS_PF_1,
+  METRIC_LABEL_CLUSTERS_PF_2,
+  METRIC_LABEL_PHIX,
+];
 
 export interface Sample extends Qcable {
   id: string;
@@ -60,6 +74,26 @@ export interface Sample extends Qcable {
   rawCoverage?: number;
   onTargetReads?: number;
   latestActivityDate: string;
+  sequencingLane: string;
+}
+
+interface MisoRunLibraryMetric {
+  title: string;
+  threshold_type: string;
+  threshold: number;
+  value: number | null;
+}
+
+interface MisoRunLibrary {
+  name: string;
+  run_id: number;
+  partition: number;
+  metrics: MisoRunLibraryMetric[];
+}
+
+interface QcInMisoRequest {
+  report: string;
+  library_aliquots: MisoRunLibrary[];
 }
 
 const defaultSort: SortDefinition = {
@@ -92,12 +126,24 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
     title: "Name",
     addParentContents(sample, fragment) {
       fragment.appendChild(
-        makeNameDiv(sample.name, urls.miso.sample(sample.id))
+        makeNameDiv(
+          sample.name +
+            (!includeRun && sample.sequencingLane
+              ? " (L" + sample.sequencingLane + ")"
+              : ""),
+          urls.miso.sample(sample.id)
+        )
       );
       if (includeRun && sample.run) {
         const runName = sample.run.name;
         fragment.appendChild(
-          makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName))
+          makeNameDiv(
+            sample.sequencingLane
+              ? runName + " (L" + sample.sequencingLane + ")"
+              : runName,
+            urls.miso.run(runName),
+            urls.dimsum.run(runName)
+          )
         );
         // TODO: add Dashi icon link
       }
@@ -164,6 +210,7 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
     return [
       makeQcStatusColumn(false),
@@ -200,6 +247,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns(data) {
     return [
       makeQcStatusColumn(false),
@@ -222,6 +270,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns(data) {
     return [
       makeQcStatusColumn(false),
@@ -241,6 +290,15 @@ export function getLibraryQualificationsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: defaultSort,
+    staticActions: [legendAction],
+    bulkActions: [
+      {
+        title: "QC in MISO",
+        handler(items) {
+          qcInMiso(items, "LIBRARY_QUALIFICATION");
+        },
+      },
+    ],
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
@@ -265,6 +323,15 @@ export function getFullDepthSequencingsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: defaultSort,
+    staticActions: [legendAction],
+    bulkActions: [
+      {
+        title: "QC in MISO",
+        handler(items) {
+          qcInMiso(items, "FULL_DEPTH_SEQUENCING");
+        },
+      },
+    ],
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
         makeQcStatusColumn(includeSequencingAttributes),
@@ -280,6 +347,143 @@ export function getFullDepthSequencingsDefinition(
       return columns;
     },
   };
+}
+
+function qcInMiso(items: Sample[], category: MetricCategory) {
+  const missingRun = items.filter((x) => !x.run).map((x) => x.name);
+  if (missingRun.length) {
+    const list = makeList(missingRun);
+    showErrorDialog("Some items are not run-libraries:", list);
+    return;
+  }
+  const missingAssay = items
+    .filter((x) => !x.assayId)
+    .map((x) => x.name)
+    .filter(unique);
+  if (missingAssay.length) {
+    const list = makeList(missingAssay);
+    showErrorDialog("Some libraries have no assay:", list);
+    return;
+  }
+  const groups = groupByAssayAndDesign(items);
+  if (groups.size > 1) {
+    const strings = items
+      .map((x) => {
+        // assayId can't actually be undefined here
+        const assay = siteConfig.assaysById[x.assayId || 0];
+        return `${x.name}: ${x.libraryDesignCode}; ${assay.name}`;
+      })
+      .filter(unique);
+    const list = makeList(strings);
+    showErrorDialog("Libraries must have the same assay and design", list);
+    return;
+  }
+  // There can only be one group at this point
+  groups.forEach((items) => openQcInMiso(items, category));
+}
+
+function unique<Type>(item: Type, index: number, array: Type[]) {
+  return array.indexOf(item) === index;
+}
+
+function makeList<Type>(items: string[]): HTMLElement {
+  const list = document.createElement("ul");
+  list.className = "list-disc list-inside";
+  items.forEach((value) => {
+    const li = document.createElement("li");
+    li.innerText = value;
+    list.appendChild(li);
+  });
+  return list;
+}
+
+function groupByAssayAndDesign(samples: Sample[]) {
+  const groups = new Map<string, Sample[]>();
+  samples.forEach((x) => {
+    if (!x.assayId) {
+      throw new Error(`Library ${x.name} has no assay`);
+    } else if (!x.libraryDesignCode) {
+      throw new Error(`Library ${x.id} has no design code`);
+    }
+    const key = `${x.assayId}_${x.libraryDesignCode}`;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)?.push(x);
+  });
+  return groups;
+}
+
+function openQcInMiso(samples: Sample[], category: MetricCategory) {
+  const request: QcInMisoRequest = {
+    report: "Dimsum",
+    library_aliquots: generateMetricData(category, samples),
+  };
+
+  const form = document.createElement("form");
+  form.style.display = "none";
+  form.action = urls.miso.qcRunLibraries;
+  form.method = "POST";
+  form.target = "_blank";
+  const data = document.createElement("input");
+  data.type = "hidden";
+  data.name = "data";
+  data.value = JSON.stringify(request);
+  form.appendChild(data);
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
+}
+
+function generateMetricData(
+  category: MetricCategory,
+  samples: Sample[]
+): MisoRunLibrary[] {
+  if (!samples[0].assayId) {
+    throw new Error(`Sample ${samples[0].assayId} has no assay`);
+  }
+  const data: MisoRunLibrary[] = [];
+  const metricNames = getMetricNames(category, [samples[0].assayId]).filter(
+    (x) => RUN_METRIC_LABELS.indexOf(x) === -1
+  );
+  samples.forEach((sample) => {
+    if (!sample.run) {
+      throw new Error(`Sample ${sample.id} has no run`);
+    }
+    data.push({
+      name: extractLibraryName(sample.id),
+      run_id: sample.run.id,
+      partition: parseInt(sample.sequencingLane),
+      metrics: getSampleMetrics(sample, metricNames, category),
+    });
+  });
+  return data;
+}
+
+function getSampleMetrics(
+  sample: Sample,
+  metricNames: string[],
+  category: MetricCategory
+): MisoRunLibraryMetric[] {
+  return metricNames
+    .flatMap(
+      (metricName) => getMatchingMetrics(metricName, category, sample) || []
+    )
+    .map((metric) => {
+      const value = getMetricValue(metric.name, sample);
+      const displayValue =
+        value == null ? null : formatMetricValue(value, [metric]);
+      const revisedValue =
+        displayValue == null
+          ? null
+          : parseFloat(displayValue.replaceAll(",", ""));
+      return {
+        title: metric.name,
+        threshold_type: metric.thresholdType.toLowerCase(),
+        threshold: getSingleThreshold(metric),
+        value: revisedValue,
+      };
+    });
 }
 
 function generateMetricColumns(
@@ -304,14 +508,14 @@ function generateMetricColumns(
         }
         // handle metrics that have multiple values
         switch (metricName) {
-          case "Bases Over Q30":
+          case METRIC_LABEL_Q30:
             addQ30Contents(sample, metrics, fragment);
             return;
-          case "Min Clusters (PF)":
-          case "Min Reads Delivered (PF)":
+          case METRIC_LABEL_CLUSTERS_PF_1:
+          case METRIC_LABEL_CLUSTERS_PF_2:
             addClustersPfContents(sample, metrics, fragment);
             return;
-          case "PhiX Control":
+          case METRIC_LABEL_PHIX:
             addPhixContents(sample, metrics, fragment);
             return;
         }
@@ -353,10 +557,10 @@ function generateMetricColumns(
         }
         // handle metrics that are checked against multiple values
         switch (metricName) {
-          case "Min Clusters (PF)":
-          case "Min Reads Delivered (PF)":
+          case METRIC_LABEL_CLUSTERS_PF_1:
+          case METRIC_LABEL_CLUSTERS_PF_2:
             return getClustersPfHighlight(sample, metrics);
-          case "PhiX Control":
+          case METRIC_LABEL_PHIX:
             return getPhixHighlight(sample, metrics);
         }
         if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
@@ -382,281 +586,281 @@ function generateMetricColumns(
       },
     };
   });
+}
 
-  function addQ30Contents(
-    sample: Sample,
-    metrics: Metric[],
-    fragment: DocumentFragment
-  ) {
-    // run-level value is checked, but run and lane-level are both displayed
-    if (!sample.run || !sample.run.percentOverQ30) {
-      if (sample.run && !sample.run.completionDate) {
-        fragment.appendChild(makeSequencingIcon());
-      } else {
-        fragment.appendChild(makeNotFoundIcon());
-      }
+function addQ30Contents(
+  sample: Sample,
+  metrics: Metric[],
+  fragment: DocumentFragment
+) {
+  // run-level value is checked, but run and lane-level are both displayed
+  if (!sample.run || !sample.run.percentOverQ30) {
+    if (sample.run && !sample.run.completionDate) {
+      fragment.appendChild(makeSequencingIcon());
+    } else {
+      fragment.appendChild(makeNotFoundIcon());
+    }
+    return;
+  }
+  fragment.appendChild(makeMetricDisplay(sample.run.percentOverQ30, metrics));
+  sample.run.lanes.forEach((lane) => {
+    if (!lane.percentOverQ30Read1) {
       return;
     }
-    fragment.appendChild(makeMetricDisplay(sample.run.percentOverQ30, metrics));
-    sample.run.lanes.forEach((lane) => {
-      if (!lane.percentOverQ30Read1) {
-        return;
-      }
-      let text = sample.run?.lanes.length === 1 ? "" : `Ln${lane.laneNumber} `;
-      text += `R1: ${lane.percentOverQ30Read1}`;
-      if (lane.percentOverQ30Read2) {
-        text += ";";
-      }
-      if (lane.percentOverQ30Read2) {
-        text += ` R2: ${lane.percentOverQ30Read2}`;
-      }
-      const div = document.createElement("div");
-      div.classList.add("whitespace-nowrap");
-      div.appendChild(document.createTextNode(text));
-      fragment.appendChild(div);
+    let text = sample.run?.lanes.length === 1 ? "" : `Ln${lane.laneNumber} `;
+    text += `R1: ${lane.percentOverQ30Read1}`;
+    if (lane.percentOverQ30Read2) {
+      text += ";";
+    }
+    if (lane.percentOverQ30Read2) {
+      text += ` R2: ${lane.percentOverQ30Read2}`;
+    }
+    const div = document.createElement("div");
+    div.classList.add("whitespace-nowrap");
+    div.appendChild(document.createTextNode(text));
+    fragment.appendChild(div);
+  });
+}
+
+function addClustersPfContents(
+  sample: Sample,
+  metrics: Metric[],
+  fragment: DocumentFragment
+) {
+  // For joined flowcells, run-level is checked
+  // For non-joined, each lane is checked
+  // Metric is sometimes specified "/lane", sometimes per run
+  if (!sample.run || !sample.run.clustersPf) {
+    if (sample.run && !sample.run.completionDate) {
+      fragment.appendChild(makeSequencingIcon());
+    } else {
+      fragment.appendChild(makeNotFoundIcon());
+    }
+    return;
+  }
+  const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
+  const perRunMetrics = separatedMetrics[0];
+  const perLaneMetrics = separatedMetrics[1];
+  const tooltipContents = document.createDocumentFragment();
+  if (perRunMetrics.length) {
+    // whether originally or not, these metrics are per run
+    perRunMetrics.forEach((metric) => {
+      const metricDiv = document.createElement("div");
+      metricDiv.innerText = getMetricRequirementText(metric);
+      tooltipContents.appendChild(metricDiv);
     });
   }
-
-  function addClustersPfContents(
-    sample: Sample,
-    metrics: Metric[],
-    fragment: DocumentFragment
-  ) {
-    // For joined flowcells, run-level is checked
-    // For non-joined, each lane is checked
-    // Metric is sometimes specified "/lane", sometimes per run
-    if (!sample.run || !sample.run.clustersPf) {
-      if (sample.run && !sample.run.completionDate) {
-        fragment.appendChild(makeSequencingIcon());
-      } else {
-        fragment.appendChild(makeNotFoundIcon());
-      }
-      return;
-    }
-    const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
-    const perRunMetrics = separatedMetrics[0];
-    const perLaneMetrics = separatedMetrics[1];
-    const tooltipContents = document.createDocumentFragment();
-    if (perRunMetrics.length) {
-      // whether originally or not, these metrics are per run
-      perRunMetrics.forEach((metric) => {
-        const metricDiv = document.createElement("div");
-        metricDiv.innerText = getMetricRequirementText(metric);
-        tooltipContents.appendChild(metricDiv);
-      });
-    }
-    const runDiv = document.createElement("div");
-    const divisorUnit = getDivisorUnit(metrics);
-    runDiv.innerText = formatMetricValue(
-      sample.run.clustersPf,
-      metrics,
-      divisorUnit
-    );
-    const tooltip = Tooltip.getInstance();
-    if (perRunMetrics.length) {
-      tooltip.addTarget(runDiv, tooltipContents);
-    }
-    fragment.appendChild(runDiv);
-
-    if (sample.run.lanes.length > 1) {
-      const laneTooltipContents = document.createDocumentFragment();
-      // these metrics are per lane
-      perLaneMetrics.forEach((metric) => {
-        const metricDiv = document.createElement("div");
-        metricDiv.innerText = getMetricRequirementText(metric);
-        laneTooltipContents.appendChild(metricDiv);
-      });
-      sample.run.lanes.forEach((lane) => {
-        if (lane.clustersPf) {
-          const laneDiv = document.createElement("div");
-          laneDiv.classList.add("whitespace-nowrap");
-          laneDiv.innerText = `Ln${lane.laneNumber}: ${formatMetricValue(
-            lane.clustersPf,
-            metrics,
-            divisorUnit
-          )}`;
-          if (perLaneMetrics.length) {
-            tooltip.addTarget(laneDiv, laneTooltipContents.cloneNode(true));
-          }
-          fragment.appendChild(laneDiv);
-        }
-      });
-    }
+  const runDiv = document.createElement("div");
+  const divisorUnit = getDivisorUnit(metrics);
+  runDiv.innerText = formatMetricValue(
+    sample.run.clustersPf,
+    metrics,
+    divisorUnit
+  );
+  const tooltip = Tooltip.getInstance();
+  if (perRunMetrics.length) {
+    tooltip.addTarget(runDiv, tooltipContents);
   }
+  fragment.appendChild(runDiv);
 
-  function getClustersPfHighlight(
-    sample: Sample,
-    metrics: Metric[]
-  ): CellStatus | null {
-    if (!sample.run || !sample.run.clustersPf) {
-      return "warning";
-    }
-    const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
-    const perRunMetrics = separatedMetrics[0];
-    const perLaneMetrics = separatedMetrics[1];
-
-    const divisorUnit = getDivisorUnit(metrics);
-    const divisor = getDivisor(divisorUnit);
-
-    if (
-      perRunMetrics.length &&
-      anyFail(sample.run.clustersPf / divisor, perRunMetrics)
-    ) {
-      return "error";
-    }
-
-    if (perLaneMetrics.length) {
-      let highlight: CellStatus | null = null;
-      for (let i = 0; i < sample.run.lanes.length; i++) {
-        const lane = sample.run.lanes[i];
-        if (!lane.clustersPf) {
-          highlight = "warning";
-        } else if (anyFail(lane.clustersPf / divisor, perLaneMetrics)) {
-          return "error";
-        }
-      }
-      return highlight;
-    }
-
-    return null;
-  }
-
-  function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
-    let perLaneMetrics = metrics.filter(
-      (metric) => metric.units && metric.units.endsWith("/lane")
-    );
-    let perRunMetrics = metrics.filter(
-      (metric) => !metric.units || !metric.units.endsWith("/lane")
-    );
-    if (run.joinedLanes) {
-      // ALL metrics are per run. If specified per lane, multiply by lane count
-      perLaneMetrics.forEach((metric) => {
-        const perRunMetric = makePerRunFromLaneMetric(metric, run);
-        perRunMetrics.push(perRunMetric);
-      });
-      perLaneMetrics = [];
-    }
-    if (run.lanes.length === 1) {
-      // Treat all as per run since we won't show the lane metrics separately
-      perRunMetrics = metrics;
-      perLaneMetrics = [];
-    }
-    return [perRunMetrics, perLaneMetrics];
-  }
-
-  function makePerRunFromLaneMetric(perLaneMetric: Metric, run: Run) {
-    const perRunMetric: Metric = Object.assign({}, perLaneMetric);
-    if (perRunMetric.minimum) {
-      perRunMetric.minimum *= run.lanes.length;
-    }
-    if (perRunMetric.maximum) {
-      perRunMetric.maximum *= run.lanes.length;
-    }
-    if (!perRunMetric.units) {
-      throw new Error("Unexpected missing units");
-    }
-    const match = /^(.*)\/lane$/.exec(perRunMetric.units);
-    if (!match) {
-      throw new Error(`Unexpected metric units: ${perRunMetric.units}`);
-    }
-    perRunMetric.units = match[1];
-    return perRunMetric;
-  }
-
-  function addPhixContents(
-    sample: Sample,
-    metrics: Metric[],
-    fragment: DocumentFragment
-  ) {
-    // There is no run-level metric, so we check each read of each lane
-    if (
-      !sample.run ||
-      !sample.run.lanes ||
-      !sample.run.lanes.length ||
-      sample.run.lanes.every((lane) => nullOrUndefined(lane.percentPfixRead1))
-    ) {
-      if (sample.run && !sample.run.completionDate) {
-        fragment.appendChild(makeSequencingIcon());
-      } else {
-        fragment.appendChild(makeNotFoundIcon());
-      }
-      return;
-    }
-
-    const tooltip = Tooltip.getInstance();
+  if (sample.run.lanes.length > 1) {
     const laneTooltipContents = document.createDocumentFragment();
-    metrics.forEach((metric) => {
+    // these metrics are per lane
+    perLaneMetrics.forEach((metric) => {
       const metricDiv = document.createElement("div");
       metricDiv.innerText = getMetricRequirementText(metric);
       laneTooltipContents.appendChild(metricDiv);
     });
-
-    const multipleLanes = sample.run.lanes.length > 1;
     sample.run.lanes.forEach((lane) => {
-      const laneDiv = document.createElement("div");
-      laneDiv.classList.add("whitespace-nowrap");
-      let text = multipleLanes ? `Ln${lane.laneNumber}` : "";
-      if (nullOrUndefined(lane.percentPfixRead1)) {
-        const span = document.createElement("span");
-        span.innerText = text + ": ";
-        laneDiv.appendChild(span);
-        laneDiv.appendChild(makeNotFoundIcon());
-      } else {
-        if (multipleLanes) {
-          text += " ";
+      if (lane.clustersPf) {
+        const laneDiv = document.createElement("div");
+        laneDiv.classList.add("whitespace-nowrap");
+        laneDiv.innerText = `Ln${lane.laneNumber}: ${formatMetricValue(
+          lane.clustersPf,
+          metrics,
+          divisorUnit
+        )}`;
+        if (perLaneMetrics.length) {
+          tooltip.addTarget(laneDiv, laneTooltipContents.cloneNode(true));
         }
-        text += `R1: ${lane.percentPfixRead1}`;
-        if (!nullOrUndefined(lane.percentPfixRead2)) {
-          text += `; R2: ${lane.percentPfixRead2}`;
-        }
-        laneDiv.innerText = text;
-        tooltip.addTarget(laneDiv, laneTooltipContents);
+        fragment.appendChild(laneDiv);
       }
-      fragment.appendChild(laneDiv);
     });
   }
+}
 
-  function getPhixHighlight(
-    sample: Sample,
-    metrics: Metric[]
-  ): CellStatus | null {
-    if (
-      !sample.run ||
-      !sample.run.lanes ||
-      !sample.run.lanes.length ||
-      sample.run.lanes.some((lane) => nullOrUndefined(lane.percentPfixRead1))
-    ) {
-      return "warning";
+function getClustersPfHighlight(
+  sample: Sample,
+  metrics: Metric[]
+): CellStatus | null {
+  if (!sample.run || !sample.run.clustersPf) {
+    return "warning";
+  }
+  const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
+  const perRunMetrics = separatedMetrics[0];
+  const perLaneMetrics = separatedMetrics[1];
+
+  const divisorUnit = getDivisorUnit(metrics);
+  const divisor = getDivisor(divisorUnit);
+
+  if (
+    perRunMetrics.length &&
+    anyFail(sample.run.clustersPf / divisor, perRunMetrics)
+  ) {
+    return "error";
+  }
+
+  if (perLaneMetrics.length) {
+    let highlight: CellStatus | null = null;
+    for (let i = 0; i < sample.run.lanes.length; i++) {
+      const lane = sample.run.lanes[i];
+      if (!lane.clustersPf) {
+        highlight = "warning";
+      } else if (anyFail(lane.clustersPf / divisor, perLaneMetrics)) {
+        return "error";
+      }
     }
-    if (
-      sample.run.lanes.some((lane) => {
-        return (
-          anyFail(lane.percentPfixRead1, metrics) ||
-          (!nullOrUndefined(lane.percentPfixRead2) &&
-            anyFail(lane.percentPfixRead2, metrics))
-        );
-      })
-    ) {
-      return "error";
+    return highlight;
+  }
+
+  return null;
+}
+
+function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
+  let perLaneMetrics = metrics.filter(
+    (metric) => metric.units && metric.units.endsWith("/lane")
+  );
+  let perRunMetrics = metrics.filter(
+    (metric) => !metric.units || !metric.units.endsWith("/lane")
+  );
+  if (run.joinedLanes) {
+    // ALL metrics are per run. If specified per lane, multiply by lane count
+    perLaneMetrics.forEach((metric) => {
+      const perRunMetric = makePerRunFromLaneMetric(metric, run);
+      perRunMetrics.push(perRunMetric);
+    });
+    perLaneMetrics = [];
+  }
+  if (run.lanes.length === 1) {
+    // Treat all as per run since we won't show the lane metrics separately
+    perRunMetrics = metrics;
+    perLaneMetrics = [];
+  }
+  return [perRunMetrics, perLaneMetrics];
+}
+
+function makePerRunFromLaneMetric(perLaneMetric: Metric, run: Run) {
+  const perRunMetric: Metric = Object.assign({}, perLaneMetric);
+  if (perRunMetric.minimum) {
+    perRunMetric.minimum *= run.lanes.length;
+  }
+  if (perRunMetric.maximum) {
+    perRunMetric.maximum *= run.lanes.length;
+  }
+  if (!perRunMetric.units) {
+    throw new Error("Unexpected missing units");
+  }
+  const match = /^(.*)\/lane$/.exec(perRunMetric.units);
+  if (!match) {
+    throw new Error(`Unexpected metric units: ${perRunMetric.units}`);
+  }
+  perRunMetric.units = match[1];
+  return perRunMetric;
+}
+
+function addPhixContents(
+  sample: Sample,
+  metrics: Metric[],
+  fragment: DocumentFragment
+) {
+  // There is no run-level metric, so we check each read of each lane
+  if (
+    !sample.run ||
+    !sample.run.lanes ||
+    !sample.run.lanes.length ||
+    sample.run.lanes.every((lane) => nullOrUndefined(lane.percentPfixRead1))
+  ) {
+    if (sample.run && !sample.run.completionDate) {
+      fragment.appendChild(makeSequencingIcon());
+    } else {
+      fragment.appendChild(makeNotFoundIcon());
     }
+    return;
+  }
+
+  const tooltip = Tooltip.getInstance();
+  const laneTooltipContents = document.createDocumentFragment();
+  metrics.forEach((metric) => {
+    const metricDiv = document.createElement("div");
+    metricDiv.innerText = getMetricRequirementText(metric);
+    laneTooltipContents.appendChild(metricDiv);
+  });
+
+  const multipleLanes = sample.run.lanes.length > 1;
+  sample.run.lanes.forEach((lane) => {
+    const laneDiv = document.createElement("div");
+    laneDiv.classList.add("whitespace-nowrap");
+    let text = multipleLanes ? `Ln${lane.laneNumber}` : "";
+    if (nullOrUndefined(lane.percentPfixRead1)) {
+      const span = document.createElement("span");
+      span.innerText = text + ": ";
+      laneDiv.appendChild(span);
+      laneDiv.appendChild(makeNotFoundIcon());
+    } else {
+      if (multipleLanes) {
+        text += " ";
+      }
+      text += `R1: ${lane.percentPfixRead1}`;
+      if (!nullOrUndefined(lane.percentPfixRead2)) {
+        text += `; R2: ${lane.percentPfixRead2}`;
+      }
+      laneDiv.innerText = text;
+      tooltip.addTarget(laneDiv, laneTooltipContents);
+    }
+    fragment.appendChild(laneDiv);
+  });
+}
+
+function getPhixHighlight(
+  sample: Sample,
+  metrics: Metric[]
+): CellStatus | null {
+  if (
+    !sample.run ||
+    !sample.run.lanes ||
+    !sample.run.lanes.length ||
+    sample.run.lanes.some((lane) => nullOrUndefined(lane.percentPfixRead1))
+  ) {
+    return "warning";
+  }
+  if (
+    sample.run.lanes.some((lane) => {
+      return (
+        anyFail(lane.percentPfixRead1, metrics) ||
+        (!nullOrUndefined(lane.percentPfixRead2) &&
+          anyFail(lane.percentPfixRead2, metrics))
+      );
+    })
+  ) {
+    return "error";
+  }
+  return null;
+}
+
+function getMatchingMetrics(
+  metricName: string,
+  category: MetricCategory,
+  sample: Sample
+): Metric[] | null {
+  if (!sample.assayId) {
     return null;
   }
-
-  function getMatchingMetrics(
-    metricName: string,
-    category: MetricCategory,
-    sample: Sample
-  ): Metric[] | null {
-    if (!sample.assayId) {
-      return null;
-    }
-    return siteConfig.assaysById[sample.assayId].metricCategories[category]
-      .filter((subcategory) => subcategoryApplies(subcategory, sample))
-      .flatMap((subcategory) => subcategory.metrics)
-      .filter(
-        (metric) => metric.name === metricName && metricApplies(metric, sample)
-      );
-  }
+  return siteConfig.assaysById[sample.assayId].metricCategories[category]
+    .filter((subcategory) => subcategoryApplies(subcategory, sample))
+    .flatMap((subcategory) => subcategory.metrics)
+    .filter(
+      (metric) => metric.name === metricName && metricApplies(metric, sample)
+    );
 }
 
 function subcategoryApplies(
@@ -766,7 +970,7 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       }
     case "On Target Reads":
       return nullIfUndefined(sample.onTargetReads);
-    case "Bases Over Q30":
+    case METRIC_LABEL_Q30:
       return sample.run ? nullIfUndefined(sample.run.percentOverQ30) : null;
   }
   if (/^Concentration/.test(metricName)) {
@@ -837,4 +1041,12 @@ function makeSequencingIcon() {
 
 function nullOrUndefined(value: any): boolean {
   return value === undefined || value === null;
+}
+
+function extractLibraryName(runLibraryId: string): string {
+  const match = runLibraryId.match("^\\d+_\\d+_(LDI\\d+)$");
+  if (!match) {
+    throw new Error(`Sample ${runLibraryId} is not a run-library`);
+  }
+  return match[1];
 }

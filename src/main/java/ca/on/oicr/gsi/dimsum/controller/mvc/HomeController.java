@@ -4,6 +4,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
@@ -15,7 +16,8 @@ public class HomeController {
   }
 
   @GetMapping("/login")
-  public String getLoginPage() {
+  public String getLoginPage(ModelMap model) {
+    model.put("hideNav", true);
     if (isAuthenticated()) {
       return "redirect:/";
     } else {

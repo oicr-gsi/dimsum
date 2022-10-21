@@ -1,6 +1,6 @@
 import { Tooltip } from "../component/tooltip";
 import { Metric, MetricCategory, MetricSubcategory } from "../data/assay";
-import { makeIcon } from "./html-utils";
+import { addTextDiv, makeIcon } from "./html-utils";
 import { siteConfig } from "./site-config";
 
 export function getMetricNames(
@@ -59,15 +59,40 @@ function byPriority(
   return sortPriorityA - sortPriorityB;
 }
 
-export function makeNotFoundIcon() {
-  return makeStatusIcon("question", "Not Found");
+export function makeNotFoundIcon(
+  prefix?: string,
+  tooltipAdditionalContents?: Node
+) {
+  return makeStatusIcon(
+    "question",
+    "Not Found",
+    prefix,
+    tooltipAdditionalContents
+  );
 }
 
-export function makeStatusIcon(iconName: string, statusText: string) {
+export function makeStatusIcon(
+  iconName: string,
+  statusText: string,
+  prefix?: string,
+  tooltipAdditionalContents?: Node
+) {
   const icon = makeIcon(iconName);
+  let element: HTMLElement = icon;
+  if (prefix) {
+    element = document.createElement("div");
+    const span = document.createElement("span");
+    span.innerText = prefix;
+    element.append(span, icon);
+  }
   const tooltip = Tooltip.getInstance();
-  tooltip.addTarget(icon, document.createTextNode(statusText));
-  return icon;
+  const fragment = document.createDocumentFragment();
+  addTextDiv(statusText, fragment);
+  if (tooltipAdditionalContents) {
+    fragment.appendChild(tooltipAdditionalContents);
+  }
+  tooltip.addTarget(element, fragment);
+  return element;
 }
 
 export function nullIfUndefined(value: any) {
@@ -77,12 +102,16 @@ export function nullIfUndefined(value: any) {
 export function makeMetricDisplay(
   value: number,
   metrics: Metric[],
-  prefix?: string
+  prefix?: string,
+  tooltipAdditionalContents?: Node
 ): HTMLSpanElement {
   const displayValue = formatMetricValue(value, metrics);
   const div = document.createElement("div");
   div.innerText = (prefix || "") + displayValue;
   const tooltipFragment = document.createDocumentFragment();
+  if (tooltipAdditionalContents) {
+    tooltipFragment.appendChild(tooltipAdditionalContents);
+  }
   metrics.forEach((metric) => {
     const div = document.createElement("div");
     div.innerText = getMetricRequirementText(metric);
@@ -264,4 +293,23 @@ function countDecimalPlaces(num?: number) {
   }
   const i = string.indexOf(".");
   return string.length - i - 1;
+}
+
+export function getSingleThreshold(metric: Metric) {
+  switch (metric.thresholdType) {
+    case "GT":
+    case "GE":
+      if (metric.minimum === undefined) {
+        throw new Error("Metric is missing minimum value");
+      }
+      return metric.minimum;
+    case "LT":
+    case "LE":
+      if (metric.maximum === undefined) {
+        throw new Error("Metric is missing maximum value");
+      }
+      return metric.maximum;
+    default:
+      throw new Error("Metric does not have a single threshold");
+  }
 }

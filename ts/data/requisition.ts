@@ -1,6 +1,12 @@
-import { addNaText, makeIcon, makeNameDiv } from "../util/html-utils";
+import {
+  addNaText,
+  addTextDiv,
+  makeIcon,
+  makeNameDiv,
+} from "../util/html-utils";
 import {
   ColumnDefinition,
+  legendAction,
   SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
@@ -94,6 +100,7 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
 export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: (data?: Requisition[]) => [
     qcStatusColumn((requisition) => requisition.informaticsReviews),
     requisitionColumn,
@@ -105,6 +112,7 @@ export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
 export const draftReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.draftReports),
     requisitionColumn,
@@ -115,6 +123,7 @@ export const draftReportDefinition: TableDefinition<Requisition, void> = {
 export const finalReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: defaultSort,
+  staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.finalReports),
     requisitionColumn,
@@ -143,7 +152,8 @@ function generateMetricColumns(
         } else if (!requisition.qcGroups.length) {
           fragment.appendChild(makeNotFoundIcon());
         } else {
-          let anyApplicable = false;
+          const groupsToInclude: RequisitionQcGroup[] = [];
+          const metricsPerGroup: Metric[][] = [];
           requisition.qcGroups.forEach((qcGroup) => {
             const metrics = getMatchingMetrics(
               metricName,
@@ -151,26 +161,47 @@ function generateMetricColumns(
               qcGroup
             );
             if (metrics && metrics.length) {
-              anyApplicable = true;
-              const value = getMetricValue(metricName, qcGroup);
-              const div = document.createElement("div");
-              const prefix =
-                requisition.qcGroups.length > 1
-                  ? `${makeQcGroupLabel(qcGroup)}: `
-                  : "";
-              if (value === null) {
-                const span = document.createElement("span");
-                span.innerText = prefix;
-                div.appendChild(span);
-                div.appendChild(makeNotFoundIcon());
-              } else {
-                div.appendChild(makeMetricDisplay(value, metrics, prefix));
-              }
-              fragment.appendChild(div);
+              groupsToInclude.push(qcGroup);
+              metricsPerGroup.push(metrics);
             }
           });
-          if (!anyApplicable) {
+          if (!groupsToInclude.length) {
             addNaText(fragment);
+            return;
+          }
+          for (let i = 0; i < groupsToInclude.length; i++) {
+            const qcGroup = groupsToInclude[i];
+            const metrics = metricsPerGroup[i];
+            const value = getMetricValue(metricName, qcGroup);
+            const div = document.createElement("div");
+            const prefix =
+              groupsToInclude.length > 1
+                ? `${makeQcGroupLabel(qcGroup)}: `
+                : "";
+            let detailsFragment = undefined;
+            if (groupsToInclude.length > 1) {
+              detailsFragment = document.createDocumentFragment();
+              addTextDiv(
+                `Tissue Origin: ${qcGroup.tissueOrigin}`,
+                detailsFragment
+              );
+              addTextDiv(`Tissue Type: ${qcGroup.tissueType}`, detailsFragment);
+              addTextDiv(
+                `Design: ${qcGroup.libraryDesignCode}`,
+                detailsFragment
+              );
+              if (qcGroup.groupId) {
+                addTextDiv(`Group ID: ${qcGroup.groupId}`, detailsFragment);
+              }
+            }
+            if (value === null) {
+              div.appendChild(makeNotFoundIcon(prefix, detailsFragment));
+            } else {
+              div.appendChild(
+                makeMetricDisplay(value, metrics, prefix, detailsFragment)
+              );
+            }
+            fragment.appendChild(div);
           }
         }
       },

@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
-import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.dimsum.data.Notification;
 import ca.on.oicr.gsi.dimsum.service.NotificationManager;
-import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.NotificationSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
 @RestController
@@ -22,9 +22,9 @@ public class NotificationRestController {
   private NotificationManager notificationManager;
 
   @PostMapping
-  public TableData<Run> query(@RequestBody DataQuery query) {
+  public TableData<Notification> query(@RequestBody DataQuery query) {
     validateDataQuery(query);
-    RunSort sort = parseSort(query, RunSort::getByLabel);
+    NotificationSort sort = parseSort(query, NotificationSort::getByLabel);
     boolean descending = parseDescending(query);
     if (query.getBaseFilter() != null
         || (query.getFilters() != null && query.getFilters().size() > 0)) {

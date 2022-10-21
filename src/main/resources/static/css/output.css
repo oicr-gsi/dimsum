@@ -537,10 +537,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   z-index: 40;
 }
 
-.z-50{
-  z-index: 50;
-}
-
 .z-10{
   z-index: 10;
 }
@@ -596,6 +592,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .mt-20{
   margin-top: 5rem;
+}
+
+.mb-2{
+  margin-bottom: 0.5rem;
 }
 
 .ml-2{
@@ -720,6 +720,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   cursor: move;
 }
 
+.list-inside{
+  list-style-position: inside;
+}
+
+.list-disc{
+  list-style-type: disc;
+}
+
 .grid-flow-row{
   grid-auto-flow: row;
 }
@@ -740,10 +748,6 @@ Ensure the default browser behavior of the `hidden` attribute.
   flex-direction: row;
 }
 
-.flex-row-reverse{
-  flex-direction: row-reverse;
-}
-
 .flex-col{
   flex-direction: column;
 }
@@ -754,6 +758,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .items-center{
   align-items: center;
+}
+
+.justify-end{
+  justify-content: flex-end;
 }
 
 .gap-2{

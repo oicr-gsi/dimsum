@@ -2,12 +2,12 @@
 export function addColumnHeader(
   thead: HTMLTableRowElement,
   header: string,
-  index: number
+  firstColumn: boolean
 ) {
   const th = document.createElement("th");
   th.className =
     "p-4 text-white font-semibold bg-grey-300 text-left align-text-top" +
-    (index > 0 ? " border-grey-200 border-l-1" : "");
+    (firstColumn ? "" : " border-grey-200 border-l-1");
 
   // allow line-wrapping on "/" character
   header.split("/").forEach((part, index, arr) => {
@@ -20,11 +20,11 @@ export function addColumnHeader(
 }
 
 // adds a cell to a table row
-export function makeCell(tr: HTMLTableRowElement, index: number) {
+export function makeCell(tr: HTMLTableRowElement, firstColumn: boolean) {
   const td = tr.insertCell();
   td.className =
     "p-3 border-grey-200 border-t-1 text-left align-text-top" +
-    (index > 0 ? " border-l-1" : "");
+    (firstColumn ? "" : " border-l-1");
   return td;
 }
 
@@ -98,7 +98,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
 export function makeClickout() {
   const clickout = document.createElement("button");
   clickout.className =
-    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden";
+    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden z-10";
   return clickout;
 }
 
@@ -121,8 +121,15 @@ export function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
 
-export function addTextDiv(text: string, container: HTMLElement) {
+export function addTextDiv(text: string, container: Node) {
   const divContainer = document.createElement("div");
   divContainer.appendChild(document.createTextNode(text));
   container.appendChild(divContainer);
+}
+
+// transform given string to title case
+export function toTitleCase(text: string) {
+  return text.replace(/\w\S*/g, function (text) {
+    return text.charAt(0).toUpperCase() + text.substring(1).toLowerCase();
+  });
 }

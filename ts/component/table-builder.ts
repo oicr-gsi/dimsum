@@ -1,5 +1,4 @@
 import { Dropdown, DropdownOption, BasicDropdownOption } from "./dropdown";
-
 import {
   makeCell,
   addColumnHeader,
@@ -10,7 +9,9 @@ import {
 } from "../util/html-utils";
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
+import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
+import { showErrorDialog } from "./dialog";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -45,6 +46,16 @@ export interface FilterDefinition {
   autocompleteUrl?: string; // required for text filters w/autocomplete
 }
 
+export interface StaticAction {
+  title: string;
+  handler: () => void;
+}
+
+export interface BulkAction<ParentType> {
+  title: string;
+  handler: (items: ParentType[]) => void;
+}
+
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
   defaultSort: SortDefinition;
@@ -54,6 +65,8 @@ export interface TableDefinition<ParentType, ChildType> {
     data?: ParentType[]
   ) => ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
+  staticActions?: StaticAction[];
+  bulkActions?: BulkAction<ParentType>[];
 }
 
 class AcceptedFilter {
@@ -62,7 +75,7 @@ class AcceptedFilter {
   value: string;
   valid: boolean = true;
 
-  constructor(title: string, key: string, value: string, onRemove: () => {}) {
+  constructor(title: string, key: string, value: string, onRemove: () => void) {
     this.key = key;
     this.value = value;
     this.element = document.createElement("span");
@@ -90,6 +103,7 @@ export class TableBuilder<ParentType, ChildType> {
   definition: TableDefinition<ParentType, ChildType>;
   container: HTMLElement;
   table?: HTMLTableElement;
+  thead?: HTMLTableSectionElement;
   pageDescription?: HTMLSpanElement;
   pageLeftButton?: HTMLButtonElement;
   pageRightButton?: HTMLButtonElement;
@@ -104,10 +118,16 @@ export class TableBuilder<ParentType, ChildType> {
   baseFilterKey: string | null;
   baseFilterValue: string | null;
   acceptedFilters: AcceptedFilter[] = [];
+  allItems: ParentType[] = [];
+  selectedItems: Set<ParentType> = new Set<ParentType>();
+  selectAllCheckbox?: HTMLInputElement;
+  onFilterChange?: (key: string, value: string, add?: boolean) => void;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
-    containerId: string
+    containerId: string,
+    filterParams?: Array<Pair<string, string>>,
+    onFilterChange?: (key: string, value: string, add?: boolean) => void
   ) {
     this.definition = definition;
     this.sortColumn = definition.defaultSort.columnTitle;
@@ -118,6 +138,26 @@ export class TableBuilder<ParentType, ChildType> {
     }
     this.baseFilterKey = container.getAttribute("data-detail-type");
     this.baseFilterValue = container.getAttribute("data-detail-value");
+
+    if (filterParams) {
+      // create accepted filter if there is a matching key in table definition
+      filterParams.forEach((p) => {
+        this.definition.filters?.forEach((f) => {
+          if (f.key === p.key) {
+            // filter key is valid, create a new accepted filter
+            const onRemove = () => {
+              if (this.onFilterChange)
+                this.onFilterChange(p.key, p.value, false);
+              this.reload();
+            };
+            this.acceptedFilters.push(
+              new AcceptedFilter(f.title, f.key, p.value, onRemove)
+            );
+          }
+        });
+      });
+    }
+    this.onFilterChange = onFilterChange;
     this.container = container;
     this.columns = definition.generateColumns();
   }
@@ -125,6 +165,7 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
+
     this.addSortControls(topControlsContainer);
     this.addFilterControls(topControlsContainer);
     this.addPagingControls(topControlsContainer);
@@ -146,28 +187,58 @@ export class TableBuilder<ParentType, ChildType> {
       "rounded-xl",
       "overflow-hidden"
     );
+
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
 
     const bottomControlsContainer = document.createElement("div");
     bottomControlsContainer.className =
-      "flex flex-row-reverse mt-4 items-top space-x-2";
+      "flex justify-end mt-4 items-top space-x-2";
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
 
     this.load();
+    this.setupScrollListener();
     this.reload();
   }
 
   private addActionButtons(container: HTMLElement) {
-    this.addLegendControls(container);
+    if (this.definition.bulkActions) {
+      this.definition.bulkActions.forEach((action) => {
+        this.addActionButton(container, action.title, () => {
+          if (!this.selectedItems.size) {
+            showErrorDialog("No items selected");
+            return;
+          }
+          action.handler(Array.from(this.selectedItems));
+        });
+      });
+    }
+    if (this.definition.staticActions) {
+      this.definition.staticActions.forEach((action) => {
+        this.addActionButton(container, action.title, action.handler);
+      });
+    }
+  }
+
+  private addActionButton(
+    container: HTMLElement,
+    title: string,
+    handler: () => void
+  ) {
+    const button = document.createElement("button");
+    button.className =
+      "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
+    button.innerText = title;
+    button.onclick = handler;
+    container.appendChild(button);
   }
 
   private addSortControls(container: HTMLElement) {
     const sortContainer = document.createElement("div");
     sortContainer.classList.add("flex-none", "space-x-2");
     container.appendChild(sortContainer);
-
+    // add sort icon
     const icon = makeIcon("sort");
     icon.title = "Sort";
     icon.classList.add("text-black");
@@ -238,11 +309,16 @@ export class TableBuilder<ParentType, ChildType> {
       // no filters for this table
       return;
     }
-
+    // add filter icon
     const filterIcon = makeIcon("filter");
     filterIcon.title = "Filter";
     filterIcon.classList.add("text-black");
     filterContainer.appendChild(filterIcon);
+
+    // add pre-table build filters
+    for (var filter of this.acceptedFilters) {
+      filterContainer.appendChild(filter.element);
+    }
 
     let filterOptions: DropdownOption[] = [];
     const reload = () => this.reload();
@@ -285,11 +361,16 @@ export class TableBuilder<ParentType, ChildType> {
       (value) =>
         new BasicDropdownOption(value, (dropdown: Dropdown) => {
           dropdown.getContainerTag().remove();
+          const onRemove = () => {
+            if (this.onFilterChange)
+              this.onFilterChange(filter.key, value, false);
+            reload();
+          };
           const filterLabel = new AcceptedFilter(
             filter.title,
             filter.key,
             value,
-            reload
+            onRemove
           );
           // add filter label to the menu bar
           filterContainer.insertBefore(
@@ -297,7 +378,11 @@ export class TableBuilder<ParentType, ChildType> {
             filterContainer.lastChild
           );
           this.acceptedFilters.push(filterLabel);
-          reload();
+          // update params
+          if (this.onFilterChange) {
+            this.onFilterChange(filter.key, value, true);
+          }
+          reload(); // apply new filter
         })
     );
     // add filter (& its submenu) to the parent filter menu
@@ -305,7 +390,9 @@ export class TableBuilder<ParentType, ChildType> {
       const filterSuboptionsDropdown = new Dropdown(
         filterSuboptions,
         true,
-        filter.title
+        filter.title,
+        undefined,
+        true
       );
       filterContainer.insertBefore(
         filterSuboptionsDropdown.getContainerTag(),
@@ -320,11 +407,16 @@ export class TableBuilder<ParentType, ChildType> {
     reload: () => {}
   ) {
     const onClose = (textInput: TextInput) => {
+      const onRemove = () => {
+        if (this.onFilterChange)
+          this.onFilterChange(filter.key, textInput.getValue(), false);
+        reload();
+      };
       const filterLabel = new AcceptedFilter(
         filter.title,
         filter.key,
         textInput.getValue(),
-        reload
+        onRemove
       );
       textInput.getContainerTag().remove();
       filterContainer.insertBefore(
@@ -332,7 +424,11 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
       this.acceptedFilters.push(filterLabel);
-      reload();
+      // update params
+      if (this.onFilterChange) {
+        this.onFilterChange(filter.key, textInput.getValue(), true);
+      }
+      reload(); // apply new filter
     };
     return new BasicDropdownOption(filter.title, () => {
       if (!filter.autocompleteUrl) {
@@ -399,29 +495,59 @@ export class TableBuilder<ParentType, ChildType> {
     };
   }
 
-  private addLegendControls(container: HTMLElement) {
-    const legendButton = document.createElement("button");
-    legendButton.className =
-      "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
-    legendButton.innerHTML = "Legend";
-    legendButton.onclick = toggleLegend;
-    container.appendChild(legendButton);
-  }
-
   private load(data?: ParentType[]) {
     this.columns = this.definition.generateColumns(data);
     const table = getElement(this.table);
     table.replaceChildren();
     this.addTableHead(table);
     this.addTableBody(table, data);
+    this.allItems = data || [];
+    this.selectedItems = new Set<ParentType>();
   }
 
   private addTableHead(table: HTMLTableElement) {
-    const thead = table.createTHead();
-    const row = thead.insertRow();
+    this.thead = table.createTHead();
+    this.thead.className = "relative";
+    const row = this.thead.insertRow();
+    if (this.definition.bulkActions) {
+      this.addSelectAllHeader(row);
+    } else {
+      this.selectAllCheckbox = undefined;
+    }
     this.columns.forEach((column, i) => {
-      addColumnHeader(row, column.title, i);
+      addColumnHeader(
+        row,
+        column.title,
+        i == 0 && !this.definition.bulkActions
+      );
     });
+  }
+
+  private addSelectAllHeader(thead: HTMLTableRowElement) {
+    const th = document.createElement("th");
+    th.className =
+      "p-4 text-white font-semibold bg-grey-300 text-left align-text-top";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.onchange = (event) => {
+      this.toggleSelectAll(checkbox.checked);
+    };
+    this.selectAllCheckbox = checkbox;
+    th.appendChild(checkbox);
+    thead.appendChild(th);
+  }
+
+  private toggleSelectAll(select: boolean) {
+    if (select) {
+      this.allItems.forEach((item) => this.selectedItems.add(item));
+    } else {
+      this.selectedItems = new Set<ParentType>();
+    }
+    const rowSelects = this.container.getElementsByClassName("row-select");
+    Array.prototype.forEach.call(
+      rowSelects,
+      (rowSelect) => (rowSelect.checked = select)
+    );
   }
 
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
@@ -433,6 +559,24 @@ export class TableBuilder<ParentType, ChildType> {
     } else {
       this.addNoDataRow(tbody);
     }
+  }
+
+  private setupScrollListener() {
+    document.addEventListener("scroll", (event) => {
+      const table = getElement(this.table);
+      const thead = getElement(this.thead);
+      const tableRect = table.getBoundingClientRect();
+      if (tableRect.y >= 0) {
+        thead.style.top = "0";
+        return;
+      }
+      const headRect = thead.getBoundingClientRect();
+      if (headRect.height - 2 > tableRect.bottom) {
+        thead.style.top = tableRect.height - headRect.height + "px";
+      } else {
+        thead.style.top = tableRect.top * -1 - 2 + "px";
+      }
+    });
   }
 
   private async reload() {
@@ -486,19 +630,21 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {
-    // TODO: keep track of "hideIfEmpty" columns
     let children: ChildType[] = [];
     if (this.definition.getChildren) {
       children = this.definition.getChildren(parent);
     }
     // generate parent row, which includes the first child (if applicable)
     const tr = this.addBodyRow(tbody, parent);
+    if (this.definition.bulkActions) {
+      this.addRowSelectCell(tr, parent);
+    }
     this.columns.forEach((column, i) => {
       if (column.child) {
         if (children.length) {
           this.addChildCell(tr, column, children[0], parent, i);
         } else {
-          const td = makeCell(tr, i);
+          const td = makeCell(tr, i == 0 && !this.definition.bulkActions);
           shadeElement(td, "na");
           td.appendChild(document.createTextNode("N/A"));
         }
@@ -533,10 +679,28 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addNoDataRow(tbody: HTMLTableSectionElement) {
     const row = tbody.insertRow();
-    const cell = makeCell(row, 0);
-    cell.colSpan = this.columns.length;
+    const cell = makeCell(row, true);
+    cell.colSpan = this.columns.length + (this.definition.bulkActions ? 1 : 0);
     cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
+  }
+
+  private addRowSelectCell(tr: HTMLTableRowElement, item: ParentType) {
+    const td = makeCell(tr, true);
+    const checkbox = document.createElement("input");
+    checkbox.className = "row-select";
+    checkbox.type = "checkbox";
+    checkbox.onchange = (event) => {
+      if (checkbox.checked) {
+        this.selectedItems.add(item);
+      } else {
+        if (this.selectAllCheckbox) {
+          this.selectAllCheckbox.checked = false;
+          this.selectedItems.delete(item);
+        }
+      }
+    };
+    td.appendChild(checkbox);
   }
 
   private addParentCell(
@@ -551,7 +715,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as parent, but doesn't define addParentContents`
       );
     }
-    const td = makeCell(tr, index);
+    const td = makeCell(tr, index == 0 && !this.definition.bulkActions);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, null));
     }
@@ -575,7 +739,7 @@ export class TableBuilder<ParentType, ChildType> {
         `Column "${column.title}" specified as child, but doesn't define getChildContents`
       );
     }
-    const td = makeCell(tr, index);
+    const td = makeCell(tr, index == 0 && !this.definition.bulkActions);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, child));
     }
@@ -592,3 +756,8 @@ function getElement<Type>(element?: Type) {
     throw new Error("Missing element");
   }
 }
+
+export const legendAction: StaticAction = {
+  title: "Legend",
+  handler: toggleLegend,
+};

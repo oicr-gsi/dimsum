@@ -1,4 +1,4 @@
-import { TableDefinition } from "../component/table-builder";
+import { legendAction, TableDefinition } from "../component/table-builder";
 import {
   addLink,
   makeIcon,
@@ -145,6 +145,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
+  staticActions: [legendAction],
   generateColumns: () => [
     {
       title: "Project",
@@ -607,7 +608,9 @@ function makeSampleTooltip(sample: Sample) {
   if (sample.run) {
     topContainer.appendChild(
       makeNameDiv(
-        sample.run.name,
+        sample.sequencingLane
+          ? sample.run.name + " (L" + sample.sequencingLane + ")"
+          : sample.run.name,
         urls.miso.run(sample.run.name),
         urls.dimsum.run(sample.run.name)
       )
