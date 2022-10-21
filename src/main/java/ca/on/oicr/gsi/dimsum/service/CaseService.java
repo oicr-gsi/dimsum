@@ -140,6 +140,12 @@ public class CaseService {
         .collect(Collectors.toSet());
   }
 
+  public Set<String> getMatchingRunNames(String prefix) {
+    return caseData.getRunNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
+  }
+
   public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,

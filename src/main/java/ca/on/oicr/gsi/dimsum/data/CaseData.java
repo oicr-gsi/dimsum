@@ -4,6 +4,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +71,14 @@ public class CaseData {
 
   public Set<String> getDonorNames() {
     return donorNames;
+  }
+
+  public Set<String> getRunNames() {
+    Set<String> runs = new HashSet<>();
+    for (Map.Entry<String, RunAndLibraries> entry : runsByName.entrySet()) {
+      runs.add(entry.getKey());
+    }
+    return runs;
   }
 
 }
