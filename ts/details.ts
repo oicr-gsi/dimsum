@@ -53,30 +53,58 @@ new TableBuilder(
   updateUrlParams
 ).build();
 
-new TableBuilder(receiptDefinition, "receiptsTableContainer").build();
+new TableBuilder(
+  receiptDefinition,
+  "receiptsTableContainer",
+  getSearchParams(),
+  updateUrlParams
+).build();
 
-new TableBuilder(extractionDefinition, "extractionsTableContainer").build();
+new TableBuilder(
+  extractionDefinition,
+  "extractionsTableContainer",
+  getSearchParams(),
+  updateUrlParams
+).build();
 
 new TableBuilder(
   libraryPreparationDefinition,
-  "libraryPreparationsTableContainer"
+  "libraryPreparationsTableContainer",
+  getSearchParams(),
+  updateUrlParams
 ).build();
 
 new TableBuilder(
   getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true),
-  "libraryQualificationsTableContainer"
+  "libraryQualificationsTableContainer",
+  getSearchParams(),
+  updateUrlParams
 ).build();
 
 new TableBuilder(
   getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
-  "fullDepthSequencingsTableContainer"
+  "fullDepthSequencingsTableContainer",
+  getSearchParams(),
+  updateUrlParams
 ).build();
 
 new TableBuilder(
   informaticsReviewDefinition,
-  "informaticsReviewsTableContainer"
+  "informaticsReviewsTableContainer",
+  getSearchParams(),
+  updateUrlParams
 ).build();
 
-new TableBuilder(draftReportDefinition, "draftReportsTableContainer").build();
+new TableBuilder(
+  draftReportDefinition,
+  "draftReportsTableContainer",
+  getSearchParams(),
+  updateUrlParams
+).build();
 
-new TableBuilder(finalReportDefinition, "finalReportsTableContainer").build();
+new TableBuilder(
+  finalReportDefinition,
+  "finalReportsTableContainer",
+  getSearchParams(),
+  updateUrlParams
+).build();
