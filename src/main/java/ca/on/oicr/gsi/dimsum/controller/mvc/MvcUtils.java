@@ -78,8 +78,6 @@ public class MvcUtils {
   }
 
   private static RunFilter parseRunFilter(KeyValuePair pair) {
-    System.out.println("\n" + "MvcUtils.parseRunFilter(KeyValuePair pair)");
-    System.out.println("pair: " + pair.getKey() + ", " + pair.getValue() + "\n");
     try {
       RunFilterKey key = RunFilterKey.valueOf(pair.getKey());
       return new RunFilter(key, pair.getValue());

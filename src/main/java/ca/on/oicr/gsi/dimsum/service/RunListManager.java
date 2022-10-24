@@ -53,26 +53,6 @@ public class RunListManager {
 
   public TableData<Run> getRuns(int pageSize, int pageNumber, RunSort sort, boolean descending,
       RunFilter baseFilter, Collection<RunFilter> filters) {
-
-    // List<Run> runs = getRuns(baseFilter);
-    // TableData<Run> data = new TableData<>();
-    // data.setTotalCount(runs.stream().flatMap);
-
-    // if (sort == null) {
-    // sort = RunSort.COMPLETION_DATE;
-    // descending = true;
-    // }
-    // stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
-    // List<Run> filteredRuns =
-    // stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
-    // TableData<Run> data = new TableData<>();
-    // data.setTotalCount(baseRuns.size());
-    // data.setFilteredCount(stream.count());
-    // data.setItems(filteredRuns);
-    // System.out.println("RunListManager.getRuns()");
-    // return data;
-
-
     List<Run> baseRuns = runs;
     Stream<Run> stream = applyFilters(baseRuns, filters);
     if (sort == null) {
@@ -86,20 +66,7 @@ public class RunListManager {
     data.setTotalCount(baseRuns.size());
     data.setFilteredCount(applyFilters(baseRuns, filters).count());
     data.setItems(filteredRuns);
-    System.out.println("RunListManager.getRuns()");
     return data;
-
-    // List<Run> runs =
-    // currentRuns.stream()
-    // .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-    // .skip(pageSize * (pageNumber - 1))
-    // .limit(pageSize)
-    // .toList();
-    // TableData<Run> data = new TableData<>();
-    // data.setTotalCount(currentRuns.size());
-    // data.setFilteredCount(currentRuns.size());
-    // data.setItems(runs);
-    // return data;
   }
 
   private Stream<Run> applyFilters(List<Run> runs, Collection<RunFilter> filters) {
