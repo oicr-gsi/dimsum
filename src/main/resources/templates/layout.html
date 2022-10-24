@@ -30,7 +30,7 @@
       <div class="flex-none text-green-200 font-sarabun font-light font text-24 cursor-default"
         th:text="${instanceName}"></div>
 
-      <div>
+      <div class="flex-1">
         <form sec:authorize="isAuthenticated()" id="logout" action="/logout" method="POST">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <input type="submit" value="log out"
