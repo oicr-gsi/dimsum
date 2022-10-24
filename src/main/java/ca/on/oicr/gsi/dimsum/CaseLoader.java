@@ -129,7 +129,7 @@ public class CaseLoader {
       log.debug(String.format("Completed loading %d cases.", cases.size()));
       return new CaseData(cases, runsByName, assaysById, afterTimestamp, getAssayNames(assaysById),
           getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
-          getDonorNames(donorsById));
+          getDonorNames(donorsById), getRunNames(runsByName));
     }
   }
 
@@ -147,6 +147,10 @@ public class CaseLoader {
 
   private Set<String> getDonorNames(Map<String, Donor> donorsById) {
     return donorsById.values().stream().map(Donor::getName).collect(Collectors.toSet());
+  }
+
+  private Set<String> getRunNames(Map<String, RunAndLibraries> runsByName) {
+    return runsByName.keySet();
   }
 
   protected FileReader getProjectReader() throws FileNotFoundException {

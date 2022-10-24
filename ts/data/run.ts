@@ -1,4 +1,4 @@
-import { TableDefinition } from "../component/table-builder";
+import { legendAction, TableDefinition } from "../component/table-builder";
 import { makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { Run } from "./case";
@@ -10,6 +10,7 @@ export const runDefinition: TableDefinition<Run, void> = {
     descending: true,
     type: "date",
   },
+  staticActions: [legendAction],
   filters: [
     {
       title: "Run",
@@ -18,7 +19,7 @@ export const runDefinition: TableDefinition<Run, void> = {
       autocompleteUrl: urls.rest.autocomplete.runNames,
     },
   ],
-  generateColumns() {
+  generateColumns(data) {
     return [
       {
         title: "Name",

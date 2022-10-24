@@ -4,7 +4,6 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import java.time.ZonedDateTime;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,12 +20,13 @@ public class CaseData {
   private final Set<String> requisitionNames;
   private final Set<String> projectsNames;
   private final Set<String> donorNames;
+  private final Set<String> runNames;
 
 
 
   public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
       Map<Long, Assay> assaysById, ZonedDateTime timestamp, Set<String> assays,
-      Set<String> requisitions, Set<String> projects, Set<String> donors) {
+      Set<String> requisitions, Set<String> projects, Set<String> donors, Set<String> runs) {
     this.cases = unmodifiableList(cases);
     this.runsByName = Collections.unmodifiableMap(runsByName);
     this.assaysById = Collections.unmodifiableMap(assaysById);
@@ -35,6 +35,7 @@ public class CaseData {
     this.requisitionNames = Collections.unmodifiableSet(requisitions);
     this.projectsNames = Collections.unmodifiableSet(projects);
     this.donorNames = Collections.unmodifiableSet(donors);
+    this.runNames = Collections.unmodifiableSet(runs);
   }
 
   public List<Case> getCases() {
@@ -74,11 +75,6 @@ public class CaseData {
   }
 
   public Set<String> getRunNames() {
-    Set<String> runs = new HashSet<>();
-    for (Map.Entry<String, RunAndLibraries> entry : runsByName.entrySet()) {
-      runs.add(entry.getKey());
-    }
-    return runs;
+    return runNames;
   }
-
 }
