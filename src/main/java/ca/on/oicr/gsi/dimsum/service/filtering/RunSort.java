@@ -11,7 +11,8 @@ public enum RunSort {
 
   // @formatter:off
   NAME("Name", Comparator.comparing(Run::getName)),
-  COMPLETION_DATE("Completion Date", Comparator.comparing(Run::getCompletionDate));
+  COMPLETION_DATE("Completion Date",
+      Comparator.comparing(Run::getCompletionDate, Comparator.nullsLast(Comparator.naturalOrder())));
   // @formatter:on
 
   private static final Map<String, RunSort> map = Stream.of(RunSort.values())
