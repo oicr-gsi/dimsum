@@ -21,6 +21,10 @@
       <id>atlassian-public</id>
       <url>https://packages.atlassian.com/content/repositories/atlassian-public/</url>
     </repository>
+    <repository>
+      <id>atlassian-maven-external</id>
+      <url>https://packages.atlassian.com/mvn/maven-external/</url>
+    </repository>
   </repositories>
 
   <dependencyManagement>
