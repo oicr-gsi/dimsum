@@ -11,7 +11,9 @@ public enum NotificationSort {
 
   // @formatter:off
   RUN("Run", Comparator.comparing(x -> x.getRun().getName())),
-  COMPLETION_DATE("Completion Date", Comparator.comparing(x -> x.getRun().getCompletionDate()));
+  COMPLETION_DATE("Completion Date",
+      Comparator.comparing(x -> x.getRun().getCompletionDate(),
+          Comparator.nullsLast(Comparator.naturalOrder())));
   // @formatter:on
 
   private static final Map<String, NotificationSort> map = Stream.of(NotificationSort.values())
