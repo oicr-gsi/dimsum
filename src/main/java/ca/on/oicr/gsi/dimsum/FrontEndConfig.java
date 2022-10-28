@@ -22,6 +22,9 @@ public class FrontEndConfig {
   @Value("${dashi.url}")
   private String dashiUrl;
 
+  @Value("${jira.baseurl:#{null}}")
+  private String jiraUrl;
+
   private final List<String> pendingStates =
       Stream.of(PendingState.values()).map(PendingState::getLabel).toList();
 
@@ -34,6 +37,10 @@ public class FrontEndConfig {
 
   public String getDashiUrl() {
     return dashiUrl;
+  }
+
+  public String getJiraUrl() {
+    return jiraUrl;
   }
 
   public List<String> getPendingStates() {
