@@ -321,18 +321,13 @@ export class TableBuilder<ParentType, ChildType> {
     }
 
     let filterOptions: DropdownOption[] = [];
-    const reload = () => this.reload();
     this.definition.filters.forEach((filter) => {
       switch (filter.type) {
         case "dropdown":
-          filterOptions.push(
-            this.makeDropdownFilter(filter, filterContainer, reload)
-          );
+          filterOptions.push(this.makeDropdownFilter(filter, filterContainer));
           break;
         case "text":
-          filterOptions.push(
-            this.makeTextInputFilter(filter, filterContainer, reload)
-          );
+          filterOptions.push(this.makeTextInputFilter(filter, filterContainer));
           break;
         default:
           throw new Error(`Unhandled filter type: ${filter.type}`);
@@ -350,8 +345,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private makeDropdownFilter(
     filter: FilterDefinition,
-    filterContainer: HTMLElement,
-    reload: () => {}
+    filterContainer: HTMLElement
   ) {
     if (!filter.values || !filter.values.length) {
       throw new Error(`Dropdown filter ${filter.key} has no dropdown options`);
@@ -364,7 +358,7 @@ export class TableBuilder<ParentType, ChildType> {
           const onRemove = () => {
             if (this.onFilterChange)
               this.onFilterChange(filter.key, value, false);
-            reload();
+            this.reload(true);
           };
           const filterLabel = new AcceptedFilter(
             filter.title,
@@ -382,7 +376,7 @@ export class TableBuilder<ParentType, ChildType> {
           if (this.onFilterChange) {
             this.onFilterChange(filter.key, value, true);
           }
-          reload(); // apply new filter
+          this.reload(true); // apply new filter
         })
     );
     // add filter (& its submenu) to the parent filter menu
@@ -403,14 +397,13 @@ export class TableBuilder<ParentType, ChildType> {
 
   private makeTextInputFilter(
     filter: FilterDefinition,
-    filterContainer: HTMLElement,
-    reload: () => {}
+    filterContainer: HTMLElement
   ) {
     const onClose = (textInput: TextInput) => {
       const onRemove = () => {
         if (this.onFilterChange)
           this.onFilterChange(filter.key, textInput.getValue(), false);
-        reload();
+        this.reload(true);
       };
       const filterLabel = new AcceptedFilter(
         filter.title,
@@ -428,7 +421,7 @@ export class TableBuilder<ParentType, ChildType> {
       if (this.onFilterChange) {
         this.onFilterChange(filter.key, textInput.getValue(), true);
       }
-      reload(); // apply new filter
+      this.reload(true); // apply new filter
     };
     return new BasicDropdownOption(filter.title, () => {
       if (!filter.autocompleteUrl) {
@@ -579,8 +572,11 @@ export class TableBuilder<ParentType, ChildType> {
     });
   }
 
-  private async reload() {
+  private async reload(resetPage?: boolean) {
     this.showLoading();
+    if (resetPage) {
+      this.pageNumber = 1;
+    }
     this.acceptedFilters = this.acceptedFilters.filter(
       (filter) => filter.valid
     );
