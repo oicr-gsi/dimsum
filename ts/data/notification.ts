@@ -1,16 +1,16 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
-import { makeIcon, makeNameDiv } from "../util/html-utils";
+import { addLink, makeIcon, makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { Run } from "./case";
-import { MetricCategory } from "./assay";
 import { getRunQcStatus } from "./sample";
+import { siteConfig } from "../util/site-config";
 
 interface Notification {
   run: Run;
-  metricCategory: MetricCategory;
   pendingAnalysisCount: number;
   pendingQcCount: number;
   pendingDataReviewCount: number;
+  issueKey: string;
 }
 
 export const notificationDefinition: TableDefinition<Notification, void> = {
@@ -48,21 +48,6 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
         sortType: "date",
       },
       {
-        title: "QC Gate",
-        addParentContents(notification, fragment) {
-          switch (notification.metricCategory) {
-            case "LIBRARY_QUALIFICATION":
-              addText(fragment, "Library Qualification");
-              break;
-            case "FULL_DEPTH_SEQUENCING":
-              addText(fragment, "Full-Depth Sequencing");
-              break;
-            default:
-              addText(fragment, "unknown/error");
-          }
-        },
-      },
-      {
         title: "Run QC",
         addParentContents(notification, fragment) {
           const status = getRunQcStatus(notification.run);
@@ -97,6 +82,32 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
         },
         getCellHighlight(notification) {
           return notification.pendingDataReviewCount ? "warning" : null;
+        },
+      },
+      {
+        title: "Issue",
+        addParentContents(notification, fragment) {
+          if (notification.issueKey) {
+            addLink(
+              fragment,
+              notification.issueKey,
+              urls.jira.issue(notification.issueKey)
+            );
+          } else if (siteConfig.jiraUrl) {
+            addText(fragment, "Error");
+          } else {
+            addText(fragment, "N/A");
+          }
+        },
+        getCellHighlight(notification) {
+          if (siteConfig.jiraUrl) {
+            if (!notification.issueKey) {
+              return "error";
+            }
+          } else {
+            return "na";
+          }
+          return null;
         },
       },
     ];

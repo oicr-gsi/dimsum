@@ -18,7 +18,8 @@ public enum CaseFilterKey {
     if (state == null) {
       throw new IllegalArgumentException(String.format("Invalid pending state: %s", string));
     }
-    return state.predicate();
+    Predicate<Case> notStopped = kase -> !kase.isStopped();
+    return notStopped.and(state.predicate());
   }),
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),
