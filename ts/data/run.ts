@@ -4,7 +4,7 @@ import { urls } from "../util/urls";
 import { Run } from "./case";
 
 export const runDefinition: TableDefinition<Run, void> = {
-  queryUrl: urls.rest.runList,
+  queryUrl: urls.rest.runs.list,
   defaultSort: {
     columnTitle: "Completion Date",
     descending: true,
@@ -13,8 +13,8 @@ export const runDefinition: TableDefinition<Run, void> = {
   staticActions: [legendAction],
   filters: [
     {
-      title: "Run",
-      key: "RUN",
+      title: "Name",
+      key: "NAME",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.runNames,
     },
@@ -32,6 +32,7 @@ export const runDefinition: TableDefinition<Run, void> = {
             )
           );
         },
+        sortType: "text",
       },
       {
         title: "Completion Date",
@@ -40,6 +41,7 @@ export const runDefinition: TableDefinition<Run, void> = {
             fragment.appendChild(document.createTextNode(run.completionDate));
           }
         },
+        sortType: "date",
       },
     ];
   },

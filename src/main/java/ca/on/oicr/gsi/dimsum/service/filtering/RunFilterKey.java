@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 import ca.on.oicr.gsi.dimsum.data.Run;;
 
 public enum RunFilterKey {
-  RUN(string -> run -> run.getName().toLowerCase().startsWith(string.toLowerCase()));
+  NAME(string -> run -> run.getName().toLowerCase().startsWith(string.toLowerCase()));
 
   private final Function<String, Predicate<Run>> create;
 

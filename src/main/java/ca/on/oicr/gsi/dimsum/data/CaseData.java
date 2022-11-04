@@ -20,9 +20,6 @@ public class CaseData {
   private final Set<String> requisitionNames;
   private final Set<String> projectsNames;
   private final Set<String> donorNames;
-  private final Set<String> runNames;
-
-
 
   public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
       Map<Long, Assay> assaysById, ZonedDateTime timestamp, Set<String> assays,
@@ -35,7 +32,6 @@ public class CaseData {
     this.requisitionNames = Collections.unmodifiableSet(requisitions);
     this.projectsNames = Collections.unmodifiableSet(projects);
     this.donorNames = Collections.unmodifiableSet(donors);
-    this.runNames = Collections.unmodifiableSet(runs);
   }
 
   public List<Case> getCases() {
@@ -75,6 +71,6 @@ public class CaseData {
   }
 
   public Set<String> getRunNames() {
-    return runNames;
+    return runsByName.keySet();
   }
 }

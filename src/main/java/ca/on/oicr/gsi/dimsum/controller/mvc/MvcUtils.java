@@ -70,13 +70,6 @@ public class MvcUtils {
     return queryFilters.stream().map(MvcUtils::parseRunFilter).toList();
   }
 
-  public static RunFilter parseBaseRunFilter(DataQuery query) {
-    if (query.getBaseFilter() == null) {
-      return null;
-    }
-    return parseRunFilter(query.getBaseFilter());
-  }
-
   private static RunFilter parseRunFilter(KeyValuePair pair) {
     try {
       RunFilterKey key = RunFilterKey.valueOf(pair.getKey());

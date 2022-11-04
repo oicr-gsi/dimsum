@@ -26,6 +26,7 @@ export const urls = {
         `${restBaseUrl}/runs/${runName}/library-qualifications`,
       fullDepthSequencings: (runName: string) =>
         `${restBaseUrl}/runs/${runName}/full-depth-sequencings`,
+      list: `${restBaseUrl}/runs`,
     },
     autocomplete: {
       assayNames: `${restBaseUrl}/autocomplete/assay-names`,
@@ -35,7 +36,6 @@ export const urls = {
       runNames: `${restBaseUrl}/autocomplete/run-names`,
     },
     notifications: `${restBaseUrl}/notifications`,
-    runList: `${restBaseUrl}/runs`,
   },
   miso: {
     sample: function (sampleId: string) {
