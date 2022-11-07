@@ -3,6 +3,7 @@ package ca.on.oicr.gsi.dimsum.data;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -72,5 +73,9 @@ public class CaseData {
 
   public Set<String> getRunNames() {
     return runsByName.keySet();
+  }
+
+  public Collection<RunAndLibraries> getRunsAndLibraries() {
+    return runsByName.values();
   }
 }

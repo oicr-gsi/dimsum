@@ -54,9 +54,6 @@ public class CaseService {
   @Autowired
   private NotificationManager notificationManager;
 
-  @Autowired
-  private RunListManager runListManager;
-
   private CaseData caseData;
 
   private int refreshFailures = 0;
@@ -214,7 +211,8 @@ public class CaseService {
 
   public TableData<Run> getRuns(int pageSize, int pageNumber, RunSort sort, boolean descending,
       Collection<RunFilter> filters) {
-    List<Run> baseRuns = runListManager.getRuns();
+    List<Run> baseRuns =
+        caseData.getRunsAndLibraries().stream().map(RunAndLibraries::getRun).toList();
     Stream<Run> stream = applyFiltersOnRuns(baseRuns, filters);
     if (sort == null) {
       sort = RunSort.COMPLETION_DATE;
@@ -311,7 +309,6 @@ public class CaseService {
         caseData = newData;
         updateFrontEndConfig();
         notificationManager.update(newData.getRunsAndLibrariesByName(), newData.getAssaysById());
-        runListManager.update(newData.getRunsAndLibrariesByName());
       }
     } catch (Exception e) {
       refreshFailures++;
