@@ -11,8 +11,7 @@ import {
   libraryPreparationDefinition,
   receiptDefinition,
 } from "./data/sample";
-import { TableBuilder } from "./component/table-builder";
-import { getSearchParams, updateUrlParams, urls } from "./util/urls";
+import { urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 
@@ -39,6 +38,5 @@ new TabBar(
   tables,
   "Cases",
   "tabBarContainer",
-  "tableContainer", // use the same container id across all tables (only one table will occupy it at a time)
-  "tableTitleContainer"
+  "tableContainer" // use the same container id across all tables (only one table will occupy it at a time)
 ).build();
