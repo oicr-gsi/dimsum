@@ -26,12 +26,14 @@ export const urls = {
         `${restBaseUrl}/runs/${runName}/library-qualifications`,
       fullDepthSequencings: (runName: string) =>
         `${restBaseUrl}/runs/${runName}/full-depth-sequencings`,
+      list: `${restBaseUrl}/runs`,
     },
     autocomplete: {
       assayNames: `${restBaseUrl}/autocomplete/assay-names`,
       requisitionNames: `${restBaseUrl}/autocomplete/requisition-names`,
       projectNames: `${restBaseUrl}/autocomplete/project-names`,
       donorNames: `${restBaseUrl}/autocomplete/donor-names`,
+      runNames: `${restBaseUrl}/autocomplete/run-names`,
     },
     notifications: `${restBaseUrl}/notifications`,
   },

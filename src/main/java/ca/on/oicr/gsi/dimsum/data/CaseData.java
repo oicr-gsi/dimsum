@@ -3,6 +3,7 @@ package ca.on.oicr.gsi.dimsum.data;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +22,9 @@ public class CaseData {
   private final Set<String> projectsNames;
   private final Set<String> donorNames;
 
-
-
   public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
       Map<Long, Assay> assaysById, ZonedDateTime timestamp, Set<String> assays,
-      Set<String> requisitions, Set<String> projects, Set<String> donors) {
+      Set<String> requisitions, Set<String> projects, Set<String> donors, Set<String> runs) {
     this.cases = unmodifiableList(cases);
     this.runsByName = Collections.unmodifiableMap(runsByName);
     this.assaysById = Collections.unmodifiableMap(assaysById);
@@ -72,4 +71,11 @@ public class CaseData {
     return donorNames;
   }
 
+  public Set<String> getRunNames() {
+    return runsByName.keySet();
+  }
+
+  public Collection<RunAndLibraries> getRunsAndLibraries() {
+    return runsByName.values();
+  }
 }

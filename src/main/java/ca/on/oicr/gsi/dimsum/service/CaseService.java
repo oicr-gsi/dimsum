@@ -35,6 +35,10 @@ import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
 
 @Service
 public class CaseService {
@@ -137,6 +141,12 @@ public class CaseService {
         .collect(Collectors.toSet());
   }
 
+  public Set<String> getMatchingRunNames(String prefix) {
+    return caseData.getRunNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
+  }
+
   public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
@@ -199,6 +209,25 @@ public class CaseService {
     return data;
   }
 
+  public TableData<Run> getRuns(int pageSize, int pageNumber, RunSort sort, boolean descending,
+      Collection<RunFilter> filters) {
+    List<Run> baseRuns =
+        caseData.getRunsAndLibraries().stream().map(RunAndLibraries::getRun).toList();
+    Stream<Run> stream = applyFiltersOnRuns(baseRuns, filters);
+    if (sort == null) {
+      sort = RunSort.COMPLETION_DATE;
+      descending = true;
+    }
+    stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+    List<Run> filteredRuns =
+        stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
+    TableData<Run> data = new TableData<>();
+    data.setTotalCount(baseRuns.size());
+    data.setFilteredCount(applyFiltersOnRuns(baseRuns, filters).count());
+    data.setItems(filteredRuns);
+    return data;
+  }
+
   private Stream<Case> applyFilters(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
     if (filters != null && !filters.isEmpty()) {
@@ -212,6 +241,25 @@ public class CaseService {
         }
       }
       for (Predicate<Case> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+  }
+
+  private Stream<Run> applyFiltersOnRuns(List<Run> runs, Collection<RunFilter> filters) {
+    Stream<Run> stream = runs.stream();
+    if (filters != null && !filters.isEmpty()) {
+      Map<RunFilterKey, Predicate<Run>> filterMap = new HashMap<>();
+      for (RunFilter filter : filters) {
+        RunFilterKey key = filter.getKey();
+        if (filterMap.containsKey(key)) {
+          filterMap.put(key, filterMap.get(key).or(filter.predicate()));
+        } else {
+          filterMap.put(key, filter.predicate());
+        }
+      }
+      for (Predicate<Run> predicate : filterMap.values()) {
         stream = stream.filter(predicate);
       }
     }

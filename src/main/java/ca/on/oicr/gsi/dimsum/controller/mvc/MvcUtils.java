@@ -7,6 +7,8 @@ import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
 
 public class MvcUtils {
 
@@ -55,6 +57,23 @@ public class MvcUtils {
     try {
       CaseFilterKey key = CaseFilterKey.valueOf(pair.getKey());
       return new CaseFilter(key, pair.getValue());
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
+    }
+  }
+
+  public static List<RunFilter> parseRunFilters(DataQuery query) {
+    List<KeyValuePair> queryFilters = query.getFilters();
+    if (queryFilters == null || queryFilters.isEmpty()) {
+      return null;
+    }
+    return queryFilters.stream().map(MvcUtils::parseRunFilter).toList();
+  }
+
+  private static RunFilter parseRunFilter(KeyValuePair pair) {
+    try {
+      RunFilterKey key = RunFilterKey.valueOf(pair.getKey());
+      return new RunFilter(key, pair.getValue());
     } catch (IllegalArgumentException e) {
       throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
     }

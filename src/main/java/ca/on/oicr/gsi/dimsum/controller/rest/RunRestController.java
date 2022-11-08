@@ -15,6 +15,10 @@ import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
+import java.util.List;
+import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
 
 @RestController
 @RequestMapping("/rest/runs")
@@ -22,6 +26,16 @@ public class RunRestController {
 
   @Autowired
   private CaseService caseService;
+
+  @PostMapping
+  public TableData<Run> query(@RequestBody DataQuery query) {
+    validateDataQuery(query);
+    RunSort sort = parseSort(query, RunSort::getByLabel);
+    boolean descending = parseDescending(query);
+    List<RunFilter> filters = parseRunFilters(query);
+    return caseService.getRuns(query.getPageSize(), query.getPageNumber(), sort, descending,
+        filters);
+  }
 
   @PostMapping("/{runName}/library-qualifications")
   public TableData<Sample> getLibraryQualifications(@PathVariable String runName,
