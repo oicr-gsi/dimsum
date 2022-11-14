@@ -17,10 +17,9 @@ class Tab {
     const button = document.createElement("button");
     if (selected) this.selected = selected; // is the default tab
     button.className =
-      "font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md";
+      "flex-auto font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md ring-green-200 ring-offset-1 ring-2";
     button.textContent = table.value;
     button.onclick = () => {
-      console.log(`clicked tab ${table.value}`);
       if (!this.selected) {
         this.selected = !this.selected;
         this.styleButton();
@@ -35,23 +34,10 @@ class Tab {
   public styleButton() {
     if (this.selected) {
       this.tabContainer.classList.replace("text-black", "text-green-200");
-      this.tabContainer.classList.add(
-        "ring-2",
-        "ring-green-200",
-        "ring-offset-1"
-      );
+      this.tabContainer.classList.replace("hover:ring-2", "ring-2");
     } else {
       this.tabContainer.classList.replace("text-green-200", "text-black");
-      this.tabContainer.classList.remove(
-        "ring-2",
-        "ring-green-200",
-        "ring-offset-1"
-      );
-      this.tabContainer.classList.add(
-        "hover:ring-2",
-        "ring-green-200",
-        "ring-offset-1"
-      );
+      this.tabContainer.classList.replace("ring-2", "hover:ring-2");
     }
   }
 }
@@ -87,7 +73,7 @@ export class TabBar {
   public build() {
     const controlsContainer = document.createElement("span");
     controlsContainer.className =
-      "flex-auto space-x-2 rounded-md px-2 py-2 bg-grey-100 inline-block";
+      "inline-flex flex-wrap space-x-2 gap-y-2 rounded-md px-2 py-2 bg-grey-100";
     // given all the tables and their titles, create the tab bar
     this.tables.forEach((table, idx) => {
       const reload = (tb: Pair<any, string>) => {

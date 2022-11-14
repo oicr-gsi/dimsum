@@ -1,4 +1,8 @@
-import { legendAction, TableDefinition } from "../component/table-builder";
+import {
+  latestActivitySort,
+  legendAction,
+  TableDefinition,
+} from "../component/table-builder";
 import {
   addLink,
   makeIcon,
@@ -10,7 +14,7 @@ import {
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
-import { getQcStatus, Sample, defaultSort, filters } from "./sample";
+import { getQcStatus, Sample, filters } from "./sample";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   getLatestRequisitionQc,
@@ -100,7 +104,7 @@ export interface Case {
 
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: urls.rest.cases,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
   filters: filters,
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),

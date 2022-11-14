@@ -622,6 +622,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   display: inline-block;
 }
 
+.inline-flex{
+  display: inline-flex;
+}
+
+
 .flex{
   display: flex;
 }
@@ -700,6 +705,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   flex: 1 1 auto;
 }
 
+.flex-wrap{
+  flex-wrap: wrap;
+}
+
 .shrink{
   flex-shrink: 1;
 }
@@ -770,6 +779,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .gap-y-1{
   row-gap: 0.25rem;
+}
+
+.gap-y-2{
+  row-gap: 0.5rem;
 }
 
 .space-x-2 > :not([hidden]) ~ :not([hidden]){

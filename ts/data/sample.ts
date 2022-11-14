@@ -7,9 +7,9 @@ import {
 import { siteConfig } from "../util/site-config";
 import {
   ColumnDefinition,
+  latestActivitySort,
   FilterDefinition,
   legendAction,
-  SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
 import { Tooltip } from "../component/tooltip";
@@ -96,12 +96,6 @@ interface QcInMisoRequest {
   report: string;
   library_aliquots: MisoRunLibrary[];
 }
-
-export const defaultSort: SortDefinition = {
-  columnTitle: "Latest Activity",
-  descending: true,
-  type: "date",
-};
 
 export const filters: FilterDefinition[] = [
   {
@@ -249,7 +243,7 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
   filters: filters,
   staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
@@ -287,7 +281,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
   filters: filters,
   staticActions: [legendAction],
   generateColumns(data) {
@@ -311,7 +305,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
   filters: filters,
   staticActions: [legendAction],
   generateColumns(data) {
@@ -332,7 +326,7 @@ export function getLibraryQualificationsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: defaultSort,
+    defaultSort: latestActivitySort,
     filters: filters,
     staticActions: [legendAction],
     bulkActions: [
@@ -366,7 +360,7 @@ export function getFullDepthSequencingsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: defaultSort,
+    defaultSort: latestActivitySort,
     filters: filters,
     staticActions: [legendAction],
     bulkActions: [
