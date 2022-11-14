@@ -3,7 +3,7 @@ import { getSearchParams, updateUrlParams } from "../util/urls";
 import { TableBuilder } from "./table-builder";
 
 class Tab {
-  tabContainer: HTMLButtonElement;
+  tabButton: HTMLButtonElement;
   table: Pair<any, string>;
   selected: boolean = false;
   onSelect: (table: Pair<any, string>) => void;
@@ -26,18 +26,18 @@ class Tab {
         onSelect(this.table);
       }
     };
-    this.tabContainer = button;
+    this.tabButton = button;
     this.styleButton();
   }
 
   // modifies the tab styling according to whether or not it has been selected
   public styleButton() {
     if (this.selected) {
-      this.tabContainer.classList.replace("text-black", "text-green-200");
-      this.tabContainer.classList.replace("hover:ring-2", "ring-2");
+      this.tabButton.classList.replace("text-black", "text-green-200");
+      this.tabButton.classList.replace("hover:ring-2", "ring-2");
     } else {
-      this.tabContainer.classList.replace("text-green-200", "text-black");
-      this.tabContainer.classList.replace("ring-2", "hover:ring-2");
+      this.tabButton.classList.replace("text-green-200", "text-black");
+      this.tabButton.classList.replace("ring-2", "hover:ring-2");
     }
   }
 }
@@ -82,7 +82,7 @@ export class TabBar {
       this.tabs.push(
         new Tab(table, reload, table.value === this.defaultTable ? true : false)
       );
-      controlsContainer.appendChild(this.tabs[idx].tabContainer);
+      controlsContainer.appendChild(this.tabs[idx].tabButton);
     });
 
     this.tabBarContainer.append(controlsContainer);
