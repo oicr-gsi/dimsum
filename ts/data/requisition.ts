@@ -21,7 +21,7 @@ import {
 } from "../util/metrics";
 import { siteConfig } from "../util/site-config";
 import { Metric, MetricSubcategory } from "./assay";
-import { filters } from "./sample";
+import { caseFilters } from "./case";
 
 export interface RequisitionQcGroup {
   tissueOrigin: string;
@@ -95,7 +95,7 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
 export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: (data?: Requisition[]) => [
     qcStatusColumn((requisition) => requisition.informaticsReviews),
@@ -108,7 +108,7 @@ export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
 export const draftReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.draftReports),
@@ -120,7 +120,7 @@ export const draftReportDefinition: TableDefinition<Requisition, void> = {
 export const finalReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.finalReports),

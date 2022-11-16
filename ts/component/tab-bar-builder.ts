@@ -1,29 +1,26 @@
 import { Pair } from "../util/pair";
-import { getSearchParams, updateUrlParams } from "../util/urls";
-import { TableBuilder } from "./table-builder";
 
 class Tab {
   tabButton: HTMLButtonElement;
-  table: Pair<any, string>;
-  selected: boolean = false;
-  onSelect: (table: Pair<any, string>) => void;
+  selected: boolean;
+
   constructor(
-    table: Pair<any, string>,
-    onSelect: (table: Pair<any, string>) => void,
-    selected?: boolean
+    owner: TabBar,
+    table: Pair<Pair<any, string>, () => void>,
+    selected: boolean
   ) {
-    this.table = table;
-    this.onSelect = onSelect;
+    this.selected = selected;
     const button = document.createElement("button");
-    if (selected) this.selected = selected; // is the default tab
     button.className =
       "flex-auto font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md ring-green-200 ring-offset-1 ring-2";
-    button.textContent = table.value;
+    button.textContent = table.key.value;
     button.onclick = () => {
       if (!this.selected) {
-        this.selected = !this.selected;
+        // should destroy current table and create new table
+        this.selected = true;
+        owner.current = table.key.value;
         this.styleButton();
-        onSelect(this.table);
+        table.value();
       }
     };
     this.tabButton = button;
@@ -43,14 +40,14 @@ class Tab {
 }
 
 export class TabBar {
-  tables: Pair<any, string>[]; // where the key is the table definition, and the value is the table title
-  defaultTable: string;
+  tables: Pair<Pair<any, string>, () => void>[];
+  current: string;
   tabBarContainer: HTMLElement;
   tableContainer: HTMLElement;
   tabs: Tab[] = [];
 
   constructor(
-    tables: Pair<any, string>[],
+    tables: Pair<Pair<any, string>, () => void>[],
     defaultTable: string,
     tabBarContainerId: string,
     tableContainerId: string
@@ -66,7 +63,7 @@ export class TabBar {
       throw Error(`Container ID "${tableContainerId}" not found on page`);
     }
     this.tableContainer = tableContainer;
-    this.defaultTable = defaultTable;
+    this.current = defaultTable;
     this.tables = tables;
   }
 
@@ -76,40 +73,12 @@ export class TabBar {
       "inline-flex flex-wrap space-x-2 gap-y-2 rounded-md px-2 py-2 bg-grey-100";
     // given all the tables and their titles, create the tab bar
     this.tables.forEach((table, idx) => {
-      const reload = (tb: Pair<any, string>) => {
-        this.reloadTable(tb);
-      };
       this.tabs.push(
-        new Tab(table, reload, table.value === this.defaultTable ? true : false)
+        new Tab(this, table, table.key.value === this.current ? true : false)
       );
       controlsContainer.appendChild(this.tabs[idx].tabButton);
     });
-
     this.tabBarContainer.append(controlsContainer);
-    // build the default table
-    this.tables.forEach((tb) => {
-      if (tb.value === this.defaultTable) {
-        this.reloadTable(tb);
-      }
-    });
-  }
-
-  public reloadTable(table: Pair<any, string>) {
-    this.tabs.forEach((tab) => {
-      if (tab.table.value === table.value) {
-        tab.selected = true;
-        // destroy current table and construct new table
-        this.tableContainer.innerHTML = "";
-        new TableBuilder(
-          table.key,
-          this.tableContainer.id,
-          getSearchParams(),
-          updateUrlParams
-        ).build();
-      } else {
-        tab.selected = false;
-      }
-      tab.styleButton();
-    });
+    this.tables[0].value(); // reload
   }
 }

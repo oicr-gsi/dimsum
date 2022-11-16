@@ -1,4 +1,5 @@
 import {
+  FilterDefinition,
   latestActivitySort,
   legendAction,
   TableDefinition,
@@ -14,7 +15,7 @@ import {
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
-import { getQcStatus, Sample, filters } from "./sample";
+import { getQcStatus, Sample } from "./sample";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   getLatestRequisitionQc,
@@ -102,10 +103,49 @@ export interface Case {
   latestActivityDate: string;
 }
 
+export var caseFilters: FilterDefinition[] = [
+  {
+    title: "Assay",
+    key: "ASSAY",
+    type: "text",
+    autocompleteUrl: urls.rest.autocomplete.assayNames,
+  },
+  {
+    title: "Donor",
+    key: "DONOR",
+    type: "text",
+    autocompleteUrl: urls.rest.autocomplete.donorNames,
+  },
+  {
+    title: "Pending",
+    key: "PENDING",
+    type: "dropdown",
+    values: siteConfig.pendingStates,
+  },
+  {
+    title: "Pipeline",
+    key: "PIPELINE",
+    type: "dropdown",
+    values: siteConfig.pipelines,
+  },
+  {
+    title: "Project",
+    key: "PROJECT",
+    type: "text",
+    autocompleteUrl: urls.rest.autocomplete.projectNames,
+  },
+  {
+    title: "Requisition",
+    key: "REQUISITION",
+    type: "text",
+    autocompleteUrl: urls.rest.autocomplete.requisitionNames,
+  },
+];
+
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: urls.rest.cases,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
   staticActions: [legendAction],

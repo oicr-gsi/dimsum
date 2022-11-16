@@ -15,7 +15,7 @@ import {
 import { Tooltip } from "../component/tooltip";
 import { urls } from "../util/urls";
 import { Metric, MetricCategory, MetricSubcategory } from "./assay";
-import { Donor, Qcable, Run } from "./case";
+import { caseFilters, Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   anyFail,
@@ -96,45 +96,6 @@ interface QcInMisoRequest {
   report: string;
   library_aliquots: MisoRunLibrary[];
 }
-
-export const filters: FilterDefinition[] = [
-  {
-    title: "Assay",
-    key: "ASSAY",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.assayNames,
-  },
-  {
-    title: "Donor",
-    key: "DONOR",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.donorNames,
-  },
-  {
-    title: "Pending",
-    key: "PENDING",
-    type: "dropdown",
-    values: siteConfig.pendingStates,
-  },
-  {
-    title: "Pipeline",
-    key: "PIPELINE",
-    type: "dropdown",
-    values: siteConfig.pipelines,
-  },
-  {
-    title: "Project",
-    key: "PROJECT",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.projectNames,
-  },
-  {
-    title: "Requisition",
-    key: "REQUISITION",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.requisitionNames,
-  },
-];
 
 function makeQcStatusColumn(
   includeRun: boolean
@@ -244,7 +205,7 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
     return [
@@ -282,7 +243,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
     return [
@@ -306,7 +267,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
   defaultSort: latestActivitySort,
-  filters: filters,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
     return [
@@ -327,7 +288,7 @@ export function getLibraryQualificationsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
-    filters: filters,
+    filters: caseFilters,
     staticActions: [legendAction],
     bulkActions: [
       {
@@ -361,7 +322,7 @@ export function getFullDepthSequencingsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
-    filters: filters,
+    filters: caseFilters,
     staticActions: [legendAction],
     bulkActions: [
       {
