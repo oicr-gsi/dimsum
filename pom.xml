@@ -16,6 +16,16 @@
   <properties>
     <java.version>17</java.version>
   </properties>
+
+  <distributionManagement>
+    <repository>
+      <id>gsi-release</id>
+      <name>GSI Releases</name>
+      <url>https://artifacts.oicr.on.ca/artifactory/gsi-release</url>
+    </repository>
+    <downloadUrl>https://artifacts.oicr.on.ca/artifactory/gsi-release</downloadUrl>
+  </distributionManagement>
+
   <repositories>
     <repository>
       <id>atlassian-public</id>
