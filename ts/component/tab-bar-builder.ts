@@ -79,6 +79,6 @@ export class TabBar {
       controlsContainer.appendChild(this.tabs[idx].tabButton);
     });
     this.tabBarContainer.append(controlsContainer);
-    this.tables[0].value(); // reload
+    this.tables[0].value(); // build initial table by calling the first tab's "onSelect" function
   }
 }
