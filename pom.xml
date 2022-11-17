@@ -19,7 +19,7 @@
 
   <distributionManagement>
     <repository>
-      <id>gsi-release</id>
+      <id>deploy.artifacts.oicr</id>
       <name>GSI Releases</name>
       <url>https://artifacts.oicr.on.ca/artifactory/gsi-release</url>
     </repository>
