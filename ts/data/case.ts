@@ -1,9 +1,4 @@
-import {
-  FilterDefinition,
-  latestActivitySort,
-  legendAction,
-  TableDefinition,
-} from "../component/table-builder";
+import { legendAction, TableDefinition } from "../component/table-builder";
 import {
   addLink,
   makeIcon,
@@ -24,6 +19,7 @@ import {
   RequisitionQc,
 } from "./requisition";
 import { Tooltip } from "../component/tooltip";
+import { caseFilters, latestActivitySort } from "../component/table-components";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -102,45 +98,6 @@ export interface Case {
   requisitions: Requisition[];
   latestActivityDate: string;
 }
-
-export var caseFilters: FilterDefinition[] = [
-  {
-    title: "Assay",
-    key: "ASSAY",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.assayNames,
-  },
-  {
-    title: "Donor",
-    key: "DONOR",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.donorNames,
-  },
-  {
-    title: "Pending",
-    key: "PENDING",
-    type: "dropdown",
-    values: siteConfig.pendingStates,
-  },
-  {
-    title: "Pipeline",
-    key: "PIPELINE",
-    type: "dropdown",
-    values: siteConfig.pipelines,
-  },
-  {
-    title: "Project",
-    key: "PROJECT",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.projectNames,
-  },
-  {
-    title: "Requisition",
-    key: "REQUISITION",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.requisitionNames,
-  },
-];
 
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: urls.rest.cases,

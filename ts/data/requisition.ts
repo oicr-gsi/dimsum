@@ -6,7 +6,6 @@ import {
 } from "../util/html-utils";
 import {
   ColumnDefinition,
-  latestActivitySort,
   legendAction,
   TableDefinition,
 } from "../component/table-builder";
@@ -21,7 +20,7 @@ import {
 } from "../util/metrics";
 import { siteConfig } from "../util/site-config";
 import { Metric, MetricSubcategory } from "./assay";
-import { caseFilters } from "./case";
+import { caseFilters, latestActivitySort } from "../component/table-components";
 
 export interface RequisitionQcGroup {
   tissueOrigin: string;

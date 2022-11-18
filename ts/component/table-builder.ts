@@ -16,12 +16,6 @@ import { showErrorDialog } from "./dialog";
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
 
-export const latestActivitySort: SortDefinition = {
-  columnTitle: "Latest Activity",
-  descending: true,
-  type: "date",
-};
-
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
   sortType?: SortType;

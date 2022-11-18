@@ -7,15 +7,13 @@ import {
 import { siteConfig } from "../util/site-config";
 import {
   ColumnDefinition,
-  latestActivitySort,
-  FilterDefinition,
   legendAction,
   TableDefinition,
 } from "../component/table-builder";
 import { Tooltip } from "../component/tooltip";
 import { urls } from "../util/urls";
 import { Metric, MetricCategory, MetricSubcategory } from "./assay";
-import { caseFilters, Donor, Qcable, Run } from "./case";
+import { Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   anyFail,
@@ -31,6 +29,7 @@ import {
   nullIfUndefined,
 } from "../util/metrics";
 import { showErrorDialog } from "../component/dialog";
+import { caseFilters, latestActivitySort } from "../component/table-components";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";

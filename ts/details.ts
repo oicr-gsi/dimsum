@@ -14,37 +14,30 @@ import {
 import { getSearchParams, updateUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
-import { TableBuilder } from "./component/table-builder";
+import { TableBuilder, TableDefinition } from "./component/table-builder";
 
 const tableContainerId = "tableContainer";
 
-// each pair consists of (1) the information required to build the table (definition
-// and title), and (2) its reload function upon selection
+// each pair consists of (1) the title of the table, and (2) its reload function upon selection
+// (with its table definition taken as a param)
 const tables = [
-  new Pair(new Pair(caseDefinition, "Cases"), reload),
-  new Pair(new Pair(receiptDefinition, "Receipts"), reload),
-  new Pair(new Pair(extractionDefinition, "Extractions"), reload),
-  new Pair(
-    new Pair(libraryPreparationDefinition, "Library Preparations"),
-    reload
+  new Pair("Cases", () => reload(caseDefinition)),
+  new Pair("Receipts", () => reload(receiptDefinition)),
+  new Pair("Extractions", () => reload(extractionDefinition)),
+  new Pair("Library Preparations", () => reload(libraryPreparationDefinition)),
+  new Pair("Library Qualifications", () =>
+    reload(
+      getLibraryQualificationsDefinition(urls.rest.libraryPreparations, true)
+    )
   ),
-  new Pair(
-    new Pair(
-      getLibraryQualificationsDefinition(urls.rest.libraryPreparations, true),
-      "Library Qualifications"
-    ),
-    reload
+  new Pair("Full Depth Sequencings", () =>
+    reload(
+      getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
+    )
   ),
-  new Pair(
-    new Pair(
-      getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
-      "Full Depth Sequencings"
-    ),
-    reload
-  ),
-  new Pair(new Pair(informaticsReviewDefinition, "Informatics Review"), reload),
-  new Pair(new Pair(draftReportDefinition, "Draft Reports"), reload),
-  new Pair(new Pair(finalReportDefinition, "Final Reports"), reload),
+  new Pair("Informatics Review", () => reload(informaticsReviewDefinition)),
+  new Pair("Draft Reports", () => reload(draftReportDefinition)),
+  new Pair("Final Reports", () => reload(finalReportDefinition)),
 ];
 
 // tabbed interface defaults to the cases table
@@ -57,15 +50,15 @@ const tabBar = new TabBar(
 
 tabBar.build();
 
-// reload
-function reload() {
-  tabBar.tables.forEach((tbl, idx) => {
+// reload: destroy current table and build new table
+function reload(definition: TableDefinition<any, any>) {
+  tabBar.elements.forEach((element, idx) => {
     var tab = tabBar.tabs[idx];
-    if (tbl.key.value === tabBar.current && tab.selected) {
+    if (element.key === tabBar.current && tab.selected) {
       // destroy current table and construct new table
       tabBar.tableContainer.innerHTML = "";
       new TableBuilder(
-        tbl.key.key,
+        definition,
         tableContainerId,
         getSearchParams(),
         updateUrlParams
@@ -76,3 +69,22 @@ function reload() {
     tab.styleButton();
   });
 }
+
+// function reload() {
+//   tabBar.tables.forEach((tbl, idx) => {
+//     var tab = tabBar.tabs[idx];
+//     if (tbl.key.value === tabBar.current && tab.selected) {
+//       // destroy current table and construct new table
+//       tabBar.tableContainer.innerHTML = "";
+//       new TableBuilder(
+//         tbl.key.key,
+//         tableContainerId,
+//         getSearchParams(),
+//         updateUrlParams
+//       ).build();
+//     } else {
+//       tab.selected = false;
+//     }
+//     tab.styleButton();
+//   });
+// }

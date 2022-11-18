@@ -6,21 +6,21 @@ class Tab {
 
   constructor(
     owner: TabBar,
-    table: Pair<Pair<any, string>, () => void>,
+    element: Pair<string, () => void>,
     selected: boolean
   ) {
     this.selected = selected;
     const button = document.createElement("button");
     button.className =
       "flex-auto font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md ring-green-200 ring-offset-1 ring-2";
-    button.textContent = table.key.value;
+    button.textContent = element.key;
     button.onclick = () => {
       if (!this.selected) {
         // should destroy current table and create new table
         this.selected = true;
-        owner.current = table.key.value;
+        owner.current = element.key;
         this.styleButton();
-        table.value();
+        element.value();
       }
     };
     this.tabButton = button;
@@ -40,14 +40,14 @@ class Tab {
 }
 
 export class TabBar {
-  tables: Pair<Pair<any, string>, () => void>[];
+  elements: Pair<string, () => void>[];
   current: string;
   tabBarContainer: HTMLElement;
   tableContainer: HTMLElement;
   tabs: Tab[] = [];
 
   constructor(
-    tables: Pair<Pair<any, string>, () => void>[],
+    elements: Pair<string, () => void>[],
     defaultTable: string,
     tabBarContainerId: string,
     tableContainerId: string
@@ -63,8 +63,8 @@ export class TabBar {
       throw Error(`Container ID "${tableContainerId}" not found on page`);
     }
     this.tableContainer = tableContainer;
+    this.elements = elements;
     this.current = defaultTable;
-    this.tables = tables;
   }
 
   public build() {
@@ -72,13 +72,13 @@ export class TabBar {
     controlsContainer.className =
       "inline-flex flex-wrap space-x-2 gap-y-2 rounded-md px-2 py-2 bg-grey-100";
     // given all the tables and their titles, create the tab bar
-    this.tables.forEach((table, idx) => {
+    this.elements.forEach((element, idx) => {
       this.tabs.push(
-        new Tab(this, table, table.key.value === this.current ? true : false)
+        new Tab(this, element, element.key === this.current ? true : false)
       );
       controlsContainer.appendChild(this.tabs[idx].tabButton);
     });
     this.tabBarContainer.append(controlsContainer);
-    this.tables[0].value(); // build initial table by calling the first tab's "onSelect" function
+    this.elements[0].value(); // build initial table by calling the first tab's "onSelect" function
   }
 }
