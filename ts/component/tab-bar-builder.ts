@@ -1,25 +1,25 @@
 import { Pair } from "../util/pair";
 
 class Tab {
+  title: string;
   tabButton: HTMLButtonElement;
   selected: boolean;
 
   constructor(
-    owner: TabBar,
     element: Pair<string, () => void>,
-    selected: boolean
+    selected: boolean,
+    onSelect: (title: string) => void
   ) {
     this.selected = selected;
+    this.title = element.key;
     const button = document.createElement("button");
     button.className =
       "flex-auto font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md ring-green-200 ring-offset-1 ring-2";
+    // button.textContent = element.key;
     button.textContent = element.key;
     button.onclick = () => {
       if (!this.selected) {
-        // should destroy current table and create new table
-        this.selected = true;
-        owner.current = element.key;
-        this.styleButton();
+        onSelect(element.key);
         element.value();
       }
     };
@@ -41,30 +41,22 @@ class Tab {
 
 export class TabBar {
   elements: Pair<string, () => void>[];
-  current: string;
+  defaultElement: string;
   tabBarContainer: HTMLElement;
-  tableContainer: HTMLElement;
   tabs: Tab[] = [];
 
   constructor(
     elements: Pair<string, () => void>[],
-    defaultTable: string,
-    tabBarContainerId: string,
-    tableContainerId: string
+    defaultElement: string,
+    tabBarContainerId: string
   ) {
-    // get all containers
     const tabBarContainer = document.getElementById(tabBarContainerId);
     if (tabBarContainer === null) {
       throw Error(`Container ID "${tabBarContainerId}" not found on page`);
     }
     this.tabBarContainer = tabBarContainer;
-    const tableContainer = document.getElementById(tableContainerId);
-    if (tableContainer === null) {
-      throw Error(`Container ID "${tableContainerId}" not found on page`);
-    }
-    this.tableContainer = tableContainer;
     this.elements = elements;
-    this.current = defaultTable;
+    this.defaultElement = defaultElement;
   }
 
   public build() {
@@ -74,11 +66,22 @@ export class TabBar {
     // given all the tables and their titles, create the tab bar
     this.elements.forEach((element, idx) => {
       this.tabs.push(
-        new Tab(this, element, element.key === this.current ? true : false)
+        new Tab(
+          element,
+          element.key === this.defaultElement ? true : false,
+          () => this.onTabSelect(element.key)
+        )
       );
       controlsContainer.appendChild(this.tabs[idx].tabButton);
+      if (element.key === this.defaultElement) this.elements[idx].value();
     });
     this.tabBarContainer.append(controlsContainer);
-    this.elements[0].value(); // build initial table by calling the first tab's "onSelect" function
+  }
+
+  private onTabSelect(title: string) {
+    this.tabs.forEach((tab) => {
+      tab.selected = tab.title === title ? true : false;
+      tab.styleButton();
+    });
   }
 }

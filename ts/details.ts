@@ -17,6 +17,10 @@ import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 
 const tableContainerId = "tableContainer";
+const tableContainer = document.getElementById(tableContainerId); // use same table container across all tables
+if (tableContainer === null) {
+  throw Error(`Container ID "${tableContainerId}" not found on page`);
+}
 
 // each pair consists of (1) the title of the table, and (2) its reload function upon selection
 // (with its table definition taken as a param)
@@ -41,50 +45,16 @@ const tables = [
 ];
 
 // tabbed interface defaults to the cases table
-const tabBar = new TabBar(
-  tables,
-  "Cases",
-  "tabBarContainer",
-  tableContainerId // use the same container id across all tables (only one table will occupy it at a time)
-);
-
+const tabBar = new TabBar(tables, "Cases", "tabBarContainer");
 tabBar.build();
 
 // reload: destroy current table and build new table
 function reload(definition: TableDefinition<any, any>) {
-  tabBar.elements.forEach((element, idx) => {
-    var tab = tabBar.tabs[idx];
-    if (element.key === tabBar.current && tab.selected) {
-      // destroy current table and construct new table
-      tabBar.tableContainer.innerHTML = "";
-      new TableBuilder(
-        definition,
-        tableContainerId,
-        getSearchParams(),
-        updateUrlParams
-      ).build();
-    } else {
-      tab.selected = false;
-    }
-    tab.styleButton();
-  });
+  tableContainer ? (tableContainer.innerHTML = "") : "";
+  new TableBuilder(
+    definition,
+    tableContainerId,
+    getSearchParams(),
+    updateUrlParams
+  ).build();
 }
-
-// function reload() {
-//   tabBar.tables.forEach((tbl, idx) => {
-//     var tab = tabBar.tabs[idx];
-//     if (tbl.key.value === tabBar.current && tab.selected) {
-//       // destroy current table and construct new table
-//       tabBar.tableContainer.innerHTML = "";
-//       new TableBuilder(
-//         tbl.key.key,
-//         tableContainerId,
-//         getSearchParams(),
-//         updateUrlParams
-//       ).build();
-//     } else {
-//       tab.selected = false;
-//     }
-//     tab.styleButton();
-//   });
-// }
