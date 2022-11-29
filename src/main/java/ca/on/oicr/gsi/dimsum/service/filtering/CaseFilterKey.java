@@ -2,8 +2,11 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
-
 import ca.on.oicr.gsi.dimsum.data.Case;
+import ca.on.oicr.gsi.dimsum.data.MetricCategory;
+import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.dimsum.data.Test;
 
 public enum CaseFilterKey {
 
@@ -14,13 +17,25 @@ public enum CaseFilterKey {
   DONOR(string -> kase -> kase.getDonor().getName().toLowerCase().startsWith(string.toLowerCase())
       || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),
   PENDING(string -> {
-    PendingState state = PendingState.getByLabel(string);
-    if (state == null) {
-      throw new IllegalArgumentException(String.format("Invalid pending state: %s", string));
-    }
+    PendingState state = getState(string);
     Predicate<Case> notStopped = kase -> !kase.isStopped();
     return notStopped.and(state.predicate());
-  }),
+  }) {
+    @Override
+    public Function<String, Predicate<Test>> testPredicate() {
+      return string -> getState(string).testPredicate();
+    }
+
+    @Override
+    public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
+      return string -> getState(string).samplePredicate(requestCategory);
+    }
+
+    @Override
+    public Function<String, Predicate<Requisition>> requisitionPredicate() {
+      return string -> getState(string).requisitionPredicate();
+    }
+  },
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),
   PROJECT(string -> kase -> kase.getProjects().stream()
@@ -39,6 +54,26 @@ public enum CaseFilterKey {
 
   public Function<String, Predicate<Case>> create() {
     return create;
+  }
+
+  public Function<String, Predicate<Test>> testPredicate() {
+    return string -> test -> true;
+  }
+
+  public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
+    return string -> sample -> true;
+  }
+
+  public Function<String, Predicate<Requisition>> requisitionPredicate() {
+    return string -> requisition -> true;
+  }
+
+  private static PendingState getState(String label) {
+    PendingState state = PendingState.getByLabel(label);
+    if (state == null) {
+      throw new IllegalArgumentException(String.format("Invalid pending state: %s", label));
+    }
+    return state;
   }
 
 }

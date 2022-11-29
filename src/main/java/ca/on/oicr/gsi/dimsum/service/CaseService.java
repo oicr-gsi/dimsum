@@ -22,6 +22,7 @@ import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
@@ -90,7 +91,7 @@ public class CaseService {
       throw new IllegalStateException("Cases have not been loaded yet");
     }
     if (baseFilter != null) {
-      return currentData.getCases().stream().filter(baseFilter.predicate()).toList();
+      return currentData.getCases().stream().filter(baseFilter.casePredicate()).toList();
     } else {
       return currentData.getCases();
     }
@@ -99,7 +100,7 @@ public class CaseService {
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
       CaseFilter baseFilter, Collection<CaseFilter> filters) {
     List<Case> baseCases = getCases(baseFilter);
-    Stream<Case> stream = applyFilters(baseCases, filters);
+    Stream<Case> stream = filterCases(baseCases, filters);
 
     if (sort == null) {
       sort = CaseSort.LAST_ACTIVITY;
@@ -112,7 +113,7 @@ public class CaseService {
 
     TableData<Case> data = new TableData<>();
     data.setTotalCount(baseCases.size());
-    data.setFilteredCount(applyFilters(baseCases, filters).count());
+    data.setFilteredCount(filterCases(baseCases, filters).count());
     data.setItems(filteredCases);
     return data;
   }
@@ -150,49 +151,79 @@ public class CaseService {
   public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        (kase) -> kase.getReceipts().stream());
+        MetricCategory.RECEIPT);
   }
 
   public TableData<Sample> getExtractions(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        getTestSampleStream(Test::getExtractions));
+        MetricCategory.EXTRACTION);
   }
 
   public TableData<Sample> getLibraryPreparations(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        getTestSampleStream(Test::getLibraryPreparations));
+        MetricCategory.LIBRARY_PREP);
   }
 
   public TableData<Sample> getLibraryQualifications(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        getTestSampleStream(Test::getLibraryQualifications));
+        MetricCategory.LIBRARY_QUALIFICATION);
   }
 
   public TableData<Sample> getFullDepthSequencings(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        getTestSampleStream(Test::getFullDepthSequencings));
-  }
-
-  private Function<Case, Stream<Sample>> getTestSampleStream(
-      Function<Test, List<Sample>> getTestSamples) {
-    return kase -> kase.getTests().stream().flatMap(test -> getTestSamples.apply(test).stream());
+        MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
   private TableData<Sample> getSamples(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
-      Function<Case, Stream<Sample>> getSampleStream) {
+      MetricCategory requestCategory) {
     List<Case> cases = getCases(baseFilter);
     TableData<Sample> data = new TableData<>();
-    data.setTotalCount(cases.stream().flatMap(getSampleStream).distinct().count());
-    data.setFilteredCount(applyFilters(cases, filters).flatMap(getSampleStream).distinct().count());
-    data.setItems(applyFilters(cases, filters).flatMap(getSampleStream).distinct()
+    data.setTotalCount(
+        cases.stream().flatMap(getAllGateSamples(requestCategory)).distinct().count());
+    List<Sample> samples = filterSamples(cases, filters, requestCategory).distinct().toList();
+    data.setFilteredCount(samples.size());
+    data.setItems(samples.stream()
         .sorted(descending ? sort.comparator().reversed() : sort.comparator())
         .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
     return data;
+  }
+
+  private static Function<Case, Stream<Sample>> getAllGateSamples(MetricCategory category) {
+    switch (category) {
+      case RECEIPT:
+        return kase -> kase.getReceipts().stream();
+      case EXTRACTION:
+      case LIBRARY_PREP:
+      case LIBRARY_QUALIFICATION:
+      case FULL_DEPTH_SEQUENCING:
+        return getTestGateSamples(category);
+      default:
+        throw new IllegalArgumentException("Gate does not contain samples");
+    }
+  }
+
+  private static Function<Case, Stream<Sample>> getTestGateSamples(MetricCategory category) {
+    return kase -> kase.getTests().stream().flatMap(getAllTestGateSamples(category));
+  }
+
+  private static Function<Test, Stream<Sample>> getAllTestGateSamples(MetricCategory category) {
+    switch (category) {
+      case EXTRACTION:
+        return test -> test.getExtractions().stream();
+      case LIBRARY_PREP:
+        return test -> test.getLibraryPreparations().stream();
+      case LIBRARY_QUALIFICATION:
+        return test -> test.getLibraryQualifications().stream();
+      case FULL_DEPTH_SEQUENCING:
+        return test -> test.getFullDepthSequencings().stream();
+      default:
+        throw new IllegalArgumentException("Not a test gate");
+    }
   }
 
   public TableData<Requisition> getRequisitions(int pageSize, int pageNumber, RequisitionSort sort,
@@ -201,10 +232,10 @@ public class CaseService {
     TableData<Requisition> data = new TableData<>();
     data.setTotalCount(
         cases.stream().flatMap(kase -> kase.getRequisitions().stream()).distinct().count());
-    data.setFilteredCount(applyFilters(cases, filters)
-        .flatMap(kase -> kase.getRequisitions().stream()).distinct().count());
-    data.setItems(applyFilters(cases, filters).flatMap(kase -> kase.getRequisitions().stream())
-        .distinct().sorted(descending ? sort.comparator().reversed() : sort.comparator())
+    List<Requisition> requisitions = filterRequisitions(cases, filters).distinct().toList();
+    data.setFilteredCount(requisitions.size());
+    data.setItems(requisitions.stream()
+        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
         .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
     return data;
   }
@@ -213,7 +244,7 @@ public class CaseService {
       Collection<RunFilter> filters) {
     List<Run> baseRuns =
         caseData.getRunsAndLibraries().stream().map(RunAndLibraries::getRun).toList();
-    Stream<Run> stream = applyFiltersOnRuns(baseRuns, filters);
+    Stream<Run> stream = filterRuns(baseRuns, filters);
     if (sort == null) {
       sort = RunSort.COMPLETION_DATE;
       descending = true;
@@ -223,23 +254,16 @@ public class CaseService {
         stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
     TableData<Run> data = new TableData<>();
     data.setTotalCount(baseRuns.size());
-    data.setFilteredCount(applyFiltersOnRuns(baseRuns, filters).count());
+    data.setFilteredCount(filterRuns(baseRuns, filters).count());
     data.setItems(filteredRuns);
     return data;
   }
 
-  private Stream<Case> applyFilters(List<Case> cases, Collection<CaseFilter> filters) {
+  private Stream<Case> filterCases(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
     if (filters != null && !filters.isEmpty()) {
-      Map<CaseFilterKey, Predicate<Case>> filterMap = new HashMap<>();
-      for (CaseFilter filter : filters) {
-        CaseFilterKey key = filter.getKey();
-        if (filterMap.containsKey(key)) {
-          filterMap.put(key, filterMap.get(key).or(filter.predicate()));
-        } else {
-          filterMap.put(key, filter.predicate());
-        }
-      }
+      Map<CaseFilterKey, Predicate<Case>> filterMap =
+          buildFilterMap(filters, CaseFilter::casePredicate);
       for (Predicate<Case> predicate : filterMap.values()) {
         stream = stream.filter(predicate);
       }
@@ -247,7 +271,7 @@ public class CaseService {
     return stream;
   }
 
-  private Stream<Run> applyFiltersOnRuns(List<Run> runs, Collection<RunFilter> filters) {
+  private Stream<Run> filterRuns(List<Run> runs, Collection<RunFilter> filters) {
     Stream<Run> stream = runs.stream();
     if (filters != null && !filters.isEmpty()) {
       Map<RunFilterKey, Predicate<Run>> filterMap = new HashMap<>();
@@ -264,6 +288,66 @@ public class CaseService {
       }
     }
     return stream;
+  }
+
+  private Stream<Test> filterTests(List<Case> cases, Collection<CaseFilter> filters) {
+    Stream<Test> stream = filterCases(cases, filters)
+        .flatMap(kase -> kase.getTests().stream());
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Test>> filterMap =
+          buildFilterMap(filters, CaseFilter::testPredicate);
+      for (Predicate<Test> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+  }
+
+  private Stream<Sample> filterSamples(List<Case> cases, Collection<CaseFilter> filters,
+      MetricCategory requestCategory) {
+    Stream<Sample> stream = null;
+    if (requestCategory == MetricCategory.RECEIPT) {
+      stream = filterCases(cases, filters).flatMap(kase -> kase.getReceipts().stream());
+    } else {
+      stream = filterTests(cases, filters)
+          .flatMap(getAllTestGateSamples(requestCategory));
+    }
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Sample>> filterMap =
+          buildFilterMap(filters, filter -> filter.samplePredicate(requestCategory));
+      for (Predicate<Sample> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+  }
+
+  private Stream<Requisition> filterRequisitions(List<Case> cases, Collection<CaseFilter> filters) {
+    Stream<Requisition> stream = filterCases(cases, filters)
+        .flatMap(kase -> kase.getRequisitions().stream());
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Requisition>> filterMap =
+          buildFilterMap(filters, CaseFilter::requisitionPredicate);
+      for (Predicate<Requisition> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+
+  }
+
+  private <T> Map<CaseFilterKey, Predicate<T>> buildFilterMap(Collection<CaseFilter> filters,
+      Function<CaseFilter, Predicate<T>> getPredicate) {
+    Map<CaseFilterKey, Predicate<T>> filterMap = new HashMap<>();
+    for (CaseFilter filter : filters) {
+      CaseFilterKey key = filter.getKey();
+      if (filterMap.containsKey(key)) {
+        filterMap.put(key, filterMap.get(key).or(getPredicate.apply(filter)));
+      } else {
+        filterMap.put(key, getPredicate.apply(filter));
+      }
+    }
+    return filterMap;
   }
 
   public RunAndLibraries getRunAndLibraries(String name) {
