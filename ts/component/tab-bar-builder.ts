@@ -15,7 +15,6 @@ class Tab {
     const button = document.createElement("button");
     button.className =
       "flex-auto font-inter font-medium text-12 text-black bg-white px-2 py-1 rounded-md ring-green-200 ring-offset-1 ring-2";
-    // button.textContent = element.key;
     button.textContent = element.key;
     button.onclick = () => {
       if (!this.selected) {

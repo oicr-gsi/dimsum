@@ -50,7 +50,7 @@ tabBar.build();
 
 // reload: destroy current table and build new table
 function reload(definition: TableDefinition<any, any>) {
-  tableContainer ? (tableContainer.innerHTML = "") : "";
+  if (tableContainer) tableContainer.innerHTML = "";
   new TableBuilder(
     definition,
     tableContainerId,
