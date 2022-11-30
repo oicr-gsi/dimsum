@@ -1,1 +1,8 @@
-site_name: My Docs
+site_name: Dimsum
+nav:
+  - Home: index.md
+  - About: about.md
+theme: readthedocs
+# todo:
+## change the favicon to the dimsum logo
+## change site colors to match the dimsum colors
