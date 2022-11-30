@@ -3,8 +3,11 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 import static java.util.Objects.requireNonNull;
 
 import java.util.function.Predicate;
-
 import ca.on.oicr.gsi.dimsum.data.Case;
+import ca.on.oicr.gsi.dimsum.data.MetricCategory;
+import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.dimsum.data.Test;
 
 public class CaseFilter {
 
@@ -22,8 +25,20 @@ public class CaseFilter {
     return key;
   }
 
-  public Predicate<Case> predicate() {
+  public Predicate<Case> casePredicate() {
     return key.create().apply(value);
+  }
+
+  public Predicate<Test> testPredicate() {
+    return key.testPredicate().apply(value);
+  }
+
+  public Predicate<Sample> samplePredicate(MetricCategory requestCategory) {
+    return key.samplePredicate(requestCategory).apply(value);
+  }
+
+  public Predicate<Requisition> requisitionPredicate() {
+    return key.requisitionPredicate().apply(value);
   }
 
 }
