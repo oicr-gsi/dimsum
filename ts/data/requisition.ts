@@ -7,7 +7,6 @@ import {
 import {
   ColumnDefinition,
   legendAction,
-  SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
 import { urls } from "../util/urls";
@@ -21,6 +20,7 @@ import {
 } from "../util/metrics";
 import { siteConfig } from "../util/site-config";
 import { Metric, MetricSubcategory } from "./assay";
+import { caseFilters, latestActivitySort } from "../component/table-components";
 
 export interface RequisitionQcGroup {
   tissueOrigin: string;
@@ -48,12 +48,6 @@ export interface Requisition {
   finalReports: RequisitionQc[];
   latestActivityDate?: string;
 }
-
-const defaultSort: SortDefinition = {
-  columnTitle: "Latest Activity",
-  descending: true,
-  type: "date",
-};
 
 function qcStatusColumn(
   getQcs: (requisition: Requisition) => RequisitionQc[]
@@ -99,7 +93,8 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
 
 export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: (data?: Requisition[]) => [
     qcStatusColumn((requisition) => requisition.informaticsReviews),
@@ -111,7 +106,8 @@ export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
 
 export const draftReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.draftReports),
@@ -122,7 +118,8 @@ export const draftReportDefinition: TableDefinition<Requisition, void> = {
 
 export const finalReportDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
     qcStatusColumn((requisition) => requisition.finalReports),

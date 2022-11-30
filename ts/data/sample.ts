@@ -8,7 +8,6 @@ import { siteConfig } from "../util/site-config";
 import {
   ColumnDefinition,
   legendAction,
-  SortDefinition,
   TableDefinition,
 } from "../component/table-builder";
 import { Tooltip } from "../component/tooltip";
@@ -30,6 +29,7 @@ import {
   nullIfUndefined,
 } from "../util/metrics";
 import { showErrorDialog } from "../component/dialog";
+import { caseFilters, latestActivitySort } from "../component/table-components";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
@@ -95,12 +95,6 @@ interface QcInMisoRequest {
   report: string;
   library_aliquots: MisoRunLibrary[];
 }
-
-const defaultSort: SortDefinition = {
-  columnTitle: "Latest Activity",
-  descending: true,
-  type: "date",
-};
 
 function makeQcStatusColumn(
   includeRun: boolean
@@ -209,7 +203,8 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
     return [
@@ -246,7 +241,8 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
     return [
@@ -269,7 +265,8 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
-  defaultSort: defaultSort,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
     return [
@@ -289,7 +286,8 @@ export function getLibraryQualificationsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: defaultSort,
+    defaultSort: latestActivitySort,
+    filters: caseFilters,
     staticActions: [legendAction],
     bulkActions: [
       {
@@ -322,7 +320,8 @@ export function getFullDepthSequencingsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: defaultSort,
+    defaultSort: latestActivitySort,
+    filters: caseFilters,
     staticActions: [legendAction],
     bulkActions: [
       {
