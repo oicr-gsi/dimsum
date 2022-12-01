@@ -1,9 +1,7 @@
 package ca.on.oicr.gsi.dimsum.data;
 
-import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.StreamSupport;
 import javax.annotation.concurrent.Immutable;
 import org.joda.time.DateTime;
 import com.atlassian.jira.rest.client.api.domain.Comment;
