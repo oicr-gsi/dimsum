@@ -35,7 +35,7 @@ public class NotificationManager {
 
   private static final Logger log = LoggerFactory.getLogger(NotificationManager.class);
 
-  private static final String SUMMARY_SUFFIX_RUN_QC = " Run QC";
+  private static final String SUMMARY_SUFFIX_RUN_QC = " Dimsum Run QC";
   private static final Pattern SUMMARY_PATTERN_RUN_QC =
       Pattern.compile("^(.+)" + SUMMARY_SUFFIX_RUN_QC + "$");
 
@@ -44,6 +44,8 @@ public class NotificationManager {
 
   @Value("${baseurl}")
   private String baseUrl;
+  @Value("${jira.resolutions.override:#{null}}")
+  private String resolutionOverride;
 
   private List<Notification> notifications = new ArrayList<>();
   private int jiraErrors = 0;
@@ -185,7 +187,8 @@ public class NotificationManager {
           }
           if (issue == null) {
             try {
-              String newIssueKey = jiraService.createIssue(issueSummary, x.makeComment(baseUrl));
+              String newIssueKey =
+                  jiraService.createIssue(issueSummary, x.makeComment(baseUrl, resolutionOverride));
               newNotifications.add(x.withIssueKey(newIssueKey));
             } catch (Exception e) {
               jiraErrorCounter.increment();

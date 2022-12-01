@@ -36,8 +36,8 @@ public class NotificationManagerTest {
 
   private static final long ASSAY_ID = 1L;
   private static final String RUN_NAME = "RUN1";
-  private static final String SUMMARY_SUFFIX = " Run QC";
-  private static final String SUMMARY = "RUN1 Run QC";
+  private static final String SUMMARY_SUFFIX = " Dimsum Run QC";
+  private static final String SUMMARY = "RUN1 Dimsum Run QC";
   private static final String ISSUE_KEY = "JIRA-123";
 
   @Mock

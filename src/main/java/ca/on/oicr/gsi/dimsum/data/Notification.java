@@ -75,7 +75,25 @@ public class Notification {
         || run.getDataReviewDate() == null;
   }
 
+  /**
+   * Create a comment describing any outstanding QC
+   * 
+   * @param baseUrl Dimsum base URL
+   * @return the generated comment
+   */
   public String makeComment(String baseUrl) {
+    return makeComment(baseUrl, null);
+  }
+
+  /**
+   * Create a comment describing any outstanding QC. If overrideResolution is provided, include a
+   * message about how to permanently close the ticket
+   * 
+   * @param baseUrl Dimsum base URL
+   * @param overrideResolution resolution to permanently close the issue
+   * @return the generated comment
+   */
+  public String makeComment(String baseUrl, String overrideResolution) {
     return """
         %s
 
@@ -85,13 +103,16 @@ public class Notification {
 
         %d other libraries are still pending analysis.
 
-        [See metrics in Dimsum|%s/runs/%s]
+        [See metrics in Dimsum|%s/runs/%s]%s
 
         Internal use: <%s>""".formatted(makeRunMessage(),
         getPendingQcCount(), makePunctuationAndList(pendingQcSamples),
         getPendingDataReviewCount(), makePunctuationAndList(pendingDataReviewSamples),
         getPendingAnalysisCount(),
         baseUrl, run.getName(),
+        overrideResolution == null ? ""
+            : "\n\nTo permanently close this issue without completing, set resolution to \"%s.\""
+                .formatted(overrideResolution),
         makeCommentCode());
   }
 
