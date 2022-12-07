@@ -32,8 +32,6 @@ export function makeCell(tr: HTMLTableRowElement, firstColumn: boolean) {
 export function addLink(container: Node, text: string, url: string) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
-  a.setAttribute("target", "_blank");
-  a.setAttribute("rel", "noopener noreferrer");
   a.className = "text-green-200 font-bold hover:underline";
   a.innerHTML = text;
   container.appendChild(a);
