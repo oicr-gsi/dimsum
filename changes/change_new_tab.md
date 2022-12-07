@@ -1,0 +1,1 @@
+Change to open external links in new tab
