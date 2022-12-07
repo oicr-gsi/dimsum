@@ -91,7 +91,8 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
             addLink(
               fragment,
               notification.issueKey,
-              urls.jira.issue(notification.issueKey)
+              urls.jira.issue(notification.issueKey),
+              true
             );
           } else if (siteConfig.jiraUrl) {
             addText(fragment, "Error");

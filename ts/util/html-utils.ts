@@ -29,9 +29,18 @@ export function makeCell(tr: HTMLTableRowElement, firstColumn: boolean) {
 }
 
 // adds a styled link to an element
-export function addLink(container: Node, text: string, url: string) {
+export function addLink(
+  container: Node,
+  text: string,
+  url: string,
+  external?: boolean
+) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
+  if (external) {
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer");
+  }
   a.className = "text-green-200 font-bold hover:underline";
   a.innerHTML = text;
   container.appendChild(a);
