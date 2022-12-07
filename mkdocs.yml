@@ -1,8 +1,24 @@
 site_name: Dimsum
+site_url: http://dimsum.github.io
+theme: 
+  name: readthedocs
+  highlightjs: true
+  h1js_languages:
+    - yaml
+    - bash
+  logo: images/favicon.ico
 nav:
-  - Home: index.md
-  - About: about.md
-theme: readthedocs
-# todo:
-## change the favicon to the dimsum logo
-## change site colors to match the dimsum colors
+  - About: index.md
+  # - Getting Started:
+  #   - Requirements:
+  #   - Configuration:
+  #   - Building and Running:
+  #   - Monitoring:
+  # - User Manual:
+  #   - Introduction:
+  #     - History:
+  #   - Site Configuration:
+  #   - General Navigation:
+  #     1. Logging In:
+  #     2. Issue Tracking:
+
