@@ -31,7 +31,7 @@ const tables = [
   new Pair("Library Preparations", () => reload(libraryPreparationDefinition)),
   new Pair("Library Qualifications", () =>
     reload(
-      getLibraryQualificationsDefinition(urls.rest.libraryPreparations, true)
+      getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true)
     )
   ),
   new Pair("Full Depth Sequencings", () =>
