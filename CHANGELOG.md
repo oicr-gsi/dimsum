@@ -7,6 +7,22 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.0.0] - 2022-12-08
+
+### Added
+
+* Add tabbed interface for details page
+
+### Changed
+
+* Change to open external links in new tab
+* Improved "pending" filters when applied to tables other than the Cases table
+* Notification tickets' description to include instructions for permanently
+  closing the ticket
+* Notification ticket summary format for easier email filtering (RUN_NAME Dimsum
+  Run QC)
+
+
 ## [0.1.0] - 2022-11-17
 
 ### Added

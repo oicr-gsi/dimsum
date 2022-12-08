@@ -1,1 +1,0 @@
-Add tabbed interface for details page
