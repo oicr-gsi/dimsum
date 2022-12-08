@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.0.1] - 2022-12-08
+
+### Fixed
+
+* The Library Qualifications table on detail pages was showing the wrong items
+
+
 ## [1.0.0] - 2022-12-08
 
 ### Added
