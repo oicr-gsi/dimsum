@@ -20,5 +20,4 @@ jobs:
         with:
           node-version: 17
           cache: 'npm'
-      - run: npm install
       - run: mvn --batch-mode package
