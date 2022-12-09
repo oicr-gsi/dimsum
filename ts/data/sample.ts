@@ -287,7 +287,7 @@ export function getLibraryQualificationsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
-    filters: caseFilters,
+    filters: includeSequencingAttributes ? caseFilters : undefined,
     staticActions: [legendAction],
     bulkActions: [
       {
@@ -321,7 +321,7 @@ export function getFullDepthSequencingsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
-    filters: caseFilters,
+    filters: includeSequencingAttributes ? caseFilters : undefined,
     staticActions: [legendAction],
     bulkActions: [
       {
