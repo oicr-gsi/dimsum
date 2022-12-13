@@ -6,7 +6,6 @@
     "donor_id": "SAM123456",
     "requisitioned": true,
     "requisition_id": 999,
-    "assay_id": null,
     "received": "2022-12-13"
   },
   {
@@ -16,7 +15,6 @@
     "donor_id": "SAM123456",
     "requisitioned": false,
     "requisition_id": null,
-    "assay_id": null,
     "received": "2022-12-13"
   }
 ]
