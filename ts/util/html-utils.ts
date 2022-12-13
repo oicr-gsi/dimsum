@@ -1,3 +1,5 @@
+import { Tooltip } from "../component/tooltip";
+
 // adds a header cell to a table header
 export function addColumnHeader(
   thead: HTMLTableRowElement,
@@ -125,6 +127,14 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
     div.appendChild(nameSpan);
   }
   addMisoIcon(div, misoUrl);
+  return div;
+}
+
+export function makeTextDivWithTooltip(text: string, tooltip: string) {
+  const div = document.createElement("div");
+  div.appendChild(document.createTextNode(text));
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(div, document.createTextNode(tooltip));
   return div;
 }
 

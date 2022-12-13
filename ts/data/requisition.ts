@@ -41,7 +41,7 @@ export interface RequisitionQc {
 export interface Requisition {
   id: number;
   name: string;
-  assayId: number;
+  assayId?: number;
   qcGroups: RequisitionQcGroup[];
   informaticsReviews: RequisitionQc[];
   draftReports: RequisitionQc[];

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class CaseLoaderTest {
 
@@ -95,7 +96,7 @@ public class CaseLoaderTest {
   public void testLoadDonors() throws Exception {
     try (FileReader reader = sut.getDonorReader()) {
       Map<String, Donor> donorsById = sut.loadDonors(reader);
-      assertEquals(1, donorsById.size());
+      assertEquals(2, donorsById.size());
       Donor donor = donorsById.get(testDonorId);
       assertDonor(donor);
     }
@@ -111,7 +112,7 @@ public class CaseLoaderTest {
   public void testLoadRequisitions() throws Exception {
     try (FileReader reader = sut.getRequisitionReader()) {
       Map<Long, Requisition> requisitionsById = sut.loadRequisitions(reader);
-      assertEquals(1, requisitionsById.size());
+      assertEquals(2, requisitionsById.size());
       Long requisitionId = 512L;
       Requisition requisition = requisitionsById.get(requisitionId);
       assertNotNull(requisition);
@@ -160,6 +161,39 @@ public class CaseLoaderTest {
       assertNotNull(metric);
       assertEquals(new BigDecimal("0.7"), metric.getMinimum());
     }
+  }
+
+  @Test
+  public void testLoadOmittedSamples() throws Exception {
+    Donor donor = mock(Donor.class);
+    when(donor.getId()).thenReturn("SAM123456");
+    Map<String, Donor> donorsById = Map.of(donor.getId(), donor);
+
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.getId()).thenReturn(999L);
+    when(requisition.getName()).thenReturn("REQ-X");
+    Map<Long, Requisition> requisitionsById = Collections.singletonMap(999L, requisition);
+
+    try (FileReader reader = sut.getNoCaseReader()) {
+      List<OmittedSample> samples = sut.loadOmittedSamples(reader, donorsById, requisitionsById);
+      assertEquals(2, samples.size());
+      OmittedSample sample = samples.stream()
+          .filter(x -> Objects.equals("SAM123457", x.getId()))
+          .findFirst().orElse(null);
+      assertOmittedSample(sample);
+    }
+  }
+
+  private void assertOmittedSample(OmittedSample sample) {
+    assertNotNull(sample);
+    assertEquals("SAM123457", sample.getId());
+    assertEquals("NOCASE_0001_01", sample.getName());
+    assertEquals("NOCASE", sample.getProject());
+    assertNotNull(sample.getDonor());
+    assertEquals("SAM123456", sample.getDonor().getId());
+    assertEquals(999L, sample.getRequisitionId());
+    assertEquals("REQ-X", sample.getRequisitionName());
+    assertEquals(LocalDate.of(2022, 12, 13), sample.getCreatedDate());
   }
 
   @Test

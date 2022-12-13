@@ -1,6 +1,6 @@
 import { makeIcon } from "../util/html-utils";
 
-function showAlertDialog(
+export function showAlertDialog(
   title: string,
   text: string,
   additionalContent?: Node

@@ -7,6 +7,7 @@ import {
   makeNameDiv,
   addNaText,
   addTextDiv,
+  makeTextDivWithTooltip,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -111,11 +112,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Project",
       addParentContents(kase, fragment) {
         kase.projects.forEach((project) => {
-          const nameDiv = document.createElement("div");
-          nameDiv.className = "flex flex-row space-x-2 items-center";
-          addLink(nameDiv, project.name, urls.dimsum.project(project.name));
-          addMisoIcon(nameDiv, urls.miso.project(project.name));
-          fragment.appendChild(nameDiv);
+          fragment.appendChild(
+            makeNameDiv(
+              project.name,
+              urls.miso.project(project.name),
+              urls.dimsum.project(project.name)
+            )
+          );
 
           const pipelineDiv = document.createElement("div");
           pipelineDiv.appendChild(document.createTextNode(project.pipeline));
@@ -127,22 +130,16 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Donor",
       sortType: "text",
       addParentContents(kase, fragment) {
-        const nameDiv = document.createElement("div");
-        nameDiv.className = "flex flex-row space-x-2 items-center";
-        addLink(nameDiv, kase.donor.name, urls.dimsum.donor(kase.donor.name));
-        addMisoIcon(nameDiv, urls.miso.sample(kase.donor.id));
-        fragment.appendChild(nameDiv);
-
-        const externalNameDiv = document.createElement("div");
-        externalNameDiv.appendChild(
-          document.createTextNode(kase.donor.externalName)
+        fragment.appendChild(
+          makeNameDiv(
+            kase.donor.name,
+            urls.miso.sample(kase.donor.id),
+            urls.dimsum.donor(kase.donor.name)
+          )
         );
-        const tooltipInstance = Tooltip.getInstance();
-        tooltipInstance.addTarget(
-          externalNameDiv,
-          document.createTextNode("External Name")
+        fragment.appendChild(
+          makeTextDivWithTooltip(kase.donor.externalName, "External Name")
         );
-        fragment.appendChild(externalNameDiv);
 
         const tumourDetailDiv = document.createElement("div");
         tumourDetailDiv.appendChild(
@@ -157,6 +154,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (kase.timepoint) {
           addTextDiv(`Timepoint: ${kase.timepoint}`, tooltipDiv);
         }
+        const tooltipInstance = Tooltip.getInstance();
         tooltipInstance.addTarget(tumourDetailDiv, tooltipDiv);
         fragment.appendChild(tumourDetailDiv);
       },

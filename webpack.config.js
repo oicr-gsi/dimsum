@@ -9,6 +9,7 @@ module.exports = {
     notifications: "./ts/notifications.ts",
     runList: "./ts/run-list.ts",
     run: "./ts/run.ts",
+    omissions: "./ts/omissions.ts",
   },
   module: {
     rules: [

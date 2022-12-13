@@ -17,7 +17,7 @@ public class Requisition {
 
   private final long id;
   private final String name;
-  private final long assayId;
+  private final Long assayId;
   private final boolean stopped;
   private final List<RequisitionQcGroup> qcGroups;
   private final List<RequisitionQc> informaticsReviews;
@@ -28,7 +28,7 @@ public class Requisition {
   private Requisition(Builder builder) {
     this.id = requireNonNull(builder.id);
     this.name = requireNonNull(builder.name);
-    this.assayId = requireNonNull(builder.assayId);
+    this.assayId = builder.assayId;
     this.stopped = builder.stopped;
     this.qcGroups = builder.qcGroups == null ? emptyList() : unmodifiableList(builder.qcGroups);
     this.informaticsReviews = builder.informaticsReviews == null ? emptyList()
@@ -51,7 +51,7 @@ public class Requisition {
     return name;
   }
 
-  public long getAssayId() {
+  public Long getAssayId() {
     return assayId;
   }
 
