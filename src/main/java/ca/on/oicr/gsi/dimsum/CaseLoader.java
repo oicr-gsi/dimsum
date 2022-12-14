@@ -41,6 +41,7 @@ public class CaseLoader {
   private File sampleFile;
   private File assayFile;
   private File timestampFile;
+  private File noCaseFile;
 
   private Timer refreshTimer = null;
 
@@ -64,6 +65,7 @@ public class CaseLoader {
     sampleFile = new File(dataDirectory, "samples.json");
     assayFile = new File(dataDirectory, "assays.json");
     timestampFile = new File(dataDirectory, "timestamp");
+    noCaseFile = new File(dataDirectory, "receipts_nocase.json");
   }
 
   /**
@@ -103,7 +105,8 @@ public class CaseLoader {
         FileReader requisitionReader = getRequisitionReader();
         FileReader runReader = getRunReader();
         FileReader assayReader = getAssayReader();
-        FileReader caseReader = getCaseReader();) {
+        FileReader caseReader = getCaseReader();
+        FileReader nocaseReader = getNoCaseReader();) {
       ZonedDateTime afterTimestamp = getDataTimestamp();
       if (afterTimestamp == null) {
         log.debug("New case data is currently being written; aborting load.");
@@ -119,6 +122,8 @@ public class CaseLoader {
       Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
       Map<String, Sample> samplesById =
           loadSamples(sampleReader, donorsById, runsById, requisitionsById);
+      List<OmittedSample> omittedSamples =
+          loadOmittedSamples(nocaseReader, donorsById, requisitionsById);
       Map<Long, Assay> assaysById = loadAssays(assayReader);
       List<Case> cases = loadCases(caseReader, projectsByName, samplesById, donorsById,
           requisitionsById, assaysById);
@@ -127,29 +132,25 @@ public class CaseLoader {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
       log.debug(String.format("Completed loading %d cases.", cases.size()));
-      return new CaseData(cases, runsByName, assaysById, afterTimestamp, getAssayNames(assaysById),
+      return new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
           getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
           getDonorNames(donorsById), getRunNames(runsByName));
     }
   }
 
-  private Set<String> getAssayNames(Map<Long, Assay> assaysById) {
-    return assaysById.values().stream().map(Assay::getName).collect(Collectors.toSet());
-  }
-
-  private Set<String> getRequisitionNames(Map<Long, Requisition> requisitionsById) {
+  private static Set<String> getRequisitionNames(Map<Long, Requisition> requisitionsById) {
     return requisitionsById.values().stream().map(Requisition::getName).collect(Collectors.toSet());
   }
 
-  private Set<String> getProjectNames(Map<String, Project> projectsByName) {
+  private static Set<String> getProjectNames(Map<String, Project> projectsByName) {
     return projectsByName.keySet().stream().collect(Collectors.toSet());
   }
 
-  private Set<String> getDonorNames(Map<String, Donor> donorsById) {
+  private static Set<String> getDonorNames(Map<String, Donor> donorsById) {
     return donorsById.values().stream().map(Donor::getName).collect(Collectors.toSet());
   }
 
-  private Set<String> getRunNames(Map<String, RunAndLibraries> runsByName) {
+  private static Set<String> getRunNames(Map<String, RunAndLibraries> runsByName) {
     return runsByName.keySet();
   }
 
@@ -179,6 +180,10 @@ public class CaseLoader {
 
   protected FileReader getCaseReader() throws FileNotFoundException {
     return new FileReader(caseFile);
+  }
+
+  protected FileReader getNoCaseReader() throws FileNotFoundException {
+    return new FileReader(noCaseFile);
   }
 
   protected Map<String, Project> loadProjects(FileReader fileReader)
@@ -242,6 +247,25 @@ public class CaseLoader {
     });
 
     return samples.stream().collect(Collectors.toMap(Sample::getId, Function.identity()));
+  }
+
+  protected List<OmittedSample> loadOmittedSamples(FileReader fileReader,
+      Map<String, Donor> donorsById, Map<Long, Requisition> requisitionsById)
+      throws DataParseException, IOException {
+    return loadFromJsonArrayFile(fileReader, json -> {
+      Long requisitionId = parseLong(json, "requisition_id", false);
+      if (requisitionId != null && !requisitionsById.containsKey(requisitionId)) {
+        throw new DataParseException(String.format("Requisition ID %d not found", requisitionId));
+      }
+      return new OmittedSample.Builder()
+          .id(parseString(json, "sample_id", true))
+          .name(parseString(json, "oicr_internal_name", true))
+          .requisition(requisitionId == null ? null : requisitionsById.get(requisitionId))
+          .project(parseString(json, "project_name", true))
+          .donor(donorsById.get(parseString(json, "donor_id")))
+          .createdDate(parseSampleCreatedDate(json))
+          .build();
+    });
   }
 
   protected Map<Long, Run> loadRuns(FileReader fileReader) throws DataParseException, IOException {
@@ -323,7 +347,7 @@ public class CaseLoader {
       Requisition requisition = new Requisition.Builder()
           .id(parseLong(json, "id", true))
           .name(parseString(json, "name", true))
-          .assayId(parseLong(json, "assay_id", true))
+          .assayId(parseLong(json, "assay_id", false))
           .stopped(parseBoolean(json, "stopped"))
           .qcGroups(parseRequisitionQcGroups(json.get("qc_groups")))
           .informaticsReviews(parseRequisitionQcs(json, "informatics_reviews"))

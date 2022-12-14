@@ -23,6 +23,7 @@ import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.MetricCategory;
+import ca.on.oicr.gsi.dimsum.data.OmittedSample;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
@@ -31,6 +32,9 @@ import ca.on.oicr.gsi.dimsum.data.Test;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
+import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
@@ -259,6 +263,24 @@ public class CaseService {
     return data;
   }
 
+  public TableData<OmittedSample> getOmittedSamples(int pageSize, int pageNumber,
+      OmittedSampleSort sort, boolean descending, Collection<OmittedSampleFilter> filters) {
+    List<OmittedSample> baseSamples = caseData.getOmittedSamples();
+    Stream<OmittedSample> stream = filterOmittedSamples(baseSamples, filters);
+    if (sort == null) {
+      sort = OmittedSampleSort.CREATED;
+      descending = true;
+    }
+    stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+    List<OmittedSample> filteredSamples =
+        stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
+    TableData<OmittedSample> data = new TableData<>();
+    data.setTotalCount(baseSamples.size());
+    data.setFilteredCount(filterOmittedSamples(baseSamples, filters).count());
+    data.setItems(filteredSamples);
+    return data;
+  }
+
   private Stream<Case> filterCases(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
     if (filters != null && !filters.isEmpty()) {
@@ -284,6 +306,26 @@ public class CaseService {
         }
       }
       for (Predicate<Run> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+  }
+
+  private Stream<OmittedSample> filterOmittedSamples(List<OmittedSample> samples,
+      Collection<OmittedSampleFilter> filters) {
+    Stream<OmittedSample> stream = samples.stream();
+    if (filters != null && !filters.isEmpty()) {
+      Map<OmittedSampleFilterKey, Predicate<OmittedSample>> filterMap = new HashMap<>();
+      for (OmittedSampleFilter filter : filters) {
+        OmittedSampleFilterKey key = filter.getKey();
+        if (filterMap.containsKey(key)) {
+          filterMap.put(key, filterMap.get(key).or(filter.predicate()));
+        } else {
+          filterMap.put(key, filter.predicate());
+        }
+      }
+      for (Predicate<OmittedSample> predicate : filterMap.values()) {
         stream = stream.filter(predicate);
       }
     }

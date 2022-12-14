@@ -1,0 +1,20 @@
+[
+  {
+    "sample_id": "SAM123457",
+    "oicr_internal_name": "NOCASE_0001_01",
+    "project_name": "NOCASE",
+    "donor_id": "SAM123456",
+    "requisitioned": true,
+    "requisition_id": 999,
+    "received": "2022-12-13"
+  },
+  {
+    "sample_id": "SAM123458",
+    "oicr_internal_name": "NOCASE_0001_02",
+    "project_name": "NOCASE",
+    "donor_id": "SAM123456",
+    "requisitioned": false,
+    "requisition_id": null,
+    "received": "2022-12-13"
+  }
+]

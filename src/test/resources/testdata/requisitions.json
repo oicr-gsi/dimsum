@@ -43,5 +43,15 @@
     ],
     "draft_reports": [],
     "final_reports": []
+  },
+  {
+    "id": 999,
+    "name": "REQ-X",
+    "assay_id": null,
+    "stopped": false,
+    "qc_groups": [],
+    "informatics_reviews": [],
+    "draft_reports": [],
+    "final_reports": []
   }
 ]
