@@ -12,13 +12,24 @@ Dim Sum is a Spring Boot web app.
   - `css`: custom css (see [Tailwind](#tailwind-css))
   - `img`: images or svg's such as logos
   - `libs`: external libraries
-  - `js`: generated javascript (see [Typescript](#typescript)) 
+  - `js`: generated javascript (see [Typescript](#typescript))
 
 ## Configuration
 
 App config is in `/resources/application.yml`. The properties in this file can be overridden
 using command-line parameters, system variables, or an external properties file. See the
 [README](/README.md) for more information on the external properties file.
+
+## Debugging
+
+Example: Run the server with debugging enabled on port 8000 and wait for debugger connection before
+starting:
+
+```
+mvn clean spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000"
+```
+
+A VSCode launch configuration named "Debug local Dimsum" is provided to connect to this.
 
 ## Code Formatting
 
@@ -45,10 +56,9 @@ include a div with property `layout:fragment="content"` in the `body` to contain
 Elements from the `head` section of the main layout will be included before the `head` elements
 from the page template. The title from the page and layout will also be concatenated automatically.
 
-
 ## Font Awesome
 
-Icons are sourced from [Font Awesome](https://fontawesome.com/). Dimsum strictly uses its free solid variants for consistent branding.  
+Icons are sourced from [Font Awesome](https://fontawesome.com/). Dimsum strictly uses its free solid variants for consistent branding.
 
 ## Tailwind CSS
 
@@ -83,7 +93,7 @@ When possible, re-use components and & utility functions. Some notable examples:
 - `urls.ts` should be used to generate all URLs.
 - `html-utils.ts` has a variety of functions for making icons, adding links and more (see its documentation for more details).
 - `requests.ts` contains functions for making HTTP requests.
-  
+
 ### JavaScript Library Dependencies
 
 JavaScript libraries may be included and used in TypeScript. To keep things cleaner, these

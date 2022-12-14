@@ -17,11 +17,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import ca.on.oicr.gsi.dimsum.data.Assay;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
@@ -200,22 +202,38 @@ public class NotificationManagerTest {
   public void testNewFullDepthIssue() {
     Map<String, RunAndLibraries> data = makeData(true, 1, 1, 0, 0);
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.emptySet());
-    when(jiraService.getIssue(SUMMARY)).thenReturn(null);
+    when(jiraService.getIssueBySummary(SUMMARY)).thenReturn(null);
     sut.update(data, assaysById);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
-    verify(jiraService).getIssue(SUMMARY);
+    verify(jiraService).getIssueBySummary(SUMMARY);
     verify(jiraService).createIssue(Mockito.eq(SUMMARY), anyString());
     verifyNoMoreInteractions(jiraService);
   }
 
   @Test
-  public void testUnchangedFullDepthIssue() {
+  public void testUnchangedSincePostFullDepthIssue() {
     Map<String, RunAndLibraries> data = makeData(true, 1, 1, 0, 0);
     Issue issue = makeIssue("R1A1Q1D0");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
+    when(jiraService.getIssueByKey(issue.getKey())).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
     sut.update(data, assaysById);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
+    verify(jiraService).getIssueByKey(issue.getKey());
+    verify(jiraService).getIssueState(issue);
+    verifyNoMoreInteractions(jiraService);
+  }
+
+  @Test
+  public void testUnchangedSinceUpdateFullDepthIssue() {
+    Map<String, RunAndLibraries> data = makeData(true, 0, 0, 2, 0);
+    Issue issue = makeIssue("R1A0Q2D0", "R1A0Q0D2");
+    when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
+    when(jiraService.getIssueByKey(issue.getKey())).thenReturn(issue);
+    when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
+    sut.update(data, assaysById);
+    verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
+    verify(jiraService).getIssueByKey(issue.getKey());
     verify(jiraService).getIssueState(issue);
     verifyNoMoreInteractions(jiraService);
   }
@@ -225,10 +243,12 @@ public class NotificationManagerTest {
     Map<String, RunAndLibraries> data = makeData(true, 1, 0, 1, 0);
     Issue issue = makeIssue("R1A1Q1D0");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
+    when(jiraService.getIssueByKey(issue.getKey())).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
     sut.update(data, assaysById);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueState(issue);
+    verify(jiraService).getIssueByKey(issue.getKey());
     verify(jiraService).postComment(any(), anyString());
     verifyNoMoreInteractions(jiraService);
   }
@@ -251,11 +271,11 @@ public class NotificationManagerTest {
     Map<String, RunAndLibraries> data = makeData(true, 0, 1, 0, 1);
     Issue issue = makeIssue("R3A1Q0D0");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.emptySet());
-    when(jiraService.getIssue(SUMMARY)).thenReturn(issue);
+    when(jiraService.getIssueBySummary(SUMMARY)).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.PAUSED);
     sut.update(data, assaysById);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
-    verify(jiraService).getIssue(SUMMARY);
+    verify(jiraService).getIssueBySummary(SUMMARY);
     verify(jiraService, times(2)).getIssueState(issue);
     verify(jiraService).reopenIssue(any(), anyString());
     verifyNoMoreInteractions(jiraService);
@@ -277,12 +297,12 @@ public class NotificationManagerTest {
     Map<String, RunAndLibraries> data = makeData(true, 0, 1, 0, 1);
     Issue issue = makeIssue("R3A1Q0D0");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.emptySet());
-    when(jiraService.getIssue(SUMMARY)).thenReturn(issue);
+    when(jiraService.getIssueBySummary(SUMMARY)).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.PAUSED);
     // Verify that it would normally be reopened
     sut.update(data, assaysById);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
-    verify(jiraService).getIssue(SUMMARY);
+    verify(jiraService).getIssueBySummary(SUMMARY);
     verify(jiraService, times(2)).getIssueState(issue);
     verify(jiraService).reopenIssue(any(), anyString());
     verifyNoMoreInteractions(jiraService);
@@ -292,7 +312,7 @@ public class NotificationManagerTest {
     sut.update(data, assaysById);
     // Note: these verifications count the previously verified invocations too
     verify(jiraService, times(2)).getOpenIssues(SUMMARY_SUFFIX);
-    verify(jiraService, times(2)).getIssue(SUMMARY);
+    verify(jiraService, times(2)).getIssueBySummary(SUMMARY);
     verify(jiraService, times(3)).getIssueState(issue);
     verifyNoMoreInteractions(jiraService);
   }
@@ -365,14 +385,30 @@ public class NotificationManagerTest {
   }
 
   private Issue makeIssue(String code) {
+    return makeIssue(code, null);
+  }
+
+  private Issue makeIssue(String descriptionCode, String commentCode) {
     Issue issue = mock(Issue.class);
     when(issue.getKey()).thenReturn(ISSUE_KEY);
     when(issue.getSummary()).thenReturn(SUMMARY);
-    when(issue.getDescription()).thenReturn("""
+    when(issue.getDescription()).thenReturn(makeComment(descriptionCode));
+    List<Comment> comments = new ArrayList<>();
+    if (commentCode != null) {
+      Comment comment = mock(Comment.class);
+      when(comment.getCreationDate()).thenReturn(DateTime.now());
+      when(comment.getBody()).thenReturn(makeComment(commentCode));
+      comments.add(comment);
+    }
+    when(issue.getComments()).thenReturn(comments);
+    return issue;
+  }
+
+  private static String makeComment(String code) {
+    return """
         (Human readable stuff here)
 
-        Internal use: <%s>""".formatted(code));
-    return issue;
+        Internal use: <%s>""".formatted(code);
   }
 
 }
