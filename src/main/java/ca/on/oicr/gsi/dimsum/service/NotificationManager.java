@@ -151,7 +151,9 @@ public class NotificationManager {
                 String.format("Unexpected notification state: %s", notificationState));
         }
       }
-      RunQcCommentSummary issueSummary = RunQcCommentSummary.findLatest(issue);
+      // Need to get by key because issue found via search doesn't include comments
+      Issue issueWithComments = jiraService.getIssueByKey(issue.getKey());
+      RunQcCommentSummary issueSummary = RunQcCommentSummary.findLatest(issueWithComments);
       if (issueSummary == null || issueSummary.needsUpdate(notification)) {
         jiraService.postComment(issue, notification.makeComment(baseUrl));
       }
@@ -178,7 +180,7 @@ public class NotificationManager {
           String issueSummary = x.getRun().getName() + SUMMARY_SUFFIX_RUN_QC;
           Issue issue = null;
           try {
-            issue = jiraService.getIssue(issueSummary);
+            issue = jiraService.getIssueBySummary(issueSummary);
           } catch (Exception e) {
             jiraErrorCounter.increment();
             log.error("Error searching for JIRA issue", e);

@@ -73,7 +73,11 @@ public class JiraService {
     }
   }
 
-  public Issue getIssue(String summary) {
+  public Issue getIssueByKey(String key) {
+    return rest.getIssueClient().getIssue(key).claim();
+  }
+
+  public Issue getIssueBySummary(String summary) {
     countRequest();
     Iterable<Issue> issues = rest.getSearchClient().searchJql(
         String.format("project = %s AND labels = %s AND summary ~ \"%s\"", projectNotification,
