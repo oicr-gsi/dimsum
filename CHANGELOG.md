@@ -7,6 +7,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.1.0] - 2022-12-15
+
+### Added
+
+* Omissions list page
+
+### Fixed
+
+* Filter options meant for other pages were appearing on the Run Details page
+
+
 ## [1.0.1] - 2022-12-08
 
 ### Fixed
