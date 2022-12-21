@@ -496,95 +496,103 @@ function generateMetricColumns(
     .map((sample) => sample.assayId || 0)
     .filter((assayId) => assayId > 0);
   const metricNames = getMetricNames(category, assayIds);
-  return metricNames.map((metricName) => {
-    return {
-      title: metricName,
-      addParentContents(sample, fragment) {
+  return metricNames
+    .filter((metricName) =>
+      samples.some((sample) => {
+        // filter out metrics that are n/a for all samples
         const metrics = getMatchingMetrics(metricName, category, sample);
-        if (!metrics || !metrics.length) {
-          addNaText(fragment);
-          return;
-        }
-        // handle metrics that have multiple values
-        switch (metricName) {
-          case METRIC_LABEL_Q30:
-            addQ30Contents(sample, metrics, fragment);
+        return metrics && metrics.length;
+      })
+    )
+    .map((metricName) => {
+      return {
+        title: metricName,
+        addParentContents(sample, fragment) {
+          const metrics = getMatchingMetrics(metricName, category, sample);
+          if (!metrics || !metrics.length) {
+            addNaText(fragment);
             return;
-          case METRIC_LABEL_CLUSTERS_PF_1:
-          case METRIC_LABEL_CLUSTERS_PF_2:
-            addClustersPfContents(sample, metrics, fragment);
-            return;
-          case METRIC_LABEL_PHIX:
-            addPhixContents(sample, metrics, fragment);
-            return;
-        }
-        if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
-          // pass/fail based on QC status
-          if (sample.qcPassed) {
-            fragment.append(makeStatusIcon("check", "Passed"));
-          } else if (sample.qcPassed === false) {
-            fragment.append(makeStatusIcon("xmark", "Failed"));
-          } else {
-            fragment.append(makeStatusIcon("magnifying-glass", "Pending QC"));
           }
-          return;
-        }
-        if (/^Adaptor Contamination/.test(metricName)) {
-          fragment.append(
-            makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id))
-          );
-          return;
-        }
-        const value = getMetricValue(metricName, sample);
-        if (value === null) {
-          if (sample.run) {
-            const status = sample.run.completionDate
-              ? qcStatuses.analysis
-              : qcStatuses.sequencing;
-            fragment.appendChild(makeStatusIcon(status.icon, status.label));
-          } else {
-            fragment.appendChild(makeNotFoundIcon());
+          // handle metrics that have multiple values
+          switch (metricName) {
+            case METRIC_LABEL_Q30:
+              addQ30Contents(sample, metrics, fragment);
+              return;
+            case METRIC_LABEL_CLUSTERS_PF_1:
+            case METRIC_LABEL_CLUSTERS_PF_2:
+              addClustersPfContents(sample, metrics, fragment);
+              return;
+            case METRIC_LABEL_PHIX:
+              addPhixContents(sample, metrics, fragment);
+              return;
           }
-        } else {
-          fragment.append(makeMetricDisplay(value, metrics));
-        }
-      },
-      getCellHighlight(sample) {
-        const metrics = getMatchingMetrics(metricName, category, sample);
-        if (!metrics || !metrics.length) {
-          return "na";
-        }
-        // handle metrics that are checked against multiple values
-        switch (metricName) {
-          case METRIC_LABEL_CLUSTERS_PF_1:
-          case METRIC_LABEL_CLUSTERS_PF_2:
-            return getClustersPfHighlight(sample, metrics);
-          case METRIC_LABEL_PHIX:
-            return getPhixHighlight(sample, metrics);
-        }
-        if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
-          if (sample.qcPassed) {
+          if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+            // pass/fail based on QC status
+            if (sample.qcPassed) {
+              fragment.append(makeStatusIcon("check", "Passed"));
+            } else if (sample.qcPassed === false) {
+              fragment.append(makeStatusIcon("xmark", "Failed"));
+            } else {
+              fragment.append(makeStatusIcon("magnifying-glass", "Pending QC"));
+            }
+            return;
+          }
+          if (/^Adaptor Contamination/.test(metricName)) {
+            fragment.append(
+              makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id))
+            );
+            return;
+          }
+          const value = getMetricValue(metricName, sample);
+          if (value === null) {
+            if (sample.run) {
+              const status = sample.run.completionDate
+                ? qcStatuses.analysis
+                : qcStatuses.sequencing;
+              fragment.appendChild(makeStatusIcon(status.icon, status.label));
+            } else {
+              fragment.appendChild(makeNotFoundIcon());
+            }
+          } else {
+            fragment.append(makeMetricDisplay(value, metrics));
+          }
+        },
+        getCellHighlight(sample) {
+          const metrics = getMatchingMetrics(metricName, category, sample);
+          if (!metrics || !metrics.length) {
+            return "na";
+          }
+          // handle metrics that are checked against multiple values
+          switch (metricName) {
+            case METRIC_LABEL_CLUSTERS_PF_1:
+            case METRIC_LABEL_CLUSTERS_PF_2:
+              return getClustersPfHighlight(sample, metrics);
+            case METRIC_LABEL_PHIX:
+              return getPhixHighlight(sample, metrics);
+          }
+          if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+            if (sample.qcPassed) {
+              return null;
+            } else if (sample.qcPassed === false) {
+              return "error";
+            } else {
+              return "warning";
+            }
+          }
+          if (/^Adaptor Contamination/.test(metricName)) {
             return null;
-          } else if (sample.qcPassed === false) {
-            return "error";
-          } else {
+          }
+          const value = getMetricValue(metricName, sample);
+          if (value == null) {
             return "warning";
           }
-        }
-        if (/^Adaptor Contamination/.test(metricName)) {
+          if (anyFail(value, metrics)) {
+            return "error";
+          }
           return null;
-        }
-        const value = getMetricValue(metricName, sample);
-        if (value == null) {
-          return "warning";
-        }
-        if (anyFail(value, metrics)) {
-          return "error";
-        }
-        return null;
-      },
-    };
-  });
+        },
+      };
+    });
 }
 
 function addQ30Contents(
