@@ -1,21 +1,13 @@
-# **Dimsum**
-
-## **ABOUT**
-This is a paragraph on the usage and purpose of Dimsum. 
-
----
-
-## **GETTING STARTED**
-### **Requirements**
+## **Requirements**
 * Java 17 JDK
 * Maven 3.8+
 * Node 17.3+
 * NPM 8.3+
 * TSC 4.5+
 
-### **Configuration**
+## **Configuration**
 1. Create a `config` subdirectory within the directory you will run the app from
-2. Copy [example-application.properties](example-application.properties) into the `config`
+2. Copy [example-application.properties](../../example-application.properties) into the `config`
    directory and rename it to `application.properties`
 3. Are you enabling SAML authentication?
    * If yes:
@@ -29,7 +21,7 @@ This is a paragraph on the usage and purpose of Dimsum.
    * If no, add the following line to `application.properties` to disable authentication:
      `spring.profiles.active=noauth`
 
-### **Building and Running**
+## **Building and Running**
 Maven is configured to automatically run `npm` to install node modules, compile and package
 TypeScript via `tsc` and `webpack`, and include requirements from both in the Java build.
 
@@ -45,24 +37,5 @@ Run server on different port:
 
 `mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8081"`
 
-### **Monitoring**
+## **Monitoring**
 Prometheus metrics are available at `/metrics` on the deployed webapp.
-
----
-
-## **USER MANUAL**
-### **Introduction**
-#### **History**
-
-<br>
-
-### **Site Configuration**
-
-<br>
-
-### **General Navigation**
-#### **1. Logging In**
-A username and password are required to log into Dimsum. These credentials may come from different places ,depending on your site configuration.
-
-#### **2. Issue Tracking?**
-
