@@ -1,9 +1,9 @@
-# Active Notifications
+# Active Notifications Page
 The notifictations page displays your relevant runs for which QC is still ongoing, or has been completed.
 
 To access the notifications page, click the green "Notifications" link in the top right corner of the screen. 
 
-**[INSERT VIEW OF THE NOTIFICATIONS PAGE]**
+<!-- INSERT VIEW OF THE NOTIFICATIONS PAGE -->
 
 Below are some notable columns briefly outlined.
 

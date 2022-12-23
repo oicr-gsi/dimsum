@@ -27,8 +27,9 @@ nav:
     - Omissions Page: user_manual/omissions.md
     - Notable Tools and Features: user_manual/features.md
   - Guides:
-    - Review Sign-Offs For A Case: user_manual/guides/review_sign_offs.md
     - Review Data Entry: user_manual/guides/review_data_entry.md
+    - Review Sign-Offs For A Case: user_manual/guides/review_sign_offs.md
+
 
 
 extra_css:
