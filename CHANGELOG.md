@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.1.1] - 2023-01-04
+
+### Fixed
+
+* Metric columns that are n/a for all samples should be hidden
+
+
 ## [1.1.0] - 2022-12-15
 
 ### Added
