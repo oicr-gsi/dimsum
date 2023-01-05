@@ -16,8 +16,6 @@ theme:
 
 nav:
   - About: index.md
-  - Getting Started:
-    - Installation: user_manual/installation.md
   - User Manual:
     - Overview: user_manual/overview.md
     - QC Dashboard: user_manual/qc_dashboard.md
