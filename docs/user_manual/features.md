@@ -1,37 +1,70 @@
-# Notable Tools and Features
+# Common Features
 
-## MISO
-Text with the MISO icon adjacent will redirect the user to the MISO LIMS, where information may be further viewed and reviewed.
+## Links
 
-<!-- DEMONSTRATE THE ABILITY TO OPEN LINKS IN MISO (eg. on a details page or from a tool tip containing a run name) -->
+Text links within Dimsum usually link to other pages within Dimsum. For example, clicking a run name
+will take you to the Run Details page. Any exception to this should be obvious. For example,
+a JIRA ticket number will link you to the ticket in JIRA.
 
-## Jira
-Jira integration is currently in development.
+### MISO
 
-## Dashi
-Links to Dashi are currently in development.
+The MISO icon (![MISO icon](/images/miso_logo.svg)) appears adjacent to any item with a
+corresponding page in MISO LIMS. Clicking the MISO icon open the MISO page in a new tab.
 
 ## Tool Tips
-Hovering over certain text will open a "Tool Tip", which can provide more details on the information selected.
 
-<!-- GIVE EXAMPLE OF A 'MINOR' TOOL TIP (a few lines describing the text shown) AND A MORE 'MAJOR' TOOL TIP (eg. hovering over a run name will give a box of information regarding the lane.) -->
+Hovering over certain text will cause a "Tool Tip" to pop up, which can clarify or provide more
+details about data that is initially displayed in a compact form.
 
-## Filtering
-Users can filter for specific pieces of information by clicking on the filter icon on the top of the current table. Applying any filters will automatically refresh the page with entries that follow all the filter requirements. 
+![Describing tooltip](/images/tooltip_describe.png)
 
-Multiple filters can be applied at a time. To remove a filter, simply delete it by pressing 'x' on its label.
+## Tables
 
-Additionally, following the selection of filters, the url may be copied and shared amongst users for readability and accessibility.
+Tables in Dimsum have a standard set of controls added above and/or below the table.
 
-<!-- GIVE EXAMPLE OF HOW TO USE THE FILTERING FEATURES ON THE MAIN DASHBOARD -->
+### Sorting
 
-## Sorting
-Users can sort data by different criteria by clicking on the sort icon in the top left of the current table. Users can sort alphabetically, by start/end date, by donor name, etc.
+Tables can be sorted by clicking the dropdown next to the sort icon at the top left of the table and
+selecting the desired option. Sort options will differ depending on the table.
 
-<!-- GIVE EXAMPLE OF A SIMPLE SORT -->
+![Sorting controls](/images/sort_controls.png)
 
-## Pageation
-Adjust the number of entries in the table by clicking on the paging drop down menu on the top right of the current table and selecting the number of entries to be viewed on one page.
+### Filtering
 
-## Legend
-Dimsum uses a variety of icons referring to internal 
+Tables can be filtered based on different criteria depending on the table. To apply a filter, click
+the "+ filter" dropdown and select the type of filter you wish to apply. Some filter types will
+prompt you to select a value from a dropdown, while others may require you to enter text to make
+your selection. Applying any filters will automatically refresh the page with entries that follow
+all the filter requirements.
+
+![Filtering controls](/images/filter_controls.png)
+
+Multiple filters can be applied to a table. Filters of the same type will be treated as "OR"
+conditions, while different filter types function as "AND" conditions. For example, you can view all
+cases with a WGTS assay and involving either the PROA or PROB projects by applying the following
+filters.
+
+- Assay: WGTS
+- Project: PROA
+- Project: PROB
+
+To remove a filter, click the 'x' on its label to the left of the "+ filter" button.
+
+Following the selection of filters, the URL in the browser's address bar is updated. This can be
+bookmarked to save a set of filters that you use frequently, or copied to share with other users.
+
+### Pagination
+
+Adjust the number of entries in the table by clicking on the "Items per page" drop down at the top
+right of the table and selecting the number of entries you'd like to see.
+
+![Page controls](/images/page_controls.png)
+
+Move between pages in the table using the "<" (previous) and ">" (next) buttons at the top right of
+the table.
+
+### Action Buttons
+
+Action buttons are included below some tables, allowing you to work with the tables or the items
+within them. Some of the actions require a selection. You can select items in the table using the
+checkboxes in the left-most column.

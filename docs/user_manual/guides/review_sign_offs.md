@@ -1,10 +1,19 @@
-# Review Sign Offs for a Case
-When getting ready to release a clinal report, a user from CGI must ensure that all sign offs have been completed prior to sending for final approval.
+# Review Case Sign-Offs
 
-1. On the main QC Dashboard, filter for the desired requisition by pressing the filter icon and selecting "Requisition" from the drop down menu.<br><br>Once the desired requisition has been entered, the table should refresh automatically.<br><br>
+When preparing a case for release, the reviewer must ensure that all sign offs have been completed.
+Dimsum allows you to see all of the relevant sign-offs in one clear view.
 
-2. Under the "Assay" column, press the assay or requisition name outlined in green. This will redirect you to the requisition's details page.<br><br>
+1. On the main QC Dashboard, filter for the desired requisition by clicking the "+ filter" icon and
+   selecting "Requisition" from the drop down menu. Enter the requisition name in the text box and
+   press enter or click the checkmark to confirm. The table will refresh automatically.
 
-3. Review the requisition's details page table. Ensure that no column  has been highlighted yellow or red, indicating "waiting" or "failed" gates. Non-coloured (white) columns indicate that the gate has been passed.
+2. Find the case you are looking for in the table - a single requisition may have multiple cases.
 
-**NOTE:** A column may contain both 'X''s and checkmarks, indicating failed and passed gates. So long as the column contains at least one checkmark (potentially before or after an 'X'), the QC gate has been passed.
+3. Ensure that all QC Gate cells have a white background and contain at least one checkmark. This
+   means that all sign-offs have been completed.
+
+4. If you want to view more details such as metrics, you can click on the assay name in the Assay
+   column to go to the Case Details page for that case.
+
+**NOTE:** A QC gate column may contain both failed items as well as passing. As long as the gate
+contains at least one passing item, the QC gate has been passed.

@@ -15,18 +15,18 @@ theme:
   
 
 nav:
-  - About: index.md
   - User Manual:
-    - Overview: user_manual/overview.md
+    - Overview: index.md
+    - Common Features: user_manual/features.md
     - QC Dashboard: user_manual/qc_dashboard.md
-    - Details Page: user_manual/details.md 
-    - Notifications Page: user_manual/notifications.md
+    - Detail Pages: user_manual/details.md 
+    - Notifications: user_manual/notifications.md
     - Runs Page: user_manual/runs.md
     - Omissions Page: user_manual/omissions.md
-    - Notable Tools and Features: user_manual/features.md
   - Guides:
+    - Complete Run Sign-Offs: user_manual/guides/sign_off_run.md
     - Review Data Entry: user_manual/guides/review_data_entry.md
-    - Review Sign-Offs For A Case: user_manual/guides/review_sign_offs.md
+    - Review Case Sign-Offs: user_manual/guides/review_sign_offs.md
 
 
 

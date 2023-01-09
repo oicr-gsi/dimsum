@@ -8,21 +8,27 @@ title: "Dimsum Documentation Home"
 Dimsum can be used for a number of tasks and processes at OICR, including the following:
 
 ### 1. QC Approvals
-Dimsum the current QC approval processes at OICR, and eases the addition of future processes. Cases and their corresponding projects can be reviewed and approved for QC. Users can additionally view which cases still require QC, for which gates, as well as the thresholds for each QC approval.
 
-### 2. Project Tracking
-Dimsum holds top-down status pages which aid in determining the overall status of a project at a level more granular than QC gates.
+Dimsum facilitates the QC approval processes at OICR. Users can see the QC status of all items
+involved in a case, including which are still pending sign-off. Metrics for each item can be viewed
+within Dimsum so that QC decisions can be made quickly. Notifications are sent for runs and
+run-libraries requiring sign-off.
 
-### 3. Task Tracking
-Technicians can be notified of tasks, as well as view the aforementioned status pages to better prioritize tasks not necessarily related to QC approvals.
+### 2. Project Tracking (not yet completed)
 
-### 4. TAT Tracking
-Users can be notified of and view how long a case/sample has been in their current QC gate, how long overall it has been since sample receipt, etc. 
+Dimsum holds Project Detail pages which aid in determining the overall status of a project.
 
-### 5. Invoicing
-Dimsum's consolidation of information simplifies the process of pulling information for the purpose of sending out bills.
+### 3. Task Tracking (not yet completed)
 
----
+Based on the assays assigned to received samples, Dimsum shows all pending work and helps to
+prioritize and assign tasks not necessarily related to QC approvals.
 
-# Help
-Seeking help? Refer to our repository or report an issue directly by clicking on "Report".
+### 4. TAT Tracking (not yet completed)
+
+Dimsum tracks and displays the overall time a case has been in progress, including the time spent in
+each QC gate. Notifications may warn if a case is falling behind schedule.
+
+### 5. Invoicing (not yet completed)
+
+Dimsum's consolidation of information simplifies the process of pulling information for the purpose
+of sending out bills.

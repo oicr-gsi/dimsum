@@ -1,40 +1,71 @@
 # QC Dashboard
-This is the main dashboard users are presented with upon logging in. Users can view all projects and associated samples and statuses presented in a table format. Navigate back to this page by clicking on the Dimsum logo on the top left of all pages.
 
-Below are some notable columns briefly outlined.
+This is the main dashboard users are presented with. All cases are presented in a table format.
+Navigate back to this page by clicking on the Dimsum logo on the top left of all pages.
+
+![QC Dashboard](/images/qc_dashboard.png)
+
+The table columns are described below.
 
 ### Project
-Lists the associated project(s) and their appropriate pipeline. Clicking on the project(s)|name will redirect the user to the Project Details page, where you can view X Y Z for the project in question.
+
+Lists the project(s) involved in the case, and their appropriate pipeline. Multiple projects will be
+involved in cases where relevant samples from the case's donor have been propagated to a different
+project.
+
+Clicking on a project name will redirect you to the Project Details page. Clicking on the MISO icon
+next to the project name will open the MISO Edit Project page in a new tab.
 
 ### Donor
-Lists the donor associated, the external name assigned, and the tissue origin and type.
 
-Clicking on the donor associated will redirect the user to the Donor Details page, where you can view the information associated with the donor in question. Clicking on the MISO icon next to the donor name will redirect you to its corresponding MISO page
+Lists the case donor's internal and external names, and the tumour tissue origin, tissue type, and
+timepoint examined in the case.
+
+Clicking on the donor name will redirect you to the Donor Details page. Clicking on the MISO icon
+next to the donor name will open the MISO Edit Sample page for the donor in a new tab.
 
 ### Assay
-Lists the assay relevant to the table entry.
 
-### Receipt/Inspection
+Lists the case assay and requisition.
+
+Clicking on the assay name will redirect you to the Case Details page.
+
+Clicking on the requisition name will redirect you to the Requisition Details page. Clicking on the
+MISO icon next to the requisition name will open the MISO Edit Requisition page in a new tab.
+
+### Start Date
+
+Displays the case start date and total turn-around time. Start date is the earliest receipt date of
+the tumour sample(s) involved in the case. For ongoing cases, the turn-around time is the number of
+days from the start date until the current date. For completed cases, the turn-around time is the
+number of days from the start date until the Final Report sign-off.
 
 ### Test
 
+Each assay includes one or more tests. Tests must be repeated for each group ID present.
+
 ### QC Gates
-The QC Gates columns are the following:
 
-- Extraction
-- Library Preparation
-- Library Qualification
-- Full-Depth Sequencing
-- Informatics Review
-- Draft Report
-- Final Report
+The following are QC gate columns, and their associated items:
 
-Each column will consist of X's and checkmarks representing whether a case has passed the corresponding column. In the QC gate appoval process, so long as each column contains a checkmark, it has passed said gate. Hover over the X's and checkmarks to view a tooltip describing the sample name, project, donor, and requisition.
+| Gate/Column           | Item type                                                 |
+| --------------------- | --------------------------------------------------------- |
+| Receipt/Inspection    | Requisitioned samples                                     |
+| Extraction            | Stock samples                                             |
+| Library Preparation   | Libraries                                                 |
+| Library Qualification | Library aliquots or run-libraries, depending on the assay |
+| Full-Depth Sequencing | Run-libraries                                             |
+| Informatics Review    | Requisition-level QC                                      |
+| Draft Report          | Requisition-level QC                                      |
+| Final Report          | Requisition-level QC                                      |
 
-A QC gate cell may also be coloured and/or contain an icon indicating pending/in-progress work. Hover over any icon appearing in the table for more information on the run, library aliquot, project, donor, and more.
+Each QC gate cell includes icons representing the QC status of each item relevant to that gate. A checkmark represents an item that has passed QC, while an 'X' represents a QC failure. Click the Legend button at the bottom of the table for a full list of statuses and their icons. A single passing item is required for the gate to be considered complete. Hover over an icon to view a tooltip containing item details and relevant links.
 
-See the table below for a full description of the different icons which may appear:
+A QC gate cell is shaded yellow if the gate has not been completed.
 
-| Icon | Description |
-| ---- | ----------- |
-|      |             |
+A QC gate cell is shaded grey if it is not applicable for the test. For example, if stock samples
+were received, extraction is not necessary.
+
+### Latest Activity
+
+Displays the latest date that an item involved in the case was created, modified, or signed-off.

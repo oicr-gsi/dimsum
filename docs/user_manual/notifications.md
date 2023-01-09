@@ -1,33 +1,48 @@
-# Active Notifications Page
-The notifictations page displays your relevant runs for which QC is still ongoing, or has been completed.
+# Notifications
 
-To access the notifications page, click the green "Notifications" link in the top right corner of the screen. 
+Dimsum creates notifications for runs that have pending analysis, QC, and/or data review so that
+users know when sign-offs are required and the information needed to do so is available. These
+notifications are primarily in the form of JIRA tickets, but can also be viewed within Dimsum.
 
-<!-- INSERT VIEW OF THE NOTIFICATIONS PAGE -->
+For library qualification runs, a notification is not created until analysis is completed for all
+run-libraries. For full-depth sequencing, a notification is created as soon as analysis is completed
+for at least one run-library.
 
-Below are some notable columns briefly outlined.
+## JIRA Tickets
 
-### Run
-Lists the run name. Clicking on the run name will redirect you to the run's details page, where more information on the run can be viewed. Clicking on the MISO icon next to the run name will redirect you to the run's corresponding MISO page.
+A JIRA ticket is created automatically for each run, and includes
 
-### Completion Date
+- The run-level QC state - whether the run is pending QC or data review, or QC is completed
+- A count and list of run-libraries that are pending QC
+- A count and list of run-libraries that are pending data review
+- A count of run-libraries that are still pending analysis and not yet ready for QC
+- A link to the Dimsum Run Details page, where you can view metrics and start the sign-off process
 
-### Run QC
+When any of this information changes, Dimsum will post a comment on the ticket with the updated
+information. Dimsum will also update the ticket status if necessary:
 
-### Libraries Pending [XYZ]
-The following columns:
+- When any sign-offs are required, the ticket is open
+- When all possible sign-offs are compelete, but there are still run-libraries pending analysis, the
+  ticket is closed with resolution "Incomplete."
+- When all run-libraries have completed analysis sign-offs, the ticket is closed with resolution
+  "Done."
 
-- Libraries Pending Analysis
-- Libraries Pending QC
-- Libraries Pending Data Review
+If you wish to close a ticket and prevent Dimsum from reopening it, set the resolution to "Won't
+Do."
 
-detail the number of libraries still pending [XYZ]. 
+## Active Notifications Page
 
-### Issue
-Lists the issues involving this run. Clicking on any of the listed issues will redirect you to its appropriate JIRA ticket.
+To view active notifications in Dimsum, click the green "Notifications" link at the top right of the
+page. This page lists all active notifications, including
 
-JIRA integration with Dimsum is still under development. Currently, no runs will have issues listed.
+- The run name, linking to the Run Details page
+- Run completion date
+- Run QC status
+- Counts of libraries that are pending analysis, QC, and data review
+- The JIRA ticket number, linking to JIRA
+
+![Active Notifications page](/images/active_notifications.png)
 
 ---
 
-For more information on how to sort, filter, or change the number of runs listed, see the "Notable Tools and Features" section.
+For more information on common page and table features, see [Common Features](../features/).
