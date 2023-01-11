@@ -17,6 +17,7 @@ theme:
 nav:
   - User Manual:
     - Overview: index.md
+    - Cases: user_manual/cases.md
     - Common Features: user_manual/features.md
     - QC Dashboard: user_manual/qc_dashboard.md
     - Detail Pages: user_manual/details.md 
