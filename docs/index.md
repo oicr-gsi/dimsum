@@ -16,14 +16,15 @@ run-libraries requiring sign-off.
 
 ### 2. Project Tracking (not yet completed)
 
-Dimsum holds Project Detail pages which aid in determining the overall status of a project.
+Dimsum holds [Project Detail](/user_manual/details/) pages which aid in determining the overall
+status of a project.
 
 ### 3. Task Tracking (not yet completed)
 
 Based on the assays assigned to received samples, Dimsum shows all pending work and helps to
 prioritize and assign tasks not necessarily related to QC approvals.
 
-### 4. TAT Tracking (not yet completed)
+### 4. Turn-Around Time Tracking (not yet completed)
 
 Dimsum tracks and displays the overall time a case has been in progress, including the time spent in
 each QC gate. Notifications may warn if a case is falling behind schedule.

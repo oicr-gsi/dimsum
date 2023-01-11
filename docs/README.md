@@ -3,7 +3,7 @@
 Documentation: https://dimsum.readthedocs.io
 
 Dimsum's documentation is built with [mkdocs](https://www.mkdocs.org/)
-and hosted by [readthedocs](https://www.mkdocs.org/).
+and hosted by [readthedocs](https://readthedocs.org/).
 
 ## Prerequisites
 

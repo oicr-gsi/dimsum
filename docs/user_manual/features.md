@@ -2,14 +2,16 @@
 
 ## Links
 
-Text links within Dimsum usually link to other pages within Dimsum. For example, clicking a run name
-will take you to the Run Details page. Any exception to this should be obvious. For example,
-a JIRA ticket number will link you to the ticket in JIRA.
+Text links within Dimsum usually take you to other pages within Dimsum. For example, clicking a run
+name will take you to the [Run Details](/user_manual/details/) page.
+
+An exception to this is JIRA ticket number links, which will open the issue in JIRA in a new tab.
 
 ### MISO
 
 The MISO icon (![MISO icon](/images/miso_logo.svg)) appears adjacent to any item with a
-corresponding page in MISO LIMS. Clicking the MISO icon open the MISO page in a new tab.
+corresponding page in [MISO LIMS](http://miso-lims.github.io/miso-lims/). Clicking the MISO icon
+opens the MISO page in a new tab.
 
 ## Tool Tips
 

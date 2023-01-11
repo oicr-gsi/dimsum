@@ -31,7 +31,8 @@ samples, they will each be tested separately.
 
 ## Repeatable Tests
 
-Assays can have multiple tests. For example, WGTS assays have 3 tests: Normal WG, Tumour WG, and Tumour WT. One attribute of a test is whether it is "repeatable"
+Assays can have multiple tests. For example, WGTS assays have 3 tests: Normal WG, Tumour WG, and
+Tumour WT. One attribute of a test is whether it is "repeatable"
 
 If true:
 

@@ -2,9 +2,9 @@
 
 Projects, donors, requisitions, cases, and runs each have their own Details page. The Details page
 includes more information about the selected item, all of its cases and QC gates, and the metrics
-for each associated item. Clicking on the name of a project, donor, requisition, or run redirects
-you to the corresponding details page. Clicking on an assay name in the cases table links to the
-Case Details page.
+for each associated item. Clicking on the name of a project, donor, requisition, or run takes you to
+the corresponding details page. Clicking on an assay name in the cases table links to the Case
+Details page.
 
 ### Metrics
 
@@ -44,10 +44,13 @@ included below, as applicable for the selected run.
 
 To perform bulk QC operations in MISO, select the desired table entries by clicking the checkbox at
 the left of each item you wish to include. Next, scroll to the bottom of the table and click the
-"QC in MISO". This will open the MISO Run-Library Metrics page in a new tab. You can then perform
-your desired QC operations for all the selected items.
+"QC in MISO". This will open the MISO
+[Run-Library Metrics](https://miso-lims.readthedocs.io/projects/docs/en/latest/user_manual/qc_integration/)
+page in a new tab. You can then perform your desired QC operations for all of the selected items.
 
-**NOTE:** Only items with the same assay and library design may be selected in bulk to view in MISO. Entries selected that do not meet this requirement (ie. have different assays and/or library designs) will induce an ERROR popup after pressing the "QC in MISO" button.
+**NOTE:** Only items with the same assay and library design may be selected in bulk to view in MISO.
+Entries selected that do not meet this requirement (ie. have different assays and/or library
+designs) will induce an ERROR popup after pressing the "QC in MISO" button.
 
 ---
 

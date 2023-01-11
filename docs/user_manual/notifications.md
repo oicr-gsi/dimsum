@@ -16,15 +16,16 @@ A JIRA ticket is created automatically for each run, and includes
 - A count and list of run-libraries that are pending QC
 - A count and list of run-libraries that are pending data review
 - A count of run-libraries that are still pending analysis and not yet ready for QC
-- A link to the Dimsum Run Details page, where you can view metrics and start the sign-off process
+- A link to the Dimsum [Run Details](/user_manual/details/) page, where you can view metrics and
+  start the sign-off process
 
 When any of this information changes, Dimsum will post a comment on the ticket with the updated
 information. Dimsum will also update the ticket status if necessary:
 
 - When any sign-offs are required, the ticket is open
-- When all possible sign-offs are compelete, but there are still run-libraries pending analysis, the
+- When all possible sign-offs are complete, but there are still run-libraries pending analysis, the
   ticket is closed with resolution "Incomplete."
-- When all run-libraries have completed analysis sign-offs, the ticket is closed with resolution
+- When all run-libraries have completed analysis and sign-offs, the ticket is closed with resolution
   "Done."
 
 If you wish to close a ticket and prevent Dimsum from reopening it, set the resolution to "Won't
