@@ -1,6 +1,6 @@
 # Omissions Page
 
-The omissions page lists all received samples that will not be included in cases or displayed in
+The Omissions page lists all received samples that will not be included in cases or displayed in
 other areas of Dimsum. Samples appearing here either
 
 1. are not included in a requisition

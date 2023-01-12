@@ -1,6 +1,6 @@
 # Review Case Sign-Offs
 
-When preparing a case for release, the reviewer must ensure that all sign offs have been completed.
+When preparing a case for release, the reviewer must ensure that all sign-offs have been completed.
 Dimsum allows you to see all of the relevant sign-offs in one clear view.
 
 1. On the main [QC Dashboard](/user_manual/qc_dashboard/), filter for the desired requisition by

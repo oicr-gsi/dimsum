@@ -9,7 +9,7 @@ Details page.
 ### Metrics
 
 Columns containing QC metrics provide tool tips detailing the exact required threshold. Hover over
-the recorded nummber to see its requirements. The cell will be shaded red if the requirement is not
+the recorded number to see its requirements. The cell will be shaded red if the requirement is not
 met, and yellow if the value is unavailable.
 
 ![Metric cell](/images/metric_cell.png)
