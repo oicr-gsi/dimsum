@@ -8,7 +8,6 @@
 * Maven 3.8+
 * Node 17.3+
 * NPM 8.3+
-* TSC 4.5+
 
 ## Configuration
 
@@ -36,13 +35,12 @@ Build runnable `.jar` file:
 
 `mvn clean package`
 
-Run server on default port (8080): 
+Or run server via Maven:
 
 `mvn clean spring-boot:run`
 
-Run server on different port: 
-
-`mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dserver.port=8081"`
+The server runs on port 8080 by default. To run on a different port, add a `server.port` setting
+to your `application.properties`
 
 ## Monitoring
 

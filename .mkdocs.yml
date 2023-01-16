@@ -1,0 +1,38 @@
+site_name: Dimsum Documentation
+site_url: http://dimsum.github.io
+site_description: Dimsum Documentation
+site_author: Genome Sequence Informatics, Ontario Institute for Cancer Research
+site_favicon: images/favicon.ico
+repo_url: https://github.com/oicr-gsi/dimsum
+
+theme: 
+  name: readthedocs
+  highlightjs: true
+  h1js_languages:
+    - yaml
+    - bash
+  logo: images/dimsum_logo.svg
+  
+
+nav:
+  - User Manual:
+    - Overview: index.md
+    - Cases: user_manual/cases.md
+    - Common Features: user_manual/features.md
+    - QC Dashboard: user_manual/qc_dashboard.md
+    - Detail Pages: user_manual/details.md 
+    - Notifications: user_manual/notifications.md
+    - Runs Page: user_manual/runs.md
+    - Omissions Page: user_manual/omissions.md
+  - Guides:
+    - Complete Run Sign-Offs: user_manual/guides/sign_off_run.md
+    - Review Data Entry: user_manual/guides/review_data_entry.md
+    - Review Case Sign-Offs: user_manual/guides/review_sign_offs.md
+
+
+
+extra_css:
+  - css/extra.css
+  
+
+

@@ -1,0 +1,80 @@
+.fa-home:before,
+.icon-home:before {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  content: "";
+  background: url(../images/favicon.ico) no-repeat 0 0;
+  background-size: 100%;
+}
+
+/* Page links */
+a {
+  color: #5b9e5a;
+}
+
+/* Top left page name */
+.wy-side-nav-search > a {
+  color: #666666;
+}
+
+/* Unlinked top level menu items */
+.caption-text {
+  font-size: 4em;
+  margin: 0.8em 0em 0em 0em;
+  color: #666666;
+  font-weight: bold;
+  font-size: 100% !important;
+}
+
+/* Top level menu links */
+.wy-menu-vertical a {
+  font-size: 4em;
+  color: #666666;
+  font-weight: bold;
+  font-size: 100% !important;
+}
+
+.wy-menu-vertical a:hover {
+  color: #ffffff;
+}
+
+/* Second level menu links */
+.wy-menu-vertical li ul li a {
+  font-size: 1em;
+  color: #666666;
+  font-weight: normal;
+}
+
+.wy-menu-vertical > ul:last-child {
+  margin-bottom: 20px;
+}
+
+/* All four of these are necessary to change the color of the sidebar...! */
+/* Top */
+.wy-side-nav-search {
+  background: #dfecdf;
+}
+/* Main sidebar background */
+.wy-nav-side {
+  background: #dfecdf;
+}
+/* Margin on top of Github bar */
+.rst-versions {
+  border-top: solid 10px #dfecdf;
+}
+/* Github bar */
+/* .rst-versions .rst-current-version {
+  background: #000000;
+} */
+.wy-nav-top {
+  background: #dfecdf;
+  color: #666666;
+}
+.wy-nav-top > a {
+  color: #666666;
+}
+
+table {
+  margin-bottom: 24px;
+}
