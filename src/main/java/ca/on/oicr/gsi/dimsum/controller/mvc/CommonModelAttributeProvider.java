@@ -34,6 +34,15 @@ public class CommonModelAttributeProvider {
     return buildVersion;
   }
 
+  @ModelAttribute("docsVersion")
+  public String getDocsVersion() {
+    if (buildVersion.endsWith("SNAPSHOT")) {
+      return "latest";
+    } else {
+      return "v" + buildVersion;
+    }
+  }
+
   @ModelAttribute("bugReportUrl")
   public String getJiraLink() {
     return bugReportUrl;
