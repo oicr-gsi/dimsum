@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.2.0] - 2023-01-20
+
+### Changed
+
+* Help link in the header now links to the user manual
+
+
 ## [1.1.1] - 2023-01-04
 
 ### Fixed
