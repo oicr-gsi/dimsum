@@ -436,6 +436,7 @@ public class CaseLoader {
       throws DataParseException, IOException {
     return loadFromJsonArrayFile(fileReader, json -> {
       String donorId = parseString(json, "donor_id", true);
+      Long requisitionId = parseLong(json, "requisition_id", true);
       Long assayId = parseLong(json, "assay_id", true);
       return new Case.Builder()
           .id(parseString(json, "id", true))
@@ -448,7 +449,7 @@ public class CaseLoader {
           .stopped(parseBoolean(json, "stopped"))
           .receipts(parseIdsAndGet(json, "receipt_ids", JsonNode::asText, samplesById))
           .tests(parseTests(json, "assay_tests", samplesById))
-          .requisitions(parseIdsAndGet(json, "requisition_ids", JsonNode::asLong, requisitionsById))
+          .requisition(requisitionsById.get(requisitionId))
           .build();
     });
   }

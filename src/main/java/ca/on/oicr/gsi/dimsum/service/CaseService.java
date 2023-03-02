@@ -235,7 +235,7 @@ public class CaseService {
     List<Case> cases = getCases(baseFilter);
     TableData<Requisition> data = new TableData<>();
     data.setTotalCount(
-        cases.stream().flatMap(kase -> kase.getRequisitions().stream()).distinct().count());
+        cases.stream().map(Case::getRequisition).distinct().count());
     List<Requisition> requisitions = filterRequisitions(cases, filters).distinct().toList();
     data.setFilteredCount(requisitions.size());
     data.setItems(requisitions.stream()
@@ -366,7 +366,7 @@ public class CaseService {
 
   private Stream<Requisition> filterRequisitions(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Requisition> stream = filterCases(cases, filters)
-        .flatMap(kase -> kase.getRequisitions().stream());
+        .map(Case::getRequisition);
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<Requisition>> filterMap =
           buildFilterMap(filters, CaseFilter::requisitionPredicate);

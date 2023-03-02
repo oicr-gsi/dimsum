@@ -527,8 +527,8 @@ public class CaseFilterTest {
       List<Long> expectedRequisitionIds) {
     List<Requisition> requisitions = cases.stream()
         .filter(filter.casePredicate())
-        .flatMap(kase -> kase.getRequisitions().stream()
-            .filter(filter.requisitionPredicate()))
+        .map(kase -> kase.getRequisition())
+        .filter(filter.requisitionPredicate())
         .toList();
     for (Long id : expectedRequisitionIds) {
       assertTrue(
@@ -625,7 +625,7 @@ public class CaseFilterTest {
     // Case is pending draft report
     Case kase = makeCase("PRO4_0001", "Single Test", "PRO4", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", true, true, true, true);
-    Requisition requisition = kase.getRequisitions().get(0);
+    Requisition requisition = kase.getRequisition();
     addRequisitionQc(requisition.getInformaticsReviews(), true);
     return kase;
   }
@@ -635,7 +635,7 @@ public class CaseFilterTest {
     // Case is pending final report
     Case kase = makeCase("PRO5_0001", "Single Test", "PRO5", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", true, true, true, true);
-    Requisition requisition = kase.getRequisitions().get(0);
+    Requisition requisition = kase.getRequisition();
     addRequisitionQc(requisition.getInformaticsReviews(), true);
     addRequisitionQc(requisition.getDraftReports(), true);
     return kase;
@@ -811,7 +811,6 @@ public class CaseFilterTest {
     String receiptSampleId = makeSampleId(caseNumber, 0, MetricCategory.RECEIPT, 1);
     addSample(kase.getReceipts(), receiptSampleId, true, "Good");
     when(kase.getTests()).thenReturn(new ArrayList<>());
-    when(kase.getRequisitions()).thenReturn(new ArrayList<>());
     addRequisition(kase, caseNumber, requisitionName);
     return kase;
   }
@@ -834,7 +833,7 @@ public class CaseFilterTest {
     when(requisition.getInformaticsReviews()).thenReturn(new ArrayList<>());
     when(requisition.getDraftReports()).thenReturn(new ArrayList<>());
     when(requisition.getFinalReports()).thenReturn(new ArrayList<>());
-    kase.getRequisitions().add(requisition);
+    when(kase.getRequisition()).thenReturn(requisition);
     return requisition;
   }
 

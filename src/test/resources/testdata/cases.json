@@ -58,7 +58,7 @@
         "full_depth_sequencing_ids": ["5476_1_LDI73621", "5540_1_LDI73621"]
       }
     ],
-    "requisition_ids": [512],
+    "requisition_id": 512,
     "stopped": false
   }
 ]

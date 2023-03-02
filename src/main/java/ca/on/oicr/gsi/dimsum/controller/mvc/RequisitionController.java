@@ -36,8 +36,7 @@ public class RequisitionController {
       throw new NotFoundException(
           String.format("No data found for requisition: %s", requisitionId));
     }
-    Requisition requisition = cases.get(0).getRequisitions().stream()
-        .filter(req -> req.getId() == Long.parseLong(requisitionId)).findAny().orElseThrow();
+    Requisition requisition = cases.get(0).getRequisition();
 
     model.put("title", String.format("%s Requisition Details", requisition.getName()));
     model.put("titleLink", makeMisoRequisitionUrl(requisitionId));

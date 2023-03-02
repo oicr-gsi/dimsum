@@ -234,7 +234,7 @@ public enum PendingState {
     @Override
     protected boolean qualifyCase(Case kase) {
       return kase.getTests().stream().allMatch(Helpers.isCompleted(Test::getFullDepthSequencings))
-          && kase.getRequisitions().stream().anyMatch(this::qualifyRequisition);
+          && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
@@ -246,7 +246,7 @@ public enum PendingState {
     @Override
     protected boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews)
-          && kase.getRequisitions().stream().anyMatch(this::qualifyRequisition);
+          && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
@@ -258,7 +258,7 @@ public enum PendingState {
     @Override
     protected boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase, Requisition::getDraftReports)
-          && kase.getRequisitions().stream().anyMatch(this::qualifyRequisition);
+          && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
@@ -393,9 +393,8 @@ public enum PendingState {
 
     public static boolean isCompletedRequisitionQc(Case kase,
         Function<Requisition, List<RequisitionQc>> getQcs) {
-      return kase.getRequisitions().stream()
-          .allMatch(requisition -> getQcs.apply(requisition).stream()
-              .anyMatch(qc -> qc.isQcPassed()));
+      return getQcs.apply(kase.getRequisition()).stream()
+          .anyMatch(qc -> qc.isQcPassed());
     }
   }
 
