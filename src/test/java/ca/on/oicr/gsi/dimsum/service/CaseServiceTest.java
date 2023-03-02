@@ -30,8 +30,8 @@ public class CaseServiceTest {
     sut = new CaseService(null);
     caseData = mock(CaseData.class);
     when(caseData.getCases()).thenReturn(new ArrayList<>());
-    addCase(caseData, 1);
-    addCase(caseData, 2);
+    addCase(caseData, 1, 1);
+    addCase(caseData, 2, 2);
     sut.setCaseData(caseData);
   }
 
@@ -54,7 +54,7 @@ public class CaseServiceTest {
   @org.junit.jupiter.api.Test
   public void testGetReceiptsDistinct() {
     // Add duplicates and ensure they get removed from results
-    addCase(caseData, 1);
+    addCase(caseData, 1, 1);
     TableData<Sample> data = sut.getReceipts(10, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1N-A1", "1N-A2", "2N-A1", "2N-A2");
   }
@@ -69,7 +69,7 @@ public class CaseServiceTest {
   @org.junit.jupiter.api.Test
   public void testGetExtractionsDistinct() {
     // Add duplicates and ensure they get removed from results
-    addCase(caseData, 1);
+    addCase(caseData, 1, 1);
     TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null, null);
     assertContainsSamples(data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1",
         "2B-B2");
@@ -111,16 +111,16 @@ public class CaseServiceTest {
   public void testGetRequisitions() {
     TableData<Requisition> data =
         sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null, null);
-    assertContainsRequisitions(data, "REQ_1-1", "REQ_1-2", "REQ_2-1", "REQ_2-2");
+    assertContainsRequisitions(data, "REQ_1", "REQ_2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetRequisitionsDistinct() {
     // Add duplicates and ensure they get removed from results
-    addCase(caseData, 1);
+    addCase(caseData, 1, 1);
     TableData<Requisition> data =
         sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null, null);
-    assertContainsRequisitions(data, "REQ_1-1", "REQ_1-2", "REQ_2-1", "REQ_2-2");
+    assertContainsRequisitions(data, "REQ_1", "REQ_2");
   }
 
   private void assertContainsRequisitions(TableData<Requisition> data, String... requisitionNames) {
@@ -135,7 +135,7 @@ public class CaseServiceTest {
     }
   }
 
-  private void addCase(CaseData data, int caseNumber) {
+  private void addCase(CaseData data, int caseNumber, int requisitionNumber) {
     Case kase = mock(Case.class);
     when(kase.getLatestActivityDate()).thenReturn(LocalDate.now().minusDays(caseNumber));
     when(kase.getReceipts()).thenReturn(new ArrayList<>());
@@ -144,9 +144,7 @@ public class CaseServiceTest {
     when(kase.getTests()).thenReturn(new ArrayList<>());
     addTest(kase, caseNumber, "A");
     addTest(kase, caseNumber, "B");
-    when(kase.getRequisitions()).thenReturn(new ArrayList<>());
-    addRequisition(kase, caseNumber, 1);
-    addRequisition(kase, caseNumber, 2);
+    when(kase.getRequisition()).thenReturn(makeRequisition(requisitionNumber));
     data.getCases().add(kase);
   }
 
@@ -183,13 +181,13 @@ public class CaseServiceTest {
         .createdDate(LocalDate.now()).build());
   }
 
-  private void addRequisition(Case kase, int caseNumber, int requisitionNumber) {
+  private Requisition makeRequisition(int requisitionNumber) {
     // Not using mocks because we're kind-of testing hashcode for distinct filters here too
-    kase.getRequisitions().add(new Requisition.Builder()
-        .id(caseNumber * 100 + requisitionNumber)
-        .name(String.format("REQ_%d-%d", caseNumber, requisitionNumber))
+    return new Requisition.Builder()
+        .id(requisitionNumber)
+        .name(String.format("REQ_%d", requisitionNumber))
         .assayId(2L)
-        .build());
+        .build();
   }
 
 }

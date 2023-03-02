@@ -96,7 +96,7 @@ export interface Case {
   receipts: Sample[];
   startDate: string;
   tests: Test[];
-  requisitions: Requisition[];
+  requisition: Requisition;
   latestActivityDate: string;
 }
 
@@ -173,16 +173,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           stoppedDiv.appendChild(document.createTextNode("CASE STOPPED"));
           fragment.appendChild(stoppedDiv);
         }
-        kase.requisitions.forEach((requisition) => {
-          const requisitionDiv = document.createElement("div");
-          addLink(
-            requisitionDiv,
-            requisition.name,
-            urls.dimsum.requisition(requisition.id)
-          );
-          addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
-          fragment.appendChild(requisitionDiv);
-        });
+        const requisitionDiv = document.createElement("div");
+        const requisition = kase.requisition;
+        addLink(
+          requisitionDiv,
+          requisition.name,
+          urls.dimsum.requisition(requisition.id)
+        );
+        addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
+        fragment.appendChild(requisitionDiv);
       },
     },
     {
@@ -356,7 +355,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           samplePhaseComplete(test.fullDepthSequencings)
         );
         addRequisitionIcons(
-          kase.requisitions,
+          kase.requisition,
           (requisition) => requisition.informaticsReviews,
           sequencingComplete,
           fragment
@@ -376,11 +375,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         const informaticsComplete = requisitionPhaseComplete(
-          kase.requisitions,
+          kase.requisition,
           (requisition) => requisition.informaticsReviews
         );
         addRequisitionIcons(
-          kase.requisitions,
+          kase.requisition,
           (requisition) => requisition.draftReports,
           informaticsComplete,
           fragment
@@ -400,11 +399,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         const draftComplete = requisitionPhaseComplete(
-          kase.requisitions,
+          kase.requisition,
           (requisition) => requisition.draftReports
         );
         addRequisitionIcons(
-          kase.requisitions,
+          kase.requisition,
           (requisition) => requisition.finalReports,
           draftComplete,
           fragment
@@ -501,7 +500,7 @@ function handleNaRequisitionPhase(
   getQcs: (requisition: Requisition) => RequisitionQc[],
   fragment: DocumentFragment
 ) {
-  if (kase.stopped && !kase.requisitions.flatMap(getQcs).length) {
+  if (kase.stopped && !getQcs(kase.requisition).length) {
     addNaText(fragment);
     return true;
   } else {
@@ -510,23 +509,21 @@ function handleNaRequisitionPhase(
 }
 
 function requisitionPhaseComplete(
-  requisitions: Requisition[],
+  requisition: Requisition,
   getQcs: (requisition: Requisition) => RequisitionQc[]
-) {
-  return requisitions.every((requisition) => {
-    const qcs = getQcs(requisition);
-    return qcs.length && getLatestRequisitionQc(qcs).qcPassed;
-  });
+): boolean {
+  const qcs = getQcs(requisition);
+  return !!(qcs.length && getLatestRequisitionQc(qcs).qcPassed);
 }
 
 function getRequisitionPhaseHighlight(
   kase: Case,
   getQcs: (requisition: Requisition) => RequisitionQc[]
 ) {
-  if (requisitionPhaseComplete(kase.requisitions, getQcs)) {
+  if (requisitionPhaseComplete(kase.requisition, getQcs)) {
     return null;
   } else if (kase.stopped) {
-    return kase.requisitions.flatMap(getQcs).length ? null : "na";
+    return getQcs(kase.requisition).length ? null : "na";
   } else {
     return "warning";
   }
@@ -614,21 +611,19 @@ function makeSampleTooltip(sample: Sample) {
 }
 
 function addRequisitionIcons(
-  requisitions: Requisition[],
+  requisition: Requisition,
   getQcs: (requisition: Requisition) => RequisitionQc[],
   previousComplete: boolean,
   fragment: DocumentFragment
 ) {
-  requisitions.forEach((requisition) => {
-    const qcs = getQcs(requisition);
-    if (qcs.length) {
-      const status = getRequisitionQcStatus(qcs);
-      addRequisitionIcon(requisition, status, fragment);
-    } else if (previousComplete) {
-      const status = qcStatuses.qc;
-      addRequisitionIcon(requisition, status, fragment);
-    }
-  });
+  const qcs = getQcs(requisition);
+  if (qcs.length) {
+    const status = getRequisitionQcStatus(qcs);
+    addRequisitionIcon(requisition, status, fragment);
+  } else if (previousComplete) {
+    const status = qcStatuses.qc;
+    addRequisitionIcon(requisition, status, fragment);
+  }
 }
 
 function addRequisitionIcon(
@@ -677,13 +672,12 @@ function getElapsedMessage(kase: Case) {
   let message;
   if (
     requisitionPhaseComplete(
-      kase.requisitions,
+      kase.requisition,
       (requisition) => requisition.finalReports
     )
   ) {
     endDate = new Date(
-      kase.requisitions
-        .flatMap((req) => req.finalReports)
+      kase.requisition.finalReports
         .map((qc) => qc.qcDate)
         .reduce((previous, current) =>
           previous > current ? previous : current

@@ -29,7 +29,7 @@ public class Case {
   private final List<Sample> receipts;
   private final LocalDate startDate;
   private final List<Test> tests;
-  private final List<Requisition> requisitions;
+  private final Requisition requisition;
   private final LocalDate latestActivityDate;
 
   private Case(Builder builder) {
@@ -44,7 +44,7 @@ public class Case {
     this.stopped = builder.stopped;
     this.receipts = unmodifiableList(builder.receipts);
     this.tests = unmodifiableList(builder.tests);
-    this.requisitions = unmodifiableList(builder.requisitions);
+    this.requisition = builder.requisition;
     this.startDate = builder.receipts.stream()
         .filter(sample -> !"R".equals(sample.getTissueType()))
         .map(Sample::getCreatedDate)
@@ -52,7 +52,7 @@ public class Case {
     this.latestActivityDate = Stream
         .of(receipts.stream().map(Sample::getLatestActivityDate),
             tests.stream().map(Test::getLatestActivityDate),
-            requisitions.stream().map(Requisition::getLatestActivityDate))
+            Stream.of(requisition.getLatestActivityDate()))
         .flatMap(Function.identity()).filter(Objects::nonNull).max(LocalDate::compareTo)
         .orElse(null);
   }
@@ -106,8 +106,8 @@ public class Case {
     return tests;
   }
 
-  public List<Requisition> getRequisitions() {
-    return requisitions;
+  public Requisition getRequisition() {
+    return requisition;
   }
 
   public LocalDate getLatestActivityDate() {
@@ -126,7 +126,7 @@ public class Case {
     private boolean stopped;
     private List<Sample> receipts;
     private List<Test> tests;
-    private List<Requisition> requisitions;
+    private Requisition requisition;
 
     public Builder id(String id) {
       this.id = id;
@@ -178,8 +178,8 @@ public class Case {
       return this;
     }
 
-    public Builder requisitions(List<Requisition> requisitions) {
-      this.requisitions = requisitions;
+    public Builder requisition(Requisition requisition) {
+      this.requisition = requisition;
       return this;
     }
 
