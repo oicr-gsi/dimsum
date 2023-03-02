@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum;
 
 import ca.on.oicr.gsi.dimsum.data.*;
+import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -131,10 +132,13 @@ public class CaseLoader {
       if (refreshTimer != null) {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
+      // calculate the project summaries here
+      Map<String, ProjectSummary> projectsBySummary = loadProjectSummaries(cases);
+
       log.debug(String.format("Completed loading %d cases.", cases.size()));
       return new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
           getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
-          getDonorNames(donorsById), getRunNames(runsByName));
+          getDonorNames(donorsById), getRunNames(runsByName), projectsBySummary);
     }
   }
 
@@ -695,6 +699,56 @@ public class CaseLoader {
       loaded.add(map.apply(node));
     }
     return loaded;
+  }
+
+  private Map<String, ProjectSummary> loadProjectSummaries(List<Case> cases) {
+    Map<String, ProjectSummary> projectsBySummary = new HashMap<>();
+
+    Map<String, Integer> counts = ProjectSummary.initCounts();
+    for (Case kase : cases) {
+      int testSize = kase.getTests().size();
+      if (PendingState.RECEIPT_QC.qualifyCase(kase)) {
+        counts.put("receiptPendingQC", testSize);
+      } else {
+        counts.put("receiptCompleted", testSize);
+      }
+      for (Test test : kase.getTests()) {
+        if (PendingState.EXTRACTION.qualifyTest(test)) {
+          counts.put("extractionPendingWork", 1);
+          // add 1 to count of pending extraction work
+        } else if (PendingState.EXTRACTION_QC.qualifyTest(test)) {
+          // add 1 count of pending QC
+        } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test)) {
+          // add 1 to count of library pending work
+        } else if (PendingState.LIBRARY_QC.qualifyTest(test)) {
+          // add 1 to count of library pending qc
+        } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test)) {
+          // add 1 tp count of library qualification pending work
+        } else if (PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)) {
+
+        } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test)) {
+
+        } else if (PendingState.FULL_DEPTH_QC.qualifyTest(test)) {
+
+        } else
+          continue;
+      }
+      if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase)) {
+        // add to pending work
+        counts.put("informaticsPendingWork", testSize);
+        continue;
+      } else if (PendingState.INFORMATICS_REVIEW.isRequisitionCompleted(kase)) {
+        counts.put("informaticsCompleted", testSize);
+        // add to completed
+        counts.put("informaticsCompleted", kase.getTests().size());
+      } else if (PendingState.DRAFT_REPORT.qualifyCase(kase)) {
+        counts.put("draftReportPendingWork", testSize);
+      } else if (PendingState.DRAFT_REPORT.isRequisitionCompleted(kase)) {
+
+      }
+
+    }
+    return projectsBySummary;
   }
 
 }
