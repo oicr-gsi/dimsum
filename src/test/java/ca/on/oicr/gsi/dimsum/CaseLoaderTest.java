@@ -242,6 +242,8 @@ public class CaseLoaderTest {
     assertEquals("5476_1_LDI73620", fullDepth.getId());
     assertEquals("PROJ_1289_Ly_R_PE_567_WG", fullDepth.getName());
     assertEquals(Boolean.TRUE, fullDepth.getQcPassed());
+
+
   }
 
 }

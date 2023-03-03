@@ -704,7 +704,7 @@ public class CaseLoader {
   private Map<String, ProjectSummary> loadProjectSummaries(List<Case> cases) {
     Map<String, ProjectSummary> projectsBySummary = new HashMap<>();
 
-    Map<String, Integer> counts = ProjectSummary.initCounts();
+    Map<String, Integer> counts = new HashMap<>();
     for (Case kase : cases) {
       int testSize = kase.getTests().size();
       if (PendingState.RECEIPT_QC.qualifyCase(kase)) {
@@ -713,40 +713,91 @@ public class CaseLoader {
         counts.put("receiptCompleted", testSize);
       }
       for (Test test : kase.getTests()) {
+        // Extraction
         if (PendingState.EXTRACTION.qualifyTest(test)) {
           counts.put("extractionPendingWork", 1);
           // add 1 to count of pending extraction work
         } else if (PendingState.EXTRACTION_QC.qualifyTest(test)) {
           // add 1 count of pending QC
-        } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test)) {
-          // add 1 to count of library pending work
+          counts.put("extractionPendingQC", 1);
+        } else if (test.getExtractions().stream().anyMatch(sample -> sample.getQcPassed())) {
+          counts.put("extractionCompleted", 1);
+        } else
+          continue;
+        if (PendingState.LIBRARY_PREPARATION.qualifyTest(test)) {
+          counts.put("LibraryPrepPendingWork", 1);
         } else if (PendingState.LIBRARY_QC.qualifyTest(test)) {
           // add 1 to count of library pending qc
-        } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test)) {
-          // add 1 tp count of library qualification pending work
+          counts.put("LibraryPrepPendingQC", 1);
+        } else if (test.getLibraryPreparations().stream().anyMatch(sample -> sample.getQcPassed()
+            && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
+          counts.put("LibraryPrepCompleted", 1);
+        } else
+          continue;
+
+        // Library Qualification
+        if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test)) {
+          counts.put("LibraryQualPendingWork", 1);
         } else if (PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)) {
+          counts.put("LibraryQualPendingQC", 1);
+        } else if (test.getLibraryQualifications().stream().anyMatch(sample -> sample.getQcPassed()
+            && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
+          counts.put("LibraryQualCompleted", 1);
+        } else
+          continue;
 
-        } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test)) {
-
+        // Full depth sequncing
+        if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test)) {
+          counts.put("fullDepthPendingWork", 1);
         } else if (PendingState.FULL_DEPTH_QC.qualifyTest(test)) {
-
+          counts.put("fullDepthPendingWork", 1);
+        } else if (test.getFullDepthSequencings().stream().anyMatch(sample -> sample.getQcPassed()
+            && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
+          counts.put("fullDepthCompleted", 1);
         } else
           continue;
       }
+
+      // informatics review
       if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase)) {
-        // add to pending work
         counts.put("informaticsPendingWork", testSize);
         continue;
-      } else if (PendingState.INFORMATICS_REVIEW.isRequisitionCompleted(kase)) {
+      }
+      if (kase.getRequisition().getInformaticsReviews().stream()
+          .anyMatch(x -> x.isQcPassed())) {
         counts.put("informaticsCompleted", testSize);
-        // add to completed
-        counts.put("informaticsCompleted", kase.getTests().size());
-      } else if (PendingState.DRAFT_REPORT.qualifyCase(kase)) {
-        counts.put("draftReportPendingWork", testSize);
-      } else if (PendingState.DRAFT_REPORT.isRequisitionCompleted(kase)) {
-
       }
 
+      // draft report
+      if (PendingState.DRAFT_REPORT.qualifyCase(kase)) {
+        counts.put("draftReportPendingWork", testSize);
+        continue;
+      }
+      if (kase.getRequisition().getDraftReports().stream()
+          .anyMatch(x -> x.isQcPassed())) {
+        counts.put("draftReportCompleted", testSize);
+      }
+
+      // final report
+      if (PendingState.FINAL_REPORT.qualifyCase(kase)) {
+        counts.put("finalReportPendingWork", testSize);
+        continue;
+      }
+      if (kase.getRequisition().getFinalReports().stream()
+          .anyMatch(x -> x.isQcPassed())) {
+        counts.put("finalReviewCompleted", testSize);
+      }
+
+      for (Project project : kase.getProjects()) {
+        if (projectsBySummary.containsKey(project.getName())) {
+          ProjectSummary projectSummary = projectsBySummary.get(project.getName());
+          projectSummary.addCounts(counts);
+        } else {
+          ProjectSummary projectSummary =
+              new ProjectSummary.Builder().name(project.getName()).counts(counts).build();
+          projectsBySummary.put(project.getName(), projectSummary);
+        }
+      }
     }
     return projectsBySummary;
   }

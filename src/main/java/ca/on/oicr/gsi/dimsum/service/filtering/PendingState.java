@@ -238,11 +238,6 @@ public enum PendingState {
     }
 
     @Override
-    public boolean isRequisitionCompleted(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews);
-    }
-
-    @Override
     public boolean qualifyRequisition(Requisition requisition) {
       return requisition.getInformaticsReviews().isEmpty();
     }
@@ -322,10 +317,6 @@ public enum PendingState {
   }
 
   public boolean qualifyRequisition(Requisition requisition) {
-    return true;
-  }
-
-  public boolean isRequisitionCompleted(Case kase) {
     return true;
   }
 
