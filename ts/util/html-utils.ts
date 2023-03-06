@@ -116,7 +116,11 @@ export function makeClickout() {
 }
 
 // makes a composite element with a MISO icon and a possibly hyperlinked label
-export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
+export function makeNameDiv(
+  name: string,
+  misoUrl?: string,
+  dimsumUrl?: string
+) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-2 items-center";
   if (dimsumUrl) {
@@ -126,7 +130,9 @@ export function makeNameDiv(name: string, misoUrl: string, dimsumUrl?: string) {
     nameSpan.innerText = name;
     div.appendChild(nameSpan);
   }
-  addMisoIcon(div, misoUrl);
+  if (misoUrl) {
+    addMisoIcon(div, misoUrl);
+  }
   return div;
 }
 

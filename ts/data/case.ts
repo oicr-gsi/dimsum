@@ -202,7 +202,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     {
       title: "Receipt/Inspection",
       addParentContents(kase, fragment) {
-        addSampleIcons(kase.receipts, fragment);
+        addSampleIcons(kase, kase.receipts, fragment);
         if (!kase.receipts.length) {
           addConstructionIcon("receipt", fragment);
         }
@@ -242,7 +242,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(test.extractions, fragment);
+        addSampleIcons(kase, test.extractions, fragment);
         if (
           samplePhaseComplete(kase.receipts) &&
           samplePhasePendingWork(test.extractions)
@@ -275,7 +275,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(test.libraryPreparations, fragment);
+        addSampleIcons(kase, test.libraryPreparations, fragment);
         if (
           samplePhaseComplete(test.extractions) &&
           samplePhasePendingWork(test.libraryPreparations)
@@ -304,7 +304,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (handleNaSamplePhase(kase, test.libraryQualifications, fragment)) {
           return;
         }
-        addSampleIcons(test.libraryQualifications, fragment);
+        addSampleIcons(kase, test.libraryQualifications, fragment);
         if (
           samplePhaseComplete(test.libraryPreparations) &&
           samplePhasePendingWork(test.libraryQualifications)
@@ -327,7 +327,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (handleNaSamplePhase(kase, test.fullDepthSequencings, fragment)) {
           return;
         }
-        addSampleIcons(test.fullDepthSequencings, fragment);
+        addSampleIcons(kase, test.fullDepthSequencings, fragment);
         if (
           samplePhaseComplete(test.libraryQualifications) &&
           samplePhasePendingWork(test.fullDepthSequencings)
@@ -539,9 +539,16 @@ function addConstructionIcon(phase: string, fragment: DocumentFragment) {
   fragment.appendChild(icon);
 }
 
-function addSampleIcons(samples: Sample[], fragment: DocumentFragment) {
+function addSampleIcons(
+  kase: Case,
+  samples: Sample[],
+  fragment: DocumentFragment
+) {
   samples.forEach((sample, i) => {
-    const status = getQcStatus(sample);
+    let status = getQcStatus(sample);
+    if (status === qcStatuses.passed && sample.assayId !== kase.assayId) {
+      status = qcStatuses.passedDifferentAssay;
+    }
     const icon = makeIcon(status.icon);
     const tooltipInstance = Tooltip.getInstance();
     tooltipInstance.addTarget(icon, makeSampleTooltip(sample));
@@ -605,6 +612,10 @@ function makeSampleTooltip(sample: Sample) {
       urls.dimsum.requisition(sample.requisitionId)
     );
   }
+  if (sample.assayId) {
+    const assay = siteConfig.assaysById[sample.assayId];
+    addTooltipRow(bottomContainer, "Assay", assay.name);
+  }
   tooltipContainer.appendChild(topContainer);
   tooltipContainer.appendChild(bottomContainer);
   return tooltipContainer;
@@ -649,7 +660,7 @@ function addTooltipRow(
   container: HTMLElement, // must be a two column grid
   label: string,
   name: string,
-  misoUrl: string,
+  misoUrl?: string,
   dimsumUrl?: string,
   additionalText?: string
 ) {

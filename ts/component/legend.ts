@@ -37,7 +37,7 @@ class Legend {
     header.appendChild(icon);
     // grid of legend labels
     const body = document.createElement("div");
-    body.className = "m-4 grid grid-rows-4 grid-flow-col gap-2";
+    body.className = "m-4 grid grid-rows-5 grid-flow-col gap-2";
     for (const qcStatus of Object.values(qcStatuses)) {
       const labelContainer = document.createElement("div");
       labelContainer.className =
