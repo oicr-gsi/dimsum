@@ -96,7 +96,7 @@ public class CaseData {
     return runsByName.values();
   }
 
-  public Map<String, ProjectSummary> getprojectSummariesByName() {
+  public Map<String, ProjectSummary> getProjectSummariesByName() {
     return projectSummariesByName;
   }
 }

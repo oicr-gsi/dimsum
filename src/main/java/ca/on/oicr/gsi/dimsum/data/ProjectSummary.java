@@ -37,7 +37,7 @@ public class ProjectSummary {
   private final int finalReportPendingCount;
   private final int finalReportCompletedCount;
 
-  public ProjectSummary(Builder builder) {
+  private ProjectSummary(Builder builder) {
     this.name = requireNonNull(builder.name);
     this.totalTestCount = builder.totalTestCount;
     // receipt
@@ -202,8 +202,9 @@ public class ProjectSummary {
     private int finalReportCompletedCount = 0;
 
 
-    public void name(String name) {
+    public Builder name(String name) {
       this.name = name;
+      return this;
     }
 
     public void totalTestCount(int totalTestCount) {
@@ -300,7 +301,7 @@ public class ProjectSummary {
 
 
 
-    public void addCounts(ProjectSummary.Builder builder) {
+    public Builder addCounts(ProjectSummary.Builder builder) {
       this.totalTestCount += builder.totalTestCount;
       // receipt
       this.receiptPendingQcCount += builder.receiptPendingQcCount;
@@ -330,6 +331,7 @@ public class ProjectSummary {
       // final report
       this.finalReportPendingCount += builder.finalReportPendingCount;
       this.finalReportCompletedCount += builder.finalReportCompletedCount;
+      return this;
     }
 
     public ProjectSummary build() {

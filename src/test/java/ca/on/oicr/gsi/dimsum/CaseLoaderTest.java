@@ -245,7 +245,7 @@ public class CaseLoaderTest {
     assertEquals("PROJ_1289_Ly_R_PE_567_WG", fullDepth.getName());
     assertEquals(Boolean.TRUE, fullDepth.getQcPassed());
 
-    Map<String, ProjectSummary> projectSummariesByName = data.getprojectSummariesByName();
+    Map<String, ProjectSummary> projectSummariesByName = data.getProjectSummariesByName();
     assertNotNull(projectSummariesByName);
     assertEquals(1, projectSummariesByName.size());
     ProjectSummary projectSummary = projectSummariesByName.get("PROJ");
