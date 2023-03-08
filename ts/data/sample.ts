@@ -66,7 +66,7 @@ export interface Sample extends Qcable {
   run?: Run;
   donor: Donor;
   meanInsertSize?: number;
-  clustersPerSample?: number; // AKA "Pass Filter Clusters" for full-depth (call ready)
+  clustersPerSample?: number;
   duplicationRate?: number;
   meanCoverageDeduplicated?: number;
   rRnaContamination?: number;
@@ -959,12 +959,15 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.duplicationRate);
     case "Clusters Per Sample":
     case "Pass Filter Clusters":
+    case "Total Clusters (Passed Filter)":
+    case "Pipeline Filtered Clusters":
       return nullIfUndefined(sample.clustersPerSample);
     case "rRNA Contamination":
       return nullIfUndefined(sample.rRnaContamination);
     case "Mean Coverage Deduplicated":
       return nullIfUndefined(sample.meanCoverageDeduplicated);
     case "Coverage (Raw)":
+    case "Mean Bait Coverage":
       return nullIfUndefined(sample.rawCoverage);
     case "Mapped to Coding":
       return nullIfUndefined(sample.mappedToCoding);
