@@ -25,7 +25,6 @@ public class Case {
   private final String tissueOrigin;
   private final String tissueType;
   private final String timepoint;
-  private final boolean stopped;
   private final List<Sample> receipts;
   private final LocalDate startDate;
   private final List<Test> tests;
@@ -41,7 +40,6 @@ public class Case {
     this.tissueOrigin = requireNonNull(builder.tissueOrigin);
     this.tissueType = requireNonNull(builder.tissueType);
     this.timepoint = builder.timepoint;
-    this.stopped = builder.stopped;
     this.receipts = unmodifiableList(builder.receipts);
     this.tests = unmodifiableList(builder.tests);
     this.requisition = builder.requisition;
@@ -90,10 +88,6 @@ public class Case {
     return timepoint;
   }
 
-  public boolean isStopped() {
-    return stopped;
-  }
-
   public List<Sample> getReceipts() {
     return receipts;
   }
@@ -123,7 +117,6 @@ public class Case {
     private String tissueOrigin;
     private String tissueType;
     private String timepoint;
-    private boolean stopped;
     private List<Sample> receipts;
     private List<Test> tests;
     private Requisition requisition;
@@ -160,11 +153,6 @@ public class Case {
 
     public Builder timepoint(String timepoint) {
       this.timepoint = timepoint;
-      return this;
-    }
-
-    public Builder stopped(boolean stopped) {
-      this.stopped = stopped;
       return this;
     }
 
