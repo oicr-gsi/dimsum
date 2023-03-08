@@ -18,7 +18,7 @@ public enum CaseFilterKey {
       || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),
   PENDING(string -> {
     PendingState state = getState(string);
-    Predicate<Case> notStopped = kase -> !kase.isStopped();
+    Predicate<Case> notStopped = kase -> !kase.getRequisition().isStopped();
     return notStopped.and(state.predicate());
   }) {
     @Override

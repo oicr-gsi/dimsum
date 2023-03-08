@@ -19,6 +19,7 @@ public class Requisition {
   private final String name;
   private final Long assayId;
   private final boolean stopped;
+  private final String stopReason;
   private final List<RequisitionQcGroup> qcGroups;
   private final List<RequisitionQc> informaticsReviews;
   private final List<RequisitionQc> draftReports;
@@ -30,6 +31,7 @@ public class Requisition {
     this.name = requireNonNull(builder.name);
     this.assayId = builder.assayId;
     this.stopped = builder.stopped;
+    this.stopReason = builder.stopReason;
     this.qcGroups = builder.qcGroups == null ? emptyList() : unmodifiableList(builder.qcGroups);
     this.informaticsReviews = builder.informaticsReviews == null ? emptyList()
         : unmodifiableList(builder.informaticsReviews);
@@ -57,6 +59,10 @@ public class Requisition {
 
   public boolean isStopped() {
     return stopped;
+  }
+
+  public String getStopReason() {
+    return stopReason;
   }
 
   public List<RequisitionQcGroup> getQcGroups() {
@@ -101,6 +107,7 @@ public class Requisition {
     private long id;
     private String name;
     private boolean stopped;
+    private String stopReason;
     private Long assayId;
     private List<RequisitionQcGroup> qcGroups;
     private List<RequisitionQc> informaticsReviews;
@@ -124,6 +131,11 @@ public class Requisition {
 
     public Builder stopped(boolean stopped) {
       this.stopped = stopped;
+      return this;
+    }
+
+    public Builder stopReason(String stopReason) {
+      this.stopReason = stopReason;
       return this;
     }
 

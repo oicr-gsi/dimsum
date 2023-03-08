@@ -42,6 +42,8 @@ export interface Requisition {
   id: number;
   name: string;
   assayId?: number;
+  stopped: boolean;
+  stopReason?: string;
   qcGroups: RequisitionQcGroup[];
   informaticsReviews: RequisitionQc[];
   draftReports: RequisitionQc[];

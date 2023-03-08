@@ -92,7 +92,6 @@ export interface Case {
   tissueOrigin: string;
   tissueType: string;
   timepoint: string;
-  stopped: boolean;
   receipts: Sample[];
   startDate: string;
   tests: Test[];
@@ -105,7 +104,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   defaultSort: latestActivitySort,
   filters: caseFilters,
   getChildren: (parent) => parent.tests,
-  getRowHighlight: (kase) => (kase.stopped ? "stopped" : null),
+  getRowHighlight: (kase) => (kase.requisition.stopped ? "stopped" : null),
   staticActions: [legendAction],
   generateColumns: () => [
     {
@@ -167,14 +166,17 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const assay = siteConfig.assaysById[kase.assayId];
         addLink(assayDiv, assay.name, urls.dimsum.case(kase.id));
         fragment.appendChild(assayDiv);
-        if (kase.stopped) {
-          const stoppedDiv = document.createElement("div");
+
+        const requisition = kase.requisition;
+        if (kase.requisition.stopped) {
+          const stoppedDiv = makeTextDivWithTooltip(
+            "CASE STOPPED",
+            `Stop reason: ${requisition.stopReason || "Unspecified"}`
+          );
           styleText(stoppedDiv, "error");
-          stoppedDiv.appendChild(document.createTextNode("CASE STOPPED"));
           fragment.appendChild(stoppedDiv);
         }
         const requisitionDiv = document.createElement("div");
-        const requisition = kase.requisition;
         addLink(
           requisitionDiv,
           requisition.name,
@@ -438,7 +440,7 @@ function handleNaSamplePhase(
   samples: Sample[],
   fragment: DocumentFragment
 ) {
-  if (kase.stopped && !samples.length) {
+  if (kase.requisition.stopped && !samples.length) {
     addNaText(fragment);
     return true;
   } else {
@@ -488,7 +490,7 @@ function samplePhasePendingWork(samples: Sample[]) {
 function getSamplePhaseHighlight(kase: Case, samples: Sample[]) {
   if (samplePhaseComplete(samples)) {
     return null;
-  } else if (kase.stopped) {
+  } else if (kase.requisition.stopped) {
     return samples.length ? null : "na";
   } else {
     return "warning";
@@ -500,7 +502,7 @@ function handleNaRequisitionPhase(
   getQcs: (requisition: Requisition) => RequisitionQc[],
   fragment: DocumentFragment
 ) {
-  if (kase.stopped && !getQcs(kase.requisition).length) {
+  if (kase.requisition.stopped && !getQcs(kase.requisition).length) {
     addNaText(fragment);
     return true;
   } else {
@@ -522,7 +524,7 @@ function getRequisitionPhaseHighlight(
 ) {
   if (requisitionPhaseComplete(kase.requisition, getQcs)) {
     return null;
-  } else if (kase.stopped) {
+  } else if (kase.requisition.stopped) {
     return getQcs(kase.requisition).length ? null : "na";
   } else {
     return "warning";
