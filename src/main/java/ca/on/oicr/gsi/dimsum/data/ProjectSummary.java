@@ -171,152 +171,131 @@ public class ProjectSummary {
   public static class Builder {
 
     private String name;
-    private int totalTestCount;
+    private int totalTestCount = 0;
     // receipt
-    private int receiptPendingQcCount;
-    private int receiptCompletedCount;
+    private int receiptPendingQcCount = 0;
+    private int receiptCompletedCount = 0;
     // extraction
-    private int extractionPendingCount;
-    private int extractionPendingQcCount;
-    private int extractionCompletedCount;
+    private int extractionPendingCount = 0;
+    private int extractionPendingQcCount = 0;
+    private int extractionCompletedCount = 0;
     // library preparation
-    private int libraryPrepPendingCount;
-    private int libraryPrepPendingQcCount;
-    private int libraryPrepCompletedCount;
+    private int libraryPrepPendingCount = 0;
+    private int libraryPrepPendingQcCount = 0;
+    private int libraryPrepCompletedCount = 0;
     // library qualification
-    private int libraryQualPendingCount;
-    private int libraryQualPendingQcCount;
-    private int libraryQualCompletedCount;
+    private int libraryQualPendingCount = 0;
+    private int libraryQualPendingQcCount = 0;
+    private int libraryQualCompletedCount = 0;
     // full depth sequencing
-    private int fullDepthSeqPendingCount;
-    private int fullDepthSeqPendingQcCount;
-    private int fullDepthSeqCompletedCount;
+    private int fullDepthSeqPendingCount = 0;
+    private int fullDepthSeqPendingQcCount = 0;
+    private int fullDepthSeqCompletedCount = 0;
     // informatics review
-    private int informaticsPendingCount;
-    private int informaticsCompletedCount;
+    private int informaticsPendingCount = 0;
+    private int informaticsCompletedCount = 0;
     // draft report
-    private int draftReportPendingCount;
-    private int draftReportCompletedCount;
+    private int draftReportPendingCount = 0;
+    private int draftReportCompletedCount = 0;
     // final report
-    private int finalReportPendingCount;
-    private int finalReportCompletedCount;
+    private int finalReportPendingCount = 0;
+    private int finalReportCompletedCount = 0;
 
 
-    public Builder name(String name) {
+    public void name(String name) {
       this.name = name;
-      return this;
     }
 
-    public Builder totalTestCount(int totalTestCount) {
+    public void totalTestCount(int totalTestCount) {
       this.totalTestCount = totalTestCount;
-      return this;
     }
 
-    public Builder receiptPendingQcCount(int receiptPendingQcCount) {
+    public void receiptPendingQcCount(int receiptPendingQcCount) {
       this.receiptPendingQcCount = receiptPendingQcCount;
-      return this;
     }
 
-    public Builder receiptCompletedCount(int receiptCompletedCount) {
+    public void receiptCompletedCount(int receiptCompletedCount) {
       this.receiptCompletedCount = receiptCompletedCount;
-      return this;
     }
 
     // extraction
-    public Builder extractionPendingCount(int extractionPendingCount) {
-      this.extractionPendingCount = extractionPendingCount;
-      return this;
+    public void incrementExtractionPendingCount() {
+      this.extractionPendingCount += 1;
     }
 
-    public Builder extractionPendingQcCount(int extractionPendingQcCount) {
-      this.extractionPendingQcCount = extractionPendingQcCount;
-      return this;
+    public void incrementExtractionPendingQcCount() {
+      this.extractionPendingQcCount += 1;
     }
 
-    public Builder extractionCompletedCount(int extractionCompletedCount) {
-      this.extractionCompletedCount = extractionCompletedCount;
-      return this;
+    public void incrementExtractionCompletedCount() {
+      this.extractionCompletedCount += 1;
     }
 
     // library preparation
-    public Builder libraryPrepPendingCount(int libraryPrepPendingCount) {
-      this.libraryPrepPendingCount = libraryPrepPendingCount;
-      return this;
+    public void incrementLibraryPrepPendingCount() {
+      this.libraryPrepPendingCount += 1;
     }
 
-    public Builder libraryPrepPendingQcCount(int libraryPrepPendingQcCount) {
-      this.libraryPrepPendingQcCount = libraryPrepPendingQcCount;
-      return this;
+    public void incrementLibraryPrepPendingQcCount() {
+      this.libraryPrepPendingQcCount += 1;
     }
 
-    public Builder libraryPrepCompletedCount(int libraryPrepCompletedCount) {
-      this.libraryPrepCompletedCount = libraryPrepCompletedCount;
-      return this;
+    public void incrementLibraryPrepCompletedCount() {
+      this.libraryPrepCompletedCount += 1;
     }
 
     // library qualification
-    public Builder libraryQualPendingCount(int libraryQualPendingCount) {
-      this.libraryQualPendingCount = libraryQualPendingCount;
-      return this;
+    public void incrementLibraryQualPendingCount() {
+      this.libraryQualPendingCount += 1;
     }
 
-    public Builder libraryQualPendingQcCount(int libraryQualPendingQcCount) {
-      this.libraryQualPendingQcCount = libraryQualPendingQcCount;
-      return this;
+    public void incrementLibraryQualPendingQcCount() {
+      this.libraryQualPendingQcCount += 1;
     }
 
-    public Builder libraryQualCompletedCount(int libraryQualCompletedCount) {
-      this.libraryQualCompletedCount = libraryQualCompletedCount;
-      return this;
+    public void incrementLibraryQualCompletedCount() {
+      this.libraryQualCompletedCount += 1;
     }
 
     // full depth sequencing
-    public Builder fullDepthSeqPendingCount(int fullDepthSeqPendingCount) {
-      this.fullDepthSeqPendingCount = fullDepthSeqPendingCount;
-      return this;
+    public void incrementFullDepthSeqPendingCount() {
+      this.fullDepthSeqPendingCount += 1;
     }
 
-    public Builder fullDepthSeqPendingQcCount(int fullDepthSeqPendingQcCount) {
-      this.fullDepthSeqPendingQcCount = fullDepthSeqPendingQcCount;
-      return this;
+    public void incrementFullDepthSeqPendingQcCount() {
+      this.fullDepthSeqPendingQcCount += 1;
+
     }
 
-    public Builder fullDepthSeqCompletedCount(int fullDepthSeqCompletedCount) {
-      this.fullDepthSeqCompletedCount = fullDepthSeqCompletedCount;
-      return this;
+    public void incrementFullDepthSeqCompletedCount() {
+      this.fullDepthSeqCompletedCount += 1;
     }
 
     // informatics review
-    public Builder informaticsPendingCount(int informaticsPendingCount) {
+    public void informaticsPendingCount(int informaticsPendingCount) {
       this.informaticsPendingCount = informaticsPendingCount;
-      return this;
     }
 
-    public Builder informaticsCompletedCount(int informaticsCompletedCount) {
+    public void informaticsCompletedCount(int informaticsCompletedCount) {
       this.informaticsCompletedCount = informaticsCompletedCount;
-      return this;
     }
 
     // draft report
-    public Builder draftReportPendingCount(int draftReportPendingCount) {
+    public void draftReportPendingCount(int draftReportPendingCount) {
       this.draftReportPendingCount = draftReportPendingCount;
-      return this;
     }
 
-    public Builder draftReportCompletedCount(int draftReportCompletedCount) {
+    public void draftReportCompletedCount(int draftReportCompletedCount) {
       this.draftReportCompletedCount = draftReportCompletedCount;
-      return this;
     }
 
     // final report
-    public Builder finalReportPendingCount(int finalReportPendingCount) {
+    public void finalReportPendingCount(int finalReportPendingCount) {
       this.finalReportPendingCount = finalReportPendingCount;
-      return this;
     }
 
-    public Builder finalReportCompletedCount(int finalReportCompletedCount) {
+    public void finalReportCompletedCount(int finalReportCompletedCount) {
       this.finalReportCompletedCount = finalReportCompletedCount;
-      return this;
     }
 
 
