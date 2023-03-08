@@ -432,7 +432,7 @@ public class CaseLoader {
     return metrics;
   }
 
-  protected List<Case> loadCases(FileReader fileReader, Map<String, Project> projectsByName,
+  private List<Case> loadCases(FileReader fileReader, Map<String, Project> projectsByName,
       Map<String, Sample> samplesById, Map<String, Donor> donorsById,
       Map<Long, Requisition> requisitionsById, Map<Long, Assay> assaysById)
       throws DataParseException, IOException {
@@ -700,118 +700,158 @@ public class CaseLoader {
   }
 
   protected static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases) {
-    Map<String, Map<String, Integer>> tempProjectsBySummary = new HashMap<>();
-    Map<String, ProjectSummary> projectsBySummary = new HashMap<>();
+    Map<String, ProjectSummary.Builder> tempprojectSummariesByName = new HashMap<>();
+    Map<String, ProjectSummary> projectSummariesByName = new HashMap<>();
 
     for (Case kase : cases) {
-      Map<String, Integer> counts = new HashMap<>();
+      int totalTestCounts = 0;
+      int receiptPendingQcCount = 0;
+      int receiptCompletedCount = 0;
+      // extraction
+      int extractionPendingCount = 0;
+      int extractionPendingQcCount = 0;
+      int extractionCompletedCount = 0;
+      // library preparation
+      int libraryPrepPendingCount = 0;
+      int libraryPrepPendingQcCount = 0;
+      int libraryPrepCompletedCount = 0;
+      // library qualification
+      int libraryQualPendingCount = 0;
+      int libraryQualPendingQcCount = 0;
+      int libraryQualCompletedCount = 0;
+      // full depth sequencing
+      int fullDepthSeqPendingCount = 0;
+      int fullDepthSeqPendingQcCount = 0;
+      int fullDepthSeqCompletedCount = 0;
+      // informatics review
+      int informaticsPendingCount = 0;
+      int informaticsCompletedCount = 0;
+      // draft report
+      int draftReportPendingCount = 0;
+      int draftReportCompletedCount = 0;
+      // final report
+      int finalReportPendingCount = 0;
+      int finalReportCompletedCount = 0;
+
       int testSize = kase.getTests() != null ? kase.getTests().size() : 0;
-      counts.put("TOTAL_TESTS", counts.getOrDefault("TOTAL_TESTS", 0) + testSize);
+      totalTestCounts = testSize;
       if (PendingState.RECEIPT_QC.qualifyCase(kase)) {
-        counts.put("RECEIPT_PEND_QC", counts.getOrDefault("RECEIPT_PEND_QC", 0) + testSize);
+        receiptPendingQcCount = testSize;
       } else {
-        counts.put("RECEIPT_COMPLETE", counts.getOrDefault("RECEIPT_COMPLETE", 0) + testSize);
+        receiptCompletedCount = testSize;
       }
       for (Test test : kase.getTests()) {
         // Extraction
         if (test.getExtractions().stream()
             .anyMatch(sample -> Boolean.TRUE.equals(sample.getQcPassed()))) {
-          counts.put("EXTRACTION_COMPLETE", counts.getOrDefault("EXTRACTION_COMPLETE", 0) + 1);
+          extractionCompletedCount += 1;
         } else if (PendingState.EXTRACTION_QC.qualifyTest(test)) {
-          counts.put("EXTRACTION_PEND_QC", counts.getOrDefault("EXTRACTION_PEND_QC", 0) + 1);
+          extractionPendingQcCount += 1;
         } else if (PendingState.EXTRACTION.qualifyTest(test)) {
-          counts.put("EXTRACTION_PEND_WORK", counts.getOrDefault("EXTRACTION_PEND_WORK", 0) + 1);
+          extractionPendingCount += 1;
         }
 
         // library Preparation
         if (test.getLibraryPreparations().stream().anyMatch(sample -> Boolean.TRUE
             .equals(sample.getQcPassed())
             && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
-          counts.put("LIBRARY_PREP_COMPLETE",
-              counts.getOrDefault("LIBRARY_PREP_COMPLETE", 0) + 1);
+          libraryPrepCompletedCount += 1;
         } else if (PendingState.LIBRARY_QC.qualifyTest(test)) {
-          counts.put("LIBRARY_PREP_PEND_QC", counts.getOrDefault("LIBRARY_PREP_PEND_QC", 0) + 1);
+          libraryPrepPendingQcCount += 1;
         } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test)) {
-          counts.put("LIBRARY_PREP_PEND_WORK",
-              counts.getOrDefault("LIBRARY_PREP_PEND_WORK", 0) + 1);
+          libraryPrepPendingCount += 1;
         }
 
         // Library Qualification
         if (test.getLibraryQualifications().stream().anyMatch(sample -> Boolean.TRUE
             .equals(sample.getQcPassed())
             && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
-          counts.put("LIBRARY_QUAL_COMPLETE",
-              counts.getOrDefault("LIBRARY_QUAL_COMPLETE", 0) + 1);
+          libraryQualCompletedCount += 1;
         } else if (PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
             || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test)) {
-          counts.put("LIBRARY_QUAL_PEND_QC", counts.getOrDefault("LIBRARY_QUAL_PEND_QC", 0) + 1);
+          libraryQualPendingQcCount += 1;
         } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test)) {
-          counts.put("LIBRARY_QUAL_PEND_WORK",
-              counts.getOrDefault("LIBRARY_QUAL_PEND_WORK", 0) + 1);
+          libraryQualPendingCount += 1;
         }
 
         // Full depth sequncing
         if (test.getFullDepthSequencings().stream().anyMatch(sample -> Boolean.TRUE
             .equals(sample.getQcPassed())
             && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
-          counts.put("FULL_DEPTH_COMPLETE", counts.getOrDefault("FULL_DEPTH_COMPLETE", 0) + 1);
+          fullDepthSeqCompletedCount += 1;
         } else if (PendingState.FULL_DEPTH_QC.qualifyTest(test)
             || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) {
-          counts.put("FULL_DEPTH_PEND_QC", counts.getOrDefault("FULL_DEPTH_PEND_QC", 0) + 1);
+          fullDepthSeqPendingQcCount += 1;
         } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test)) {
-          counts.put("FULL_DEPTH_PEND_WORK", counts.getOrDefault("FULL_DEPTH_PEND_WORK", 0) + 1);
+          fullDepthSeqPendingCount += 1;
         }
       }
       // informatics review
       if (kase.getRequisition().getInformaticsReviews().stream()
           .anyMatch(x -> x.isQcPassed())) {
-        counts.put("INFORMATICS_COMPLETE",
-            counts.getOrDefault("INFORMATICS_COMPLETE", 0) + testSize);
+        informaticsCompletedCount += testSize;
       }
       if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase)) {
-        counts.put("INFORMATICS_PEND_WORK",
-            counts.getOrDefault("INFORMATICS_PEND_WORK", 0) + testSize);
+        informaticsPendingCount += testSize;
       }
 
       // draft report
       if (kase.getRequisition().getDraftReports().stream()
           .anyMatch(x -> x.isQcPassed())) {
-        counts.put("DRAFT_REPORT_COMPLETE",
-            counts.getOrDefault("DRAFT_REPORT_COMPLETE", 0) + testSize);
+        draftReportCompletedCount += testSize;
       }
       if (PendingState.DRAFT_REPORT.qualifyCase(kase)) {
-        counts.put("DRAFT_REPORT_PEND_WORK",
-            counts.getOrDefault("DRAFT_REPORT_PEND_WORK", 0) + testSize);
+        draftReportPendingCount += testSize;
       }
 
       // final report
       if (kase.getRequisition().getFinalReports().stream()
           .anyMatch(x -> x.isQcPassed())) {
-        counts.put("FINAL_REPORT_COMPLETE",
-            counts.getOrDefault("FINAL_REPORT_COMPLETE", 0) + testSize);
+        finalReportCompletedCount += testSize;
       }
       if (PendingState.FINAL_REPORT.qualifyCase(kase)) {
-        counts.put("FINAL_REPORT_PEND_WORK",
-            counts.getOrDefault("FINAL_REPORT_PEND_WORK", 0) + testSize);
+        finalReportPendingCount += testSize;
       }
 
-      // add the counts to each project in the case if the project exists in the ProjectsBySummary
+      // add the counts to each project in the case if the project exists in the
+      // projectSummariesByName
       for (Project project : kase.getProjects()) {
-        if (tempProjectsBySummary.containsKey(project.getName())
-            && !tempProjectsBySummary.isEmpty()) {
-          counts = ProjectSummary
-              .addCounts(tempProjectsBySummary.get(project.getName()), counts);
+        ProjectSummary.Builder builder =
+            new ProjectSummary.Builder().name(project.getName()).totalTestCount(totalTestCounts)
+                .receiptPendingQcCount(receiptPendingQcCount)
+                .receiptCompletedCount(receiptCompletedCount)
+                .extractionPendingCount(extractionPendingCount)
+                .extractionPendingQcCount(extractionPendingQcCount)
+                .extractionCompletedCount(extractionCompletedCount)
+                .libraryPrepPendingCount(libraryPrepPendingCount)
+                .libraryPrepPendingQcCount(libraryPrepPendingQcCount)
+                .libraryPrepCompletedCount(libraryPrepCompletedCount)
+                .libraryQualPendingCount(libraryQualPendingCount)
+                .libraryQualPendingQcCount(libraryQualPendingQcCount)
+                .libraryQualCompletedCount(libraryQualCompletedCount)
+                .fullDepthSeqPendingCount(fullDepthSeqPendingCount)
+                .fullDepthSeqPendingQcCount(fullDepthSeqPendingQcCount)
+                .fullDepthSeqCompletedCount(fullDepthSeqCompletedCount)
+                .informaticsPendingCount(informaticsPendingCount)
+                .informaticsCompletedCount(informaticsCompletedCount)
+                .draftReportPendingCount(draftReportPendingCount)
+                .draftReportCompletedCount(draftReportCompletedCount)
+                .finalReportPendingCount(finalReportPendingCount)
+                .finalReportCompletedCount(finalReportCompletedCount);
+        if (tempprojectSummariesByName.containsKey(project.getName())
+            && !tempprojectSummariesByName.isEmpty()) {
+          tempprojectSummariesByName.get(project.getName()).addCounts(builder);
+        } else {
+          tempprojectSummariesByName.put(project.getName(), builder);
         }
-        tempProjectsBySummary.put(project.getName(), counts);
       }
     }
 
-    for (Map.Entry<String, Map<String, Integer>> entry : tempProjectsBySummary.entrySet()) {
-      ProjectSummary projectSummary =
-          new ProjectSummary.Builder().name(entry.getKey()).counts(entry.getValue()).build();
-      projectsBySummary.put(entry.getKey(), projectSummary);
+    for (Map.Entry<String, ProjectSummary.Builder> entry : tempprojectSummariesByName.entrySet()) {
+      ProjectSummary projectSummary = entry.getValue().build();
+      projectSummariesByName.put(entry.getKey(), projectSummary);
     }
-    return projectsBySummary;
+    return projectSummariesByName;
   }
 
 }

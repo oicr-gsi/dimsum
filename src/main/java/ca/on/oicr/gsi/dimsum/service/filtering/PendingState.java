@@ -320,7 +320,7 @@ public enum PendingState {
     return true;
   }
 
-  public Function<Case, Stream<Sample>> getFilteredSamples(MetricCategory requestCategory) {
+  protected Function<Case, Stream<Sample>> getFilteredSamples(MetricCategory requestCategory) {
     // override for all values where this is applicable
     throw new IllegalStateException("This gate does not apply to samples");
   }
