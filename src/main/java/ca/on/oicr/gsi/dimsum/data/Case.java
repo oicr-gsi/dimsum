@@ -46,7 +46,7 @@ public class Case {
     this.tests = unmodifiableList(builder.tests);
     this.requisition = builder.requisition;
     this.startDate = builder.receipts.stream()
-        .filter(sample -> !"R".equals(sample.getTissueType()))
+        .filter(sample -> sample.getRequisitionId().longValue() == builder.requisition.getId())
         .map(Sample::getCreatedDate)
         .min(LocalDate::compareTo).orElse(null);
     this.latestActivityDate = Stream
