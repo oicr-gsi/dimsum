@@ -46,17 +46,17 @@ public enum PendingState {
   // @formatter:off
   RECEIPT_QC("Receipt QC") {
     @Override
-    protected boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase) {
       return Helpers.isPendingReceiptQc(kase);
     }
 
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return true;
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.RECEIPT) {
         return Helpers.isPendingQc(sample);
       } else {
@@ -66,19 +66,19 @@ public enum PendingState {
   },
   EXTRACTION("Extraction") {
     @Override
-    protected boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase) {
       return Helpers.isReceiptPassed
           .and(Helpers.anyTest(this::qualifyTest))
           .test(kase);
     }
 
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingWork(test.getExtractions());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.RECEIPT) {
         return Helpers.isPassed(sample);
       } else {
@@ -88,12 +88,12 @@ public enum PendingState {
   },
   EXTRACTION_QC("Extraction QC Sign-Off") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getExtractions());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.EXTRACTION) {
         return Helpers.isPendingQc(sample);
       } else {
@@ -103,12 +103,12 @@ public enum PendingState {
   },
   LIBRARY_PREPARATION("Library Preparation") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingWork(test.getLibraryPreparations(), test.getExtractions());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       switch (requestCategory) {
         case RECEIPT:
         case EXTRACTION:
@@ -120,12 +120,12 @@ public enum PendingState {
   },
   LIBRARY_QC("Library QC Sign-Off") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getLibraryPreparations());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_PREP) {
         return Helpers.isPendingQc(sample);
       } else {
@@ -135,12 +135,12 @@ public enum PendingState {
   },
   LIBRARY_QUALIFICATION("Library Qualification") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       switch (requestCategory) {
         case RECEIPT:
         case EXTRACTION:
@@ -153,12 +153,12 @@ public enum PendingState {
   },
   LIBRARY_QUALIFICATION_QC("Library Qualification QC Sign-Off") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getLibraryQualifications());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_QUALIFICATION) {
         return Helpers.isPendingQc(sample);
       } else {
@@ -168,12 +168,12 @@ public enum PendingState {
   },
   LIBRARY_QUALIFICATION_DATA_REVIEW("Library Qualification Data Review") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingDataReview(test.getLibraryQualifications());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_QUALIFICATION) {
         return Helpers.isPendingDataReview(sample);
       } else {
@@ -183,12 +183,12 @@ public enum PendingState {
   },
   FULL_DEPTH_SEQUENCING("Full-Depth Sequencing") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       switch (requestCategory) {
         case RECEIPT:
         case EXTRACTION:
@@ -202,12 +202,12 @@ public enum PendingState {
   },
   FULL_DEPTH_QC("Full-Depth Sequencing QC Sign-Off") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getFullDepthSequencings());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.FULL_DEPTH_SEQUENCING) {
         return Helpers.isPendingQc(sample);
       } else {
@@ -217,12 +217,12 @@ public enum PendingState {
   },
   FULL_DEPTH_DATA_REVIEW("Full-Depth Sequencing Data Review") {
     @Override
-    protected boolean qualifyTest(Test test) {
+    public boolean qualifyTest(Test test) {
       return Helpers.hasPendingDataReview(test.getFullDepthSequencings());
     }
 
     @Override
-    protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.FULL_DEPTH_SEQUENCING) {
         return Helpers.isPendingDataReview(sample);
       } else {
@@ -232,37 +232,37 @@ public enum PendingState {
   },
   INFORMATICS_REVIEW("Informatics Review") {
     @Override
-    protected boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase) {
       return kase.getTests().stream().allMatch(Helpers.isCompleted(Test::getFullDepthSequencings))
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
-    protected boolean qualifyRequisition(Requisition requisition) {
+    public boolean qualifyRequisition(Requisition requisition) {
       return requisition.getInformaticsReviews().isEmpty();
     }
   },
   DRAFT_REPORT("Draft Report") {
     @Override
-    protected boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews)
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
-    protected boolean qualifyRequisition(Requisition requisition) {
+    public boolean qualifyRequisition(Requisition requisition) {
       return requisition.getDraftReports().isEmpty();
     }
   },
   FINAL_REPORT("Final Report") {
     @Override
-    protected boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase, Requisition::getDraftReports)
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
-    protected boolean qualifyRequisition(Requisition requisition) {
+    public boolean qualifyRequisition(Requisition requisition) {
       return requisition.getFinalReports().isEmpty();
     }
   };
@@ -304,19 +304,19 @@ public enum PendingState {
     return sample -> qualifySample(sample, requestCategory);
   }
 
-  protected boolean qualifyCase(Case kase) {
+  public boolean qualifyCase(Case kase) {
     return kase.getTests().stream().anyMatch(test -> qualifyTest(test));
   }
 
-  protected boolean qualifyTest(Test test) {
+  public boolean qualifyTest(Test test) {
     throw new IllegalStateException("Method undefined");
   }
 
-  protected boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+  public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
     return true;
   }
 
-  protected boolean qualifyRequisition(Requisition requisition) {
+  public boolean qualifyRequisition(Requisition requisition) {
     return true;
   }
 

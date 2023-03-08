@@ -26,6 +26,8 @@ public class CaseLoaderTest {
   private static final String testDonorId = "SAM413576";
   private static final String testSampleId = "SAM413577";
 
+  private List<Case> cases = MockCase.getCases();
+
   private static File dataDirectory;
 
   private CaseLoader sut;
@@ -242,6 +244,103 @@ public class CaseLoaderTest {
     assertEquals("5476_1_LDI73620", fullDepth.getId());
     assertEquals("PROJ_1289_Ly_R_PE_567_WG", fullDepth.getName());
     assertEquals(Boolean.TRUE, fullDepth.getQcPassed());
+
+    Map<String, ProjectSummary> projectSummariesByName = data.getProjectSummariesByName();
+    assertNotNull(projectSummariesByName);
+    assertEquals(1, projectSummariesByName.size());
+    ProjectSummary projectSummary = projectSummariesByName.get("PROJ");
+    assertEquals(3, projectSummary.getTotalTestCount());
+    assertEquals(3, projectSummary.getReceiptCompletedCount());
+    assertEquals(3, projectSummary.getLibraryPrepCompletedCount());
+    assertEquals(3, projectSummary.getLibraryQualCompletedCount());
+    assertEquals(3, projectSummary.getFullDepthSeqCompletedCount());
+    assertEquals(3, projectSummary.getInformaticsCompletedCount());
+    assertEquals(3, projectSummary.getDraftReportPendingCount());
+  }
+
+  @Test
+  public void testCalculateProjectSummary() throws Exception {
+    Map<String, ProjectSummary> projectSummariesByName =
+        CaseLoader.calculateProjectSummaries(cases);
+    assertNotNull(projectSummariesByName);
+
+    // PRO1
+    assertEquals(5, projectSummariesByName.get("PRO1").getTotalTestCount());
+    assertEquals(3, projectSummariesByName.get("PRO1").getExtractionCompletedCount());
+    assertEquals(1, projectSummariesByName.get("PRO1").getExtractionPendingQcCount());
+    assertEquals(1, projectSummariesByName.get("PRO1").getExtractionPendingCount());
+    assertEquals(1, projectSummariesByName.get("PRO1").getLibraryPrepPendingCount());
+    assertEquals(1, projectSummariesByName.get("PRO1").getLibraryQualPendingQcCount());
+    assertEquals(1, projectSummariesByName.get("PRO1").getLibraryQualCompletedCount());
+    assertEquals(1, projectSummariesByName.get("PRO1").getFullDepthSeqPendingCount());
+
+    // PRO2
+    assertEquals(1, projectSummariesByName.get("PRO2").getLibraryPrepPendingQcCount());
+    assertEquals(1, projectSummariesByName.get("PRO2").getLibraryQualPendingCount());
+    assertEquals(1, projectSummariesByName.get("PRO2").getLibraryQualPendingQcCount());
+    assertEquals(2, projectSummariesByName.get("PRO2").getFullDepthSeqPendingQcCount());
+
+    // PRO3
+    assertEquals(1, projectSummariesByName.get("PRO3").getInformaticsPendingCount());
+
+    // PRO4
+    assertEquals(1, projectSummariesByName.get("PRO4").getDraftReportPendingCount());
+    assertEquals(1, projectSummariesByName.get("PRO4").getInformaticsCompletedCount());
+
+    // PRO5
+    assertEquals(2, projectSummariesByName.get("PRO5").getFinalReportPendingCount());
+    assertEquals(2, projectSummariesByName.get("PRO5").getDraftReportCompletedCount());
+    assertEquals(2, projectSummariesByName.get("PRO5").getInformaticsCompletedCount());
+
+    // PRO7
+    assertEquals(1, projectSummariesByName.get("PRO7").getExtractionPendingCount());
+
+    // PRO8
+    assertEquals(1, projectSummariesByName.get("PRO8").getExtractionPendingQcCount());
+
+    // PRO9
+    assertEquals(1, projectSummariesByName.get("PRO9").getLibraryPrepPendingCount());
+
+    // PRO10
+    assertEquals(1, projectSummariesByName.get("PRO10").getLibraryPrepPendingQcCount());
+
+    // PRO11
+    assertEquals(1, projectSummariesByName.get("PRO11").getLibraryQualPendingCount());
+
+    // PRO12
+    assertEquals(1, projectSummariesByName.get("PRO12").getLibraryQualPendingCount());
+
+    // PRO13
+    assertEquals(1, projectSummariesByName.get("PRO13").getLibraryQualPendingQcCount());
+
+    // PRO14
+    assertEquals(1, projectSummariesByName.get("PRO14").getLibraryQualPendingQcCount());
+
+    // PRO15
+    assertEquals(1, projectSummariesByName.get("PRO15").getLibraryQualPendingQcCount());
+
+    // PRO16
+    assertEquals(1, projectSummariesByName.get("PRO16").getFullDepthSeqPendingCount());
+
+    // PRO17
+    assertEquals(1, projectSummariesByName.get("PRO17").getFullDepthSeqPendingCount());
+
+    // PRO18
+    assertEquals(1, projectSummariesByName.get("PRO18").getFullDepthSeqPendingQcCount());
+
+    // PRO19
+    assertEquals(1, projectSummariesByName.get("PRO19").getFullDepthSeqPendingQcCount());
+
+    // PRO20
+    assertEquals(1, projectSummariesByName.get("PRO20").getLibraryPrepPendingCount());
+
+    // PRO21
+    assertEquals(1, projectSummariesByName.get("PRO21").getLibraryPrepCompletedCount());
+
+    // PRO22
+    assertEquals(1, projectSummariesByName.get("PRO22").getTotalTestCount());
+    assertEquals(1, projectSummariesByName.get("PRO22").getReceiptPendingQcCount());
+
   }
 
 }
