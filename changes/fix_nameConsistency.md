@@ -1,1 +1,1 @@
-Project name should all be "DimSum" instead of "Dim Sum"
+Project name should all be "Dimsum" instead of "Dim Sum"
