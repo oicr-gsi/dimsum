@@ -1,1 +1,0 @@
-preliminary work on creating project Summary, which generates counts of items at each QC gate that are pending, pending QC, completed
