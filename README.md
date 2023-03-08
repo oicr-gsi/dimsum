@@ -1,4 +1,4 @@
-# Dim Sum - QC Tracking Dashboard
+# Dimsum - QC Tracking Dashboard
 
 ![CI](https://github.com/oicr-gsi/dimsum/actions/workflows/ci.yml/badge.svg)
 
