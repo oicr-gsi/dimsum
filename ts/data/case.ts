@@ -195,10 +195,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         fragment.appendChild(dateDiv);
 
         const elapsedDiv = document.createElement("div");
-        elapsedDiv.appendChild(
-          document.createTextNode(getElapsedMessage(kase))
-        );
-        fragment.appendChild(elapsedDiv);
+        if (!kase.requisition.stopped) {
+          elapsedDiv.appendChild(
+            document.createTextNode(getElapsedMessage(kase))
+          );
+          fragment.appendChild(elapsedDiv);
+        }
       },
     },
     {
