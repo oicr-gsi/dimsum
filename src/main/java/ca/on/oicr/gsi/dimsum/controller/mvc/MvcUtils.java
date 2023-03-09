@@ -9,6 +9,8 @@ import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
+import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
 
@@ -93,6 +95,23 @@ public class MvcUtils {
     try {
       OmittedSampleFilterKey key = OmittedSampleFilterKey.valueOf(pair.getKey());
       return new OmittedSampleFilter(key, pair.getValue());
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
+    }
+  }
+
+  public static List<ProjectSummaryFilter> parseProjectSummaryFilters(DataQuery query) {
+    List<KeyValuePair> queryFilters = query.getFilters();
+    if (queryFilters == null || queryFilters.isEmpty()) {
+      return null;
+    }
+    return queryFilters.stream().map(MvcUtils::parseProjectSummaryFilter).toList();
+  }
+
+  private static ProjectSummaryFilter parseProjectSummaryFilter(KeyValuePair pair) {
+    try {
+      ProjectSummaryFilterKey key = ProjectSummaryFilterKey.valueOf(pair.getKey());
+      return new ProjectSummaryFilter(key, pair.getValue());
     } catch (IllegalArgumentException e) {
       throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
     }
