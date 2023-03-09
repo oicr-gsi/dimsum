@@ -195,10 +195,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         fragment.appendChild(dateDiv);
 
         const elapsedDiv = document.createElement("div");
-        elapsedDiv.appendChild(
-          document.createTextNode(getElapsedMessage(kase))
-        );
-        fragment.appendChild(elapsedDiv);
+        if (!kase.requisition.stopped) {
+          elapsedDiv.appendChild(
+            document.createTextNode(getElapsedMessage(kase))
+          );
+          fragment.appendChild(elapsedDiv);
+        }
       },
     },
     {
@@ -704,5 +706,5 @@ function getElapsedMessage(kase: Case) {
   const startDate = new Date(kase.startDate);
   const milliDiff = endDate.getTime() - startDate.getTime();
   const dayDiff = Math.ceil(milliDiff / dayMillis);
-  return !kase.requisition.stopped ? `(${message} ${dayDiff} days)` : "";
+  return `(${message} ${dayDiff} days)`;
 }
