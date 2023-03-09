@@ -29,6 +29,31 @@ export interface Project {
   pipeline: string;
 }
 
+export interface ProjectSummary {
+  name: string;
+  totalTestCount: number;
+  receiptPendingQcCount: number;
+  receiptCompletedCount: number;
+  extractionPendingCount: number;
+  extractionPendingQcCount: number;
+  extractionCompletedCount: number;
+  libraryPrepPendingCount: number;
+  libraryPrepPendingQcCount: number;
+  libraryPrepCompletedCount: number;
+  libraryQualPendingCount: number;
+  libraryQualPendingQcCount: number;
+  libraryQualCompletedCount: number;
+  fullDepthSeqPendingCount: number;
+  fullDepthSeqPendingQcCount: number;
+  fullDepthSeqCompletedCount: number;
+  informaticsPendingCount: number;
+  informaticsCompletedCount: number;
+  draftReportPendingCount: number;
+  draftReportCompletedCount: number;
+  finalReportPendingCount: number;
+  finalReportCompletedCount: number;
+}
+
 export interface Donor {
   id: string;
   name: string;
