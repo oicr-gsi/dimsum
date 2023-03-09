@@ -7,6 +7,30 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.3.0] - 2023-03-09
+
+### Added
+
+* tooltip on "CASE STOPPED" text to display the stop reason
+* ability to handle renamed metrics:
+  * Total Clusters (Passed Filter)
+  * Pipeline Filtered Clusters
+  * Mean Bait Coverage
+
+### Changed
+
+* Cases now belong to a single requisition, and will include samples from other requisitions only
+  when explicitly added as supplemental samples
+* Case start date is now determined based on samples in the case's primary requisition, and excludes
+  supplemental samples
+* Items that have passed QC under an assay different from the case's assay are now indicated in
+  Case views. The assay is also now displayed in the detailed tooltip
+
+### Fixed
+
+* Changed references to previous name, 'Dim Sum', to 'Dimsum'
+
+
 ## [1.2.0] - 2023-01-20
 
 ### Changed

@@ -1,1 +1,0 @@
-Changed references to previous name, 'Dim Sum', to 'Dimsum'
