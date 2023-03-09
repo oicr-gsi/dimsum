@@ -99,4 +99,8 @@ public class CaseData {
   public Map<String, ProjectSummary> getProjectSummariesByName() {
     return projectSummariesByName;
   }
+
+  public Collection<ProjectSummary> getProjectSummaries() {
+    return projectSummariesByName.values();
+  }
 }
