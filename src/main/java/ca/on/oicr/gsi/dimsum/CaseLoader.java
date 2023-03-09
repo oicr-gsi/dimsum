@@ -790,7 +790,6 @@ public class CaseLoader {
       // add the counts to each project in the case if the project exists in the
       // projectSummariesByName
       for (Project project : kase.getProjects()) {
-        caseSummary.name(project.getName());
         if (tempProjectSummariesByName.containsKey(project.getName())
             && !tempProjectSummariesByName.isEmpty()) {
           tempProjectSummariesByName.get(project.getName()).addCounts(caseSummary);
