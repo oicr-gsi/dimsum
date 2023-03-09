@@ -704,5 +704,5 @@ function getElapsedMessage(kase: Case) {
   const startDate = new Date(kase.startDate);
   const milliDiff = endDate.getTime() - startDate.getTime();
   const dayDiff = Math.ceil(milliDiff / dayMillis);
-  return `(${message} ${dayDiff} days)`;
+  return !kase.requisition.stopped ? `(${message} ${dayDiff} days)` : "";
 }
