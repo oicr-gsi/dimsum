@@ -1,7 +1,31 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
 import { makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
-import { ProjectSummary } from "./case";
+
+export interface ProjectSummary {
+  name: string;
+  totalTestCount: number;
+  receiptPendingQcCount: number;
+  receiptCompletedCount: number;
+  extractionPendingCount: number;
+  extractionPendingQcCount: number;
+  extractionCompletedCount: number;
+  libraryPrepPendingCount: number;
+  libraryPrepPendingQcCount: number;
+  libraryPrepCompletedCount: number;
+  libraryQualPendingCount: number;
+  libraryQualPendingQcCount: number;
+  libraryQualCompletedCount: number;
+  fullDepthSeqPendingCount: number;
+  fullDepthSeqPendingQcCount: number;
+  fullDepthSeqCompletedCount: number;
+  informaticsPendingCount: number;
+  informaticsCompletedCount: number;
+  draftReportPendingCount: number;
+  draftReportCompletedCount: number;
+  finalReportPendingCount: number;
+  finalReportCompletedCount: number;
+}
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
   queryUrl: urls.rest.projects,
@@ -10,7 +34,6 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
     descending: true,
     type: "text",
   },
-  staticActions: [legendAction],
   filters: [
     {
       title: "Name",
@@ -43,7 +66,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Receipt",
+        title: "Received",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -53,7 +76,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Extraction",
+        title: "Extracted",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -63,7 +86,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Library Preparation",
+        title: "Libraries Prepared",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -73,7 +96,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Library Qualification",
+        title: "Libraries Qualified",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -83,7 +106,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Full Depth Sequencing",
+        title: "Sequenced",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -93,7 +116,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Informatics Review",
+        title: "Informatics Reviewed",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -103,7 +126,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Draft Report",
+        title: "Report Drafted",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
@@ -113,7 +136,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Final Report",
+        title: "Report Finalized",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             document.createTextNode(
