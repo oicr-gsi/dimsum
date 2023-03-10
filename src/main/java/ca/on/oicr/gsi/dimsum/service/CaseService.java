@@ -25,6 +25,7 @@ import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.OmittedSample;
 import ca.on.oicr.gsi.dimsum.data.Project;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.Sample;
@@ -35,6 +36,9 @@ import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
+import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
@@ -281,6 +285,28 @@ public class CaseService {
     return data;
   }
 
+  public TableData<ProjectSummary> getProjects(int pageSize, int pageNumber,
+      ProjectSummarySort sort,
+      boolean descending, Collection<ProjectSummaryFilter> filters) {
+    List<ProjectSummary> baseProjectSummaries = caseData.getProjectSummaries().stream().toList();
+    Stream<ProjectSummary> stream = filterProjectSummaries(baseProjectSummaries, filters);
+
+    if (sort == null) {
+      sort = ProjectSummarySort.NAME;
+      descending = true;
+    }
+    stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+
+    List<ProjectSummary> filteredProjectSummaries =
+        stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
+
+    TableData<ProjectSummary> data = new TableData<>();
+    data.setTotalCount(baseProjectSummaries.size());
+    data.setFilteredCount(filterProjectSummaries(baseProjectSummaries, filters).count());
+    data.setItems(filteredProjectSummaries);
+    return data;
+  }
+
   private Stream<Case> filterCases(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
     if (filters != null && !filters.isEmpty()) {
@@ -376,6 +402,26 @@ public class CaseService {
     }
     return stream;
 
+  }
+
+  private Stream<ProjectSummary> filterProjectSummaries(List<ProjectSummary> projectSummaries,
+      Collection<ProjectSummaryFilter> filters) {
+    Stream<ProjectSummary> stream = projectSummaries.stream();
+    if (filters != null && !filters.isEmpty()) {
+      Map<ProjectSummaryFilterKey, Predicate<ProjectSummary>> filterMap = new HashMap<>();
+      for (ProjectSummaryFilter filter : filters) {
+        ProjectSummaryFilterKey key = filter.getKey();
+        if (filterMap.containsKey(key)) {
+          filterMap.put(key, filterMap.get(key).or(filter.predicate()));
+        } else {
+          filterMap.put(key, filter.predicate());
+        }
+      }
+      for (Predicate<ProjectSummary> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
   }
 
   private <T> Map<CaseFilterKey, Predicate<T>> buildFilterMap(Collection<CaseFilter> filters,

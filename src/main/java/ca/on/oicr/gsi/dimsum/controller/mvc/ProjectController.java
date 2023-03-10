@@ -37,6 +37,11 @@ public class ProjectController {
     return "detail";
   }
 
+  @GetMapping
+  public String getProjectListPage() {
+    return "project-list";
+  }
+
   private String makeMisoProjectUrl(String projectName) {
     return String.format("%s/miso/project/shortname/%s", frontEndConfig.getMisoUrl(), projectName);
   }

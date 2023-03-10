@@ -37,6 +37,7 @@ export const urls = {
     },
     notifications: `${restBaseUrl}/notifications`,
     omissions: `${restBaseUrl}/omissions`,
+    projects: `${restBaseUrl}/projects`,
   },
   miso: {
     sample: function (sampleId: string) {
