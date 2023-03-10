@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.Donor;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public class ProjectSummaryFilterTest {
