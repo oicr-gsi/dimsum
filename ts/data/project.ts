@@ -25,7 +25,21 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Name",
         sortType: "text",
         addParentContents(projectSummary, fragment) {
-          fragment.appendChild(makeNameDiv(projectSummary.name));
+          fragment.appendChild(
+            makeNameDiv(
+              projectSummary.name,
+              urls.miso.project(projectSummary.name),
+              urls.dimsum.project(projectSummary.name)
+            )
+          );
+        },
+      },
+      {
+        title: "Tests Expected",
+        addParentContents(projectSummary, fragment) {
+          fragment.appendChild(
+            document.createTextNode(projectSummary.totalTestCount.toString())
+          );
         },
       },
       {
