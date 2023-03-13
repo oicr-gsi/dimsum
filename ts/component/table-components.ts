@@ -45,4 +45,10 @@ export var caseFilters: FilterDefinition[] = [
     type: "text",
     autocompleteUrl: urls.rest.autocomplete.requisitionNames,
   },
+  {
+    title: "Test",
+    key: "TEST",
+    type: "text",
+    autocompleteUrl: urls.rest.autocomplete.testNames,
+  },
 ];

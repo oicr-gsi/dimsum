@@ -39,4 +39,9 @@ public class AutocompleteRestController {
   public Set<String> queryRuns(@RequestParam String q) {
     return caseService.getMatchingRunNames(q);
   }
+
+  @GetMapping("/test-names")
+  public Set<String> queryTests(@RequestParam String q) {
+    return caseService.getMatchingTestNames(q);
+  }
 }
