@@ -30,6 +30,7 @@ import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
@@ -40,6 +41,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import io.micrometer.core.instrument.Gauge;
@@ -307,6 +309,21 @@ public class CaseService {
     return data;
   }
 
+  public TableData<TestTableView> getTestTableViews(int pageSize, int pageNumber,
+      TestTableViewSort sort, boolean descending,
+      CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    List<Case> cases = getCases(baseFilter);
+    TableData<TestTableView> data = new TableData<>();
+    data.setTotalCount(
+        cases.stream().flatMap(kase -> kase.getTests().stream()).distinct().count());
+    List<TestTableView> testTableViews = filterTestTableViews(cases, filters).distinct().toList();
+    data.setFilteredCount(testTableViews.size());
+    data.setItems(testTableViews.stream()
+        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
+    return data;
+  }
+
   private Stream<Case> filterCases(List<Case> cases, Collection<CaseFilter> filters) {
     Stream<Case> stream = cases.stream();
     if (filters != null && !filters.isEmpty()) {
@@ -418,6 +435,20 @@ public class CaseService {
         }
       }
       for (Predicate<ProjectSummary> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+  }
+
+  private Stream<TestTableView> filterTestTableViews(List<Case> cases,
+      Collection<CaseFilter> filters) {
+    Stream<TestTableView> stream = filterCases(cases, filters)
+        .flatMap(kase -> kase.getTests().stream().map(test -> new TestTableView(kase, test)));
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<TestTableView>> filterMap =
+          buildFilterMap(filters, CaseFilter::testTableViewPredicate);
+      for (Predicate<TestTableView> predicate : filterMap.values()) {
         stream = stream.filter(predicate);
       }
     }

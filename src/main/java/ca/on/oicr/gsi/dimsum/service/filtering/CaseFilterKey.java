@@ -7,6 +7,7 @@ import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public enum CaseFilterKey {
 
@@ -64,6 +65,10 @@ public enum CaseFilterKey {
 
   public Function<String, Predicate<Requisition>> requisitionPredicate() {
     return string -> requisition -> true;
+  }
+
+  public Function<String, Predicate<TestTableView>> testTableViewPredicate() {
+    return string -> testTableViewPredicate -> true;
   }
 
   private static PendingState getState(String label) {

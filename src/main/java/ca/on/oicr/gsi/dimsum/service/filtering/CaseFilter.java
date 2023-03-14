@@ -8,6 +8,7 @@ import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public class CaseFilter {
 
@@ -39,6 +40,10 @@ public class CaseFilter {
 
   public Predicate<Requisition> requisitionPredicate() {
     return key.requisitionPredicate().apply(value);
+  }
+
+  public Predicate<TestTableView> testTableViewPredicate() {
+    return key.testTableViewPredicate().apply(value);
   }
 
 }

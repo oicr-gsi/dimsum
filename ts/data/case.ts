@@ -430,7 +430,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
 };
 
-function assertNotNull<Type>(object: Type | null) {
+export function assertNotNull<Type>(object: Type | null) {
   if (object === null) {
     throw new Error("Unexpected null value");
   }
@@ -450,7 +450,7 @@ function handleNaSamplePhase(
   }
 }
 
-function samplePhaseComplete(samples: Sample[]) {
+export function samplePhaseComplete(samples: Sample[]) {
   // consider incomplete if any are pending QC or data review
   // pending statuses besides "Top-up Required" are still considered pending QC
   if (
@@ -470,7 +470,7 @@ function samplePhaseComplete(samples: Sample[]) {
   }
 }
 
-function samplePhasePendingWork(samples: Sample[]) {
+export function samplePhasePendingWork(samples: Sample[]) {
   // pending if there are no samples
   if (!samples.length) {
     return true;
@@ -533,11 +533,11 @@ function getRequisitionPhaseHighlight(
   }
 }
 
-function addSpace(fragment: DocumentFragment) {
+export function addSpace(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode(" "));
 }
 
-function addConstructionIcon(phase: string, fragment: DocumentFragment) {
+export function addConstructionIcon(phase: string, fragment: DocumentFragment) {
   const icon = makeIcon(qcStatuses.construction.icon);
   icon.title = `Pending ${phase}`;
   fragment.appendChild(icon);
@@ -563,7 +563,7 @@ function addSampleIcons(
   });
 }
 
-function makeSampleTooltip(sample: Sample) {
+export function makeSampleTooltip(sample: Sample) {
   const tooltipContainer = new DocumentFragment();
   const topContainer = document.createElement("div");
   topContainer.className = "flex flex-col space-y-1 text-black";

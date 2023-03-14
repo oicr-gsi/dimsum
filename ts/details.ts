@@ -1,4 +1,5 @@
 import { caseDefinition } from "./data/case";
+import { testDefinition } from "./data/test";
 import {
   draftReportDefinition,
   finalReportDefinition,
@@ -26,6 +27,7 @@ if (tableContainer === null) {
 // (with its table definition taken as a param)
 const tables = [
   new Pair("Cases", () => reload(caseDefinition)),
+  new Pair("Tests", () => reload(testDefinition)),
   new Pair("Receipts", () => reload(receiptDefinition)),
   new Pair("Extractions", () => reload(extractionDefinition)),
   new Pair("Library Preparations", () => reload(libraryPreparationDefinition)),
