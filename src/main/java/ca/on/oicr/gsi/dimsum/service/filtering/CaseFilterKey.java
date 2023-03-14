@@ -48,7 +48,8 @@ public enum CaseFilterKey {
       .anyMatch(project -> project.getName().equalsIgnoreCase(string))),
   REQUISITION(string -> kase -> kase.getRequisition().getName().toLowerCase().startsWith(string.toLowerCase())),
   REQUISITION_ID(string -> kase -> kase.getRequisition().getId() == Long.parseLong(string)),
-  TEST(string -> kase -> kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string)));
+  TEST(string -> kase -> kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string))),
+  LIBRARY_DESIGN(string -> kase -> kase.getReceipts().stream().anyMatch(sample -> sample.getLibraryDesignCode().equals(string)));
   // @formatter:on
 
   private final Function<String, Predicate<Case>> create;

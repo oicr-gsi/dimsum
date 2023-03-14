@@ -30,6 +30,7 @@ public class FrontEndConfig {
 
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
+  private Set<String> libraryDesigns;
 
   public String getMisoUrl() {
     return misoUrl;
@@ -61,6 +62,14 @@ public class FrontEndConfig {
 
   public void setAssaysById(Map<Long, Assay> assaysById) {
     this.assaysById = assaysById;
+  }
+
+  public Set<String> getLibraryDesigns() {
+    return libraryDesigns;
+  }
+
+  public void setLibraryDesigns(Set<String> libraryDesigns) {
+    this.libraryDesigns = libraryDesigns;
   }
 
 }
