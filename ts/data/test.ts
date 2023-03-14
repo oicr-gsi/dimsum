@@ -138,7 +138,22 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       title: "Test",
       sortType: "text",
       addParentContents(testTableView, fragment) {
-        fragment.appendChild(makeNameDiv(testTableView.test.name));
+        const testNameDiv = document.createElement("div");
+        testNameDiv.appendChild(makeNameDiv(testTableView.test.name));
+        fragment.appendChild(testNameDiv);
+
+        if (testTableView.test.groupId) {
+          const groupIdDiv = document.createElement("div");
+          groupIdDiv.appendChild(
+            document.createTextNode(testTableView.test.groupId)
+          );
+          const tooltipInstance = Tooltip.getInstance();
+          tooltipInstance.addTarget(
+            groupIdDiv,
+            document.createTextNode("Group ID")
+          );
+          fragment.appendChild(groupIdDiv);
+        }
       },
     },
     {
