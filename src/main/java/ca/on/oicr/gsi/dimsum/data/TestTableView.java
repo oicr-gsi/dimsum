@@ -1,11 +1,10 @@
 package ca.on.oicr.gsi.dimsum.data;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 
-import java.util.Set;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -21,18 +20,20 @@ public class TestTableView {
   private final String tissueType;
   private final String timepoint;
   private final List<Sample> receipts;
+  private final LocalDate latestActivityDate;
 
   public TestTableView(Case kase, Test test) {
     this.test = requireNonNull(test);
     this.caseId = requireNonNull(kase.getId());
     this.requisition = kase.getRequisition();
     this.donor = requireNonNull(kase.getDonor());
-    this.projects = unmodifiableSet(kase.getProjects());
+    this.projects = kase.getProjects();
     this.assay = requireNonNull(kase.getAssay());
     this.tissueOrigin = requireNonNull(kase.getTissueOrigin());
     this.tissueType = requireNonNull(kase.getTissueType());
     this.timepoint = kase.getTimepoint();
-    this.receipts = unmodifiableList(kase.getReceipts());
+    this.receipts = kase.getReceipts();
+    this.latestActivityDate = kase.getLatestActivityDate();
   }
 
   public Test getTest() {
@@ -73,6 +74,10 @@ public class TestTableView {
 
   public List<Sample> getReceipts() {
     return receipts;
+  }
+
+  public LocalDate getLatestActivityDate() {
+    return latestActivityDate;
   }
 
 }

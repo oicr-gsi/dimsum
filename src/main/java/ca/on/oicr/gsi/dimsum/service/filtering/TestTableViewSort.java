@@ -12,7 +12,8 @@ public enum TestTableViewSort {
   // @formatter:off
   TEST("Test", Comparator.comparing(testTableView -> testTableView.getTest().getName())),
   ASSAY("Assay", Comparator.comparing(testTableView -> testTableView.getAssay().getName())),
-  DONOR("Donor", Comparator.comparing(testTableView -> testTableView.getDonor().getName()));
+  DONOR("Donor", Comparator.comparing(testTableView -> testTableView.getDonor().getName())),
+  LAST_ACTIVITY("Latest Activity", Comparator.comparing(TestTableView::getLatestActivityDate));
 
   // @formatter:on
   private static final Map<String, TestTableViewSort> map = Stream.of(TestTableViewSort.values())

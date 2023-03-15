@@ -36,6 +36,11 @@ public enum CaseFilterKey {
     public Function<String, Predicate<Requisition>> requisitionPredicate() {
       return string -> getState(string).requisitionPredicate();
     }
+
+    @Override
+    public Function<String, Predicate<TestTableView>> testTableViewPredicate() {
+      return string -> getState(string).testTableViewPredicate();
+    }
   },
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),

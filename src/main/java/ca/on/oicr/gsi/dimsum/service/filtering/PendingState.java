@@ -13,6 +13,7 @@ import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.RequisitionQc;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 /**
  * <pre>
@@ -243,6 +244,7 @@ public enum PendingState {
     }
   },
   DRAFT_REPORT("Draft Report") {
+
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews)
@@ -298,6 +300,10 @@ public enum PendingState {
 
   public Predicate<Requisition> requisitionPredicate() {
     return requisitionPredicate;
+  }
+
+  public Predicate<TestTableView> testTableViewPredicate() {
+    return view -> qualifyTest(view.getTest());
   }
 
   public Predicate<Sample> samplePredicate(MetricCategory requestCategory) {

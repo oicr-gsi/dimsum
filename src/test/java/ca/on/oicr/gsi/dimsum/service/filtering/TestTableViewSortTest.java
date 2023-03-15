@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
@@ -27,6 +28,10 @@ public class TestTableViewSortTest {
       {"APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"};
   private static String[] testDonors =
       {donorsOrdered[2], donorsOrdered[1], donorsOrdered[0], donorsOrdered[4], donorsOrdered[3]};
+  private static LocalDate[] datesOrdered = {LocalDate.of(2021, 03, 13), LocalDate.of(2021, 06, 14),
+      LocalDate.of(2022, 01, 01), LocalDate.of(2022, 06, 10), LocalDate.of(2022, 06, 13)};
+  private static LocalDate[] caseActivityDates =
+      {datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3], datesOrdered[0]};
 
   @Test
   public void testSortByTestAscending() {
@@ -74,6 +79,20 @@ public class TestTableViewSortTest {
         true);
   }
 
+  @Test
+  public void testSortByLastActivityAscending() {
+    List<TestTableView> testTableViews =
+        getTestTableViewsSorted(TestTableViewSort.LAST_ACTIVITY, false);
+    assertOrder(testTableViews, TestTableView::getLatestActivityDate, datesOrdered, false);
+  }
+
+  @Test
+  public void testSortByLastActivityDescending() {
+    List<TestTableView> testTableViews =
+        getTestTableViewsSorted(TestTableViewSort.LAST_ACTIVITY, true);
+    assertOrder(testTableViews, TestTableView::getLatestActivityDate, datesOrdered, true);
+  }
+
   private static List<TestTableView> getTestTableViewsSorted(TestTableViewSort sort,
       boolean descending) {
     Comparator<TestTableView> comparator =
@@ -98,6 +117,7 @@ public class TestTableViewSortTest {
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(testDonors[testTableViewNumber]);
     when(testTableView.getDonor()).thenReturn(donor);
+    when(testTableView.getLatestActivityDate()).thenReturn(caseActivityDates[testTableViewNumber]);
     return testTableView;
   }
 

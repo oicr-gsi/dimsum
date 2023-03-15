@@ -21,10 +21,12 @@ import {
   addSpace,
   assertNotNull,
   samplePhasePendingWork,
+  getSamplePhaseHighlight,
+  handleNaSamplePhase,
+  addSampleIcons,
 } from "./case";
 import { Assay } from "./assay";
-import { getQcStatus, Sample } from "./sample";
-import { QcStatus, qcStatuses } from "./qc-status";
+import { Sample } from "./sample";
 import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
@@ -40,15 +42,12 @@ export interface TestTableView {
   tissueType: string;
   timepoint: string;
   receipts: Sample[];
+  latestActivityDate: string;
 }
 
 export const testDefinition: TableDefinition<TestTableView, void> = {
   queryUrl: urls.rest.tests,
-  defaultSort: {
-    columnTitle: "Test",
-    descending: true,
-    type: "text",
-  },
+  defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
@@ -161,7 +160,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       addParentContents(testTableView, fragment) {
         if (
           handleNaSamplePhase(
-            testTableView,
+            testTableView.requisition,
             testTableView.test.extractions,
             fragment
           )
@@ -175,7 +174,11 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(testTableView, testTableView.test.extractions, fragment);
+        addSampleIcons(
+          testTableView.assay.id,
+          testTableView.test.extractions,
+          fragment
+        );
         if (
           samplePhaseComplete(testTableView.receipts) &&
           samplePhasePendingWork(testTableView.test.extractions)
@@ -195,7 +198,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return "na";
         }
         return getSamplePhaseHighlight(
-          testTableView,
+          testTableView.requisition,
           testTableView.test.extractions
         );
       },
@@ -205,7 +208,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       addParentContents(testTableView, fragment) {
         if (
           handleNaSamplePhase(
-            testTableView,
+            testTableView.requisition,
             testTableView.test.libraryPreparations,
             fragment
           )
@@ -220,7 +223,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView,
+          testTableView.assay.id,
           testTableView.test.libraryPreparations,
           fragment
         );
@@ -243,7 +246,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return "na";
         }
         return getSamplePhaseHighlight(
-          testTableView,
+          testTableView.requisition,
           testTableView.test.libraryPreparations
         );
       },
@@ -253,7 +256,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       addParentContents(testTableView, fragment) {
         if (
           handleNaSamplePhase(
-            testTableView,
+            testTableView.requisition,
             testTableView.test.libraryQualifications,
             fragment
           )
@@ -261,7 +264,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView,
+          testTableView.assay.id,
           testTableView.test.libraryQualifications,
           fragment
         );
@@ -278,7 +281,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       getCellHighlight(testTableView) {
         testTableView.test = assertNotNull(testTableView.test);
         return getSamplePhaseHighlight(
-          testTableView,
+          testTableView.requisition,
           testTableView.test.libraryQualifications
         );
       },
@@ -288,7 +291,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       addParentContents(testTableView, fragment) {
         if (
           handleNaSamplePhase(
-            testTableView,
+            testTableView.requisition,
             testTableView.test.fullDepthSequencings,
             fragment
           )
@@ -296,7 +299,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView,
+          testTableView.assay.id,
           testTableView.test.fullDepthSequencings,
           fragment
         );
@@ -313,59 +316,19 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       getCellHighlight(testTableView) {
         testTableView.test = assertNotNull(testTableView.test);
         return getSamplePhaseHighlight(
-          testTableView,
+          testTableView.requisition,
           testTableView.test.fullDepthSequencings
+        );
+      },
+    },
+    {
+      title: "Latest Activity",
+      sortType: "date",
+      addParentContents(testTableView, fragment) {
+        fragment.appendChild(
+          document.createTextNode(testTableView.latestActivityDate)
         );
       },
     },
   ],
 };
-
-function handleNaSamplePhase(
-  testTableView: TestTableView,
-  samples: Sample[],
-  fragment: DocumentFragment
-) {
-  if (testTableView.requisition.stopped && !samples.length) {
-    addNaText(fragment);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function addSampleIcons(
-  testTableView: TestTableView,
-  samples: Sample[],
-  fragment: DocumentFragment
-) {
-  samples.forEach((sample, i) => {
-    let status = getQcStatus(sample);
-    if (
-      status === qcStatuses.passed &&
-      sample.assayId !== testTableView.assay.id
-    ) {
-      status = qcStatuses.passedDifferentAssay;
-    }
-    const icon = makeIcon(status.icon);
-    const tooltipInstance = Tooltip.getInstance();
-    tooltipInstance.addTarget(icon, makeSampleTooltip(sample));
-    fragment.appendChild(icon);
-    if (i < samples.length - 1) {
-      fragment.appendChild(document.createTextNode(" "));
-    }
-  });
-}
-
-function getSamplePhaseHighlight(
-  testTableView: TestTableView,
-  samples: Sample[]
-) {
-  if (samplePhaseComplete(samples)) {
-    return null;
-  } else if (testTableView.requisition.stopped) {
-    return samples.length ? null : "na";
-  } else {
-    return "warning";
-  }
-}

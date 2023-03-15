@@ -315,8 +315,8 @@ public class CaseService {
     List<Case> cases = getCases(baseFilter);
     TableData<TestTableView> data = new TableData<>();
     data.setTotalCount(
-        cases.stream().flatMap(kase -> kase.getTests().stream()).distinct().count());
-    List<TestTableView> testTableViews = filterTestTableViews(cases, filters).distinct().toList();
+        cases.stream().flatMap(kase -> kase.getTests().stream()).count());
+    List<TestTableView> testTableViews = filterTestTableViews(cases, filters).toList();
     data.setFilteredCount(testTableViews.size());
     data.setItems(testTableViews.stream()
         .sorted(descending ? sort.comparator().reversed() : sort.comparator())

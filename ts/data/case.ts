@@ -206,13 +206,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     {
       title: "Receipt/Inspection",
       addParentContents(kase, fragment) {
-        addSampleIcons(kase, kase.receipts, fragment);
+        addSampleIcons(kase.assayId, kase.receipts, fragment);
         if (!kase.receipts.length) {
           addConstructionIcon("receipt", fragment);
         }
       },
       getCellHighlight(kase) {
-        return getSamplePhaseHighlight(kase, kase.receipts);
+        return getSamplePhaseHighlight(kase.requisition, kase.receipts);
       },
     },
     {
@@ -239,14 +239,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Extraction",
       child: true,
       addChildContents(test, kase, fragment) {
-        if (handleNaSamplePhase(kase, test.extractions, fragment)) {
+        if (handleNaSamplePhase(kase.requisition, test.extractions, fragment)) {
           return;
         }
         if (!test.extractions.length && test.extractionSkipped) {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(kase, test.extractions, fragment);
+        addSampleIcons(kase.assayId, test.extractions, fragment);
         if (
           samplePhaseComplete(kase.receipts) &&
           samplePhasePendingWork(test.extractions)
@@ -262,14 +262,20 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (!test.extractions.length && test.extractionSkipped) {
           return "na";
         }
-        return getSamplePhaseHighlight(kase, test.extractions);
+        return getSamplePhaseHighlight(kase.requisition, test.extractions);
       },
     },
     {
       title: "Library Preparation",
       child: true,
       addChildContents(test, kase, fragment) {
-        if (handleNaSamplePhase(kase, test.libraryPreparations, fragment)) {
+        if (
+          handleNaSamplePhase(
+            kase.requisition,
+            test.libraryPreparations,
+            fragment
+          )
+        ) {
           return;
         }
         if (
@@ -279,7 +285,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(kase, test.libraryPreparations, fragment);
+        addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
         if (
           samplePhaseComplete(test.extractions) &&
           samplePhasePendingWork(test.libraryPreparations)
@@ -298,17 +304,26 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         ) {
           return "na";
         }
-        return getSamplePhaseHighlight(kase, test.libraryPreparations);
+        return getSamplePhaseHighlight(
+          kase.requisition,
+          test.libraryPreparations
+        );
       },
     },
     {
       title: "Library Qualification",
       child: true,
       addChildContents(test, kase, fragment) {
-        if (handleNaSamplePhase(kase, test.libraryQualifications, fragment)) {
+        if (
+          handleNaSamplePhase(
+            kase.requisition,
+            test.libraryQualifications,
+            fragment
+          )
+        ) {
           return;
         }
-        addSampleIcons(kase, test.libraryQualifications, fragment);
+        addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
         if (
           samplePhaseComplete(test.libraryPreparations) &&
           samplePhasePendingWork(test.libraryQualifications)
@@ -321,17 +336,26 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
       getCellHighlight(kase, test) {
         test = assertNotNull(test);
-        return getSamplePhaseHighlight(kase, test.libraryQualifications);
+        return getSamplePhaseHighlight(
+          kase.requisition,
+          test.libraryQualifications
+        );
       },
     },
     {
       title: "Full-Depth Sequencing",
       child: true,
       addChildContents(test, kase, fragment) {
-        if (handleNaSamplePhase(kase, test.fullDepthSequencings, fragment)) {
+        if (
+          handleNaSamplePhase(
+            kase.requisition,
+            test.fullDepthSequencings,
+            fragment
+          )
+        ) {
           return;
         }
-        addSampleIcons(kase, test.fullDepthSequencings, fragment);
+        addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
         if (
           samplePhaseComplete(test.libraryQualifications) &&
           samplePhasePendingWork(test.fullDepthSequencings)
@@ -344,7 +368,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
       getCellHighlight(kase, test) {
         test = assertNotNull(test);
-        return getSamplePhaseHighlight(kase, test.fullDepthSequencings);
+        return getSamplePhaseHighlight(
+          kase.requisition,
+          test.fullDepthSequencings
+        );
       },
     },
     {
@@ -437,12 +464,12 @@ export function assertNotNull<Type>(object: Type | null) {
   return object;
 }
 
-function handleNaSamplePhase(
-  kase: Case,
+export function handleNaSamplePhase(
+  requisition: Requisition,
   samples: Sample[],
   fragment: DocumentFragment
 ) {
-  if (kase.requisition.stopped && !samples.length) {
+  if (requisition.stopped && !samples.length) {
     addNaText(fragment);
     return true;
   } else {
@@ -489,10 +516,13 @@ export function samplePhasePendingWork(samples: Sample[]) {
   );
 }
 
-function getSamplePhaseHighlight(kase: Case, samples: Sample[]) {
+export function getSamplePhaseHighlight(
+  requisition: Requisition,
+  samples: Sample[]
+) {
   if (samplePhaseComplete(samples)) {
     return null;
-  } else if (kase.requisition.stopped) {
+  } else if (requisition.stopped) {
     return samples.length ? null : "na";
   } else {
     return "warning";
@@ -543,14 +573,14 @@ export function addConstructionIcon(phase: string, fragment: DocumentFragment) {
   fragment.appendChild(icon);
 }
 
-function addSampleIcons(
-  kase: Case,
+export function addSampleIcons(
+  assayId: number,
   samples: Sample[],
   fragment: DocumentFragment
 ) {
   samples.forEach((sample, i) => {
     let status = getQcStatus(sample);
-    if (status === qcStatuses.passed && sample.assayId !== kase.assayId) {
+    if (status === qcStatuses.passed && sample.assayId !== assayId) {
       status = qcStatuses.passedDifferentAssay;
     }
     const icon = makeIcon(status.icon);
