@@ -30,7 +30,7 @@ public class FrontEndConfig {
 
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
-  private Set<String> libraryDesigns;
+  private Set<String> stopStatus;
 
   public String getMisoUrl() {
     return misoUrl;
@@ -64,12 +64,12 @@ public class FrontEndConfig {
     this.assaysById = assaysById;
   }
 
-  public Set<String> getLibraryDesigns() {
-    return libraryDesigns;
+  public void setStopStatus(Set<String> stopStatus) {
+    this.stopStatus = stopStatus;
   }
 
-  public void setLibraryDesigns(Set<String> libraryDesigns) {
-    this.libraryDesigns = libraryDesigns;
+  public Set<String> getStopStatus() {
+    return stopStatus;
   }
 
 }

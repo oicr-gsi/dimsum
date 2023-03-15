@@ -7,7 +7,7 @@ interface SiteConfig {
   pendingStates: string[];
   pipelines: string[];
   assaysById: Record<number, Assay>;
-  libraryDesigns: string[];
+  stopStatus: string[];
 }
 
 export const siteConfig = (window as any).siteConfig as SiteConfig;

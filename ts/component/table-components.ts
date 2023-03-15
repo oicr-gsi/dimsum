@@ -52,9 +52,9 @@ export var caseFilters: FilterDefinition[] = [
     autocompleteUrl: urls.rest.autocomplete.testNames,
   },
   {
-    title: "Library Design",
-    key: "LIBRARY_DESIGN",
+    title: "Stopped",
+    key: "STOPPED",
     type: "dropdown",
-    values: siteConfig.libraryDesigns,
+    values: siteConfig.stopStatus,
   },
 ];
