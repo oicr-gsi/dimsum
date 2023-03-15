@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
@@ -33,7 +34,10 @@ public class TestTableView {
     this.tissueType = requireNonNull(kase.getTissueType());
     this.timepoint = kase.getTimepoint();
     this.receipts = kase.getReceipts();
-    this.latestActivityDate = kase.getLatestActivityDate();
+    this.latestActivityDate = test.getLatestActivityDate() == null
+        ? kase.getReceipts().stream().map(Sample::getLatestActivityDate).filter(Objects::nonNull)
+            .max(LocalDate::compareTo).orElse(null)
+        : test.getLatestActivityDate();
   }
 
   public Test getTest() {
