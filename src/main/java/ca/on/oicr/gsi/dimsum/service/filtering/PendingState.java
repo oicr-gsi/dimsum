@@ -315,7 +315,7 @@ public enum PendingState {
   }
 
   public boolean qualifyTest(Test test) {
-    throw new IllegalStateException("Method undefined");
+    return true;
   }
 
   public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
