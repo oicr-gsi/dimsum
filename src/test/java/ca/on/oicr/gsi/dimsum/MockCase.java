@@ -21,7 +21,7 @@ public class MockCase {
       Arrays.asList(makeCase0(), makeCase1(), makeCase2(), makeCase3(), makeCase4(), makeCase5(),
           makeCase6(), makeCase7(), makeCase8(), makeCase9(), makeCase10(), makeCase11(),
           makeCase12(), makeCase13(), makeCase14(), makeCase15(), makeCase16(), makeCase17(),
-          makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22());
+          makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22(), makeCase23());
 
   private static Case makeCase0() {
     final int caseNumber = 0;
@@ -288,6 +288,12 @@ public class MockCase {
     return kase;
   }
 
+  private static Case makeCase23() {
+    final int caseNumber = 23;
+    Case kase = makeCase("PRO23_001", "Single Test", "PRO23", "REQ23", caseNumber);
+    return kase;
+  }
+
   private static Case makeCase(String donorName, String assayName, String projectName,
       String requisitionName, int caseNumber) {
     Case kase = mock(Case.class);
@@ -323,6 +329,7 @@ public class MockCase {
   private static Requisition addRequisition(Case kase, int caseNumber, String name) {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getId()).thenReturn(Long.valueOf(caseNumber));
+    when(requisition.isStopped()).thenReturn(caseNumber == 23);
     when(requisition.getName()).thenReturn(name);
     when(requisition.getInformaticsReviews()).thenReturn(new ArrayList<>());
     when(requisition.getDraftReports()).thenReturn(new ArrayList<>());

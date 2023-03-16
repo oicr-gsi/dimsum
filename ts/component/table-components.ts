@@ -28,6 +28,12 @@ export var caseFilters: FilterDefinition[] = [
     values: siteConfig.pendingStates,
   },
   {
+    title: "Completed",
+    key: "COMPLETED",
+    type: "dropdown",
+    values: siteConfig.completedGates,
+  },
+  {
     title: "Pipeline",
     key: "PIPELINE",
     type: "dropdown",

@@ -533,8 +533,6 @@ public class CaseService {
         .map(Project::getPipeline)
         .collect(Collectors.toSet()));
     frontEndConfig.setAssaysById(caseData.getAssaysById());
-    frontEndConfig.setStopStatus(caseData.getCases().stream().map(kase -> kase.getRequisition())
-        .map(req -> req.isStopped() ? "Yes" : "No").distinct().collect(Collectors.toSet()));
   }
 
 }

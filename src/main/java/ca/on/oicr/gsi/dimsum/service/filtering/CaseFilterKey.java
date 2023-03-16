@@ -49,7 +49,32 @@ public enum CaseFilterKey {
   REQUISITION(string -> kase -> kase.getRequisition().getName().toLowerCase().startsWith(string.toLowerCase())),
   REQUISITION_ID(string -> kase -> kase.getRequisition().getId() == Long.parseLong(string)),
   TEST(string -> kase -> kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string))),
-  STOPPED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isStopped() : !kase.getRequisition().isStopped());
+  STOPPED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isStopped() : !kase.getRequisition().isStopped()),
+  COMPLETED(string -> {
+    CompletedGate gate = getGate(string);
+    Predicate<Case> notStopped = kase -> !kase.getRequisition().isStopped();
+    return notStopped.and(gate.predicate());
+  }) {
+    @Override
+    public Function<String, Predicate<Test>> testPredicate() {
+      return string -> getGate(string).testPredicate();
+    }
+
+    @Override
+    public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
+      return string -> getGate(string).samplePredicate(requestCategory);
+    }
+
+    @Override
+    public Function<String, Predicate<Requisition>> requisitionPredicate() {
+      return string -> getGate(string).requisitionPredicate();
+    }
+
+    @Override
+    public Function<String, Predicate<TestTableView>> testTableViewPredicate() {
+      return string -> getGate(string).testTableViewPredicate();
+    }
+  };
   // @formatter:on
 
   private final Function<String, Predicate<Case>> create;
@@ -84,6 +109,14 @@ public enum CaseFilterKey {
       throw new IllegalArgumentException(String.format("Invalid pending state: %s", label));
     }
     return state;
+  }
+
+  private static CompletedGate getGate(String label) {
+    CompletedGate gate = CompletedGate.getByLabel(label);
+    if (gate == null) {
+      throw new IllegalArgumentException(String.format("Invalid gate: %s", label));
+    }
+    return gate;
   }
 
 }
