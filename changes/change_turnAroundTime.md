@@ -1,1 +1,0 @@
-Turn-Around Time will not be displayed for stopped cases

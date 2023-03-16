@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.4.0] - 2023-03-16
+
+### Added
+
+* Tests table now appears on the tabbed interface on Project, Donor, Requisition, and Case Details pages
+* Projects list page
+
+### Changed
+
+* Turn-Around Time will not be displayed for stopped cases
+
+
 ## [1.3.0] - 2023-03-09
 
 ### Added

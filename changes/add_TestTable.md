@@ -1,1 +1,0 @@
-Tests table now appears on the tabbed interface on Project, Donor, Requisition, and Case Details pages
