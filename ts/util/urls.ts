@@ -8,12 +8,14 @@ const misoBaseUrl = `${siteConfig.misoUrl}/miso`;
 export const urls = {
   dimsum: {
     case: (id: string) => `/cases/${id}`,
+    caseQcReport: (id: string) => `/cases/${id}/report`,
     donor: (name: string) => `/donors/${name}`,
     project: (name: string) => `/projects/${name}`,
     requisition: (id: number) => `/requisitions/${id}`,
     run: (name: string) => `/runs/${name}`,
   },
   rest: {
+    case: (caseId: string) => `${restBaseUrl}/cases/${caseId}`,
     cases: `${restBaseUrl}/cases`,
     receipts: `${restBaseUrl}/receipts`,
     extractions: `${restBaseUrl}/extractions`,

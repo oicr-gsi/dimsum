@@ -8,3 +8,56 @@
 .border-spacing-0 {
   border-spacing: 0;
 }
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@media print {
+  .noprint {
+    display: none;
+  }
+
+  .nobreak {
+    break-inside: avoid;
+  }
+
+  .print-hanging {
+    white-space: unset !important;
+    text-indent: -0.5em;
+    padding-left: 0.5em;
+  }
+
+  table.data-table {
+    table-layout: fixed;
+  }
+
+  table.data-table, table.attribute-list {
+    print-color-adjust: exact;
+  }
+
+  table.data-table thead {
+    top: 0 !important;
+  }
+
+  table.data-table th.print-width-20 {
+    width: 20%;
+  }
+
+  table.data-table th.print-width-25 {
+    width: 25%;
+  }
+
+  table.data-table td, table.data-table th,
+  table.attribute-list td, table.attribute-list th {
+    padding: 4px;
+    vertical-align: middle;
+  }
+
+  table.data-table tbody:not(:last-child) tr:last-child td,
+  table.data-table tbody:not(:last-child) tr:first-child td[rowspan] {
+    border-bottom-width: 1px;
+  }
+}

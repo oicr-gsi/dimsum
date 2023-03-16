@@ -4,12 +4,16 @@ import { Tooltip } from "../component/tooltip";
 export function addColumnHeader(
   thead: HTMLTableRowElement,
   header: string,
-  firstColumn: boolean
+  firstColumn: boolean,
+  addClass?: string
 ) {
   const th = document.createElement("th");
   th.className =
     "p-4 text-white font-semibold bg-grey-300 text-left align-text-top" +
     (firstColumn ? "" : " border-grey-200 border-l-1");
+  if (addClass) {
+    th.classList.add(addClass);
+  }
 
   // allow line-wrapping on "/" character
   header.split("/").forEach((part, index, arr) => {
@@ -127,7 +131,7 @@ export function makeNameDiv(
     addLink(div, name, dimsumUrl);
   } else {
     const nameSpan = document.createElement("span");
-    nameSpan.innerText = name;
+    nameSpan.innerHTML = name;
     div.appendChild(nameSpan);
   }
   if (misoUrl) {
