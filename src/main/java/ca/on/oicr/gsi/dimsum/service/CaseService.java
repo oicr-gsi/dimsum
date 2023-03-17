@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum.service;
 
+import java.util.Arrays;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -26,6 +27,8 @@ import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.OmittedSample;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
 import ca.on.oicr.gsi.dimsum.data.RequisitionQcGroup;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
@@ -314,6 +317,84 @@ public class CaseService {
     data.setFilteredCount(filterProjectSummaries(baseProjectSummaries, filters).count());
     data.setItems(filteredProjectSummaries);
     return data;
+  }
+
+  public List<ProjectSummaryRow> getProjectSummaryRows(String name) {
+    ProjectSummary projectSummary = caseData.getProjectSummariesByName().get(name);
+
+    ProjectSummaryRow pendingWork = new ProjectSummaryRow.Builder()
+        .title("Pending Work")
+        .extraction(
+            new ProjectSummaryField.Builder().count(projectSummary.getExtractionPendingCount())
+                .filterKey("PENDING").filterValue("Extraction").build())
+        .libraryPreparation(
+            new ProjectSummaryField.Builder().count(projectSummary.getLibraryPrepPendingCount())
+                .filterKey("PENDING").filterValue("Library Preparation").build())
+        .libraryQualification(
+            new ProjectSummaryField.Builder().count(projectSummary.getLibraryQualPendingCount())
+                .filterKey("PENDING").filterValue("Library Qualification").build())
+        .fullDepthSequencing(
+            new ProjectSummaryField.Builder().count(projectSummary.getFullDepthSeqPendingCount())
+                .filterKey("PENDING").filterValue("Full-Depth Sequencing").build())
+        .informaticsReview(
+            new ProjectSummaryField.Builder().count(projectSummary.getInformaticsPendingCount())
+                .filterKey("PENDING").filterValue("Informatics Review").build())
+        .draftReport(
+            new ProjectSummaryField.Builder().count(projectSummary.getDraftReportPendingCount())
+                .filterKey("PENDING").filterValue("Draft Report").build())
+        .finalReport(
+            new ProjectSummaryField.Builder().count(projectSummary.getFinalReportPendingCount())
+                .filterKey("PENDING").filterValue("Final Report").build())
+        .build();
+
+    ProjectSummaryRow pendingQc = new ProjectSummaryRow.Builder()
+        .title("Pending QC")
+        .receipt(
+            new ProjectSummaryField.Builder().count(projectSummary.getReceiptPendingQcCount())
+                .filterKey("PENDING").filterValue("Receipt QC").build())
+        .extraction(
+            new ProjectSummaryField.Builder().count(projectSummary.getExtractionPendingQcCount())
+                .filterKey("PENDING").filterValue("Extraction QC Sign-Off").build())
+        .libraryPreparation(
+            new ProjectSummaryField.Builder().count(projectSummary.getLibraryPrepPendingQcCount())
+                .filterKey("PENDING").filterValue("Library QC Sign-Off").build())
+        .libraryQualification(
+            new ProjectSummaryField.Builder().count(projectSummary.getLibraryQualPendingQcCount())
+                .filterKey("PENDING").filterValue("LLibrary Qualification QC Sign-Off").build())
+        .fullDepthSequencing(
+            new ProjectSummaryField.Builder().count(projectSummary.getFullDepthSeqPendingQcCount())
+                .filterKey("PENDING").filterValue("Full-Depth Sequencing QC Sign-Off").build())
+        .build();
+
+    ProjectSummaryRow completed = new ProjectSummaryRow.Builder()
+        .title("Completed")
+        .receipt(
+            new ProjectSummaryField.Builder().count(projectSummary.getReceiptCompletedCount())
+                .filterKey("COMPLETED").filterValue("Receipt").build())
+        .extraction(
+            new ProjectSummaryField.Builder().count(projectSummary.getExtractionCompletedCount())
+                .filterKey("COMPLETED").filterValue("Extraction").build())
+        .libraryPreparation(
+            new ProjectSummaryField.Builder().count(projectSummary.getLibraryPrepCompletedCount())
+                .filterKey("COMPLETED").filterValue("Library Preparation").build())
+        .libraryQualification(
+            new ProjectSummaryField.Builder().count(projectSummary.getLibraryQualCompletedCount())
+                .filterKey("COMPLETED").filterValue("LLibrary Qualification").build())
+        .fullDepthSequencing(
+            new ProjectSummaryField.Builder().count(projectSummary.getFullDepthSeqCompletedCount())
+                .filterKey("COMPLETED").filterValue("Full-Depth Sequencing").build())
+        .informaticsReview(
+            new ProjectSummaryField.Builder().count(projectSummary.getInformaticsCompletedCount())
+                .filterKey("COMPLETED").filterValue("Informatics Review").build())
+        .draftReport(
+            new ProjectSummaryField.Builder().count(projectSummary.getDraftReportCompletedCount())
+                .filterKey("COMPLETED").filterValue("Draft Report").build())
+        .finalReport(
+            new ProjectSummaryField.Builder().count(projectSummary.getFinalReportCompletedCount())
+                .filterKey("COMPLETED").filterValue("Final Report").build())
+        .build();
+
+    return Arrays.asList(pendingWork, pendingQc, completed);
   }
 
   public TableData<TestTableView> getTestTableViews(int pageSize, int pageNumber,
