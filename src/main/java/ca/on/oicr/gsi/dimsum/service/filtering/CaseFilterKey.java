@@ -36,11 +36,6 @@ public enum CaseFilterKey {
     public Function<String, Predicate<Requisition>> requisitionPredicate() {
       return string -> getState(string).requisitionPredicate();
     }
-
-    @Override
-    public Function<String, Predicate<TestTableView>> testTableViewPredicate() {
-      return string -> getState(string).testTableViewPredicate();
-    }
   },
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),
@@ -48,7 +43,14 @@ public enum CaseFilterKey {
       .anyMatch(project -> project.getName().equalsIgnoreCase(string))),
   REQUISITION(string -> kase -> kase.getRequisition().getName().toLowerCase().startsWith(string.toLowerCase())),
   REQUISITION_ID(string -> kase -> kase.getRequisition().getId() == Long.parseLong(string)),
-  TEST(string -> kase -> kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string))),
+  TEST(string -> {
+    return kase -> kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string));
+  }) {
+    @Override 
+    public Function<String, Predicate<Test>> testPredicate() {
+      return string -> test -> test.getName().equalsIgnoreCase(string);
+    }
+  },
   STOPPED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isStopped() : !kase.getRequisition().isStopped()),
   COMPLETED(string -> {
     CompletedGate gate = getGate(string);
@@ -68,11 +70,6 @@ public enum CaseFilterKey {
     @Override
     public Function<String, Predicate<Requisition>> requisitionPredicate() {
       return string -> getGate(string).requisitionPredicate();
-    }
-
-    @Override
-    public Function<String, Predicate<TestTableView>> testTableViewPredicate() {
-      return string -> getGate(string).testTableViewPredicate();
     }
   };
   // @formatter:on
@@ -100,7 +97,7 @@ public enum CaseFilterKey {
   }
 
   public Function<String, Predicate<TestTableView>> testTableViewPredicate() {
-    return string -> testTableViewPredicate -> true;
+    return string -> view -> testPredicate().apply(string).test(view.getTest());
   }
 
   private static PendingState getState(String label) {

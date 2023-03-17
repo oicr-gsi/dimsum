@@ -2,6 +2,8 @@ import { siteConfig } from "../util/site-config";
 import { urls } from "../util/urls";
 import { FilterDefinition, SortDefinition } from "./table-builder";
 
+const stopStatus: string[] = ["Yes", "No"];
+
 export const latestActivitySort: SortDefinition = {
   columnTitle: "Latest Activity",
   descending: true,
@@ -61,6 +63,6 @@ export var caseFilters: FilterDefinition[] = [
     title: "Stopped",
     key: "STOPPED",
     type: "dropdown",
-    values: siteConfig.stopStatus,
+    values: stopStatus,
   },
 ];

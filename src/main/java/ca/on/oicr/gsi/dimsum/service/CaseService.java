@@ -160,10 +160,9 @@ public class CaseService {
   }
 
   public Set<String> getMatchingTestNames(String prefix) {
-    Set<Test> tests = caseData.getCases().stream().flatMap(kase -> kase.getTests().stream())
-        .filter(s -> s.getName().toLowerCase().startsWith(prefix.toLowerCase()))
+    return caseData.getTestNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
-    return tests.stream().map(test -> test.getName()).collect(Collectors.toSet());
   }
 
   public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,

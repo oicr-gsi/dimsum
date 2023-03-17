@@ -107,7 +107,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return !requisition.getInformaticsReviews().isEmpty();
+      return !requisition.getInformaticsReviews().stream().allMatch(reqQc -> reqQc.isQcPassed());
     }    
   },
   DRAFT_REPORT("Draft Report") {
@@ -118,7 +118,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return !requisition.getDraftReports().isEmpty();
+      return !requisition.getDraftReports().stream().allMatch(reqQc -> reqQc.isQcPassed());
     }
   },
   FINAL_REPORT("Final Report") {
@@ -129,7 +129,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return !requisition.getFinalReports().isEmpty();
+      return requisition.getFinalReports().stream().allMatch(reqQc -> reqQc.isQcPassed());
     }
 
   };
@@ -176,7 +176,7 @@ public enum CompletedGate {
   }
 
   public boolean qualifyCase(Case kase) {
-    return kase.getTests().stream().anyMatch(test -> qualifyTest(test));
+    return kase.getTests().stream().allMatch(test -> qualifyTest(test));
   }
 
   public boolean qualifyTest(Test test) {

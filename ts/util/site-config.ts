@@ -7,7 +7,6 @@ interface SiteConfig {
   pendingStates: string[];
   pipelines: string[];
   assaysById: Record<number, Assay>;
-  stopStatus: string[];
   completedGates: string[];
 }
 

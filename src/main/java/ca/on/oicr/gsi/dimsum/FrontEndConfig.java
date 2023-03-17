@@ -1,6 +1,5 @@
 package ca.on.oicr.gsi.dimsum;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,8 +31,6 @@ public class FrontEndConfig {
 
   private final List<String> completedGates =
       Stream.of(CompletedGate.values()).map(CompletedGate::getLabel).toList();
-
-  private final List<String> stopStatus = Arrays.asList("Yes", "No");
 
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
@@ -68,10 +65,6 @@ public class FrontEndConfig {
 
   public void setAssaysById(Map<Long, Assay> assaysById) {
     this.assaysById = assaysById;
-  }
-
-  public List<String> getStopStatus() {
-    return stopStatus;
   }
 
   public List<String> getCompletedGates() {

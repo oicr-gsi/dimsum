@@ -136,7 +136,8 @@ public class CaseLoader {
       CaseData caseData =
           new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
               getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
-              getDonorNames(donorsById), getRunNames(runsByName), calculateProjectSummaries(cases));
+              getDonorNames(donorsById), getRunNames(runsByName), getTestNames(cases),
+              calculateProjectSummaries(cases));
 
       log.debug(String.format("Completed loading %d cases.", cases.size()));
       return caseData;
@@ -157,6 +158,11 @@ public class CaseLoader {
 
   private static Set<String> getRunNames(Map<String, RunAndLibraries> runsByName) {
     return runsByName.keySet();
+  }
+
+  private static Set<String> getTestNames(List<Case> cases) {
+    return cases.stream().flatMap(kase -> kase.getTests().stream()).map(test -> test.getName())
+        .collect(Collectors.toSet());
   }
 
   protected FileReader getProjectReader() throws FileNotFoundException {
