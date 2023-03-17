@@ -107,7 +107,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return !requisition.getInformaticsReviews().stream().allMatch(reqQc -> reqQc.isQcPassed());
+      return requisition.getInformaticsReviews().stream().allMatch(reqQc -> reqQc.isQcPassed());
     }    
   },
   DRAFT_REPORT("Draft Report") {
@@ -118,7 +118,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return !requisition.getDraftReports().stream().allMatch(reqQc -> reqQc.isQcPassed());
+      return requisition.getDraftReports().stream().allMatch(reqQc -> reqQc.isQcPassed());
     }
   },
   FINAL_REPORT("Final Report") {

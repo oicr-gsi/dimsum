@@ -550,7 +550,7 @@ public class CaseFilterTest {
   public void testCompletedExtractionFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.EXTRACTION.getLabel());
-    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16,
+    testFilterCases(filter, Arrays.asList(1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16,
         17, 18, 19, 20, 21));
   }
 
@@ -560,7 +560,6 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.EXTRACTION.getLabel());
     testFilterTests(filter, Arrays.asList(
-        makeTestGroupId(0, 3),
         makeTestGroupId(1, 1),
         makeTestGroupId(1, 2),
         makeTestGroupId(1, 3),
@@ -593,7 +592,6 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.EXTRACTION.getLabel());
     testFilterSamples(filter, MetricCategory.EXTRACTION, Arrays.asList(
-        makeSampleId(0, 3, MetricCategory.EXTRACTION, 1),
         makeSampleId(1, 1, MetricCategory.EXTRACTION, 1),
         makeSampleId(1, 2, MetricCategory.EXTRACTION, 1),
         makeSampleId(1, 3, MetricCategory.EXTRACTION, 1),
@@ -624,7 +622,7 @@ public class CaseFilterTest {
   public void testCompletedLibraryPrepFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.LIBRARY_PREPARATION.getLabel());
-    testFilterCases(filter, Arrays.asList(1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16,
+    testFilterCases(filter, Arrays.asList(2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16,
         17, 18, 19, 21));
   }
 
@@ -634,8 +632,6 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.LIBRARY_PREPARATION.getLabel());
     testFilterTests(filter, Arrays.asList(
-        makeTestGroupId(1, 2),
-        makeTestGroupId(1, 3),
         makeTestGroupId(2, 1),
         makeTestGroupId(2, 2),
         makeTestGroupId(3, 1),
@@ -662,8 +658,6 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.LIBRARY_PREPARATION.getLabel());
     testFilterSamples(filter, MetricCategory.LIBRARY_PREP, Arrays.asList(
-        makeSampleId(1, 2, MetricCategory.LIBRARY_PREP, 1),
-        makeSampleId(1, 3, MetricCategory.LIBRARY_PREP, 1),
         makeSampleId(2, 1, MetricCategory.LIBRARY_PREP, 1),
         makeSampleId(2, 2, MetricCategory.LIBRARY_PREP, 1),
         makeSampleId(3, 1, MetricCategory.LIBRARY_PREP, 1),
@@ -689,7 +683,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.LIBRARY_QUALIFICATION.getLabel());
-    testFilterCases(filter, Arrays.asList(2, 3, 4, 5, 6, 16, 17, 18, 19));
+    testFilterCases(filter, Arrays.asList(3, 4, 5, 6, 16, 17, 18, 19));
   }
 
   @org.junit.jupiter.api.Test
@@ -698,7 +692,6 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.LIBRARY_QUALIFICATION.getLabel());
     testFilterTests(filter, Arrays.asList(
-        makeTestGroupId(2, 2),
         makeTestGroupId(3, 1),
         makeTestGroupId(3, 2),
         makeTestGroupId(4, 1),
@@ -717,7 +710,6 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.LIBRARY_QUALIFICATION.getLabel());
     testFilterSamples(filter, MetricCategory.LIBRARY_QUALIFICATION, Arrays.asList(
-        makeSampleId(2, 2, MetricCategory.LIBRARY_QUALIFICATION, 1),
         makeSampleId(3, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
         makeSampleId(3, 2, MetricCategory.LIBRARY_QUALIFICATION, 1),
         makeSampleId(4, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
