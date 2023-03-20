@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${title}">Details</title>
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <div class="flex space-x-2 items-center">
+      <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">Details</h1>
+      <a th:if="${titleLink != null}" th:href="${titleLink}" target="_blank" rel="noopener noreferrer">
+        <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
+      </a>
+      <div id="tabBarContainer" class="px-2"></div>
+    </div>
+    <div id="tableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}"></div>
+    <script src="/js/details.js"></script>
+
+  </div>
+</body>
+
+</html>
