@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -107,8 +108,13 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getInformaticsReviews().stream().allMatch(reqQc -> reqQc.isQcPassed());
-    }    
+      RequisitionQc reqQc = requisition.getInformaticsReviews().stream().max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
+      if (reqQc != null && reqQc.isQcPassed()) {
+        return true;
+      }
+      return false;
+    }
+
   },
   DRAFT_REPORT("Draft Report") {
     @Override
@@ -118,7 +124,11 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getDraftReports().stream().allMatch(reqQc -> reqQc.isQcPassed());
+      RequisitionQc reqQc = requisition.getDraftReports().stream().max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
+      if (reqQc != null && reqQc.isQcPassed()) {
+        return true;
+      }
+      return false;
     }
   },
   FINAL_REPORT("Final Report") {
@@ -129,9 +139,12 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getFinalReports().stream().allMatch(reqQc -> reqQc.isQcPassed());
+      RequisitionQc reqQc = requisition.getFinalReports().stream().max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
+      if (reqQc != null && reqQc.isQcPassed()) {
+        return true;
+      }
+      return false;
     }
-
   };
 // @formatter:on
 
