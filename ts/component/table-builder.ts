@@ -58,7 +58,7 @@ export interface BulkAction<ParentType> {
 
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
-  defaultSort: SortDefinition;
+  defaultSort?: SortDefinition;
   filters?: FilterDefinition[];
   getChildren?: (parent: ParentType) => ChildType[];
   generateColumns: (
@@ -67,6 +67,7 @@ export interface TableDefinition<ParentType, ChildType> {
   getRowHighlight?: (object: ParentType) => CellStatus | null;
   staticActions?: StaticAction[];
   bulkActions?: BulkAction<ParentType>[];
+  projectSummary?: boolean; // only declared for project summary table
 }
 
 class AcceptedFilter {
@@ -130,8 +131,12 @@ export class TableBuilder<ParentType, ChildType> {
     onFilterChange?: (key: string, value: string, add?: boolean) => void
   ) {
     this.definition = definition;
-    this.sortColumn = definition.defaultSort.columnTitle;
-    this.sortDescending = definition.defaultSort.descending;
+    this.sortColumn = definition.defaultSort
+      ? definition.defaultSort.columnTitle
+      : "";
+    this.sortDescending = definition.defaultSort
+      ? definition.defaultSort.descending
+      : false;
     const container = document.getElementById(containerId);
     if (container === null) {
       throw Error(`Container ID "${containerId}" not found on page`);
@@ -165,10 +170,11 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
-
-    this.addSortControls(topControlsContainer);
-    this.addFilterControls(topControlsContainer);
-    this.addPagingControls(topControlsContainer);
+    if (!this.definition.projectSummary) {
+      this.addSortControls(topControlsContainer);
+      this.addFilterControls(topControlsContainer);
+      this.addPagingControls(topControlsContainer);
+    }
     this.container.appendChild(topControlsContainer);
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
@@ -253,13 +259,14 @@ export class TableBuilder<ParentType, ChildType> {
         dropdownOptions.push(this.addSortOption(column, true));
       });
 
-    const defaultOption =
-      this.definition.defaultSort.columnTitle +
-      " - " +
-      this.getSortDescriptor(
-        this.definition.defaultSort.type,
-        this.definition.defaultSort.descending
-      );
+    const defaultOption = this.definition.defaultSort
+      ? this.definition.defaultSort.columnTitle +
+        " - " +
+        this.getSortDescriptor(
+          this.definition.defaultSort.type,
+          this.definition.defaultSort.descending
+        )
+      : "";
     const sortDropdown = new Dropdown(
       dropdownOptions,
       true,
