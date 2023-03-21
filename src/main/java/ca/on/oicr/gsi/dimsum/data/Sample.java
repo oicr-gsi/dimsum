@@ -41,6 +41,10 @@ public class Sample {
   private final BigDecimal mappedToCoding;
   private final BigDecimal rawCoverage;
   private final BigDecimal onTargetReads;
+  private final BigDecimal lambdaMethylation;
+  private final Integer lambdaClusters;
+  private final BigDecimal puc19Methylation;
+  private final Integer puc19Clusters;
   private final Boolean qcPassed;
   private final String qcReason;
   private final String qcUser;
@@ -82,6 +86,10 @@ public class Sample {
     this.mappedToCoding = builder.mappedToCoding;
     this.rawCoverage = builder.rawCoverage;
     this.onTargetReads = builder.onTargetReads;
+    this.lambdaMethylation = builder.lambdaMethylation;
+    this.lambdaClusters = builder.lambdaClusters;
+    this.puc19Methylation = builder.puc19Methylation;
+    this.puc19Clusters = builder.puc19Clusters;
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
     this.qcUser = builder.qcUser;
@@ -214,6 +222,22 @@ public class Sample {
     return onTargetReads;
   }
 
+  public BigDecimal getLambdaMethylation() {
+    return lambdaMethylation;
+  }
+
+  public Integer getLambdaClusters() {
+    return lambdaClusters;
+  }
+
+  public BigDecimal getPuc19Methylation() {
+    return puc19Methylation;
+  }
+
+  public Integer getPuc19Clusters() {
+    return puc19Clusters;
+  }
+
   public Boolean getQcPassed() {
     return qcPassed;
   }
@@ -299,6 +323,10 @@ public class Sample {
     private BigDecimal mappedToCoding;
     private BigDecimal rawCoverage;
     private BigDecimal onTargetReads;
+    private BigDecimal lambdaMethylation;
+    private Integer lambdaClusters;
+    private BigDecimal puc19Methylation;
+    private Integer puc19Clusters;
     private Boolean qcPassed;
     private String qcReason;
     private String qcUser;
@@ -445,6 +473,26 @@ public class Sample {
 
     public Builder onTargetReads(BigDecimal onTargetReads) {
       this.onTargetReads = onTargetReads;
+      return this;
+    }
+
+    public Builder lambdaMethylation(BigDecimal lambdaMethylation) {
+      this.lambdaMethylation = lambdaMethylation;
+      return this;
+    }
+
+    public Builder lambdaClusters(Integer lambdaClusters) {
+      this.lambdaClusters = lambdaClusters;
+      return this;
+    }
+
+    public Builder puc19Methylation(BigDecimal puc19Methylation) {
+      this.puc19Methylation = puc19Methylation;
+      return this;
+    }
+
+    public Builder puc19Clusters(Integer puc19Clusters) {
+      this.puc19Clusters = puc19Clusters;
       return this;
     }
 

@@ -73,6 +73,10 @@ export interface Sample extends Qcable {
   mappedToCoding?: number;
   rawCoverage?: number;
   onTargetReads?: number;
+  lambdaMethylation?: number;
+  lambdaClusters?: number;
+  puc19Methylation?: number;
+  puc19Clusters?: number;
   latestActivityDate: string;
   sequencingLane: string;
 }
@@ -982,6 +986,14 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.onTargetReads);
     case METRIC_LABEL_Q30:
       return sample.run ? nullIfUndefined(sample.run.percentOverQ30) : null;
+    case "Lambda Methylation":
+      return nullIfUndefined(sample.lambdaMethylation);
+    case "Lambda Clusters":
+      return nullIfUndefined(sample.lambdaClusters);
+    case "pUC19 Methylation":
+      return nullIfUndefined(sample.puc19Methylation);
+    case "pUC19 Clusters":
+      return nullIfUndefined(sample.puc19Clusters);
   }
   if (/^Concentration/.test(metricName)) {
     return nullIfUndefined(sample.concentration);

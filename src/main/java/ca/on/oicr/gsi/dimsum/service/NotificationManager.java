@@ -340,6 +340,8 @@ public class NotificationManager {
         return sample.getMeanInsertSize() == null;
       case "Clusters Per Sample":
       case "Pass Filter Clusters":
+      case "Total Clusters (Passed Filter)":
+      case "Pipeline Filtered Clusters":
         return sample.getClustersPerSample() == null;
       case "Duplication Rate":
         return sample.getDuplicationRate() == null;
@@ -353,6 +355,14 @@ public class NotificationManager {
         return sample.getRawCoverage() == null;
       case "On Target Reads":
         return sample.getOnTargetReads() == null;
+      case "Lambda Methylation":
+        return sample.getLambdaMethylation() == null;
+      case "Lambda Clusters":
+        return sample.getLambdaClusters() == null;
+      case "pUC19 Methylation":
+        return sample.getPuc19Methylation() == null;
+      case "pUC19 Clusters":
+        return sample.getPuc19Clusters() == null;
       default:
         return false;
     }
