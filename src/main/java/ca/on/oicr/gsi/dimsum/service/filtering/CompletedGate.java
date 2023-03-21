@@ -103,7 +103,7 @@ public enum CompletedGate {
   INFORMATICS_REVIEW("Informatics Review") {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews);
+      return Helpers.isCompletedRequisitionQc(kase.getRequisition(), Requisition::getInformaticsReviews);
     }
 
     @Override
@@ -119,7 +119,7 @@ public enum CompletedGate {
   DRAFT_REPORT("Draft Report") {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getDraftReports);
+      return Helpers.isCompletedRequisitionQc(kase.getRequisition(), Requisition::getDraftReports);
     }
 
     @Override
@@ -134,7 +134,7 @@ public enum CompletedGate {
   FINAL_REPORT("Final Report") {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getFinalReports);
+      return Helpers.isCompletedRequisitionQc(kase.getRequisition(), Requisition::getFinalReports);
     }
 
     @Override
@@ -236,10 +236,14 @@ public enum CompletedGate {
       return TOP_UP_REASON.equals(sample.getQcReason());
     }
 
-    public static boolean isCompletedRequisitionQc(Case kase,
+    public static boolean isCompletedRequisitionQc(Requisition requisition,
         Function<Requisition, List<RequisitionQc>> getQcs) {
-      return getQcs.apply(kase.getRequisition()).stream()
-          .anyMatch(qc -> qc.isQcPassed());
+      RequisitionQc reqQc = getQcs.apply(requisition).stream()
+          .max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
+      if (reqQc != null && reqQc.isQcPassed()) {
+        return true;
+      }
+      return false;
     }
 
     public static boolean isCompleted(List<Sample> samples) {
