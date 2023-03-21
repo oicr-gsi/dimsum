@@ -27,6 +27,7 @@ import ca.on.oicr.gsi.dimsum.data.OmittedSample;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.dimsum.data.RequisitionQcGroup;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
@@ -154,6 +155,12 @@ public class CaseService {
 
   public Set<String> getMatchingRunNames(String prefix) {
     return caseData.getRunNames().stream()
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+        .collect(Collectors.toSet());
+  }
+
+  public Set<String> getMatchingTestNames(String prefix) {
+    return caseData.getTestNames().stream()
         .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
   }

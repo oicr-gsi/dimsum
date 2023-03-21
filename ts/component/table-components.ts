@@ -2,6 +2,8 @@ import { siteConfig } from "../util/site-config";
 import { urls } from "../util/urls";
 import { FilterDefinition, SortDefinition } from "./table-builder";
 
+const stopStatus: string[] = ["Yes", "No"];
+
 export const latestActivitySort: SortDefinition = {
   columnTitle: "Latest Activity",
   descending: true,
@@ -28,6 +30,12 @@ export var caseFilters: FilterDefinition[] = [
     values: siteConfig.pendingStates,
   },
   {
+    title: "Completed",
+    key: "COMPLETED",
+    type: "dropdown",
+    values: siteConfig.completedGates,
+  },
+  {
     title: "Pipeline",
     key: "PIPELINE",
     type: "dropdown",
@@ -44,5 +52,17 @@ export var caseFilters: FilterDefinition[] = [
     key: "REQUISITION",
     type: "text",
     autocompleteUrl: urls.rest.autocomplete.requisitionNames,
+  },
+  {
+    title: "Test",
+    key: "TEST",
+    type: "text",
+    autocompleteUrl: urls.rest.autocomplete.testNames,
+  },
+  {
+    title: "Stopped",
+    key: "STOPPED",
+    type: "dropdown",
+    values: stopStatus,
   },
 ];

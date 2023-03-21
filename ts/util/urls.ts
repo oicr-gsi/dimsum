@@ -34,6 +34,7 @@ export const urls = {
       projectNames: `${restBaseUrl}/autocomplete/project-names`,
       donorNames: `${restBaseUrl}/autocomplete/donor-names`,
       runNames: `${restBaseUrl}/autocomplete/run-names`,
+      testNames: `${restBaseUrl}/autocomplete/test-names`,
     },
     notifications: `${restBaseUrl}/notifications`,
     omissions: `${restBaseUrl}/omissions`,

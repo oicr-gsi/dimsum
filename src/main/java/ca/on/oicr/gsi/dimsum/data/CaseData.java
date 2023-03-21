@@ -23,11 +23,13 @@ public class CaseData {
   private final Set<String> requisitionNames;
   private final Set<String> projectsNames;
   private final Set<String> donorNames;
+  private final Set<String> testNames;
   private final Map<String, ProjectSummary> projectSummariesByName;
 
   public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
       Map<Long, Assay> assaysById, List<OmittedSample> omittedSamples, ZonedDateTime timestamp,
       Set<String> requisitions, Set<String> projects, Set<String> donors, Set<String> runs,
+      Set<String> tests,
       Map<String, ProjectSummary> projectSummariesByName) {
     this.cases = unmodifiableList(cases);
     this.runsByName = Collections.unmodifiableMap(runsByName);
@@ -38,6 +40,7 @@ public class CaseData {
     this.requisitionNames = Collections.unmodifiableSet(requisitions);
     this.projectsNames = Collections.unmodifiableSet(projects);
     this.donorNames = Collections.unmodifiableSet(donors);
+    this.testNames = Collections.unmodifiableSet(tests);
     this.projectSummariesByName = Collections.unmodifiableMap(projectSummariesByName);
 
   }
@@ -86,6 +89,10 @@ public class CaseData {
 
   public Set<String> getDonorNames() {
     return donorNames;
+  }
+
+  public Set<String> getTestNames() {
+    return testNames;
   }
 
   public Set<String> getRunNames() {

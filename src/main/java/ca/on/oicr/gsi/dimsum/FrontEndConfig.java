@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ca.on.oicr.gsi.dimsum.data.Assay;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 
 /**
@@ -27,6 +28,9 @@ public class FrontEndConfig {
 
   private final List<String> pendingStates =
       Stream.of(PendingState.values()).map(PendingState::getLabel).toList();
+
+  private final List<String> completedGates =
+      Stream.of(CompletedGate.values()).map(CompletedGate::getLabel).toList();
 
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
@@ -61,6 +65,10 @@ public class FrontEndConfig {
 
   public void setAssaysById(Map<Long, Assay> assaysById) {
     this.assaysById = assaysById;
+  }
+
+  public List<String> getCompletedGates() {
+    return completedGates;
   }
 
 }
