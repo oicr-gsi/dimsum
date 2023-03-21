@@ -108,11 +108,8 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      RequisitionQc reqQc = requisition.getInformaticsReviews().stream().max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
-      if (reqQc != null && reqQc.isQcPassed()) {
-        return true;
-      }
-      return false;
+      return Helpers.isCompletedRequisitionQc(requisition, Requisition::getInformaticsReviews);
+
     }
 
   },
@@ -124,11 +121,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      RequisitionQc reqQc = requisition.getDraftReports().stream().max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
-      if (reqQc != null && reqQc.isQcPassed()) {
-        return true;
-      }
-      return false;
+      return Helpers.isCompletedRequisitionQc(requisition, Requisition::getDraftReports);
     }
   },
   FINAL_REPORT("Final Report") {
@@ -139,11 +132,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      RequisitionQc reqQc = requisition.getFinalReports().stream().max(Comparator.comparing(RequisitionQc::getQcDate)).orElse(null);
-      if (reqQc != null && reqQc.isQcPassed()) {
-        return true;
-      }
-      return false;
+      return Helpers.isCompletedRequisitionQc(requisition, Requisition::getFinalReports);
     }
   };
 // @formatter:on
