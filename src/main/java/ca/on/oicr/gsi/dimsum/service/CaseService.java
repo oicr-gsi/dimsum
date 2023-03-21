@@ -319,7 +319,7 @@ public class CaseService {
     return data;
   }
 
-  public List<ProjectSummaryRow> getProjectSummaryRows(String name) {
+  public TableData<ProjectSummaryRow> getProjectSummaryRows(String name) {
     ProjectSummary projectSummary = caseData.getProjectSummariesByName().get(name);
 
     ProjectSummaryRow pendingWork = new ProjectSummaryRow.Builder()
@@ -394,7 +394,11 @@ public class CaseService {
                 .filterKey("COMPLETED").filterValue("Final Report").build())
         .build();
 
-    return Arrays.asList(pendingWork, pendingQc, completed);
+    TableData<ProjectSummaryRow> data = new TableData<>();
+    data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
+    data.setFilteredCount(data.getItems().size());
+    data.setTotalCount(data.getItems().size());
+    return data;
   }
 
   public TableData<TestTableView> getTestTableViews(int pageSize, int pageNumber,

@@ -36,7 +36,7 @@ public class ProjectRestController {
   }
 
   @GetMapping("/{projectName}/summary")
-  public List<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName) {
+  public TableData<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName) {
     return caseService.getProjectSummaryRows(projectName);
   }
 }

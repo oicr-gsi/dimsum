@@ -497,6 +497,8 @@ export class TableBuilder<ParentType, ChildType> {
 
   private load(data?: ParentType[]) {
     this.columns = this.definition.generateColumns(data);
+    console.log("here");
+    console.log(this);
     const table = getElement(this.table);
     table.replaceChildren();
     this.addTableHead(table);

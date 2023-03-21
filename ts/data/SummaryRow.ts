@@ -26,7 +26,9 @@ export function getProjectSummaryRowDefinition(
 ): TableDefinition<ProjectSummaryRow, void> {
   return {
     queryUrl: queryUrl,
-    generateColumns(date) {
+    projectSummary: true,
+    generateColumns(data) {
+      console.log(1);
       return [
         {
           title: "Status",
@@ -39,11 +41,15 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Receipt",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.receipt.count.toString()
-              )
-            );
+            if (projectSummaryRow.receipt != null) {
+              fragment.appendChild(
+                document.createTextNode(
+                  projectSummaryRow.receipt.count.toString()
+                )
+              );
+            } else {
+              fragment.appendChild(document.createTextNode("N/A"));
+            }
           },
         },
         {
@@ -89,35 +95,46 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Informatics Review",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.informaticsReview.count.toString()
-              )
-            );
+            if (projectSummaryRow.informaticsReview) {
+              fragment.appendChild(
+                document.createTextNode(
+                  projectSummaryRow.informaticsReview.count.toString()
+                )
+              );
+            } else {
+              fragment.appendChild(document.createTextNode("N/A"));
+            }
           },
         },
         {
           title: "Draft Report",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.draftReport.count.toString()
-              )
-            );
+            if (projectSummaryRow.draftReport) {
+              fragment.appendChild(
+                document.createTextNode(
+                  projectSummaryRow.draftReport.count.toString()
+                )
+              );
+            } else {
+              fragment.appendChild(document.createTextNode("N/A"));
+            }
           },
         },
         {
           title: "Final Report",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.finalReport.count.toString()
-              )
-            );
+            if (projectSummaryRow.finalReport) {
+              fragment.appendChild(
+                document.createTextNode(
+                  projectSummaryRow.finalReport.count.toString()
+                )
+              );
+            } else {
+              fragment.appendChild(document.createTextNode("N/A"));
+            }
           },
         },
       ];
     },
-    projectSummary: true,
   };
 }
