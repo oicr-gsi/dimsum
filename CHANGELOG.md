@@ -7,6 +7,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.5.0] - 2023-03-22
+
+### Added
+
+* New case filters for all tables within Detail pages, which allow filtering by:
+  - Test
+  - Stopped case
+  - Completed gate
+* Support for EM-Seq assay metrics
+
+
 ## [1.4.0] - 2023-03-16
 
 ### Added
