@@ -39,8 +39,8 @@ export const urls = {
     notifications: `${restBaseUrl}/notifications`,
     omissions: `${restBaseUrl}/omissions`,
     projects: {
-      projectSummary: (projecttName: string) =>
-        `${restBaseUrl}/runs/${projecttName}/summary`,
+      summary: (projecttName: string) =>
+        `${restBaseUrl}/projects/${projecttName}/summary`,
       list: `${restBaseUrl}/projects`,
     },
     tests: `${restBaseUrl}/tests`,

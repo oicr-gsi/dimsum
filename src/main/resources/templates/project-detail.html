@@ -9,16 +9,16 @@
 
 <body>
   <div layout:fragment="content">
-    <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${detailValue}+' Project Summary'">
-      Project Summary</h1>
-    <div id="projectSummaryContainer" class="px-2"></div>
+
     <div class="flex space-x-2 items-center">
       <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">Details</h1>
       <a th:if="${titleLink != null}" th:href="${titleLink}" target="_blank" rel="noopener noreferrer">
         <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
       </a>
-      <div id="tabBarContainer" class="px-2"></div>
     </div>
+    <div id="projectSummaryTableContainer" class="px-2"></div>
+    <div id="tabBarContainer" class="px-2"></div>
+
     <div id="tableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}"></div>
     <script src="/js/projectDetails.js"></script>
 

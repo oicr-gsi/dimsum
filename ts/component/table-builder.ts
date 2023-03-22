@@ -202,7 +202,6 @@ export class TableBuilder<ParentType, ChildType> {
       "flex justify-end mt-4 items-top space-x-2";
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
-
     this.load();
     this.setupScrollListener();
     this.reload();
@@ -497,8 +496,6 @@ export class TableBuilder<ParentType, ChildType> {
 
   private load(data?: ParentType[]) {
     this.columns = this.definition.generateColumns(data);
-    console.log("here");
-    console.log(this);
     const table = getElement(this.table);
     table.replaceChildren();
     this.addTableHead(table);
@@ -582,7 +579,9 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private async reload(resetPage?: boolean) {
-    this.showLoading();
+    if (!this.definition.projectSummary) {
+      this.showLoading();
+    }
     if (resetPage) {
       this.pageNumber = 1;
     }

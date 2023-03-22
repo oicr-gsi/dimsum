@@ -133,14 +133,12 @@ public class CaseLoader {
         refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
       }
 
-      CaseData caseData =
-          new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
-              getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
-              getDonorNames(donorsById), getRunNames(runsByName), getTestNames(cases),
-              calculateProjectSummaries(cases));
-
       log.debug(String.format("Completed loading %d cases.", cases.size()));
-      return caseData;
+
+      return new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
+          getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
+          getDonorNames(donorsById), getRunNames(runsByName), getTestNames(cases),
+          calculateProjectSummaries(cases));
     }
   }
 

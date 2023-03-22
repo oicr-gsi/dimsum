@@ -35,8 +35,9 @@ public class ProjectRestController {
         filters);
   }
 
-  @GetMapping("/{projectName}/summary")
-  public TableData<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName) {
+  @PostMapping("/{projectName}/summary")
+  public TableData<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName,
+      @RequestBody DataQuery query) {
     return caseService.getProjectSummaryRows(projectName);
   }
 }

@@ -25,12 +25,11 @@ if (tableContainer === null) {
 }
 
 if (tableContainer.dataset.detailValue) {
-  console.log(tableContainer.dataset.detailValue);
   new TableBuilder(
     getProjectSummaryRowDefinition(
-      urls.rest.projects.projectSummary(tableContainer.dataset.detailValue)
+      urls.rest.projects.summary(tableContainer.dataset.detailValue)
     ),
-    "projectSummaryContainer"
+    "projectSummaryTableContainer"
   ).build();
 }
 

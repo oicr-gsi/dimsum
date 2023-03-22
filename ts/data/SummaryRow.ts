@@ -1,5 +1,5 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
-import { makeNameDiv } from "../util/html-utils";
+import { addNaText } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { Project } from "./case";
 
@@ -28,7 +28,6 @@ export function getProjectSummaryRowDefinition(
     queryUrl: queryUrl,
     projectSummary: true,
     generateColumns(data) {
-      console.log(1);
       return [
         {
           title: "Status",
@@ -41,15 +40,18 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Receipt",
           addParentContents(projectSummaryRow, fragment) {
-            if (projectSummaryRow.receipt != null) {
-              fragment.appendChild(
-                document.createTextNode(
-                  projectSummaryRow.receipt.count.toString()
-                )
-              );
-            } else {
-              fragment.appendChild(document.createTextNode("N/A"));
+            if (!projectSummaryRow.receipt) {
+              addNaText(fragment);
+              return;
             }
+            fragment.appendChild(
+              document.createTextNode(
+                projectSummaryRow.receipt.count.toString()
+              )
+            );
+          },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.receipt ? "na" : null;
           },
         },
         {
@@ -95,43 +97,52 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Informatics Review",
           addParentContents(projectSummaryRow, fragment) {
-            if (projectSummaryRow.informaticsReview) {
-              fragment.appendChild(
-                document.createTextNode(
-                  projectSummaryRow.informaticsReview.count.toString()
-                )
-              );
-            } else {
-              fragment.appendChild(document.createTextNode("N/A"));
+            if (!projectSummaryRow.informaticsReview) {
+              addNaText(fragment);
+              return;
             }
+            fragment.appendChild(
+              document.createTextNode(
+                projectSummaryRow.informaticsReview.count.toString()
+              )
+            );
+          },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.informaticsReview ? "na" : null;
           },
         },
         {
           title: "Draft Report",
           addParentContents(projectSummaryRow, fragment) {
-            if (projectSummaryRow.draftReport) {
-              fragment.appendChild(
-                document.createTextNode(
-                  projectSummaryRow.draftReport.count.toString()
-                )
-              );
-            } else {
-              fragment.appendChild(document.createTextNode("N/A"));
+            if (!projectSummaryRow.draftReport) {
+              addNaText(fragment);
+              return;
             }
+            fragment.appendChild(
+              document.createTextNode(
+                projectSummaryRow.draftReport.count.toString()
+              )
+            );
+          },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.informaticsReview ? "na" : null;
           },
         },
         {
           title: "Final Report",
           addParentContents(projectSummaryRow, fragment) {
-            if (projectSummaryRow.finalReport) {
-              fragment.appendChild(
-                document.createTextNode(
-                  projectSummaryRow.finalReport.count.toString()
-                )
-              );
-            } else {
-              fragment.appendChild(document.createTextNode("N/A"));
+            if (!projectSummaryRow.finalReport) {
+              addNaText(fragment);
+              return;
             }
+            fragment.appendChild(
+              document.createTextNode(
+                projectSummaryRow.finalReport.count.toString()
+              )
+            );
+          },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.finalReport ? "na" : null;
           },
         },
       ];
