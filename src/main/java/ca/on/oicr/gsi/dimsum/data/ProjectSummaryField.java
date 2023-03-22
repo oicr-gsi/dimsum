@@ -12,8 +12,8 @@ public class ProjectSummaryField {
 
   private ProjectSummaryField(Builder builder) {
     this.count = requireNonNull(builder.count);
-    this.filterKey = builder.filterKey;
-    this.filterValue = builder.filterValue;
+    this.filterKey = requireNonNull(builder.filterKey);
+    this.filterValue = requireNonNull(builder.filterValue);
   }
 
   public int getCount() {
