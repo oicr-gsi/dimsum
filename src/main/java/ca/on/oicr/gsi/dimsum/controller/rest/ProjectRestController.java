@@ -3,7 +3,6 @@ package ca.on.oicr.gsi.dimsum.controller.rest;
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
