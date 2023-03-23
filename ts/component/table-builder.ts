@@ -603,9 +603,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
     const data = await response.json();
     this.load(data.items);
-    if (!this.definition.disablePageControls) {
-      this.showLoaded(data);
-    }
+    this.showLoaded(data);
   }
 
   private showLoading() {
@@ -617,22 +615,24 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private showLoaded(data: any) {
-    if (this.pageNumber > 1) {
-      getElement(this.pageLeftButton).disabled = false;
+    if (!this.definition.disablePageControls) {
+      if (this.pageNumber > 1) {
+        getElement(this.pageLeftButton).disabled = false;
+      }
+      if (data.filteredCount > this.pageSize * this.pageNumber) {
+        getElement(this.pageRightButton).disabled = false;
+      }
+      const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
+      const pageEnd = Math.min(
+        this.pageSize * this.pageNumber,
+        data.filteredCount
+      );
+      let pageDescriptionText = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
+      if (data.filteredCount < data.totalCount) {
+        pageDescriptionText += ` (filtered from ${data.totalCount})`;
+      }
+      getElement(this.pageDescription).textContent = pageDescriptionText;
     }
-    if (data.filteredCount > this.pageSize * this.pageNumber) {
-      getElement(this.pageRightButton).disabled = false;
-    }
-    const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
-    const pageEnd = Math.min(
-      this.pageSize * this.pageNumber,
-      data.filteredCount
-    );
-    let pageDescriptionText = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
-    if (data.filteredCount < data.totalCount) {
-      pageDescriptionText += ` (filtered from ${data.totalCount})`;
-    }
-    getElement(this.pageDescription).textContent = pageDescriptionText;
   }
 
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {

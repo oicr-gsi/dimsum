@@ -37,9 +37,11 @@ import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
@@ -325,72 +327,74 @@ public class CaseService {
         .title("Pending Work")
         .extraction(
             new ProjectSummaryField(projectSummary.getExtractionPendingCount(),
-                "PENDING", "Extraction"))
+                CaseFilterKey.PENDING.name(), PendingState.EXTRACTION.getLabel()))
         .libraryPreparation(
             new ProjectSummaryField(projectSummary.getLibraryPrepPendingCount(),
-                "PENDING", "Library Preparation"))
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_PREPARATION.getLabel()))
         .libraryQualification(
             new ProjectSummaryField(projectSummary.getLibraryQualPendingCount(),
-                "PENDING", "Library Qualification"))
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QUALIFICATION.getLabel()))
         .fullDepthSequencing(
             new ProjectSummaryField(projectSummary.getFullDepthSeqPendingCount(),
-                "PENDING", "Full-Depth Sequencing"))
+                CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_SEQUENCING.getLabel()))
         .informaticsReview(
             new ProjectSummaryField(projectSummary.getInformaticsPendingCount(),
-                "PENDING", "Informatics Review"))
+                CaseFilterKey.PENDING.name(), PendingState.INFORMATICS_REVIEW.getLabel()))
         .draftReport(
             new ProjectSummaryField(projectSummary.getDraftReportPendingCount(),
-                "PENDING", "Draft Report"))
+                CaseFilterKey.PENDING.name(), PendingState.DRAFT_REPORT.getLabel()))
         .finalReport(
             new ProjectSummaryField(projectSummary.getFinalReportPendingCount(),
-                "PENDING", "Final Report"))
+                CaseFilterKey.PENDING.name(), PendingState.FINAL_REPORT.getLabel()))
         .build();
 
     ProjectSummaryRow pendingQc = new ProjectSummaryRow.Builder()
         .title("Pending QC")
         .receipt(
             new ProjectSummaryField(projectSummary.getReceiptPendingQcCount(),
-                "PENDING", "Receipt QC"))
+                CaseFilterKey.PENDING.name(), PendingState.RECEIPT_QC.getLabel()))
         .extraction(
             new ProjectSummaryField(projectSummary.getExtractionPendingQcCount(),
-                "PENDING", "Extraction QC Sign-Off"))
+                CaseFilterKey.PENDING.name(), PendingState.EXTRACTION_QC.getLabel()))
         .libraryPreparation(
             new ProjectSummaryField(projectSummary.getLibraryPrepPendingQcCount(),
-                "PENDING", "Library QC Sign-Off"))
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QC.getLabel()))
         .libraryQualification(
             new ProjectSummaryField(projectSummary.getLibraryQualPendingQcCount(),
-                "PENDING", "LLibrary Qualification QC Sign-Off"))
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QUALIFICATION_QC.getLabel()))
         .fullDepthSequencing(
             new ProjectSummaryField(projectSummary.getFullDepthSeqPendingQcCount(),
-                "PENDING", "Full-Depth Sequencing QC Sign-Off"))
+                CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_QC.getLabel()))
         .build();
 
     ProjectSummaryRow completed = new ProjectSummaryRow.Builder()
         .title("Completed")
         .receipt(
-            new ProjectSummaryField(projectSummary.getReceiptCompletedCount(), "COMPLETED",
-                "Receipt"))
+            new ProjectSummaryField(projectSummary.getReceiptCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.RECEIPT.getLabel()))
         .extraction(
-            new ProjectSummaryField(projectSummary.getExtractionCompletedCount(), "COMPLETED",
-                "Extraction"))
+            new ProjectSummaryField(projectSummary.getExtractionCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.EXTRACTION.getLabel()))
         .libraryPreparation(
             new ProjectSummaryField(projectSummary.getLibraryPrepCompletedCount(),
-                "COMPLETED", "Library Preparation"))
+                CaseFilterKey.COMPLETED.name(), CompletedGate.LIBRARY_PREPARATION.getLabel()))
         .libraryQualification(
             new ProjectSummaryField(projectSummary.getLibraryQualCompletedCount(),
-                "COMPLETED", "LLibrary Qualification"))
+                CaseFilterKey.COMPLETED.name(), CompletedGate.LIBRARY_QUALIFICATION.getLabel()))
         .fullDepthSequencing(
             new ProjectSummaryField(projectSummary.getFullDepthSeqCompletedCount(),
-                "COMPLETED", "Full-Depth Sequencing"))
+                CaseFilterKey.COMPLETED.name(), CompletedGate.FULL_DEPTH_SEQUENCING.getLabel()))
         .informaticsReview(
             new ProjectSummaryField(projectSummary.getInformaticsCompletedCount(),
-                "COMPLETED", "Informatics Review"))
+                CaseFilterKey.COMPLETED.name(), CompletedGate.INFORMATICS_REVIEW.getLabel()))
         .draftReport(
             new ProjectSummaryField(projectSummary.getDraftReportCompletedCount(),
-                "COMPLETED", "Draft Report"))
+                CaseFilterKey.COMPLETED.name(), CompletedGate.DRAFT_REPORT.getLabel()))
         .finalReport(
             new ProjectSummaryField(projectSummary.getFinalReportCompletedCount(),
-                "COMPLETED", "Final Report"))
+                CaseFilterKey.COMPLETED.name(), CompletedGate.FINAL_REPORT.getLabel()))
         .build();
 
     TableData<ProjectSummaryRow> data = new TableData<>();
