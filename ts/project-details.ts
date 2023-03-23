@@ -12,7 +12,7 @@ import {
   libraryPreparationDefinition,
   receiptDefinition,
 } from "./data/sample";
-import { getProjectSummaryRowDefinition } from "./data/SummaryRow";
+import { getProjectSummaryRowDefinition } from "./data/project-summary-row";
 import { getSearchParams, updateUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";

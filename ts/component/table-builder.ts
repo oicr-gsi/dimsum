@@ -67,7 +67,7 @@ export interface TableDefinition<ParentType, ChildType> {
   getRowHighlight?: (object: ParentType) => CellStatus | null;
   staticActions?: StaticAction[];
   bulkActions?: BulkAction<ParentType>[];
-  projectSummary?: boolean; // only declared for project summary table
+  disablePageControls?: boolean;
 }
 
 class AcceptedFilter {
@@ -110,7 +110,7 @@ export class TableBuilder<ParentType, ChildType> {
   pageRightButton?: HTMLButtonElement;
 
   columns: ColumnDefinition<ParentType, ChildType>[];
-  sortColumn: string;
+  sortColumn?: string;
   sortDescending: boolean;
   pageSize: number = 10;
   pageNumber: number = 1;
@@ -131,9 +131,9 @@ export class TableBuilder<ParentType, ChildType> {
     onFilterChange?: (key: string, value: string, add?: boolean) => void
   ) {
     this.definition = definition;
-    this.sortColumn = definition.defaultSort
-      ? definition.defaultSort.columnTitle
-      : "";
+    if (definition.defaultSort) {
+      this.sortColumn = definition.defaultSort.columnTitle;
+    }
     this.sortDescending = definition.defaultSort
       ? definition.defaultSort.descending
       : false;
@@ -170,7 +170,7 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
-    if (!this.definition.projectSummary) {
+    if (!this.definition.disablePageControls) {
       this.addSortControls(topControlsContainer);
       this.addFilterControls(topControlsContainer);
       this.addPagingControls(topControlsContainer);
@@ -265,7 +265,7 @@ export class TableBuilder<ParentType, ChildType> {
           this.definition.defaultSort.type,
           this.definition.defaultSort.descending
         )
-      : "";
+      : "undefined";
     const sortDropdown = new Dropdown(
       dropdownOptions,
       true,
@@ -579,9 +579,7 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private async reload(resetPage?: boolean) {
-    if (!this.definition.projectSummary) {
-      this.showLoading();
-    }
+    this.showLoading();
     if (resetPage) {
       this.pageNumber = 1;
     }
@@ -605,13 +603,17 @@ export class TableBuilder<ParentType, ChildType> {
     }
     const data = await response.json();
     this.load(data.items);
-    this.showLoaded(data);
+    if (!this.definition.disablePageControls) {
+      this.showLoaded(data);
+    }
   }
 
   private showLoading() {
     // TODO: Disable all inputs, show indeterminate progress
-    getElement(this.pageLeftButton).disabled = true;
-    getElement(this.pageRightButton).disabled = true;
+    if (!this.definition.disablePageControls) {
+      getElement(this.pageLeftButton).disabled = true;
+      getElement(this.pageRightButton).disabled = true;
+    }
   }
 
   private showLoaded(data: any) {

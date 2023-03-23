@@ -10,10 +10,10 @@ public class ProjectSummaryField {
   private String filterKey;
   private String filterValue;
 
-  private ProjectSummaryField(Builder builder) {
-    this.count = requireNonNull(builder.count);
-    this.filterKey = requireNonNull(builder.filterKey);
-    this.filterValue = requireNonNull(builder.filterValue);
+  public ProjectSummaryField(int count, String filterKey, String filterValue) {
+    this.count = requireNonNull(count);
+    this.filterKey = requireNonNull(filterKey);
+    this.filterValue = requireNonNull(filterValue);
   }
 
   public int getCount() {
@@ -26,32 +26,6 @@ public class ProjectSummaryField {
 
   public String getFilterValue() {
     return filterValue;
-  }
-
-  public static class Builder {
-    private int count;
-    private String filterKey;
-    private String filterValue;
-
-    public Builder count(int count) {
-      this.count = count;
-      return this;
-    }
-
-    public Builder filterKey(String filterKey) {
-      this.filterKey = filterKey;
-      return this;
-    }
-
-    public Builder filterValue(String filterValue) {
-      this.filterValue = filterValue;
-      return this;
-    }
-
-    public ProjectSummaryField build() {
-      return new ProjectSummaryField(this);
-    }
-
   }
 
 

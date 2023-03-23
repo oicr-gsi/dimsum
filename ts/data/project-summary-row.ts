@@ -26,7 +26,7 @@ export function getProjectSummaryRowDefinition(
 ): TableDefinition<ProjectSummaryRow, void> {
   return {
     queryUrl: queryUrl,
-    projectSummary: true,
+    disablePageControls: true,
     generateColumns(data) {
       return [
         {
@@ -40,15 +40,7 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Receipt",
           addParentContents(projectSummaryRow, fragment) {
-            if (!projectSummaryRow.receipt) {
-              addNaText(fragment);
-              return;
-            }
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.receipt.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.receipt, fragment);
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.receipt ? "na" : null;
@@ -57,55 +49,31 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Extraction",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.extraction.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.extraction, fragment);
           },
         },
         {
           title: "Library Preparation",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.libraryPreparation.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.libraryPreparation, fragment);
           },
         },
         {
           title: "Library Qualification",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.libraryQualification.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.libraryQualification, fragment);
           },
         },
         {
           title: "Full-Depth Sequencing",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.fullDepthSequencing.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.fullDepthSequencing, fragment);
           },
         },
         {
           title: "Informatics Review",
           addParentContents(projectSummaryRow, fragment) {
-            if (!projectSummaryRow.informaticsReview) {
-              addNaText(fragment);
-              return;
-            }
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.informaticsReview.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.informaticsReview, fragment);
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.informaticsReview ? "na" : null;
@@ -114,32 +82,16 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Draft Report",
           addParentContents(projectSummaryRow, fragment) {
-            if (!projectSummaryRow.draftReport) {
-              addNaText(fragment);
-              return;
-            }
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.draftReport.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.draftReport, fragment);
           },
           getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.informaticsReview ? "na" : null;
+            return !projectSummaryRow.draftReport ? "na" : null;
           },
         },
         {
           title: "Final Report",
           addParentContents(projectSummaryRow, fragment) {
-            if (!projectSummaryRow.finalReport) {
-              addNaText(fragment);
-              return;
-            }
-            fragment.appendChild(
-              document.createTextNode(
-                projectSummaryRow.finalReport.count.toString()
-              )
-            );
+            displayCount(projectSummaryRow.finalReport, fragment);
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.finalReport ? "na" : null;
@@ -148,4 +100,17 @@ export function getProjectSummaryRowDefinition(
       ];
     },
   };
+}
+
+function displayCount(
+  projectSummaryField: ProjectSummaryField,
+  fragment: DocumentFragment
+) {
+  if (!projectSummaryField) {
+    addNaText(fragment);
+    return;
+  }
+  fragment.appendChild(
+    document.createTextNode(projectSummaryField.count.toString())
+  );
 }
