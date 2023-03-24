@@ -28,7 +28,7 @@ export interface ProjectSummary {
 }
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
-  queryUrl: urls.rest.projects,
+  queryUrl: urls.rest.projects.list,
   defaultSort: {
     columnTitle: "Name",
     descending: true,

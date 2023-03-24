@@ -1,0 +1,1 @@
+Project summary table on project detail page that displays counts of items at each QC gate that are pending, pending QC, completed

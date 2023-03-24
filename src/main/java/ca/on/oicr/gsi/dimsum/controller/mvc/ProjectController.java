@@ -34,7 +34,7 @@ public class ProjectController {
     model.put("titleLink", makeMisoProjectUrl(projectName));
     model.put("detailType", CaseFilterKey.PROJECT.name());
     model.put("detailValue", projectName);
-    return "detail";
+    return "project-detail";
   }
 
   @GetMapping

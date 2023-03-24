@@ -58,7 +58,7 @@ export interface BulkAction<ParentType> {
 
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl: string;
-  defaultSort: SortDefinition;
+  defaultSort?: SortDefinition;
   filters?: FilterDefinition[];
   getChildren?: (parent: ParentType) => ChildType[];
   generateColumns: (
@@ -67,6 +67,7 @@ export interface TableDefinition<ParentType, ChildType> {
   getRowHighlight?: (object: ParentType) => CellStatus | null;
   staticActions?: StaticAction[];
   bulkActions?: BulkAction<ParentType>[];
+  disablePageControls?: boolean;
 }
 
 class AcceptedFilter {
@@ -109,7 +110,7 @@ export class TableBuilder<ParentType, ChildType> {
   pageRightButton?: HTMLButtonElement;
 
   columns: ColumnDefinition<ParentType, ChildType>[];
-  sortColumn: string;
+  sortColumn?: string;
   sortDescending: boolean;
   pageSize: number = 10;
   pageNumber: number = 1;
@@ -130,8 +131,12 @@ export class TableBuilder<ParentType, ChildType> {
     onFilterChange?: (key: string, value: string, add?: boolean) => void
   ) {
     this.definition = definition;
-    this.sortColumn = definition.defaultSort.columnTitle;
-    this.sortDescending = definition.defaultSort.descending;
+    if (definition.defaultSort) {
+      this.sortColumn = definition.defaultSort.columnTitle;
+    }
+    this.sortDescending = definition.defaultSort
+      ? definition.defaultSort.descending
+      : false;
     const container = document.getElementById(containerId);
     if (container === null) {
       throw Error(`Container ID "${containerId}" not found on page`);
@@ -165,10 +170,11 @@ export class TableBuilder<ParentType, ChildType> {
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
-
-    this.addSortControls(topControlsContainer);
-    this.addFilterControls(topControlsContainer);
-    this.addPagingControls(topControlsContainer);
+    if (!this.definition.disablePageControls) {
+      this.addSortControls(topControlsContainer);
+      this.addFilterControls(topControlsContainer);
+      this.addPagingControls(topControlsContainer);
+    }
     this.container.appendChild(topControlsContainer);
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
@@ -196,7 +202,6 @@ export class TableBuilder<ParentType, ChildType> {
       "flex justify-end mt-4 items-top space-x-2";
     this.addActionButtons(bottomControlsContainer);
     this.container.appendChild(bottomControlsContainer);
-
     this.load();
     this.setupScrollListener();
     this.reload();
@@ -253,13 +258,14 @@ export class TableBuilder<ParentType, ChildType> {
         dropdownOptions.push(this.addSortOption(column, true));
       });
 
-    const defaultOption =
-      this.definition.defaultSort.columnTitle +
-      " - " +
-      this.getSortDescriptor(
-        this.definition.defaultSort.type,
-        this.definition.defaultSort.descending
-      );
+    const defaultOption = this.definition.defaultSort
+      ? this.definition.defaultSort.columnTitle +
+        " - " +
+        this.getSortDescriptor(
+          this.definition.defaultSort.type,
+          this.definition.defaultSort.descending
+        )
+      : "undefined";
     const sortDropdown = new Dropdown(
       dropdownOptions,
       true,
@@ -602,27 +608,31 @@ export class TableBuilder<ParentType, ChildType> {
 
   private showLoading() {
     // TODO: Disable all inputs, show indeterminate progress
-    getElement(this.pageLeftButton).disabled = true;
-    getElement(this.pageRightButton).disabled = true;
+    if (!this.definition.disablePageControls) {
+      getElement(this.pageLeftButton).disabled = true;
+      getElement(this.pageRightButton).disabled = true;
+    }
   }
 
   private showLoaded(data: any) {
-    if (this.pageNumber > 1) {
-      getElement(this.pageLeftButton).disabled = false;
+    if (!this.definition.disablePageControls) {
+      if (this.pageNumber > 1) {
+        getElement(this.pageLeftButton).disabled = false;
+      }
+      if (data.filteredCount > this.pageSize * this.pageNumber) {
+        getElement(this.pageRightButton).disabled = false;
+      }
+      const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
+      const pageEnd = Math.min(
+        this.pageSize * this.pageNumber,
+        data.filteredCount
+      );
+      let pageDescriptionText = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
+      if (data.filteredCount < data.totalCount) {
+        pageDescriptionText += ` (filtered from ${data.totalCount})`;
+      }
+      getElement(this.pageDescription).textContent = pageDescriptionText;
     }
-    if (data.filteredCount > this.pageSize * this.pageNumber) {
-      getElement(this.pageRightButton).disabled = false;
-    }
-    const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
-    const pageEnd = Math.min(
-      this.pageSize * this.pageNumber,
-      data.filteredCount
-    );
-    let pageDescriptionText = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
-    if (data.filteredCount < data.totalCount) {
-      pageDescriptionText += ` (filtered from ${data.totalCount})`;
-    }
-    getElement(this.pageDescription).textContent = pageDescriptionText;
   }
 
   private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {

@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum.service;
 
+import java.util.Arrays;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -26,8 +27,9 @@ import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.OmittedSample;
 import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
-import ca.on.oicr.gsi.dimsum.data.RequisitionQcGroup;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.Test;
@@ -35,9 +37,11 @@ import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
@@ -313,6 +317,90 @@ public class CaseService {
     data.setTotalCount(baseProjectSummaries.size());
     data.setFilteredCount(filterProjectSummaries(baseProjectSummaries, filters).count());
     data.setItems(filteredProjectSummaries);
+    return data;
+  }
+
+  public TableData<ProjectSummaryRow> getProjectSummaryRows(String name) {
+    ProjectSummary projectSummary = caseData.getProjectSummariesByName().get(name);
+
+    ProjectSummaryRow pendingWork = new ProjectSummaryRow.Builder()
+        .title("Pending Work")
+        .extraction(
+            new ProjectSummaryField(projectSummary.getExtractionPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.EXTRACTION.getLabel()))
+        .libraryPreparation(
+            new ProjectSummaryField(projectSummary.getLibraryPrepPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_PREPARATION.getLabel()))
+        .libraryQualification(
+            new ProjectSummaryField(projectSummary.getLibraryQualPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QUALIFICATION.getLabel()))
+        .fullDepthSequencing(
+            new ProjectSummaryField(projectSummary.getFullDepthSeqPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_SEQUENCING.getLabel()))
+        .informaticsReview(
+            new ProjectSummaryField(projectSummary.getInformaticsPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.INFORMATICS_REVIEW.getLabel()))
+        .draftReport(
+            new ProjectSummaryField(projectSummary.getDraftReportPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.DRAFT_REPORT.getLabel()))
+        .finalReport(
+            new ProjectSummaryField(projectSummary.getFinalReportPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.FINAL_REPORT.getLabel()))
+        .build();
+
+    ProjectSummaryRow pendingQc = new ProjectSummaryRow.Builder()
+        .title("Pending QC")
+        .receipt(
+            new ProjectSummaryField(projectSummary.getReceiptPendingQcCount(),
+                CaseFilterKey.PENDING.name(), PendingState.RECEIPT_QC.getLabel()))
+        .extraction(
+            new ProjectSummaryField(projectSummary.getExtractionPendingQcCount(),
+                CaseFilterKey.PENDING.name(), PendingState.EXTRACTION_QC.getLabel()))
+        .libraryPreparation(
+            new ProjectSummaryField(projectSummary.getLibraryPrepPendingQcCount(),
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QC.getLabel()))
+        .libraryQualification(
+            new ProjectSummaryField(projectSummary.getLibraryQualPendingQcCount(),
+                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QUALIFICATION_QC.getLabel()))
+        .fullDepthSequencing(
+            new ProjectSummaryField(projectSummary.getFullDepthSeqPendingQcCount(),
+                CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_QC.getLabel()))
+        .build();
+
+    ProjectSummaryRow completed = new ProjectSummaryRow.Builder()
+        .title("Completed")
+        .receipt(
+            new ProjectSummaryField(projectSummary.getReceiptCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.RECEIPT.getLabel()))
+        .extraction(
+            new ProjectSummaryField(projectSummary.getExtractionCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.EXTRACTION.getLabel()))
+        .libraryPreparation(
+            new ProjectSummaryField(projectSummary.getLibraryPrepCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.LIBRARY_PREPARATION.getLabel()))
+        .libraryQualification(
+            new ProjectSummaryField(projectSummary.getLibraryQualCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.LIBRARY_QUALIFICATION.getLabel()))
+        .fullDepthSequencing(
+            new ProjectSummaryField(projectSummary.getFullDepthSeqCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.FULL_DEPTH_SEQUENCING.getLabel()))
+        .informaticsReview(
+            new ProjectSummaryField(projectSummary.getInformaticsCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.INFORMATICS_REVIEW.getLabel()))
+        .draftReport(
+            new ProjectSummaryField(projectSummary.getDraftReportCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.DRAFT_REPORT.getLabel()))
+        .finalReport(
+            new ProjectSummaryField(projectSummary.getFinalReportCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.FINAL_REPORT.getLabel()))
+        .build();
+
+    TableData<ProjectSummaryRow> data = new TableData<>();
+    data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
+    data.setFilteredCount(data.getItems().size());
+    data.setTotalCount(data.getItems().size());
     return data;
   }
 

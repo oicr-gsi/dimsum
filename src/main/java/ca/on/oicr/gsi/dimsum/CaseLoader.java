@@ -140,6 +140,7 @@ public class CaseLoader {
               calculateProjectSummaries(cases));
 
       log.debug(String.format("Completed loading %d cases.", cases.size()));
+
       return caseData;
     }
   }
