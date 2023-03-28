@@ -12,6 +12,7 @@ import { post } from "../util/requests";
 import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
+import { updateUrlParams } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -167,6 +168,47 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns = definition.generateColumns();
   }
 
+  public addFilters(filterParams: Array<Pair<string, string>>) {
+    for (const pair of filterParams) {
+      this.definition.filters?.forEach((f) => {
+        if (f.key === pair.key) {
+          // filter key is valid, create a new accepted filter
+          const onRemove = () => {
+            if (this.onFilterChange)
+              this.onFilterChange(pair.key, pair.value, false);
+            this.reload();
+          };
+          this.acceptedFilters.push(
+            new AcceptedFilter(f.title, pair.key, pair.value, onRemove)
+          );
+        }
+      });
+    }
+    this.reload(true);
+  }
+
+  public applyFilters(key: string, value: string, add?: boolean) {
+    if (add) {
+      this.definition.filters?.forEach((f) => {
+        if (f.key === key) {
+          // filter key is valid, create a new accepted filter
+          const onRemove = () => {
+            if (this.onFilterChange) this.onFilterChange(key, value, false);
+            this.reload();
+          };
+          this.acceptedFilters.push(
+            new AcceptedFilter(f.title, key, value, onRemove)
+          );
+        }
+      });
+    } else {
+      this.acceptedFilters = this.acceptedFilters.filter(
+        (filter) => filter.key !== key || filter.value !== value
+      );
+    }
+    this.reload(true);
+  }
+
   public build() {
     const topControlsContainer = document.createElement("div");
     topControlsContainer.className = "flex mt-4 items-top space-x-2";
@@ -205,6 +247,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.load();
     this.setupScrollListener();
     this.reload();
+    return this;
   }
 
   private addActionButtons(container: HTMLElement) {
@@ -578,7 +621,7 @@ export class TableBuilder<ParentType, ChildType> {
     });
   }
 
-  private async reload(resetPage?: boolean) {
+  public async reload(resetPage?: boolean) {
     this.showLoading();
     if (resetPage) {
       this.pageNumber = 1;

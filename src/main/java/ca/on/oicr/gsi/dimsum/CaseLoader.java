@@ -713,7 +713,7 @@ public class CaseLoader {
     return loaded;
   }
 
-  protected static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases) {
+  public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     Map<String, ProjectSummary> projectSummariesByName = new HashMap<>();
 

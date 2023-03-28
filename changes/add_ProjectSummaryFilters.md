@@ -1,0 +1,1 @@
+The summary table now match any filters applied to the other tables on the Project Details page and displays the counts of completed items at each gate accordingly
