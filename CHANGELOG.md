@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.6.0] - 2023-03-30
+
+### Added
+
+* Project summary table on project detail page that displays counts of items at each QC gate that are pending, pending QC, completed
+
+
 ## [1.5.0] - 2023-03-22
 
 ### Added
