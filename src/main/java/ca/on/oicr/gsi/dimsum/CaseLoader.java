@@ -137,7 +137,7 @@ public class CaseLoader {
           new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
               getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
               getDonorNames(donorsById), getRunNames(runsByName), getTestNames(cases),
-              calculateProjectSummaries(cases));
+              calculateProjectSummaries(cases, null));
 
       log.debug(String.format("Completed loading %d cases.", cases.size()));
 
@@ -713,22 +713,23 @@ public class CaseLoader {
     return loaded;
   }
 
-  public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases) {
+  public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> caseList,
+      Map<Case, List<Test>> map) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     Map<String, ProjectSummary> projectSummariesByName = new HashMap<>();
-
+    List<Case> cases = map == null ? caseList : new ArrayList<>(map.keySet());
     for (Case kase : cases) {
       ProjectSummary.Builder caseSummary =
           new ProjectSummary.Builder();
-
-      int testSize = kase.getTests() != null ? kase.getTests().size() : 0;
+      List<Test> tests = map == null ? kase.getTests() : map.get(kase);
+      int testSize = tests != null ? tests.size() : 0;
       caseSummary.totalTestCount(testSize);
       if (PendingState.RECEIPT_QC.qualifyCase(kase)) {
         caseSummary.receiptPendingQcCount(testSize);
       } else {
         caseSummary.receiptCompletedCount(testSize);
       }
-      for (Test test : kase.getTests()) {
+      for (Test test : tests) {
         // Extraction
         if (test.getExtractions().stream()
             .anyMatch(sample -> Boolean.TRUE.equals(sample.getQcPassed()))) {

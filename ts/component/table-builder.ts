@@ -168,25 +168,6 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns = definition.generateColumns();
   }
 
-  public addFilters(filterParams: Array<Pair<string, string>>) {
-    for (const pair of filterParams) {
-      this.definition.filters?.forEach((f) => {
-        if (f.key === pair.key) {
-          // filter key is valid, create a new accepted filter
-          const onRemove = () => {
-            if (this.onFilterChange)
-              this.onFilterChange(pair.key, pair.value, false);
-            this.reload();
-          };
-          this.acceptedFilters.push(
-            new AcceptedFilter(f.title, pair.key, pair.value, onRemove)
-          );
-        }
-      });
-    }
-    this.reload(true);
-  }
-
   public applyFilters(key: string, value: string, add?: boolean) {
     if (add) {
       this.definition.filters?.forEach((f) => {

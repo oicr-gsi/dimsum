@@ -336,9 +336,9 @@ public class CaseService {
 
   public TableData<ProjectSummaryRow> getFilteredProjectSummaryRows(String projectName,
       List<CaseFilter> filters) {
-    List<Case> cases = filterCases(caseData.getCases(), filters).toList();
+    Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
     Map<String, ProjectSummary> projectSummariesByName =
-        CaseLoader.calculateProjectSummaries(cases);
+        CaseLoader.calculateProjectSummaries(null, testsByCase);
     ProjectSummary projectSummary = projectSummariesByName.get(projectName);
     TableData<ProjectSummaryRow> data = new TableData<>();
     if (projectSummary == null) {
@@ -495,6 +495,22 @@ public class CaseService {
       }
     }
     return stream;
+  }
+
+  private Map<Case, List<Test>> getFilteredCaseAndTest(List<Case> cases,
+      Collection<CaseFilter> filters) {
+    Map<Case, List<Test>> testsByCase = filterCases(cases, filters)
+        .collect(Collectors.toMap(Function.identity(), x -> x.getTests()));
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Test>> filterMap =
+          buildFilterMap(filters, CaseFilter::testPredicate);
+      for (Predicate<Test> predicate : filterMap.values()) {
+        for (Map.Entry<Case, List<Test>> entry : testsByCase.entrySet()) {
+          testsByCase.put(entry.getKey(), entry.getValue().stream().filter(predicate).toList());
+        }
+      }
+    }
+    return testsByCase;
   }
 
   private <T> Map<CaseFilterKey, Predicate<T>> buildFilterMap(Collection<CaseFilter> filters,

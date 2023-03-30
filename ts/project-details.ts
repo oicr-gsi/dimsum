@@ -30,7 +30,8 @@ if (tableContainer.dataset.detailValue) {
     getProjectSummaryRowDefinition(
       urls.rest.projects.summary(tableContainer.dataset.detailValue)
     ),
-    "projectSummaryTableContainer"
+    "projectSummaryTableContainer",
+    getSearchParams()
   ).build();
 }
 
@@ -67,18 +68,9 @@ function reload(definition: TableDefinition<any, any>) {
   new TableBuilder(
     definition,
     tableContainerId,
-    handleSearch(),
+    getSearchParams(),
     handleFilters
   ).build();
-}
-
-function handleSearch() {
-  const searchParams: Array<Pair<string, string>> = getSearchParams();
-  projectSummaryTable.addFilters(searchParams);
-  // for (const pair of searchParams) {
-  //   projectSummaryTable.applyFilters(pair.key, pair.value, true);
-  // }
-  return searchParams;
 }
 
 function handleFilters(key: string, value: string, add?: boolean) {
