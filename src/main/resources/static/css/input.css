@@ -24,6 +24,10 @@
     break-inside: avoid;
   }
 
+  .keep-with-next {
+    break-after: avoid;
+  }
+
   .print-hanging {
     white-space: unset !important;
     text-indent: -0.5em;

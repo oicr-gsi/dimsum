@@ -1,4 +1,5 @@
 import { AttributeDefinition, AttributeList } from "./component/attribute-list";
+import { showAlertDialog } from "./component/dialog";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
 import { Case } from "./data/case";
@@ -608,7 +609,13 @@ function getReportInformatics(kase: Case) {
 function setupPrint(kase: Case) {
   const printButton = document.getElementById("printButton");
   if (printButton) {
-    printButton.onclick = (event) => {
+    printButton.onclick = async (event) => {
+      if (!(window as any).chrome) {
+        await showAlertDialog(
+          "Warning",
+          "Printing is optimized for Google Chrome"
+        );
+      }
       // update title temporarily to set default filename for printing to PDF
       const pageTitle = document.title;
       const tumourReceipts = kase.receipts.filter(

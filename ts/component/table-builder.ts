@@ -668,6 +668,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addSubheadingRow(table: HTMLTableElement, text: string | null) {
     const tbody = table.createTBody();
+    tbody.classList.add("keep-with-next");
     const row = tbody.insertRow();
     const th = row.insertCell();
     th.className =
