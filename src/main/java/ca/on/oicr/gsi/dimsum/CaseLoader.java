@@ -721,6 +721,7 @@ public class CaseLoader {
         addCounts(kase, kase.getTests(), tempProjectSummariesByName);
       }
     }
+
     return buildProjectSummaries(tempProjectSummariesByName);
   }
 
@@ -743,17 +744,10 @@ public class CaseLoader {
     caseSummary.totalTestCount(testSize);
     if (PendingState.RECEIPT_QC.qualifyCase(kase)) {
       caseSummary.receiptPendingQcCount(testSize);
-    }
-
-    if (CompletedGate.RECEIPT.qualifyCase(kase)) {
+    } else {
       caseSummary.receiptCompletedCount(testSize);
     }
     for (Test test : tests) {
-      // Extraction
-      // if (test.getExtractions().stream()
-      // .anyMatch(sample -> Boolean.TRUE.equals(sample.getQcPassed()))) {
-      // caseSummary.incrementExtractionCompletedCount();
-      // }
       if (CompletedGate.EXTRACTION.qualifyTest(test)) {
         caseSummary.incrementExtractionCompletedCount();
       } else if (PendingState.EXTRACTION_QC.qualifyTest(test)) {
@@ -790,8 +784,7 @@ public class CaseLoader {
           .equals(sample.getQcPassed())
           && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
         caseSummary.incrementFullDepthSeqCompletedCount();
-      }
-      if (PendingState.FULL_DEPTH_QC.qualifyTest(test)
+      } else if (PendingState.FULL_DEPTH_QC.qualifyTest(test)
           || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) {
         caseSummary.incrementFullDepthSeqPendingQcCount();
       } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test)) {
