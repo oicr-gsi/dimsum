@@ -74,7 +74,7 @@ const attributes: AttributeDefinition<Case>[] = [
         makeNameDiv(
           object.donor.name,
           urls.miso.sample(object.donor.id),
-          urls.dimsum.donor(object.donor.id)
+          urls.dimsum.donor(object.donor.name)
         )
       );
     },
