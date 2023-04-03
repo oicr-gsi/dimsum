@@ -261,7 +261,7 @@ public class CaseLoaderTest {
   @Test
   public void testCalculateProjectSummary() throws Exception {
     Map<String, ProjectSummary> projectSummariesByName =
-        CaseLoader.calculateProjectSummaries(cases, null);
+        CaseLoader.calculateProjectSummaries(cases);
     assertNotNull(projectSummariesByName);
 
     // PRO1

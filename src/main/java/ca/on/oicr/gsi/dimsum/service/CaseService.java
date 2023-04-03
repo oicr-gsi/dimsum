@@ -338,7 +338,7 @@ public class CaseService {
       List<CaseFilter> filters) {
     Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
     Map<String, ProjectSummary> projectSummariesByName =
-        CaseLoader.calculateProjectSummaries(null, testsByCase);
+        CaseLoader.calculateFilteredProjectSummaries(testsByCase);
     ProjectSummary projectSummary = projectSummariesByName.get(projectName);
     TableData<ProjectSummaryRow> data = new TableData<>();
     if (projectSummary == null) {
