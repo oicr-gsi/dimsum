@@ -22,7 +22,7 @@ export interface QcStatus {
   label: string;
   icon: string;
   qcComplete: boolean;
-  cellStatus?: CellStatus;
+  cellStatus: CellStatus | null;
   priority: number; // lower wins when combining multiple statuses (run-libraries)
 }
 
@@ -66,12 +66,14 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     label: "Passed",
     icon: "check",
     qcComplete: true,
+    cellStatus: null,
     priority: 7,
   },
   passedDifferentAssay: {
     label: "Passed with different assay",
     icon: "circle-check",
     qcComplete: true,
+    cellStatus: null,
     priority: 7,
   },
   failed: {

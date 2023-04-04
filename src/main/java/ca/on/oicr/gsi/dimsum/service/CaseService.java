@@ -100,6 +100,13 @@ public class CaseService {
     return Duration.between(currentData.getTimestamp(), ZonedDateTime.now());
   }
 
+  public Case getCase(String caseId) {
+    return caseData.getCases().stream()
+        .filter(new CaseFilter(CaseFilterKey.CASE_ID, caseId).casePredicate())
+        .findFirst()
+        .orElse(null);
+  }
+
   public List<Case> getCases(CaseFilter baseFilter) {
     CaseData currentData = caseData;
     if (currentData == null) {

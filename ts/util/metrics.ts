@@ -102,23 +102,26 @@ export function nullIfUndefined(value: any) {
 export function makeMetricDisplay(
   value: number,
   metrics: Metric[],
+  addTooltip: boolean,
   prefix?: string,
   tooltipAdditionalContents?: Node
 ): HTMLSpanElement {
   const displayValue = formatMetricValue(value, metrics);
   const div = document.createElement("div");
   div.innerText = (prefix || "") + displayValue;
-  const tooltipFragment = document.createDocumentFragment();
-  if (tooltipAdditionalContents) {
-    tooltipFragment.appendChild(tooltipAdditionalContents);
+  if (addTooltip) {
+    const tooltipFragment = document.createDocumentFragment();
+    if (tooltipAdditionalContents) {
+      tooltipFragment.appendChild(tooltipAdditionalContents);
+    }
+    metrics.forEach((metric) => {
+      const div = document.createElement("div");
+      div.innerText = "Required: " + getMetricRequirementText(metric);
+      tooltipFragment.appendChild(div);
+    });
+    const tooltip = Tooltip.getInstance();
+    tooltip.addTarget(div, tooltipFragment);
   }
-  metrics.forEach((metric) => {
-    const div = document.createElement("div");
-    div.innerText = getMetricRequirementText(metric);
-    tooltipFragment.appendChild(div);
-  });
-  const tooltip = Tooltip.getInstance();
-  tooltip.addTarget(div, tooltipFragment);
   return div;
 }
 
@@ -192,22 +195,22 @@ function formatThreshold(value?: number) {
 }
 
 export function getMetricRequirementText(metric: Metric) {
-  let text = "Required: ";
+  let text = null;
   switch (metric.thresholdType) {
     case "GT":
-      text += `> ${formatThreshold(metric.minimum)}`;
+      text = `> ${formatThreshold(metric.minimum)}`;
       break;
     case "GE":
-      text += `>= ${formatThreshold(metric.minimum)}`;
+      text = `>= ${formatThreshold(metric.minimum)}`;
       break;
     case "LT":
-      text += `< ${formatThreshold(metric.maximum)}`;
+      text = `< ${formatThreshold(metric.maximum)}`;
       break;
     case "LE":
-      text += `<= ${formatThreshold(metric.maximum)}`;
+      text = `<= ${formatThreshold(metric.maximum)}`;
       break;
     case "BETWEEN":
-      text += `Between ${formatThreshold(metric.minimum)} and ${formatThreshold(
+      text = `Between ${formatThreshold(metric.minimum)} and ${formatThreshold(
         metric.maximum
       )}`;
       break;

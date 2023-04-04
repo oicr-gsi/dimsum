@@ -15,11 +15,11 @@ export function post(url: string, body: any) {
   });
 }
 
-export function get(url: string, params: Record<string, string>) {
+export function get(url: string, params?: Record<string, string>) {
   let headers: any = {
     "Content-Type": "application/json",
   };
-  return fetch(`${url}?${new URLSearchParams(params).toString()}`, {
+  return fetch(url + (params ? new URLSearchParams(params).toString() : ""), {
     method: "GET",
     headers: headers,
   });

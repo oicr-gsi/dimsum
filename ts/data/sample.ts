@@ -35,7 +35,7 @@ const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
 const METRIC_LABEL_CLUSTERS_PF_2 = "Min Reads Delivered (PF)";
 const METRIC_LABEL_PHIX = "PhiX Control";
-const RUN_METRIC_LABELS = [
+export const RUN_METRIC_LABELS = [
   METRIC_LABEL_Q30,
   METRIC_LABEL_CLUSTERS_PF_1,
   METRIC_LABEL_CLUSTERS_PF_2,
@@ -517,92 +517,117 @@ function generateMetricColumns(
             addNaText(fragment);
             return;
           }
-          // handle metrics that have multiple values
-          switch (metricName) {
-            case METRIC_LABEL_Q30:
-              addQ30Contents(sample, metrics, fragment);
-              return;
-            case METRIC_LABEL_CLUSTERS_PF_1:
-            case METRIC_LABEL_CLUSTERS_PF_2:
-              addClustersPfContents(sample, metrics, fragment);
-              return;
-            case METRIC_LABEL_PHIX:
-              addPhixContents(sample, metrics, fragment);
-              return;
-          }
-          if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
-            // pass/fail based on QC status
-            if (sample.qcPassed) {
-              fragment.append(makeStatusIcon("check", "Passed"));
-            } else if (sample.qcPassed === false) {
-              fragment.append(makeStatusIcon("xmark", "Failed"));
-            } else {
-              fragment.append(makeStatusIcon("magnifying-glass", "Pending QC"));
-            }
-            return;
-          }
-          if (/^Adaptor Contamination/.test(metricName)) {
-            fragment.append(
-              makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id))
-            );
-            return;
-          }
-          const value = getMetricValue(metricName, sample);
-          if (value === null) {
-            if (sample.run) {
-              const status = sample.run.completionDate
-                ? qcStatuses.analysis
-                : qcStatuses.sequencing;
-              fragment.appendChild(makeStatusIcon(status.icon, status.label));
-            } else {
-              fragment.appendChild(makeNotFoundIcon());
-            }
-          } else {
-            fragment.append(makeMetricDisplay(value, metrics));
-          }
+          addMetricValueContents(sample, metrics, fragment, true);
         },
         getCellHighlight(sample) {
-          const metrics = getMatchingMetrics(metricName, category, sample);
-          if (!metrics || !metrics.length) {
-            return "na";
-          }
-          // handle metrics that are checked against multiple values
-          switch (metricName) {
-            case METRIC_LABEL_CLUSTERS_PF_1:
-            case METRIC_LABEL_CLUSTERS_PF_2:
-              return getClustersPfHighlight(sample, metrics);
-            case METRIC_LABEL_PHIX:
-              return getPhixHighlight(sample, metrics);
-          }
-          if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
-            if (sample.qcPassed) {
-              return null;
-            } else if (sample.qcPassed === false) {
-              return "error";
-            } else {
-              return "warning";
-            }
-          }
-          if (/^Adaptor Contamination/.test(metricName)) {
-            return null;
-          }
-          const value = getMetricValue(metricName, sample);
-          if (value == null) {
-            return "warning";
-          }
-          if (anyFail(value, metrics)) {
-            return "error";
-          }
-          return null;
+          return getSampleMetricCellHighlight(sample, metricName, category);
         },
       };
     });
 }
 
+export function getSampleMetricCellHighlight(
+  sample: Sample,
+  metricName: string,
+  category: MetricCategory
+): CellStatus | null {
+  const metrics = getMatchingMetrics(metricName, category, sample);
+  if (!metrics || !metrics.length) {
+    return "na";
+  }
+  // handle metrics that are checked against multiple values
+  switch (metricName) {
+    case METRIC_LABEL_CLUSTERS_PF_1:
+    case METRIC_LABEL_CLUSTERS_PF_2:
+      return getClustersPfHighlight(sample, metrics);
+    case METRIC_LABEL_PHIX:
+      return getPhixHighlight(sample, metrics);
+  }
+  if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+    if (sample.qcPassed) {
+      return null;
+    } else if (sample.qcPassed === false) {
+      return "error";
+    } else {
+      return "warning";
+    }
+  }
+  if (/^Adaptor Contamination/.test(metricName)) {
+    return null;
+  }
+  const value = getMetricValue(metricName, sample);
+  if (value == null) {
+    return "warning";
+  }
+  if (anyFail(value, metrics)) {
+    return "error";
+  }
+  return null;
+}
+
+export function addMetricValueContents(
+  sample: Sample,
+  metrics: Metric[],
+  fragment: DocumentFragment,
+  addTooltip: boolean
+) {
+  const metricNames = metrics
+    .map((metric) => metric.name)
+    .filter((name, i, arr) => i === arr.indexOf(name));
+  if (metricNames.length !== 1) {
+    throw new Error("No common metric name found");
+  }
+  const metricName = metricNames[0];
+  // handle metrics that have multiple values
+  switch (metricName) {
+    case METRIC_LABEL_Q30:
+      addQ30Contents(sample, metrics, fragment, addTooltip);
+      return;
+    case METRIC_LABEL_CLUSTERS_PF_1:
+    case METRIC_LABEL_CLUSTERS_PF_2:
+      addClustersPfContents(sample, metrics, fragment, addTooltip);
+      return;
+    case METRIC_LABEL_PHIX:
+      addPhixContents(sample, metrics, fragment, addTooltip);
+      return;
+  }
+  if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+    // pass/fail based on QC status
+    if (sample.qcPassed) {
+      fragment.append(makeStatusIcon("check", "Passed"));
+    } else if (sample.qcPassed === false) {
+      fragment.append(makeStatusIcon("xmark", "Failed"));
+    } else {
+      fragment.append(makeStatusIcon("magnifying-glass", "Pending QC"));
+    }
+    return;
+  }
+  if (/^Adaptor Contamination/.test(metricName)) {
+    fragment.append(
+      makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id))
+    );
+    return;
+  }
+  const value = getMetricValue(metricName, sample);
+  if (value === null) {
+    if (sample.run) {
+      const status = sample.run.completionDate
+        ? qcStatuses.analysis
+        : qcStatuses.sequencing;
+      fragment.appendChild(makeStatusIcon(status.icon, status.label));
+    } else {
+      fragment.appendChild(makeNotFoundIcon());
+    }
+  } else {
+    fragment.append(makeMetricDisplay(value, metrics, addTooltip));
+  }
+}
+
 function addQ30Contents(
   sample: Sample,
   metrics: Metric[],
-  fragment: DocumentFragment
+  fragment: DocumentFragment,
+  addTooltip: boolean
 ) {
   // run-level value is checked, but run and lane-level are both displayed
   if (!sample.run || !sample.run.percentOverQ30) {
@@ -613,12 +638,14 @@ function addQ30Contents(
     }
     return;
   }
-  fragment.appendChild(makeMetricDisplay(sample.run.percentOverQ30, metrics));
+  fragment.appendChild(
+    makeMetricDisplay(sample.run.percentOverQ30, metrics, addTooltip)
+  );
   sample.run.lanes.forEach((lane) => {
     if (!lane.percentOverQ30Read1) {
       return;
     }
-    let text = sample.run?.lanes.length === 1 ? "" : `Ln${lane.laneNumber} `;
+    let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
     text += `R1: ${lane.percentOverQ30Read1}`;
     if (lane.percentOverQ30Read2) {
       text += ";";
@@ -627,7 +654,7 @@ function addQ30Contents(
       text += ` R2: ${lane.percentOverQ30Read2}`;
     }
     const div = document.createElement("div");
-    div.classList.add("whitespace-nowrap");
+    div.classList.add("whitespace-nowrap", "print-hanging");
     div.appendChild(document.createTextNode(text));
     fragment.appendChild(div);
   });
@@ -636,7 +663,8 @@ function addQ30Contents(
 function addClustersPfContents(
   sample: Sample,
   metrics: Metric[],
-  fragment: DocumentFragment
+  fragment: DocumentFragment,
+  addTooltip: boolean
 ) {
   // For joined flowcells, run-level is checked
   // For non-joined, each lane is checked
@@ -652,15 +680,7 @@ function addClustersPfContents(
   const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
   const perRunMetrics = separatedMetrics[0];
   const perLaneMetrics = separatedMetrics[1];
-  const tooltipContents = document.createDocumentFragment();
-  if (perRunMetrics.length) {
-    // whether originally or not, these metrics are per run
-    perRunMetrics.forEach((metric) => {
-      const metricDiv = document.createElement("div");
-      metricDiv.innerText = getMetricRequirementText(metric);
-      tooltipContents.appendChild(metricDiv);
-    });
-  }
+  const tooltip = Tooltip.getInstance();
   const runDiv = document.createElement("div");
   const divisorUnit = getDivisorUnit(metrics);
   runDiv.innerText = formatMetricValue(
@@ -668,36 +688,46 @@ function addClustersPfContents(
     metrics,
     divisorUnit
   );
-  const tooltip = Tooltip.getInstance();
-  if (perRunMetrics.length) {
-    tooltip.addTarget(runDiv, tooltipContents);
+  if (addTooltip) {
+    const tooltipContents = document.createDocumentFragment();
+    if (perRunMetrics.length) {
+      // whether originally or not, these metrics are per run
+      perRunMetrics.forEach((metric) =>
+        addMetricRequirementText(metric, tooltipContents)
+      );
+      tooltip.addTarget(runDiv, tooltipContents);
+    }
   }
   fragment.appendChild(runDiv);
 
   if (sample.run.lanes.length > 1) {
     const laneTooltipContents = document.createDocumentFragment();
     // these metrics are per lane
-    perLaneMetrics.forEach((metric) => {
-      const metricDiv = document.createElement("div");
-      metricDiv.innerText = getMetricRequirementText(metric);
-      laneTooltipContents.appendChild(metricDiv);
-    });
+    perLaneMetrics.forEach((metric) =>
+      addMetricRequirementText(metric, laneTooltipContents)
+    );
     sample.run.lanes.forEach((lane) => {
       if (lane.clustersPf) {
         const laneDiv = document.createElement("div");
-        laneDiv.classList.add("whitespace-nowrap");
-        laneDiv.innerText = `Ln${lane.laneNumber}: ${formatMetricValue(
+        laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+        laneDiv.innerText = `L${lane.laneNumber}: ${formatMetricValue(
           lane.clustersPf,
           metrics,
           divisorUnit
         )}`;
-        if (perLaneMetrics.length) {
+        if (addTooltip && perLaneMetrics.length) {
           tooltip.addTarget(laneDiv, laneTooltipContents.cloneNode(true));
         }
         fragment.appendChild(laneDiv);
       }
     });
   }
+}
+
+function addMetricRequirementText(metric: Metric, container: Node) {
+  const metricDiv = document.createElement("div");
+  metricDiv.innerText = "Required: " + getMetricRequirementText(metric);
+  container.appendChild(metricDiv);
 }
 
 function getClustersPfHighlight(
@@ -782,7 +812,8 @@ function makePerRunFromLaneMetric(perLaneMetric: Metric, run: Run) {
 function addPhixContents(
   sample: Sample,
   metrics: Metric[],
-  fragment: DocumentFragment
+  fragment: DocumentFragment,
+  addTooltip: boolean
 ) {
   // There is no run-level metric, so we check each read of each lane
   if (
@@ -801,17 +832,15 @@ function addPhixContents(
 
   const tooltip = Tooltip.getInstance();
   const laneTooltipContents = document.createDocumentFragment();
-  metrics.forEach((metric) => {
-    const metricDiv = document.createElement("div");
-    metricDiv.innerText = getMetricRequirementText(metric);
-    laneTooltipContents.appendChild(metricDiv);
-  });
+  metrics.forEach((metric) =>
+    addMetricRequirementText(metric, laneTooltipContents)
+  );
 
   const multipleLanes = sample.run.lanes.length > 1;
   sample.run.lanes.forEach((lane) => {
     const laneDiv = document.createElement("div");
-    laneDiv.classList.add("whitespace-nowrap");
-    let text = multipleLanes ? `Ln${lane.laneNumber}` : "";
+    laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+    let text = multipleLanes ? `L${lane.laneNumber}` : "";
     if (nullOrUndefined(lane.percentPfixRead1)) {
       const span = document.createElement("span");
       span.innerText = text + ": ";
@@ -826,7 +855,9 @@ function addPhixContents(
         text += `; R2: ${lane.percentPfixRead2}`;
       }
       laneDiv.innerText = text;
-      tooltip.addTarget(laneDiv, laneTooltipContents);
+      if (addTooltip) {
+        tooltip.addTarget(laneDiv, laneTooltipContents);
+      }
     }
     fragment.appendChild(laneDiv);
   });
@@ -874,7 +905,7 @@ function getMatchingMetrics(
     );
 }
 
-function subcategoryApplies(
+export function subcategoryApplies(
   subcategory: MetricSubcategory,
   sample: Sample
 ): boolean {
@@ -887,7 +918,7 @@ function subcategoryApplies(
   return true;
 }
 
-function metricApplies(metric: Metric, sample: Sample): boolean {
+export function metricApplies(metric: Metric, sample: Sample): boolean {
   if (
     metric.tissueMaterial &&
     sample.tissueMaterial !== metric.tissueMaterial
@@ -1042,7 +1073,7 @@ export function getRunQcStatus(run: Qcable): QcStatus {
   return firstStatus;
 }
 
-function getFirstReviewStatus(qcable: Qcable) {
+export function getFirstReviewStatus(qcable: Qcable) {
   if (qcable.qcPassed === false) {
     return qcStatuses.failed;
   } else if (qcable.qcPassed === true) {
