@@ -744,7 +744,8 @@ public class CaseLoader {
     caseSummary.totalTestCount(testSize);
     if (PendingState.RECEIPT_QC.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.receiptPendingQcCount(testSize);
-    } else {
+    }
+    if (CompletedGate.RECEIPT.qualifyCase(kase)) {
       caseSummary.receiptCompletedCount(testSize);
     }
     for (Test test : tests) {
