@@ -1,6 +1,7 @@
 import {
   addNaText,
   addTextDiv,
+  CellStatus,
   makeIcon,
   makeNameDiv,
 } from "../util/html-utils";
@@ -193,14 +194,15 @@ function generateMetricColumns(
                 addTextDiv(`Group ID: ${qcGroup.groupId}`, detailsFragment);
               }
             }
-            if (value === null) {
-              div.appendChild(makeNotFoundIcon(prefix, detailsFragment));
-            } else {
-              div.appendChild(
-                makeMetricDisplay(value, metrics, prefix, detailsFragment)
-              );
-            }
-            fragment.appendChild(div);
+            fragment.appendChild(
+              makeRequisitionMetricDisplay(
+                metricsPerGroup[i],
+                qcGroup,
+                true,
+                prefix,
+                detailsFragment
+              )
+            );
           }
         }
       },
@@ -231,6 +233,61 @@ function generateMetricColumns(
   });
 }
 
+export function getRequisitionMetricCellHighlight(
+  requisition: Requisition,
+  metricName: string
+): CellStatus | null {
+  if (metricName === "Trimming; Minimum base quality Q") {
+    return null;
+  } else if (!requisition.qcGroups.length) {
+    return "warning";
+  }
+  let anyApplicable = false;
+  for (let i = 0; i < requisition.qcGroups.length; i++) {
+    const qcGroup = requisition.qcGroups[i];
+    const metrics = getMatchingMetrics(metricName, requisition, qcGroup);
+    if (!metrics || !metrics.length) {
+      continue;
+    }
+    anyApplicable = true;
+    const value = getMetricValue(metricName, qcGroup);
+    if (value === null) {
+      return "warning";
+    } else if (anyFail(value, metrics)) {
+      return "error";
+    }
+  }
+  return anyApplicable ? null : "na";
+}
+
+export function makeRequisitionMetricDisplay(
+  metrics: Metric[],
+  qcGroup: RequisitionQcGroup,
+  addTooltip: boolean,
+  prefix?: string,
+  tooltipAdditionalContents?: Node
+): Node {
+  if (metrics[0].name === "Trimming; Minimum base quality Q") {
+    return document.createTextNode("Standard pipeline removes reads below Q30");
+  }
+  const div = document.createElement("div");
+  const value = getMetricValue(metrics[0].name, qcGroup);
+  if (value === null) {
+    div.appendChild(makeNotFoundIcon(prefix, tooltipAdditionalContents));
+  } else {
+    div.appendChild(
+      makeMetricDisplay(
+        value,
+        metrics,
+        addTooltip,
+        prefix,
+        tooltipAdditionalContents
+      )
+    );
+  }
+  return div;
+}
+
 function makeQcGroupLabel(qcGroup: RequisitionQcGroup) {
   let label = `${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
   if (qcGroup.groupId) {
@@ -239,7 +296,7 @@ function makeQcGroupLabel(qcGroup: RequisitionQcGroup) {
   return label;
 }
 
-function getMetricValue(
+export function getMetricValue(
   metricName: string,
   qcGroup: RequisitionQcGroup
 ): number | null {
@@ -273,7 +330,7 @@ function getMatchingMetrics(
     );
 }
 
-function subcategoryApplies(
+export function subcategoryApplies(
   subcategory: MetricSubcategory,
   qcGroup: RequisitionQcGroup
 ): boolean {
@@ -283,7 +340,10 @@ function subcategoryApplies(
   );
 }
 
-function metricApplies(metric: Metric, qcGroup: RequisitionQcGroup): boolean {
+export function metricApplies(
+  metric: Metric,
+  qcGroup: RequisitionQcGroup
+): boolean {
   if (metric.tissueOrigin && metric.tissueOrigin !== qcGroup.tissueOrigin) {
     return false;
   }

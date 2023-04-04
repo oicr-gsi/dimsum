@@ -19,6 +19,7 @@ type FilterType = "text" | "dropdown";
 
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
+  headingClass?: string; // class to add to heading cell
   sortType?: SortType;
   child?: boolean;
   addParentContents?: (object: ParentType, fragment: DocumentFragment) => void;
@@ -58,9 +59,10 @@ export interface BulkAction<ParentType> {
 }
 
 export interface TableDefinition<ParentType, ChildType> {
-  queryUrl: string;
-  defaultSort?: SortDefinition;
+  queryUrl?: string; // required if table is loaded via AJAX
+  defaultSort?: SortDefinition; // required if table is loaded via AJAX and pag controls are NOT disabled
   filters?: FilterDefinition[];
+  getSubheading?: (parent: ParentType) => string | null;
   getChildren?: (parent: ParentType) => ChildType[];
   generateColumns: (
     data?: ParentType[]
@@ -69,6 +71,9 @@ export interface TableDefinition<ParentType, ChildType> {
   staticActions?: StaticAction[];
   bulkActions?: BulkAction<ParentType>[];
   disablePageControls?: boolean;
+  // when a parent object has no children, noChildrenWarning is displayed with warning highlight.
+  // if noChildrenWarning is not provided, 'N/A' is displayed instead
+  noChildrenWarning?: string;
 }
 
 class AcceptedFilter {
@@ -168,6 +173,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns = definition.generateColumns();
   }
 
+
   public applyFilters(key: string, value: string, add?: boolean) {
     if (add) {
       this.definition.filters?.forEach((f) => {
@@ -190,20 +196,30 @@ export class TableBuilder<ParentType, ChildType> {
     this.reload(true);
   }
 
-  public build() {
-    const topControlsContainer = document.createElement("div");
-    topControlsContainer.className = "flex mt-4 items-top space-x-2";
+  /**
+   * Activates the table
+   *
+   * @param data if provided, this static data is added to the table; otherwise the
+   * TableDefinition's queryUrl is used to fetch the data
+   */
+  public build(data?: ParentType[]) {
+    if (!data && !this.definition.queryUrl) {
+      throw new Error("Query url is required for loading table via AJAX");
+    }
     if (!this.definition.disablePageControls) {
+      const topControlsContainer = document.createElement("div");
+      topControlsContainer.className = "flex mt-4 items-top space-x-2";
       this.addSortControls(topControlsContainer);
       this.addFilterControls(topControlsContainer);
       this.addPagingControls(topControlsContainer);
+      this.container.appendChild(topControlsContainer);
     }
-    this.container.appendChild(topControlsContainer);
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
     this.table = document.createElement("table");
     // set global default styling settings
     this.table.classList.add(
+      "data-table",
       "w-full",
       "text-14",
       "text-black",
@@ -220,15 +236,20 @@ export class TableBuilder<ParentType, ChildType> {
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
 
-    const bottomControlsContainer = document.createElement("div");
-    bottomControlsContainer.className =
-      "flex justify-end mt-4 items-top space-x-2";
-    this.addActionButtons(bottomControlsContainer);
-    this.container.appendChild(bottomControlsContainer);
-    this.load();
+    if (this.definition.bulkActions || this.definition.staticActions) {
+      const bottomControlsContainer = document.createElement("div");
+      bottomControlsContainer.className =
+        "flex justify-end mt-4 items-top space-x-2";
+      this.addActionButtons(bottomControlsContainer);
+      this.container.appendChild(bottomControlsContainer);
+    }
+
+    this.load(data);
     this.setupScrollListener();
-    this.reload();
-    return this;
+    if (!data) {
+      this.reload();
+    }
+     return this;
   }
 
   private addActionButtons(container: HTMLElement) {
@@ -541,7 +562,8 @@ export class TableBuilder<ParentType, ChildType> {
       addColumnHeader(
         row,
         column.title,
-        i == 0 && !this.definition.bulkActions
+        i == 0 && !this.definition.bulkActions,
+        column.headingClass
       );
     });
   }
@@ -574,13 +596,20 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
-    const tbody = table.createTBody();
     if (data && data.length) {
+      let previousSubheading: string | null = null;
       data.forEach((parent) => {
-        this.addDataRow(tbody, parent);
+        if (this.definition.getSubheading) {
+          const currentSubheading = this.definition.getSubheading(parent);
+          if (currentSubheading !== previousSubheading) {
+            this.addSubheadingRow(table, currentSubheading);
+            previousSubheading = currentSubheading;
+          }
+        }
+        this.addDataRow(table, parent);
       });
     } else {
-      this.addNoDataRow(tbody);
+      this.addNoDataRow(table);
     }
   }
 
@@ -602,7 +631,11 @@ export class TableBuilder<ParentType, ChildType> {
     });
   }
 
-  public async reload(resetPage?: boolean) {
+
+  private async reload(resetPage?: boolean) {
+    if (!this.definition.queryUrl) {
+      throw new Error("Cannot reload without query URL");
+    }
     this.showLoading();
     if (resetPage) {
       this.pageNumber = 1;
@@ -659,12 +692,27 @@ export class TableBuilder<ParentType, ChildType> {
     }
   }
 
-  private addDataRow(tbody: HTMLTableSectionElement, parent: ParentType) {
+  private addSubheadingRow(table: HTMLTableElement, text: string | null) {
+    const tbody = table.createTBody();
+    tbody.classList.add("keep-with-next");
+    const row = tbody.insertRow();
+    const th = row.insertCell();
+    th.className =
+      "p-3 border-grey-200 border-t-1 text-left align-text-top font-semibold bg-grey-100";
+    th.colSpan = this.columns.length + (this.definition.bulkActions ? 1 : 0);
+    // Null heading should always be first and not display anything, but if it's later for some
+    // reason, call it "Other"
+    th.appendChild(document.createTextNode(text || "Other"));
+  }
+
+  private addDataRow(table: HTMLTableElement, parent: ParentType) {
     let children: ChildType[] = [];
     if (this.definition.getChildren) {
       children = this.definition.getChildren(parent);
     }
     // generate parent row, which includes the first child (if applicable)
+    const tbody = table.createTBody();
+    tbody.classList.add("nobreak");
     const tr = this.addBodyRow(tbody, parent);
     if (this.definition.bulkActions) {
       this.addRowSelectCell(tr, parent);
@@ -675,8 +723,14 @@ export class TableBuilder<ParentType, ChildType> {
           this.addChildCell(tr, column, children[0], parent, i);
         } else {
           const td = makeCell(tr, i == 0 && !this.definition.bulkActions);
-          shadeElement(td, "na");
-          td.appendChild(document.createTextNode("N/A"));
+          td.classList.add("font-bold");
+          shadeElement(
+            td,
+            this.definition.noChildrenWarning ? "warning" : "na"
+          );
+          td.appendChild(
+            document.createTextNode(this.definition.noChildrenWarning || "N/A")
+          );
         }
       } else {
         this.addParentCell(tr, column, parent, children, i);
@@ -707,7 +761,8 @@ export class TableBuilder<ParentType, ChildType> {
     return tr;
   }
 
-  private addNoDataRow(tbody: HTMLTableSectionElement) {
+  private addNoDataRow(table: HTMLTableElement) {
+    const tbody = table.createTBody();
     const row = tbody.insertRow();
     const cell = makeCell(row, true);
     cell.colSpan = this.columns.length + (this.definition.bulkActions ? 1 : 0);

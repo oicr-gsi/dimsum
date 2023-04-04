@@ -3,7 +3,10 @@ package ca.on.oicr.gsi.dimsum.controller.rest;
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 
 import java.util.List;
+import javax.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +34,15 @@ public class CaseRestController {
     List<CaseFilter> filters = parseCaseFilters(query);
     return caseService.getCases(query.getPageSize(), query.getPageNumber(), sort, descending,
         baseFilter, filters);
+  }
+
+  @GetMapping("/{id}")
+  public Case getCase(@PathVariable String id) {
+    Case kase = caseService.getCase(id);
+    if (kase == null) {
+      throw new NotFoundException("Case not found");
+    }
+    return kase;
   }
 
 

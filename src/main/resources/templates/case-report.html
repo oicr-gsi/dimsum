@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Case Quality Control Report</title>
+</head>
+
+<body>
+  <div layout:fragment="content" id="content" th:data-case-id="${caseId}">
+    <div class="flex space-x-2 justify-between items-center">
+      <h1 class="text-green-200 font-sarabun font-light text-32">Case Quality Control Report</h1>
+      <button id="printButton"
+        class="noprint bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1">
+        Print
+      </button>
+    </div>
+    <div id="caseAttributesContainer"></div>
+
+    <div class="keep-with-next">
+      <h2 class="text-green-200 font-sarabun font-light text-24 mt-4">Receipt/Inspection</h2>
+    </div>
+    <div id="receiptTableContainer"></div>
+
+    <div class="keep-with-next">
+      <h2 class="text-green-200 font-sarabun font-light text-24 mt-4">Extraction</h2>
+    </div>
+    <div id="extractionTableContainer"></div>
+
+    <div class="keep-with-next">
+      <h2 class="text-green-200 font-sarabun font-light text-24 mt-4">Library Preparation</h2>
+    </div>
+    <div id="libraryPreparationTableContainer"></div>
+
+    <div class="keep-with-next">
+      <h2 class="text-green-200 font-sarabun font-light text-24 mt-4">Library Qualification</h2>
+    </div>
+    <div id="libraryQualificationTableContainer"></div>
+
+    <div class="keep-with-next">
+      <h2 class="text-green-200 font-sarabun font-light text-24 mt-4">Full-Depth Sequencing</h2>
+    </div>
+    <div id="fullDepthSequencingTableContainer"></div>
+
+    <div class="keep-with-next">
+      <h2 class="text-green-200 font-sarabun font-light text-24 mt-4">Informatics Review</h2>
+    </div>
+    <div id="informaticsTableContainer"></div>
+
+    <script src="/js/caseReport.js"></script>
+  </div>
+</body>
+
+</html>
