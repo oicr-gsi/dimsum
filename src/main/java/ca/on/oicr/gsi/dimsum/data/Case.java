@@ -108,6 +108,10 @@ public class Case {
     return latestActivityDate;
   }
 
+  public boolean isStopped() {
+    return requisition.isStopped();
+  }
+
   public static class Builder {
 
     private String id;

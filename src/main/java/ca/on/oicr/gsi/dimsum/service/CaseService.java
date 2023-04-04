@@ -499,14 +499,14 @@ public class CaseService {
 
   private Map<Case, List<Test>> getFilteredCaseAndTest(List<Case> cases,
       Collection<CaseFilter> filters) {
-    Map<Case, List<Test>> testsByCase = filterCases(cases, filters)
-        .collect(Collectors.toMap(Function.identity(), x -> x.getTests()));
+    Map<Case, List<Test>> testsByCase = new HashMap<>();
+    List<Case> filteredCases = filterCases(cases, filters).toList();
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<Test>> filterMap =
           buildFilterMap(filters, CaseFilter::testPredicate);
       for (Predicate<Test> predicate : filterMap.values()) {
-        for (Map.Entry<Case, List<Test>> entry : testsByCase.entrySet()) {
-          testsByCase.put(entry.getKey(), entry.getValue().stream().filter(predicate).toList());
+        for (Case kase : filteredCases) {
+          testsByCase.put(kase, kase.getTests().stream().filter(predicate).toList());
         }
       }
     }
