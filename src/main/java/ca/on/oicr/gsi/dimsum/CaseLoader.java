@@ -742,7 +742,7 @@ public class CaseLoader {
         new ProjectSummary.Builder();
     int testSize = tests != null ? tests.size() : 0;
     caseSummary.totalTestCount(testSize);
-    if (PendingState.RECEIPT_QC.qualifyCase(kase)) {
+    if (PendingState.RECEIPT_QC.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.receiptPendingQcCount(testSize);
     } else {
       caseSummary.receiptCompletedCount(testSize);
@@ -750,9 +750,9 @@ public class CaseLoader {
     for (Test test : tests) {
       if (CompletedGate.EXTRACTION.qualifyTest(test)) {
         caseSummary.incrementExtractionCompletedCount();
-      } else if (PendingState.EXTRACTION_QC.qualifyTest(test)) {
+      } else if (PendingState.EXTRACTION_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementExtractionPendingQcCount();
-      } else if (PendingState.EXTRACTION.qualifyTest(test)) {
+      } else if (PendingState.EXTRACTION.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementExtractionPendingCount();
       }
 
@@ -761,9 +761,9 @@ public class CaseLoader {
           .equals(sample.getQcPassed())
           && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
         caseSummary.incrementLibraryPrepCompletedCount();
-      } else if (PendingState.LIBRARY_QC.qualifyTest(test)) {
+      } else if (PendingState.LIBRARY_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementLibraryPrepPendingQcCount();
-      } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test)) {
+      } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementLibraryPrepPendingCount();
       }
 
@@ -772,10 +772,11 @@ public class CaseLoader {
           .equals(sample.getQcPassed())
           && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
         caseSummary.incrementLibraryQualCompletedCount();
-      } else if (PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
-          || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test)) {
+      } else if ((PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
+          || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
+          && !kase.isStopped()) {
         caseSummary.incrementLibraryQualPendingQcCount();
-      } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test)) {
+      } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementLibraryQualPendingCount();
       }
 
@@ -784,10 +785,10 @@ public class CaseLoader {
           .equals(sample.getQcPassed())
           && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
         caseSummary.incrementFullDepthSeqCompletedCount();
-      } else if (PendingState.FULL_DEPTH_QC.qualifyTest(test)
-          || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) {
+      } else if ((PendingState.FULL_DEPTH_QC.qualifyTest(test)
+          || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) && !kase.isStopped()) {
         caseSummary.incrementFullDepthSeqPendingQcCount();
-      } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test)) {
+      } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementFullDepthSeqPendingCount();
       }
     }
@@ -797,7 +798,7 @@ public class CaseLoader {
         .anyMatch(x -> x.isQcPassed())) {
       caseSummary.informaticsCompletedCount(testSize);
     }
-    if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase)) {
+    if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.informaticsPendingCount(testSize);
     }
 
@@ -806,7 +807,7 @@ public class CaseLoader {
         .anyMatch(x -> x.isQcPassed())) {
       caseSummary.draftReportCompletedCount(testSize);
     }
-    if (PendingState.DRAFT_REPORT.qualifyCase(kase)) {
+    if (PendingState.DRAFT_REPORT.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.draftReportPendingCount(testSize);
     }
 
@@ -815,7 +816,7 @@ public class CaseLoader {
         .anyMatch(x -> x.isQcPassed())) {
       caseSummary.finalReportCompletedCount(testSize);
     }
-    if (PendingState.FINAL_REPORT.qualifyCase(kase)) {
+    if (PendingState.FINAL_REPORT.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.finalReportPendingCount(testSize);
     }
 
