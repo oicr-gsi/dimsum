@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum;
 
 import ca.on.oicr.gsi.dimsum.data.*;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -740,7 +741,8 @@ public class CaseLoader {
     caseSummary.totalTestCount(testSize);
     if (PendingState.RECEIPT_QC.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.receiptPendingQcCount(testSize);
-    } else {
+    }
+    if (CompletedGate.RECEIPT.qualifyCase(kase)) {
       caseSummary.receiptCompletedCount(testSize);
     }
     for (Test test : tests) {
