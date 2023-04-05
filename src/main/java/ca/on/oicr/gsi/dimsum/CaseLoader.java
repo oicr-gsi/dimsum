@@ -717,9 +717,7 @@ public class CaseLoader {
   public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     for (Case kase : cases) {
-      if (!kase.isStopped()) {
-        addCounts(kase, kase.getTests(), tempProjectSummariesByName);
-      }
+      addCounts(kase, kase.getTests(), tempProjectSummariesByName);
     }
 
     return buildProjectSummaries(tempProjectSummariesByName);

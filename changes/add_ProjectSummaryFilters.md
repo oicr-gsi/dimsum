@@ -1,2 +1,2 @@
 The summary table now match any filters applied to the other tables on the Project Details page and displays the counts of completed items at each gate accordingly
-- Project detail table (with no filters applied) will not show stopped cases for consistency with the counts table
+- Project detail table with any Completed Gate filter will now show stopped cases as well for consistency with the counts table
