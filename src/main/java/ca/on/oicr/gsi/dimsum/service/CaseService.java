@@ -119,19 +119,6 @@ public class CaseService {
     }
   }
 
-  public List<Case> getCasesForProjectDetails(CaseFilter baseFilter) {
-    CaseData currentData = caseData;
-    if (currentData == null) {
-      throw new IllegalStateException("Cases have not been loaded yet");
-    }
-    if (baseFilter != null) {
-      return currentData.getCases().stream().filter(x -> !x.isStopped())
-          .filter(baseFilter.casePredicate()).toList();
-    } else {
-      return currentData.getCases();
-    }
-  }
-
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
       CaseFilter baseFilter, Collection<CaseFilter> filters) {
     List<Case> baseCases = getCases(baseFilter);
