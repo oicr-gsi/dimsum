@@ -474,7 +474,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RECEIPT.getLabel());
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21));
+        17, 18, 19, 20, 21, 23));
   }
 
   @org.junit.jupiter.api.Test
@@ -542,7 +542,8 @@ public class CaseFilterTest {
             makeSampleId(18, 0, MetricCategory.RECEIPT, 1),
             makeSampleId(19, 0, MetricCategory.RECEIPT, 1),
             makeSampleId(20, 0, MetricCategory.RECEIPT, 1),
-            makeSampleId(21, 0, MetricCategory.RECEIPT, 1)));
+            makeSampleId(21, 0, MetricCategory.RECEIPT, 1),
+            makeSampleId(23, 0, MetricCategory.RECEIPT, 1)));
   }
 
 
