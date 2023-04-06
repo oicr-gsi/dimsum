@@ -7,6 +7,15 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.7.0] - 2023-04-06
+
+### Added
+
+* The summary table now match any filters applied to the other tables on the Project Details page and displays the counts of completed items at each gate accordingly
+  - Project detail table with any Completed Gate filter will now show stopped cases as well for consistency with the counts table
+* Case QC Report page
+
+
 ## [1.6.0] - 2023-03-30
 
 ### Added
