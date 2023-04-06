@@ -10,7 +10,7 @@
   </parent>
   <groupId>ca.on.oicr.gsi</groupId>
   <artifactId>dimsum</artifactId>
-  <version>1.7.0</version>
+  <version>1.7.1-SNAPSHOT</version>
   <name>Dimsum</name>
   <description>QC Tracking Dashboard</description>
   <properties>
