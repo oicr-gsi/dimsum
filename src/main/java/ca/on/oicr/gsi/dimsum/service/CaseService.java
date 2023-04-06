@@ -506,6 +506,11 @@ public class CaseService {
 
   private Map<Case, List<Test>> getFilteredCaseAndTest(List<Case> cases,
       Collection<CaseFilter> filters) {
+    if (filters == null) {
+      throw new NullPointerException("Filters cannot be null");
+    } else if (filters.isEmpty()) {
+      throw new IllegalStateException("Filters cannot be empty");
+    }
     Map<Case, List<Test>> testsByCase = new HashMap<>();
     List<Case> filteredCases = filterCases(cases, filters).toList();
     if (filters != null && !filters.isEmpty()) {
@@ -513,7 +518,8 @@ public class CaseService {
           buildFilterMap(filters, CaseFilter::testPredicate);
       for (Predicate<Test> predicate : filterMap.values()) {
         for (Case kase : filteredCases) {
-          testsByCase.put(kase, kase.getTests().stream().filter(predicate).toList());
+          List<Test> tests = testsByCase.getOrDefault(kase, kase.getTests());
+          testsByCase.put(kase, tests.stream().filter(predicate).toList());
         }
       }
     }
