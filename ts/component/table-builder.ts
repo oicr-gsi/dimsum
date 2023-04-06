@@ -12,6 +12,7 @@ import { post } from "../util/requests";
 import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
+import { updateUrlParams } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -172,6 +173,29 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns = definition.generateColumns();
   }
 
+
+  public applyFilters(key: string, value: string, add?: boolean) {
+    if (add) {
+      this.definition.filters?.forEach((f) => {
+        if (f.key === key) {
+          // filter key is valid, create a new accepted filter
+          const onRemove = () => {
+            if (this.onFilterChange) this.onFilterChange(key, value, false);
+            this.reload();
+          };
+          this.acceptedFilters.push(
+            new AcceptedFilter(f.title, key, value, onRemove)
+          );
+        }
+      });
+    } else {
+      this.acceptedFilters = this.acceptedFilters.filter(
+        (filter) => filter.key !== key || filter.value !== value
+      );
+    }
+    this.reload(true);
+  }
+
   /**
    * Activates the table
    *
@@ -225,6 +249,7 @@ export class TableBuilder<ParentType, ChildType> {
     if (!data) {
       this.reload();
     }
+     return this;
   }
 
   private addActionButtons(container: HTMLElement) {
@@ -605,6 +630,7 @@ export class TableBuilder<ParentType, ChildType> {
       }
     });
   }
+
 
   private async reload(resetPage?: boolean) {
     if (!this.definition.queryUrl) {

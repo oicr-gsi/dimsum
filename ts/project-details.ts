@@ -24,12 +24,14 @@ if (tableContainer === null) {
   throw Error(`Container ID "${tableContainerId}" not found on page`);
 }
 
+let projectSummaryTable: TableBuilder<any, any>;
 if (tableContainer.dataset.detailValue) {
-  new TableBuilder(
+  projectSummaryTable = new TableBuilder(
     getProjectSummaryRowDefinition(
       urls.rest.projects.summary(tableContainer.dataset.detailValue)
     ),
-    "projectSummaryTableContainer"
+    "projectSummaryTableContainer",
+    getSearchParams()
   ).build();
 }
 
@@ -67,6 +69,11 @@ function reload(definition: TableDefinition<any, any>) {
     definition,
     tableContainerId,
     getSearchParams(),
-    updateUrlParams
+    handleFilters
   ).build();
+}
+
+function handleFilters(key: string, value: string, add?: boolean) {
+  projectSummaryTable.applyFilters(key, value, add);
+  updateUrlParams(key, value, add);
 }

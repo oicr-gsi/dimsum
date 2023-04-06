@@ -14,6 +14,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import java.util.List;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
 
@@ -37,6 +38,10 @@ public class ProjectRestController {
   @PostMapping("/{projectName}/summary")
   public TableData<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName,
       @RequestBody DataQuery query) {
-    return caseService.getProjectSummaryRows(projectName);
+    List<CaseFilter> filters = parseCaseFilters(query);
+    if (filters == null) {
+      return caseService.getProjectSummaryRows(projectName);
+    }
+    return caseService.getFilteredProjectSummaryRows(projectName, filters);
   }
 }

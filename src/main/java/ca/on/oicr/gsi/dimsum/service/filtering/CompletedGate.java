@@ -40,6 +40,11 @@ public enum CompletedGate {
   },
   EXTRACTION("Extraction") {
     @Override
+    public boolean qualifyCase(Case kase) {
+      return Helpers.anyTest(this::qualifyTest).test(kase);
+    }
+
+    @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getExtractions());
     }
@@ -55,6 +60,11 @@ public enum CompletedGate {
     }
   },
   LIBRARY_PREPARATION("Library Preparation") {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return Helpers.anyTest(this::qualifyTest).test(kase);
+    }
+
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getLibraryPreparations());
@@ -72,6 +82,11 @@ public enum CompletedGate {
   },
   LIBRARY_QUALIFICATION("Library Qualification") {
     @Override
+    public boolean qualifyCase(Case kase) {
+      return Helpers.anyTest(this::qualifyTest).test(kase);
+    }
+
+    @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getLibraryQualifications());
     }
@@ -86,6 +101,11 @@ public enum CompletedGate {
     }
   },
   FULL_DEPTH_SEQUENCING("Full-Depth Sequencing") {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return Helpers.anyTest(this::qualifyTest).test(kase);
+    }
+    
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getFullDepthSequencings());
@@ -215,6 +235,10 @@ public enum CompletedGate {
     public static boolean isReceiptCompleted(Case kase) {
       return kase.getReceipts().stream().anyMatch(passed)
           && kase.getReceipts().stream().noneMatch(pendingQc);
+    }
+
+    public static Predicate<Case> anyTest(Predicate<Test> testPredicate) {
+      return kase -> kase.getTests().stream().anyMatch(testPredicate);
     }
 
     private static boolean isPendingQc(Sample sample) {

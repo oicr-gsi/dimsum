@@ -54,8 +54,7 @@ public enum CaseFilterKey {
   STOPPED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isStopped() : !kase.getRequisition().isStopped()),
   COMPLETED(string -> {
     CompletedGate gate = getGate(string);
-    Predicate<Case> notStopped = kase -> !kase.getRequisition().isStopped();
-    return notStopped.and(gate.predicate());
+    return gate.predicate();
   }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {

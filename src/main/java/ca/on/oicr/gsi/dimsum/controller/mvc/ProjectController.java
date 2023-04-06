@@ -25,7 +25,8 @@ public class ProjectController {
 
   @GetMapping("/{projectName}")
   public String getProjectDetailsPage(@PathVariable String projectName, ModelMap model) {
-    List<Case> cases = caseService.getCases(new CaseFilter(CaseFilterKey.PROJECT, projectName));
+    List<Case> cases =
+        caseService.getCases(new CaseFilter(CaseFilterKey.PROJECT, projectName));
     if (cases.isEmpty()) {
       throw new NotFoundException(String.format("No data found for project: %s", projectName));
     }

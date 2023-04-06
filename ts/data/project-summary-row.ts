@@ -1,7 +1,6 @@
-import { legendAction, TableDefinition } from "../component/table-builder";
+import { TableDefinition } from "../component/table-builder";
 import { addNaText } from "../util/html-utils";
-import { urls } from "../util/urls";
-import { Project } from "./case";
+import { caseFilters } from "../component/table-components";
 
 export interface ProjectSummaryField {
   count: number;
@@ -26,6 +25,7 @@ export function getProjectSummaryRowDefinition(
 ): TableDefinition<ProjectSummaryRow, void> {
   return {
     queryUrl: queryUrl,
+    filters: caseFilters,
     disablePageControls: true,
     generateColumns(data) {
       return [
