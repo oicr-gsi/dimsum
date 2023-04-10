@@ -12,8 +12,8 @@ public enum CaseSort {
   // @formatter:off
   ASSAY("Assay", Comparator.comparing(kase -> kase.getAssay().getName())),
   DONOR("Donor", Comparator.comparing(kase -> kase.getDonor().getName())),
-  START_DATE("Start Date", Comparator.comparing(Case::getStartDate)),
-  LAST_ACTIVITY("Latest Activity", Comparator.comparing(Case::getLatestActivityDate));
+  START_DATE("Start Date", Comparator.comparing(Case::getStartDate, Comparator.nullsLast(Comparator.naturalOrder()))),
+  LAST_ACTIVITY("Latest Activity", Comparator.comparing(Case::getLatestActivityDate, Comparator.nullsLast(Comparator.naturalOrder())));
   // @formatter:on
 
   private static final Map<String, CaseSort> map = Stream.of(CaseSort.values())
