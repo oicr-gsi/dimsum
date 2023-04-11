@@ -369,19 +369,6 @@ function qcInMiso(items: Sample[], category: MetricCategory) {
     return;
   }
   const groups = groupByAssayAndDesign(items);
-  if (groups.size > 1) {
-    const strings = items
-      .map((x) => {
-        // assayId can't actually be undefined here
-        const assay = siteConfig.assaysById[x.assayId || 0];
-        return `${x.name}: ${x.libraryDesignCode}; ${assay.name}`;
-      })
-      .filter(unique);
-    const list = makeList(strings);
-    showErrorDialog("Libraries must have the same assay and design", list);
-    return;
-  }
-  // There can only be one group at this point
   groups.forEach((items) => openQcInMiso(items, category));
 }
 
