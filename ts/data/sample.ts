@@ -368,8 +368,7 @@ function qcInMiso(items: Sample[], category: MetricCategory) {
     showErrorDialog("Some libraries have no assay:", list);
     return;
   }
-  const groups = groupByAssayAndDesign(items);
-  groups.forEach((items) => openQcInMiso(items, category));
+  openQcInMiso(items, category);
 }
 
 function unique<Type>(item: Type, index: number, array: Type[]) {
@@ -385,23 +384,6 @@ function makeList<Type>(items: string[]): HTMLElement {
     list.appendChild(li);
   });
   return list;
-}
-
-function groupByAssayAndDesign(samples: Sample[]) {
-  const groups = new Map<string, Sample[]>();
-  samples.forEach((x) => {
-    if (!x.assayId) {
-      throw new Error(`Library ${x.name} has no assay`);
-    } else if (!x.libraryDesignCode) {
-      throw new Error(`Library ${x.id} has no design code`);
-    }
-    const key = `${x.assayId}_${x.libraryDesignCode}`;
-    if (!groups.has(key)) {
-      groups.set(key, []);
-    }
-    groups.get(key)?.push(x);
-  });
-  return groups;
 }
 
 function openQcInMiso(samples: Sample[], category: MetricCategory) {
