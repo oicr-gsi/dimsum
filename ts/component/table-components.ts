@@ -65,4 +65,10 @@ export var caseFilters: FilterDefinition[] = [
     type: "dropdown",
     values: stopStatus,
   },
+  {
+    title: "Library Design",
+    key: "LIBRARY_DESIGN",
+    type: "dropdown",
+    values: siteConfig.libraryDesigns,
+  },
 ];
