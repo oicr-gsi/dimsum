@@ -27,8 +27,6 @@ export interface ProjectSummary {
   finalReportCompletedCount: number;
 }
 
-const completedFilterKey = "COMPLETED";
-
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
   queryUrl: urls.rest.projects.list,
   defaultSort: {
@@ -166,6 +164,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
     ];
   },
 };
+
+const completedFilterKey = "COMPLETED";
 
 function displayFilteredProject(
   count: number,
