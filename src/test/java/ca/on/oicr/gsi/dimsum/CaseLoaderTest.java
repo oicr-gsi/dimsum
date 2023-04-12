@@ -112,11 +112,9 @@ public class CaseLoaderTest {
 
   @Test
   public void testLoadRequisitions() throws Exception {
-    Donor donor1 = mock(Donor.class);
-    when(donor1.getId()).thenReturn("SAM413576");
-    Donor donor2 = mock(Donor.class);
-    when(donor2.getId()).thenReturn("SAM123456");
-    Map<String, Donor> donorsById = Map.of(donor1.getId(), donor1, donor2.getId(), donor2);
+    Donor donor = mock(Donor.class);
+    when(donor.getId()).thenReturn("SAM413576");
+    Map<String, Donor> donorsById = Map.of(donor.getId(), donor);
 
     try (FileReader reader = sut.getRequisitionReader()) {
       Map<Long, Requisition> requisitionsById = sut.loadRequisitions(reader, donorsById);
