@@ -22,8 +22,10 @@ import {
 import { siteConfig } from "../util/site-config";
 import { Metric, MetricSubcategory } from "./assay";
 import { caseFilters, latestActivitySort } from "../component/table-components";
+import { Donor } from "./case";
 
 export interface RequisitionQcGroup {
+  donor: Donor;
   tissueOrigin: string;
   tissueType: string;
   libraryDesignCode: string;

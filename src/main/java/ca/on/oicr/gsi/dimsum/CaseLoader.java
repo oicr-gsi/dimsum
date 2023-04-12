@@ -121,7 +121,7 @@ public class CaseLoader {
       Map<String, Project> projectsByName = loadProjects(projectReader);
       Map<String, Donor> donorsById = loadDonors(donorReader);
       Map<Long, Run> runsById = loadRuns(runReader);
-      Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader);
+      Map<Long, Requisition> requisitionsById = loadRequisitions(requisitionReader, donorsById);
       Map<String, Sample> samplesById =
           loadSamples(sampleReader, donorsById, runsById, requisitionsById);
       List<OmittedSample> omittedSamples =
@@ -358,8 +358,8 @@ public class CaseLoader {
     return donors.stream().collect(Collectors.toMap(Donor::getId, Function.identity()));
   }
 
-  protected Map<Long, Requisition> loadRequisitions(FileReader fileReader)
-      throws DataParseException, IOException {
+  protected Map<Long, Requisition> loadRequisitions(FileReader fileReader,
+      Map<String, Donor> donorsById) throws DataParseException, IOException {
     List<Requisition> requisitions = loadFromJsonArrayFile(fileReader, json -> {
       Requisition requisition = new Requisition.Builder()
           .id(parseLong(json, "id", true))
@@ -367,7 +367,7 @@ public class CaseLoader {
           .assayId(parseLong(json, "assay_id", false))
           .stopped(parseBoolean(json, "stopped"))
           .stopReason(parseString(json, "stop_reason", false))
-          .qcGroups(parseRequisitionQcGroups(json.get("qc_groups")))
+          .qcGroups(parseRequisitionQcGroups(json.get("qc_groups"), donorsById))
           .informaticsReviews(parseRequisitionQcs(json, "informatics_reviews"))
           .draftReports(parseRequisitionQcs(json, "draft_reports"))
           .finalReports(parseRequisitionQcs(json, "final_reports")).build();
@@ -610,14 +610,15 @@ public class CaseLoader {
     return stringValue == null ? null : new BigDecimal(stringValue);
   }
 
-  private static List<RequisitionQcGroup> parseRequisitionQcGroups(JsonNode json)
-      throws DataParseException {
+  private static List<RequisitionQcGroup> parseRequisitionQcGroups(JsonNode json,
+      Map<String, Donor> donorsById) throws DataParseException {
     if (json == null || !json.isArray()) {
       throw new DataParseException("Invalid requisition qc_groups");
     }
     List<RequisitionQcGroup> qcGroups = new ArrayList<>();
     for (JsonNode node : json) {
       qcGroups.add(new RequisitionQcGroup.Builder()
+          .donor(donorsById.get(parseString(node, "donor_id", true)))
           .tissueOrigin(parseString(node, "tissue_origin", true))
           .tissueType(parseString(node, "tissue_type", true))
           .libraryDesignCode(parseString(node, "library_design", true))

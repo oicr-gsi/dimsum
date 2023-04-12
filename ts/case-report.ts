@@ -326,7 +326,6 @@ const requisitionGateMetricsDefinition: TableDefinition<
       title: "Item",
       headingClass: "print-width-20",
       addParentContents(object, fragment) {
-        // TODO: donor name (needs qc-gate-etl update)
         addTextDiv(getQcGroupName(object.requisitionQcGroup), fragment);
         if (object.requisitionQcGroup.groupId) {
           addTextDiv(
@@ -438,8 +437,7 @@ function pad(value: number, length: number): string {
 }
 
 function getQcGroupName(qcGroup: RequisitionQcGroup) {
-  // TODO: donor name
-  return `${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
+  return `${qcGroup.donor.name}_${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
 }
 
 async function loadCase(caseId: string) {
@@ -577,9 +575,7 @@ function getReportInformatics(kase: Case) {
         }
       });
   return kase.requisition.qcGroups
-    .filter((qcGroup) => {
-      return true; // TODO: qcGroup.donorId === kase.donor.id
-    })
+    .filter((qcGroup) => qcGroup.donor.id === kase.donor.id)
     .flatMap((qcGroup) => {
       return assay.metricCategories.INFORMATICS.filter((subcategory) =>
         requisitionSubcategoryApplies(subcategory, qcGroup)
