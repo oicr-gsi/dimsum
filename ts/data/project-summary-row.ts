@@ -1,6 +1,7 @@
 import { TableDefinition } from "../component/table-builder";
-import { addNaText } from "../util/html-utils";
+import { addNaText, makeNameDiv } from "../util/html-utils";
 import { caseFilters } from "../component/table-components";
+import { appendUrlParam, urls } from "../util/urls";
 
 export interface ProjectSummaryField {
   count: number;
@@ -111,6 +112,14 @@ function displayCount(
     return;
   }
   fragment.appendChild(
-    document.createTextNode(projectSummaryField.count.toString())
+    // document.createTextNode(projectSummaryField.count.toString())
+    makeNameDiv(
+      projectSummaryField.count.toString(),
+      undefined,
+      appendUrlParam(
+        projectSummaryField.filterKey,
+        projectSummaryField.filterValue
+      )
+    )
   );
 }

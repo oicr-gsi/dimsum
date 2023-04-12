@@ -27,6 +27,8 @@ export interface ProjectSummary {
   finalReportCompletedCount: number;
 }
 
+const completedFilterKey = "COMPLETED";
+
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
   queryUrl: urls.rest.projects.list,
   defaultSort: {
@@ -69,8 +71,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Received",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.receiptCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.receiptCompletedCount,
+              projectSummary.name,
+              "Receipt"
             )
           );
         },
@@ -79,8 +83,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Extracted",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.extractionCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.extractionCompletedCount,
+              projectSummary.name,
+              "Extraction"
             )
           );
         },
@@ -89,8 +95,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Libraries Prepared",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.libraryPrepCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.libraryPrepCompletedCount,
+              projectSummary.name,
+              "Library Preparation"
             )
           );
         },
@@ -99,8 +107,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Libraries Qualified",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.libraryQualCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.libraryQualCompletedCount,
+              projectSummary.name,
+              "Library Qualification"
             )
           );
         },
@@ -109,8 +119,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Sequenced",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.fullDepthSeqCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.fullDepthSeqCompletedCount,
+              projectSummary.name,
+              "Full-Depth Sequencing"
             )
           );
         },
@@ -119,8 +131,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Informatics Reviewed",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.informaticsCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.informaticsCompletedCount,
+              projectSummary.name,
+              "Informatics Review"
             )
           );
         },
@@ -129,8 +143,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Report Drafted",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.draftReportCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.draftReportCompletedCount,
+              projectSummary.name,
+              "Draft Report"
             )
           );
         },
@@ -139,8 +155,10 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         title: "Report Finalized",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
-            document.createTextNode(
-              projectSummary.finalReportCompletedCount.toString()
+            displayFilteredProject(
+              projectSummary.finalReportCompletedCount,
+              projectSummary.name,
+              "Final Report"
             )
           );
         },
@@ -148,3 +166,18 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
     ];
   },
 };
+
+function displayFilteredProject(
+  count: number,
+  projectName: string,
+  filterValue: string
+) {
+  var url = new URL(document.location.href);
+  var params = url.searchParams;
+  params.append(completedFilterKey, filterValue);
+  return makeNameDiv(
+    count.toString(),
+    undefined,
+    urls.dimsum.project(projectName) + `?${params.toString()}`
+  );
+}
