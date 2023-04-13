@@ -48,18 +48,20 @@ const tables = [
       getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true)
     )
   ),
-  new Pair("Full Depth Sequencings", () =>
+  new Pair("Full-Depth Sequencings", () =>
     reload(
       getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
     )
   ),
-  new Pair("Informatics Review", () => reload(informaticsReviewDefinition)),
+  new Pair("Informatics Reviews", () => reload(informaticsReviewDefinition)),
   new Pair("Draft Reports", () => reload(draftReportDefinition)),
   new Pair("Final Reports", () => reload(finalReportDefinition)),
 ];
 
 // tabbed interface defaults to the cases table
-const tabBar = new TabBar(tables, "Cases", "tabBarContainer");
+const tableUrlQuery =
+  getSearchParams().find((query) => query.key === "TABLE")?.value || "Cases";
+const tabBar = new TabBar(tables, tableUrlQuery, "tabBarContainer");
 tabBar.build();
 
 // reload: destroy current table and build new table
