@@ -53,7 +53,7 @@ const tables = [
       getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
     )
   ),
-  new Pair("Informatics Review", () => reload(informaticsReviewDefinition)),
+  new Pair("Informatics Reviews", () => reload(informaticsReviewDefinition)),
   new Pair("Draft Reports", () => reload(draftReportDefinition)),
   new Pair("Final Reports", () => reload(finalReportDefinition)),
 ];

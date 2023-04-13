@@ -174,8 +174,7 @@ function displayFilteredProject(
   filterValue: string
 ) {
   const params = new URLSearchParams();
-  const tableFilterValue =
-    filterValue === "Informatics Review" ? filterValue : filterValue + "s";
+  const tableFilterValue = filterValue + "s";
   params.append(tableFilterKey, tableFilterValue);
   params.append(completedFilterKey, filterValue);
   return makeNameDiv(

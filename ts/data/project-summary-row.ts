@@ -87,7 +87,7 @@ export function getProjectSummaryRowDefinition(
           title: "Informatics Review",
           addParentContents(projectSummaryRow, fragment) {
             displayCount(
-              "Informatics Review",
+              "Informatics Reviews",
               projectSummaryRow.informaticsReview,
               fragment
             );
