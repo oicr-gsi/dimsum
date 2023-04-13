@@ -112,8 +112,12 @@ public class CaseLoaderTest {
 
   @Test
   public void testLoadRequisitions() throws Exception {
+    Donor donor = mock(Donor.class);
+    when(donor.getId()).thenReturn("SAM413576");
+    Map<String, Donor> donorsById = Map.of(donor.getId(), donor);
+
     try (FileReader reader = sut.getRequisitionReader()) {
-      Map<Long, Requisition> requisitionsById = sut.loadRequisitions(reader);
+      Map<Long, Requisition> requisitionsById = sut.loadRequisitions(reader, donorsById);
       assertEquals(2, requisitionsById.size());
       Long requisitionId = 512L;
       Requisition requisition = requisitionsById.get(requisitionId);

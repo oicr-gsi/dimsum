@@ -8,6 +8,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public class RequisitionQcGroup {
 
+  private final Donor donor;
   private final String tissueOrigin;
   private final String tissueType;
   private final String libraryDesignCode;
@@ -17,6 +18,7 @@ public class RequisitionQcGroup {
   private final BigDecimal callability;
 
   private RequisitionQcGroup(Builder builder) {
+    this.donor = requireNonNull(builder.donor);
     this.tissueOrigin = requireNonNull(builder.tissueOrigin);
     this.tissueType = requireNonNull(builder.tissueType);
     this.libraryDesignCode = requireNonNull(builder.libraryDesignCode);
@@ -24,6 +26,10 @@ public class RequisitionQcGroup {
     this.purity = builder.purity;
     this.collapsedCoverage = builder.collapsedCoverage;
     this.callability = builder.callability;
+  }
+
+  public Donor getDonor() {
+    return donor;
   }
 
   public String getTissueOrigin() {
@@ -56,6 +62,7 @@ public class RequisitionQcGroup {
 
   public static class Builder {
 
+    private Donor donor;
     private String tissueOrigin;
     private String tissueType;
     private String libraryDesignCode;
@@ -63,6 +70,11 @@ public class RequisitionQcGroup {
     private BigDecimal purity;
     private BigDecimal collapsedCoverage;
     private BigDecimal callability;
+
+    public Builder donor(Donor donor) {
+      this.donor = donor;
+      return this;
+    }
 
     public Builder tissueOrigin(String tissueOrigin) {
       this.tissueOrigin = tissueOrigin;

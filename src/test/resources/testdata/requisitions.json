@@ -6,6 +6,7 @@
     "stopped": false,
     "qc_groups": [
       {
+        "donor_id": "SAM413576",
         "tissue_origin": "Ly",
         "tissue_type": "R",
         "library_design": "WG",
@@ -15,6 +16,7 @@
         "callability": null
       },
       {
+        "donor_id": "SAM413576",
         "tissue_origin": "Lv",
         "tissue_type": "M",
         "library_design": "WT",
@@ -24,6 +26,7 @@
         "callability": null
       },
       {
+        "donor_id": "SAM413576",
         "tissue_origin": "Lv",
         "tissue_type": "M",
         "library_design": "WG",
