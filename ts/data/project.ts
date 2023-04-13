@@ -166,14 +166,17 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
 };
 
 const completedFilterKey = "COMPLETED";
+const tableFilterKey = "TABLE";
 
 function displayFilteredProject(
   count: number,
   projectName: string,
   filterValue: string
 ) {
-  var url = new URL(document.location.href);
-  var params = url.searchParams;
+  const params = new URLSearchParams();
+  const tableFilterValue =
+    filterValue === "Informatics Review" ? filterValue : filterValue + "s";
+  params.append(tableFilterKey, tableFilterValue);
   params.append(completedFilterKey, filterValue);
   return makeNameDiv(
     count.toString(),

@@ -41,7 +41,7 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Receipt",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.receipt, fragment);
+            displayCount("Receipts", projectSummaryRow.receipt, fragment);
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.receipt ? "na" : null;
@@ -50,31 +50,47 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Extraction",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.extraction, fragment);
+            displayCount("Extractions", projectSummaryRow.extraction, fragment);
           },
         },
         {
           title: "Library Preparation",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.libraryPreparation, fragment);
+            displayCount(
+              "Library Preparations",
+              projectSummaryRow.libraryPreparation,
+              fragment
+            );
           },
         },
         {
           title: "Library Qualification",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.libraryQualification, fragment);
+            displayCount(
+              "Library Qualifications",
+              projectSummaryRow.libraryQualification,
+              fragment
+            );
           },
         },
         {
           title: "Full-Depth Sequencing",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.fullDepthSequencing, fragment);
+            displayCount(
+              "Full-Depth Sequencings",
+              projectSummaryRow.fullDepthSequencing,
+              fragment
+            );
           },
         },
         {
           title: "Informatics Review",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.informaticsReview, fragment);
+            displayCount(
+              "Informatics Review",
+              projectSummaryRow.informaticsReview,
+              fragment
+            );
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.informaticsReview ? "na" : null;
@@ -83,7 +99,11 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Draft Report",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.draftReport, fragment);
+            displayCount(
+              "Draft Reports",
+              projectSummaryRow.draftReport,
+              fragment
+            );
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.draftReport ? "na" : null;
@@ -92,7 +112,11 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Final Report",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(projectSummaryRow.finalReport, fragment);
+            displayCount(
+              "Final Reports",
+              projectSummaryRow.finalReport,
+              fragment
+            );
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.finalReport ? "na" : null;
@@ -103,7 +127,10 @@ export function getProjectSummaryRowDefinition(
   };
 }
 
+const tableFilterKey = "TABLE";
+
 function displayCount(
+  tableFilterValue: string,
   projectSummaryField: ProjectSummaryField,
   fragment: DocumentFragment
 ) {
@@ -111,15 +138,14 @@ function displayCount(
     addNaText(fragment);
     return;
   }
+  const params = new URLSearchParams();
+  params.append(tableFilterKey, tableFilterValue);
+  params.append(projectSummaryField.filterKey, projectSummaryField.filterValue);
   fragment.appendChild(
-    // document.createTextNode(projectSummaryField.count.toString())
     makeNameDiv(
       projectSummaryField.count.toString(),
       undefined,
-      appendUrlParam(
-        projectSummaryField.filterKey,
-        projectSummaryField.filterValue
-      )
+      `?${params.toString()}`
     )
   );
 }
