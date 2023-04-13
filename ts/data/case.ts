@@ -93,10 +93,10 @@ export interface Case {
   tissueType: string;
   timepoint: string;
   receipts: Sample[];
-  startDate: string;
+  startDate?: string;
   tests: Test[];
   requisition: Requisition;
-  latestActivityDate: string;
+  latestActivityDate?: string;
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
@@ -190,6 +190,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Start Date",
       sortType: "date",
       addParentContents(kase, fragment) {
+        if (!kase.startDate) {
+          return;
+        }
         const dateDiv = document.createElement("div");
         dateDiv.appendChild(document.createTextNode(kase.startDate));
         fragment.appendChild(dateDiv);
@@ -197,7 +200,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const elapsedDiv = document.createElement("div");
         if (!kase.requisition.stopped) {
           elapsedDiv.appendChild(
-            document.createTextNode(getElapsedMessage(kase))
+            document.createTextNode(getElapsedMessage(kase, kase.startDate))
           );
           fragment.appendChild(elapsedDiv);
         }
@@ -451,6 +454,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Latest Activity",
       sortType: "date",
       addParentContents(kase, fragment) {
+        if (!kase.latestActivityDate) {
+          return;
+        }
         fragment.appendChild(document.createTextNode(kase.latestActivityDate));
       },
     },
@@ -712,7 +718,7 @@ function addTooltipRow(
   container.appendChild(valueContainer);
 }
 
-function getElapsedMessage(kase: Case) {
+function getElapsedMessage(kase: Case, startDateString: string) {
   let endDate;
   let message;
   if (
@@ -733,7 +739,7 @@ function getElapsedMessage(kase: Case) {
     endDate = new Date();
     message = "Ongoing";
   }
-  const startDate = new Date(kase.startDate);
+  const startDate = new Date(startDateString);
   const milliDiff = endDate.getTime() - startDate.getTime();
   const dayDiff = Math.ceil(milliDiff / dayMillis);
   return `(${message} ${dayDiff} days)`;
