@@ -34,7 +34,7 @@ public class FrontEndConfig {
 
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
-  private Set<String> libraryDesignCodes;
+  private Set<String> libraryDesigns;
 
   public String getMisoUrl() {
     return misoUrl;
@@ -72,12 +72,12 @@ public class FrontEndConfig {
     return completedGates;
   }
 
-  public void setLibraryDesignCodes(Set<String> libraryDesignCodes) {
-    this.libraryDesignCodes = libraryDesignCodes;
+  public void setLibraryDesigns(Set<String> libraryDesigns) {
+    this.libraryDesigns = libraryDesigns;
   }
 
-  public Set<String> getLibraryDesignCodes() {
-    return libraryDesignCodes;
+  public Set<String> getLibraryDesigns() {
+    return libraryDesigns;
   }
 
 }

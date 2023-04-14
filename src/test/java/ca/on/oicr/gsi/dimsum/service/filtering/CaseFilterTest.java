@@ -50,6 +50,18 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testLibraryDesignCaseFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.LIBRARY_DESIGN, "WT");
+    testFilterCases(filter, Arrays.asList(0, 1));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testLibraryDesignTestFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.LIBRARY_DESIGN, "WT");
+    testFilterTests(filter, Arrays.asList(makeTestGroupId(0, 3), makeTestGroupId(1, 3)));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testPendingReceiptQcFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING, PendingState.RECEIPT_QC.getLabel());
     testFilterCases(filter, Arrays.asList(22));
