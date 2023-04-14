@@ -327,32 +327,28 @@ public class CaseService {
     return data;
   }
 
-  public TableData<ProjectSummaryRow> getProjectSummaryRows(String name) {
-    ProjectSummary projectSummary = caseData.getProjectSummariesByName().get(name);
+  public TableData<ProjectSummaryRow> getProjectSummaryRows(String projectName,
+      List<CaseFilter> filters) {
+    ProjectSummary projectSummary;
+    TableData<ProjectSummaryRow> data = new TableData<>();
+    if (filters == null) {
+      projectSummary = caseData.getProjectSummariesByName().get(projectName);
+    } else {
+      Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
+      Map<String, ProjectSummary> projectSummariesByName =
+          CaseLoader.calculateFilteredProjectSummaries(testsByCase);
+      projectSummary = projectSummariesByName.get(projectName);
+    }
+
+    if (projectSummary == null) {
+      return data;
+    }
 
     ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
     ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
     ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
 
-    TableData<ProjectSummaryRow> data = new TableData<>();
     data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
-    data.setFilteredCount(data.getItems().size());
-    data.setTotalCount(data.getItems().size());
-    return data;
-  }
-
-  public TableData<ProjectSummaryRow> getFilteredProjectSummaryRows(String projectName,
-      List<CaseFilter> filters) {
-    Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
-    Map<String, ProjectSummary> projectSummariesByName =
-        CaseLoader.calculateFilteredProjectSummaries(testsByCase);
-    ProjectSummary projectSummary = projectSummariesByName.get(projectName);
-    TableData<ProjectSummaryRow> data = new TableData<>();
-    if (projectSummary == null) {
-      return data;
-    }
-    ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
-    data.setItems(Arrays.asList(completed));
     data.setFilteredCount(data.getItems().size());
     data.setTotalCount(data.getItems().size());
     return data;
