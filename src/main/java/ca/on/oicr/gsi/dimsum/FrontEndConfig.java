@@ -79,5 +79,4 @@ public class FrontEndConfig {
   public Set<String> getLibraryDesigns() {
     return libraryDesigns;
   }
-
 }
