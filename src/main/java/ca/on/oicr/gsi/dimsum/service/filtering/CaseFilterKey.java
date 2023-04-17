@@ -70,6 +70,13 @@ public enum CaseFilterKey {
     public Function<String, Predicate<Requisition>> requisitionPredicate() {
       return string -> getGate(string).requisitionPredicate();
     }
+  },
+  LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> test.getLibraryDesignCode().equals(string));
+  }) {
+      @Override 
+      public Function<String, Predicate<Test>> testPredicate() {
+        return string -> test -> test.getLibraryDesignCode().equals(string);
+    }
   };
   // @formatter:on
 

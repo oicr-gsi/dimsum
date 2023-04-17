@@ -675,6 +675,9 @@ public class CaseService {
         .map(Project::getPipeline)
         .collect(Collectors.toSet()));
     frontEndConfig.setAssaysById(caseData.getAssaysById());
+    frontEndConfig
+        .setLibraryDesigns(caseData.getCases().stream().flatMap(kase -> kase.getTests().stream())
+            .map(Test::getLibraryDesignCode).collect(Collectors.toSet()));
   }
 
 }
