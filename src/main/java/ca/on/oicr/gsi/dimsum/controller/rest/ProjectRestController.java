@@ -39,9 +39,6 @@ public class ProjectRestController {
   public TableData<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName,
       @RequestBody DataQuery query) {
     List<CaseFilter> filters = parseCaseFilters(query);
-    if (filters == null) {
-      return caseService.getProjectSummaryRows(projectName);
-    }
-    return caseService.getFilteredProjectSummaryRows(projectName, filters);
+    return caseService.getProjectSummaryRows(projectName, filters);
   }
 }
