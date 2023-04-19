@@ -2,6 +2,8 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.Objects;
+
 import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.MetricCategory;
 import ca.on.oicr.gsi.dimsum.data.Requisition;
@@ -75,7 +77,7 @@ public enum CaseFilterKey {
   }) {
       @Override 
       public Function<String, Predicate<Test>> testPredicate() {
-        return string -> test -> test.getLibraryDesignCode().equals(string);
+        return string -> test -> Objects.equals(test.getLibraryDesignCode(), string);
     }
   };
   // @formatter:on
