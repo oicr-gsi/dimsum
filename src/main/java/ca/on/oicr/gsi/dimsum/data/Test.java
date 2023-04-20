@@ -19,6 +19,7 @@ public class Test {
   private final String tissueType;
   private final String timepoint;
   private final String groupId;
+  private final String libraryDesignCode;
   private final String targetedSequencing;
   private final boolean extractionSkipped;
   private final boolean libraryPreparationSkipped;
@@ -34,6 +35,7 @@ public class Test {
     this.tissueType = builder.tissueType;
     this.timepoint = builder.timepoint;
     this.groupId = builder.groupId;
+    this.libraryDesignCode = builder.libraryDesignCode;
     this.targetedSequencing = builder.targetedSequencing;
     this.extractionSkipped = builder.extractionSkipped;
     this.libraryPreparationSkipped = builder.libraryPreparationSkipped;
@@ -70,6 +72,10 @@ public class Test {
 
   public String getGroupId() {
     return groupId;
+  }
+
+  public String getLibraryDesignCode() {
+    return libraryDesignCode;
   }
 
   public String getTargetedSequencing() {
@@ -111,6 +117,7 @@ public class Test {
     private String tissueType;
     private String timepoint;
     private String groupId;
+    private String libraryDesignCode;
     private String targetedSequencing;
     private boolean extractionSkipped;
     private boolean libraryPreparationSkipped;
@@ -141,6 +148,11 @@ public class Test {
 
     public Builder groupId(String groupId) {
       this.groupId = groupId;
+      return this;
+    }
+
+    public Builder libraryDesignCode(String libraryDesignCode) {
+      this.libraryDesignCode = libraryDesignCode;
       return this;
     }
 

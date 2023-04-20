@@ -1,0 +1,1 @@
+case filter for library design, which applies to all tables in Project/Donor/Requisition/Case Detail pages' tabbed interface

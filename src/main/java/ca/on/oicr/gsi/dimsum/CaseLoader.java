@@ -516,6 +516,7 @@ public class CaseLoader {
           .tissueType(parseString(testNode, "tissue_type"))
           .timepoint(parseString(testNode, "timepoint"))
           .groupId(parseString(testNode, "group_id"))
+          .libraryDesignCode(parseString(testNode, "library_design"))
           .targetedSequencing(parseString(testNode, "targeted_sequencing"))
           .extractionSkipped(parseBoolean(testNode, "extraction_skipped"))
           .libraryPreparationSkipped(parseBoolean(testNode, "library_preparation_skipped"))
