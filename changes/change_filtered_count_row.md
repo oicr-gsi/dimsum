@@ -1,1 +1,0 @@
-Project Summary Counts (in project Details Page) with Filters now display Pending, Pending QC, and completed counts

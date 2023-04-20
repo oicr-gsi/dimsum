@@ -7,6 +7,24 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.8.0] - 2023-04-20
+
+### Added
+
+* Clicking a count on the Project List page or the Summary table of the Project Details page links to relevant filtered project details table
+* case filter for library design, which applies to all tables in Project/Donor/Requisition/Case Detail pages' tabbed interface
+
+### Changed
+
+* Project Summary Counts (in project Details Page) with Filters now display Pending, Pending QC, and completed counts
+* Allow "QC in MISO" with different assays/designs together in run details page
+
+### Fixed
+
+* data for the wrong donor could be included in Informatics Review metrics on the Case QC Report
+* sorting and displaying cases when start date and/or latest activity cannot be determined
+
+
 ## [1.7.0] - 2023-04-06
 
 ### Added
