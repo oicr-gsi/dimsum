@@ -1,0 +1,1 @@
+Allow "QC in MISO" with different assays/designs together in run details page
