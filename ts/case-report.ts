@@ -94,7 +94,7 @@ const attributes: AttributeDefinition<Case>[] = [
         "-" +
         pad(date.getMonth() + 1, 2) +
         "-" +
-        pad(date.getDate() + 1, 2) +
+        pad(date.getDate(), 2) +
         " " +
         pad(date.getHours(), 2) +
         ":" +
