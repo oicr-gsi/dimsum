@@ -46,6 +46,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
@@ -328,25 +329,36 @@ public class CaseService {
   }
 
   public TableData<ProjectSummaryRow> getProjectSummaryRows(String projectName,
-      List<CaseFilter> filters) {
+      Collection<CaseFilter> filters, Collection<DateFilter> dateFilters) {
     ProjectSummary projectSummary;
     TableData<ProjectSummaryRow> data = new TableData<>();
-    if (filters == null) {
+    if (filters == null && (dateFilters == null || dateFilters.isEmpty())) {
       projectSummary = caseData.getProjectSummariesByName().get(projectName);
+    } else if (filters == null) {
+      // only when date filters are applied
+      Map<String, ProjectSummary> projectSummariesByName =
+          CaseLoader.calculateProjectSummaries(caseData.getCases(), dateFilters);
+      projectSummary = projectSummariesByName.get(projectName);
     } else {
+      // when both date filter and case filters applied
       Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
       Map<String, ProjectSummary> projectSummariesByName =
-          CaseLoader.calculateFilteredProjectSummaries(testsByCase);
+          CaseLoader.calculateFilteredProjectSummaries(testsByCase, dateFilters);
       projectSummary = projectSummariesByName.get(projectName);
     }
 
     if (projectSummary == null) {
       return data;
     }
-
     ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
     ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
     ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
+
+    if (dateFilters != null) {
+      // when date range filter applied pending work and qc rows are filled with n/a
+      pendingWork = getPendingProjectSummaryRow(null);
+      pendingQc = getPendingQcProjectSummaryRow(null);
+    }
 
     data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
     data.setFilteredCount(data.getItems().size());
@@ -601,6 +613,9 @@ public class CaseService {
   }
 
   private ProjectSummaryRow getPendingProjectSummaryRow(ProjectSummary projectSummary) {
+    if (projectSummary == null) {
+      return new ProjectSummaryRow.Builder().title("Pending Work").build();
+    }
     return new ProjectSummaryRow.Builder()
         .title("Pending Work")
         .extraction(
@@ -628,6 +643,9 @@ public class CaseService {
   }
 
   private ProjectSummaryRow getPendingQcProjectSummaryRow(ProjectSummary projectSummary) {
+    if (projectSummary == null) {
+      return new ProjectSummaryRow.Builder().title("Pending QC").build();
+    }
     return new ProjectSummaryRow.Builder()
         .title("Pending QC")
         .receipt(

@@ -3,6 +3,8 @@ package ca.on.oicr.gsi.dimsum;
 import ca.on.oicr.gsi.dimsum.data.*;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilterKey;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -24,10 +26,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -138,7 +142,7 @@ public class CaseLoader {
           new CaseData(cases, runsByName, assaysById, omittedSamples, afterTimestamp,
               getRequisitionNames(requisitionsById), getProjectNames(projectsByName),
               getDonorNames(donorsById), getRunNames(runsByName), getTestNames(cases),
-              calculateProjectSummaries(cases));
+              calculateProjectSummaries(cases, null));
 
       log.debug(String.format("Completed loading %d cases.", cases.size()));
 
@@ -716,28 +720,30 @@ public class CaseLoader {
     return loaded;
   }
 
-  public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases) {
+  public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases,
+      Collection<DateFilter> dateFilters) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     for (Case kase : cases) {
-      addCounts(kase, kase.getTests(), tempProjectSummariesByName);
+      addCounts(kase, kase.getTests(), tempProjectSummariesByName, dateFilters);
     }
 
     return buildProjectSummaries(tempProjectSummariesByName);
   }
 
   public static Map<String, ProjectSummary> calculateFilteredProjectSummaries(
-      Map<Case, List<Test>> map) {
+      Map<Case, List<Test>> map, Collection<DateFilter> dateFilters) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     List<Case> cases = new ArrayList<>(map.keySet());
     for (Case kase : cases) {
-      addCounts(kase, map.get(kase), tempProjectSummariesByName);
+      addCounts(kase, map.get(kase), tempProjectSummariesByName, dateFilters);
     }
     return buildProjectSummaries(tempProjectSummariesByName);
 
   }
 
   private static void addCounts(Case kase, List<Test> tests,
-      Map<String, ProjectSummary.Builder> tempProjectSummariesByName) {
+      Map<String, ProjectSummary.Builder> tempProjectSummariesByName,
+      Collection<DateFilter> dateFilters) {
     ProjectSummary.Builder caseSummary =
         new ProjectSummary.Builder();
     int testSize = tests != null ? tests.size() : 0;
@@ -745,11 +751,13 @@ public class CaseLoader {
     if (PendingState.RECEIPT_QC.qualifyCase(kase) && !kase.isStopped()) {
       caseSummary.receiptPendingQcCount(testSize);
     }
-    if (CompletedGate.RECEIPT.qualifyCase(kase)) {
+    if (CompletedGate.RECEIPT.qualifyCase(kase) && (dateFilters == null
+        || !(filterSampleByDate(kase.getReceipts(), dateFilters).toList().isEmpty()))) {
       caseSummary.receiptCompletedCount(testSize);
     }
     for (Test test : tests) {
-      if (CompletedGate.EXTRACTION.qualifyTest(test)) {
+      if (CompletedGate.EXTRACTION.qualifyTest(test) && (dateFilters == null
+          || !(filterSampleByDate(test.getExtractions(), dateFilters).toList().isEmpty()))) {
         caseSummary.incrementExtractionCompletedCount();
       } else if (PendingState.EXTRACTION_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementExtractionPendingQcCount();
@@ -758,9 +766,9 @@ public class CaseLoader {
       }
 
       // library Preparation
-      if (test.getLibraryPreparations().stream().anyMatch(sample -> Boolean.TRUE
-          .equals(sample.getQcPassed())
-          && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
+      if (CompletedGate.LIBRARY_PREPARATION.qualifyTest(test) && (dateFilters == null
+          || !(filterSampleByDate(test.getLibraryPreparations(), dateFilters).toList()
+              .isEmpty()))) {
         caseSummary.incrementLibraryPrepCompletedCount();
       } else if (PendingState.LIBRARY_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementLibraryPrepPendingQcCount();
@@ -769,9 +777,9 @@ public class CaseLoader {
       }
 
       // Library Qualification
-      if (test.getLibraryQualifications().stream().anyMatch(sample -> Boolean.TRUE
-          .equals(sample.getQcPassed())
-          && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
+      if (CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(test) && (dateFilters == null
+          || !(filterSampleByDate(test.getLibraryQualifications(), dateFilters).toList()
+              .isEmpty()))) {
         caseSummary.incrementLibraryQualCompletedCount();
       } else if ((PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
           || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
@@ -782,9 +790,9 @@ public class CaseLoader {
       }
 
       // Full depth sequncing
-      if (test.getFullDepthSequencings().stream().anyMatch(sample -> Boolean.TRUE
-          .equals(sample.getQcPassed())
-          && (sample.getRun() == null || Boolean.TRUE.equals(sample.getDataReviewPassed())))) {
+      if (CompletedGate.FULL_DEPTH_SEQUENCING.qualifyTest(test) && (dateFilters == null
+          || !(filterSampleByDate(test.getFullDepthSequencings(), dateFilters)
+              .toList().isEmpty()))) {
         caseSummary.incrementFullDepthSeqCompletedCount();
       } else if ((PendingState.FULL_DEPTH_QC.qualifyTest(test)
           || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) && !kase.isStopped()) {
@@ -795,8 +803,9 @@ public class CaseLoader {
     }
 
     // informatics review
-    if (kase.getRequisition().getInformaticsReviews().stream()
-        .anyMatch(x -> x.isQcPassed())) {
+    if (CompletedGate.INFORMATICS_REVIEW.qualifyCase(kase) && (dateFilters == null
+        || !(filterRequisitionQcByDate(kase.getRequisition().getInformaticsReviews(), dateFilters)
+            .toList().isEmpty()))) {
       caseSummary.informaticsCompletedCount(testSize);
     }
     if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase) && !kase.isStopped()) {
@@ -804,8 +813,10 @@ public class CaseLoader {
     }
 
     // draft report
-    if (kase.getRequisition().getDraftReports().stream()
-        .anyMatch(x -> x.isQcPassed())) {
+    if (CompletedGate.DRAFT_REPORT.qualifyCase(kase)
+        && (dateFilters == null
+            || !(filterRequisitionQcByDate(kase.getRequisition().getDraftReports(), dateFilters)
+                .toList().isEmpty()))) {
       caseSummary.draftReportCompletedCount(testSize);
     }
     if (PendingState.DRAFT_REPORT.qualifyCase(kase) && !kase.isStopped()) {
@@ -813,8 +824,7 @@ public class CaseLoader {
     }
 
     // final report
-    if (kase.getRequisition().getFinalReports().stream()
-        .anyMatch(x -> x.isQcPassed())) {
+    if (CompletedGate.FINAL_REPORT.qualifyCase(kase)) {
       caseSummary.finalReportCompletedCount(testSize);
     }
     if (PendingState.FINAL_REPORT.qualifyCase(kase) && !kase.isStopped()) {
@@ -843,6 +853,49 @@ public class CaseLoader {
       projectSummariesByName.put(entry.getKey(), projectSummary);
     }
     return projectSummariesByName;
+  }
+
+  private static Stream<Sample> filterSampleByDate(List<Sample> samples,
+      Collection<DateFilter> filters) {
+    Stream<Sample> stream = samples.stream();
+    if (filters != null && !filters.isEmpty()) {
+      Map<DateFilterKey, Predicate<Sample>> filterMap = new HashMap<>();
+      for (DateFilter filter : filters) {
+        DateFilterKey key = filter.getKey();
+        if (filterMap.containsKey(key)) {
+          filterMap.put(key, filterMap.get(key).or(filter.samplePredicate()));
+        } else {
+          filterMap.put(key, filter.samplePredicate());
+        }
+      }
+      for (Predicate<Sample> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
+  }
+
+  private static Stream<RequisitionQc> filterRequisitionQcByDate(List<RequisitionQc> requisitionQcs,
+      Collection<DateFilter> filters) {
+    Function<DateFilter, Predicate<RequisitionQc>> getPredicate =
+        DateFilter::requisitionQcPredicate;
+    Stream<RequisitionQc> stream = requisitionQcs.stream();
+    if (filters != null && !filters.isEmpty()) {
+      Map<DateFilterKey, Predicate<RequisitionQc>> filterMap = new HashMap<>();
+      for (DateFilter filter : filters) {
+        DateFilterKey key = filter.getKey();
+        if (filterMap.containsKey(key)) {
+          filterMap.put(key,
+              filterMap.get(key).or(getPredicate.apply(filter)));
+        } else {
+          filterMap.put(key, getPredicate.apply(filter));
+        }
+      }
+      for (Predicate<RequisitionQc> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream;
   }
 
 }

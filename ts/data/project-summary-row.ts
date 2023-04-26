@@ -26,7 +26,21 @@ export function getProjectSummaryRowDefinition(
 ): TableDefinition<ProjectSummaryRow, void> {
   return {
     queryUrl: queryUrl,
-    filters: caseFilters,
+    filters: [
+      ...caseFilters,
+      {
+        title: "After Date",
+        key: "AFTER_DATE",
+        type: "date",
+        autocompleteUrl: urls.rest.autocomplete.testNames,
+      },
+      {
+        title: "Before Date",
+        key: "BEFORE_DATE",
+        type: "date",
+        autocompleteUrl: urls.rest.autocomplete.testNames,
+      },
+    ],
     disablePageControls: true,
     generateColumns(data) {
       return [
@@ -52,6 +66,9 @@ export function getProjectSummaryRowDefinition(
           addParentContents(projectSummaryRow, fragment) {
             displayCount("Extractions", projectSummaryRow.extraction, fragment);
           },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.extraction ? "na" : null;
+          },
         },
         {
           title: "Library Preparation",
@@ -61,6 +78,9 @@ export function getProjectSummaryRowDefinition(
               projectSummaryRow.libraryPreparation,
               fragment
             );
+          },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.libraryPreparation ? "na" : null;
           },
         },
         {
@@ -72,6 +92,9 @@ export function getProjectSummaryRowDefinition(
               fragment
             );
           },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.libraryQualification ? "na" : null;
+          },
         },
         {
           title: "Full-Depth Sequencing",
@@ -81,6 +104,9 @@ export function getProjectSummaryRowDefinition(
               projectSummaryRow.fullDepthSequencing,
               fragment
             );
+          },
+          getCellHighlight(projectSummaryRow) {
+            return !projectSummaryRow.fullDepthSequencing ? "na" : null;
           },
         },
         {

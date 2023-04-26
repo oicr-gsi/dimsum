@@ -14,7 +14,7 @@ import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
 
 type SortType = "number" | "text" | "date";
-type FilterType = "text" | "dropdown";
+type FilterType = "text" | "dropdown" | "date";
 
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
@@ -387,7 +387,7 @@ export class TableBuilder<ParentType, ChildType> {
       filterOptions,
       false,
       undefined,
-      "+ filter"
+      "+ Filter"
     );
     filterContainer.appendChild(addFilterDropdown.getContainerTag());
   }
