@@ -42,6 +42,16 @@ if (projectSummaryContainer === null) {
 const today = new Date();
 
 const dateOptions = [
+  new BasicDropdownOption("All Day", () => {
+    // delete all query parameter with date filter key
+    const url = new URL(document.location.href);
+    getSearchParams().forEach((x) => {
+      if (x.key === "AFTER_DATE" || x.key === "BEFORE_DATE") {
+        updateUrlParams(x.key, x.value, false);
+      }
+    });
+    reloadSummary();
+  }),
   new BasicDropdownOption("Today", () => {
     handleDateDropdownFilter("AFTER_DATE", dateToString(today));
     handleDateDropdownFilter("BEFORE_DATE", dateToString(today));
@@ -210,7 +220,7 @@ function handleDateFilter(filterKey: string, filterValue: string) {
 function handleDateDropdownFilter(filterKey: string, filterValue: string) {
   // update URL to include query parameters
   replaceUrlParams(filterKey, filterValue);
-  if (filterKey == "BEFORE_DATE") {
+  if (filterKey == "AFTER_DATE") {
     const beforeDateCOntainer = document.getElementById(
       "afterDate"
     ) as HTMLInputElement;
