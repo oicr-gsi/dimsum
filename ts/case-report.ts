@@ -461,7 +461,7 @@ function addText(node: Node, text: string) {
   node.appendChild(document.createTextNode(text));
 }
 
-function pad(value: number, length: number): string {
+export function pad(value: number, length: number): string {
   return value.toString().padStart(length, "0");
 }
 

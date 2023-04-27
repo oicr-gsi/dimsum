@@ -31,14 +31,12 @@ export function getProjectSummaryRowDefinition(
       {
         title: "After Date",
         key: "AFTER_DATE",
-        type: "date",
-        autocompleteUrl: urls.rest.autocomplete.testNames,
+        type: "text",
       },
       {
         title: "Before Date",
         key: "BEFORE_DATE",
-        type: "date",
-        autocompleteUrl: urls.rest.autocomplete.testNames,
+        type: "text",
       },
     ],
     disablePageControls: true,

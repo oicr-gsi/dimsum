@@ -350,17 +350,18 @@ public class CaseService {
     if (projectSummary == null) {
       return data;
     }
-    ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
-    ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
-    ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
 
-    if (dateFilters != null) {
-      // when date range filter applied pending work and qc rows are filled with n/a
-      pendingWork = getPendingProjectSummaryRow(null);
-      pendingQc = getPendingQcProjectSummaryRow(null);
+    ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
+    if (dateFilters == null) {
+      ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
+      ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
+      data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
+    } else {
+      data.setItems(Arrays.asList(completed));
     }
 
-    data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
+
+
     data.setFilteredCount(data.getItems().size());
     data.setTotalCount(data.getItems().size());
     return data;

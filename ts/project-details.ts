@@ -13,7 +13,12 @@ import {
   receiptDefinition,
 } from "./data/sample";
 import { getProjectSummaryRowDefinition } from "./data/project-summary-row";
-import { getSearchParams, updateUrlParams, urls } from "./util/urls";
+import {
+  getSearchParams,
+  updateUrlParams,
+  replaceUrlParams,
+  urls,
+} from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
@@ -38,8 +43,8 @@ const today = new Date();
 
 const dateOptions = [
   new BasicDropdownOption("Today", () => {
-    handleDateFilter("AFTER_DATE", dateToString(today));
-    handleDateFilter("BEFORE_DATE", dateToString(today));
+    handleDateDropdownFilter("AFTER_DATE", dateToString(today));
+    handleDateDropdownFilter("BEFORE_DATE", dateToString(today));
   }),
   new BasicDropdownOption("Yesterday", () => {
     const date = new Date(
@@ -47,8 +52,8 @@ const dateOptions = [
       today.getMonth(),
       today.getDate() - 1
     );
-    handleDateFilter("AFTER_DATE", dateToString(date));
-    handleDateFilter("BEFORE_DATE", dateToString(date));
+    handleDateDropdownFilter("AFTER_DATE", dateToString(date));
+    handleDateDropdownFilter("BEFORE_DATE", dateToString(date));
   }),
   new BasicDropdownOption("This Week", () => {
     const afterdate = new Date(
@@ -56,8 +61,8 @@ const dateOptions = [
       today.getMonth(),
       today.getDate() - 6
     );
-    handleDateFilter("AFTER_DATE", dateToString(afterdate));
-    handleDateFilter("BEFORE_DATE", dateToString(today));
+    handleDateDropdownFilter("AFTER_DATE", dateToString(afterdate));
+    handleDateDropdownFilter("BEFORE_DATE", dateToString(today));
   }),
   new BasicDropdownOption("Last Week", () => {
     const afterdate = new Date(
@@ -70,29 +75,24 @@ const dateOptions = [
       today.getMonth(),
       today.getDate() - 7
     );
-    handleDateFilter("AFTER_DATE", dateToString(afterdate));
-    handleDateFilter("BEFORE_DATE", dateToString(beforedate));
+    handleDateDropdownFilter("AFTER_DATE", dateToString(afterdate));
+    handleDateDropdownFilter("BEFORE_DATE", dateToString(beforedate));
   }),
   new BasicDropdownOption("This Month", () => {
     // first date of Month
     const afterdate = new Date(today.getFullYear(), today.getMonth(), 1);
-    handleDateFilter("AFTER_DATE", dateToString(afterdate));
-    handleDateFilter("BEFORE_DATE", dateToString(today));
+    handleDateDropdownFilter("AFTER_DATE", dateToString(afterdate));
+    handleDateDropdownFilter("BEFORE_DATE", dateToString(today));
   }),
   new BasicDropdownOption("Last Month", () => {
     const afterdate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const beforedate = new Date(today.getFullYear(), today.getMonth(), 0);
-    handleDateFilter("AFTER_DATE", dateToString(afterdate));
-    handleDateFilter("BEFORE_DATE", dateToString(beforedate));
+    handleDateDropdownFilter("AFTER_DATE", dateToString(afterdate));
+    handleDateDropdownFilter("BEFORE_DATE", dateToString(beforedate));
   }),
 ];
 
-const dateDropdown = new Dropdown(
-  dateOptions,
-  false,
-  undefined,
-  "+ Date Range"
-);
+const dateDropdown = new Dropdown(dateOptions, false, undefined, "Date Range");
 
 // Attach form submit event handler to each form element
 document
@@ -203,35 +203,25 @@ function reloadSummary() {
 
 function handleDateFilter(filterKey: string, filterValue: string) {
   // update URL to include query parameters
-  updateUrlParams(filterKey, filterValue, true);
-  makeDateAcceptedFilter(filterKey, filterValue);
+  replaceUrlParams(filterKey, filterValue);
   reloadSummary();
 }
 
-function makeDateAcceptedFilter(filterKey: string, filterValue: string) {
-  const filter = document.createElement("span");
-  const title = filterKey == "AFTER_DATE" ? "After Date" : "Before Date";
-  filter.className =
-    "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
-  filter.innerHTML = title + ": " + filterValue;
-
-  const destroyFilterIcon = makeIcon("xmark");
-  destroyFilterIcon.classList.add(
-    "text-black",
-    "cursor-pointer",
-    "ml-2",
-    "hover:text-green-200"
-  );
-
-  filter.appendChild(destroyFilterIcon);
-  topControlsContainer.appendChild(filter);
-
-  // handle destroying filter
-  destroyFilterIcon.onclick = () => {
-    updateUrlParams(filterKey, filterValue, false);
-    filter.remove();
-    reloadSummary();
-  };
+function handleDateDropdownFilter(filterKey: string, filterValue: string) {
+  // update URL to include query parameters
+  replaceUrlParams(filterKey, filterValue);
+  if (filterKey == "BEFORE_DATE") {
+    const beforeDateCOntainer = document.getElementById(
+      "afterDate"
+    ) as HTMLInputElement;
+    beforeDateCOntainer.value = filterValue;
+  } else {
+    const afterDateContainer = document.getElementById(
+      "beforeDate"
+    ) as HTMLInputElement;
+    afterDateContainer.value = filterValue;
+  }
+  reloadSummary();
 }
 
 function dateToString(date: Date) {

@@ -387,7 +387,7 @@ export class TableBuilder<ParentType, ChildType> {
       filterOptions,
       false,
       undefined,
-      "+ Filter"
+      "+ filter"
     );
     filterContainer.appendChild(addFilterDropdown.getContainerTag());
   }
