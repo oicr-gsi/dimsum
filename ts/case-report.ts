@@ -2,7 +2,7 @@ import { AttributeDefinition, AttributeList } from "./component/attribute-list";
 import { showAlertDialog } from "./component/dialog";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
-import { Case } from "./data/case";
+import { Case, Qcable } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
 import {
   getMetricValue,
@@ -135,10 +135,8 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       addParentContents(object, fragment) {
         if (object.allSamples) {
           // this is a run-level item
-          if (!object.sample.run) {
-            throw new Error("Multi-sample ReportSample must have a run");
-          }
-          const runName = object.sample.run.name;
+          const run = getRun(object.sample);
+          const runName = run.name;
           fragment.appendChild(
             makeWrappingNameDiv(
               runName,
@@ -221,20 +219,12 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        if (object.sample.qcDate) {
-          if (!object.sample.qcReason || !object.sample.qcUser) {
-            throw new Error("QC reason and user expected if qc date is set");
-          }
-          addBoldText(fragment, object.sample.qcReason);
-          addTextDiv(object.sample.qcUser, fragment);
-          addTextDiv(object.sample.qcDate, fragment);
-        } else {
-          addPendingText(fragment);
-        }
+        displayQcSignOff(fragment, getRunOrSampleLevel(object));
         addAssayMismatchText(fragment, object);
       },
       getCellHighlight(object) {
-        const reviewStatus = getFirstReviewStatus(object.sample).cellStatus;
+        const qcable = getRunOrSampleLevel(object);
+        const reviewStatus = getFirstReviewStatus(qcable).cellStatus;
         if (reviewStatus) {
           return reviewStatus;
         } else if (object.sample.assayId !== object.caseAssayId) {
@@ -247,22 +237,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       title: "QC Stage Sign-Off",
       addParentContents(object, fragment) {
         if (object.sample.run) {
-          if (object.sample.dataReviewDate) {
-            if (!object.sample.dataReviewUser) {
-              throw new Error(
-                "Data review user expected if data review date is set"
-              );
-            }
-            if (object.sample.dataReviewPassed) {
-              addBoldText(fragment, "Passed");
-            } else {
-              addBoldText(fragment, "Failed");
-            }
-            addTextDiv(object.sample.dataReviewUser, fragment);
-            addTextDiv(object.sample.dataReviewDate, fragment);
-          } else {
-            addPendingText(fragment);
-          }
+          displayDataReviewSignOff(fragment, getRunOrSampleLevel(object));
           addAssayMismatchText(fragment, object);
         } else {
           addText(fragment, "No second review required");
@@ -272,9 +247,10 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
         const assayStatus =
           object.sample.assayId === object.caseAssayId ? null : "warning";
         if (object.sample.run) {
-          if (!object.sample.dataReviewDate) {
+          const qcable = getRunOrSampleLevel(object);
+          if (!qcable.dataReviewDate) {
             return qcStatuses.dataReview.cellStatus;
-          } else if (object.sample.dataReviewPassed) {
+          } else if (qcable.dataReviewPassed) {
             return assayStatus;
           } else {
             return qcStatuses.failed.cellStatus;
@@ -286,6 +262,22 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     },
   ],
 };
+
+function getRunOrSampleLevel(object: ReportSample): Qcable {
+  if (object.allSamples) {
+    // this is a run-level item
+    return getRun(object.sample);
+  } else {
+    return object.sample;
+  }
+}
+
+function getRun(sample: Sample) {
+  if (!sample.run) {
+    throw new Error("Multi-sample ReportSample must have a run");
+  }
+  return sample.run;
+}
 
 function makeWrappingNameDiv(
   name: string,
@@ -388,16 +380,14 @@ const requisitionGateMetricsDefinition: TableDefinition<
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        if (object.requisitionQc) {
-          addBoldText(
-            fragment,
-            object.requisitionQc.qcPassed ? "Passed" : "Failed"
-          );
-          addTextDiv(object.requisitionQc.qcUser, fragment);
-          addTextDiv(object.requisitionQc.qcDate, fragment);
-        } else {
-          addPendingText(fragment);
-        }
+        const qc = object.requisitionQc;
+        displaySignOff(
+          fragment,
+          qc?.qcPassed,
+          undefined,
+          qc?.qcUser,
+          qc?.qcDate
+        );
       },
       getCellHighlight(object) {
         return getRequisitionQcStatus(
@@ -416,6 +406,45 @@ const requisitionGateMetricsDefinition: TableDefinition<
     },
   ],
 };
+
+function displayQcSignOff(fragment: DocumentFragment, qcable: Qcable) {
+  displaySignOff(
+    fragment,
+    qcable.qcPassed,
+    qcable.qcReason,
+    qcable.qcUser,
+    qcable.qcDate
+  );
+}
+
+function displayDataReviewSignOff(fragment: DocumentFragment, qcable: Qcable) {
+  displaySignOff(
+    fragment,
+    qcable.dataReviewPassed,
+    undefined,
+    qcable.dataReviewUser,
+    qcable.dataReviewDate
+  );
+}
+
+function displaySignOff(
+  fragment: DocumentFragment,
+  qcPassed?: boolean,
+  qcReason?: string,
+  qcUser?: string,
+  qcDate?: string
+) {
+  if (qcDate) {
+    if (!qcUser) {
+      throw new Error("QC user expected if qc date is set");
+    }
+    addBoldText(fragment, qcReason || (qcPassed ? "Passed" : "Failed"));
+    addTextDiv(qcUser, fragment);
+    addTextDiv(qcDate, fragment);
+  } else {
+    addPendingText(fragment);
+  }
+}
 
 function addPendingText(node: Node) {
   addBoldText(node, "Pending");
