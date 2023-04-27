@@ -19,7 +19,10 @@ export function get(url: string, params?: Record<string, string>) {
   let headers: any = {
     "Content-Type": "application/json",
   };
-  return fetch(url + (params ? new URLSearchParams(params).toString() : ""), {
+  let fullUrl = params
+    ? `${url}?${new URLSearchParams(params).toString()}`
+    : url;
+  return fetch(fullUrl, {
     method: "GET",
     headers: headers,
   });

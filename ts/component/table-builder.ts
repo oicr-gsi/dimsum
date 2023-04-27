@@ -12,7 +12,6 @@ import { post } from "../util/requests";
 import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
-import { updateUrlParams } from "../util/urls";
 
 type SortType = "number" | "text" | "date";
 type FilterType = "text" | "dropdown";
@@ -173,7 +172,6 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns = definition.generateColumns();
   }
 
-
   public applyFilters(key: string, value: string, add?: boolean) {
     if (add) {
       this.definition.filters?.forEach((f) => {
@@ -249,7 +247,7 @@ export class TableBuilder<ParentType, ChildType> {
     if (!data) {
       this.reload();
     }
-     return this;
+    return this;
   }
 
   private addActionButtons(container: HTMLElement) {
@@ -630,7 +628,6 @@ export class TableBuilder<ParentType, ChildType> {
       }
     });
   }
-
 
   private async reload(resetPage?: boolean) {
     if (!this.definition.queryUrl) {
