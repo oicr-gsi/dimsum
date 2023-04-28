@@ -7,6 +7,15 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.8.1] - 2023-04-28
+
+### Fixed
+
+* Case QC Report was showing the wrong sign-offs for run-level categories
+* Report generated date on Case QC Report was off by one day
+* Autocomplete suggestions not appearing
+
+
 ## [1.8.0] - 2023-04-20
 
 ### Added
