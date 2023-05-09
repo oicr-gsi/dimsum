@@ -14,7 +14,7 @@ import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
 
 type SortType = "number" | "text" | "date";
-type FilterType = "text" | "dropdown" | "date";
+type FilterType = "text" | "dropdown";
 
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
