@@ -127,13 +127,13 @@ export class TableBuilder<ParentType, ChildType> {
   allItems: ParentType[] = [];
   selectedItems: Set<ParentType> = new Set<ParentType>();
   selectAllCheckbox?: HTMLInputElement;
-  onFilterChange?: (key: string, value: string, add?: boolean) => void;
+  onFilterChange?: (key: string, value: string, add: boolean) => void;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
     containerId: string,
     filterParams?: Array<Pair<string, string>>,
-    onFilterChange?: (key: string, value: string, add?: boolean) => void
+    onFilterChange?: (key: string, value: string, add: boolean) => void
   ) {
     this.definition = definition;
     if (definition.defaultSort) {
@@ -152,19 +152,7 @@ export class TableBuilder<ParentType, ChildType> {
     if (filterParams) {
       // create accepted filter if there is a matching key in table definition
       filterParams.forEach((p) => {
-        this.definition.filters?.forEach((f) => {
-          if (f.key === p.key) {
-            // filter key is valid, create a new accepted filter
-            const onRemove = () => {
-              if (this.onFilterChange)
-                this.onFilterChange(p.key, p.value, false);
-              this.reload();
-            };
-            this.acceptedFilters.push(
-              new AcceptedFilter(f.title, f.key, p.value, onRemove)
-            );
-          }
-        });
+        this.addAcceptedFilter(p.key, p.value);
       });
     }
     this.onFilterChange = onFilterChange;
@@ -172,26 +160,51 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns = definition.generateColumns();
   }
 
-  public applyFilters(key: string, value: string, add?: boolean) {
+  public applyFilter(key: string, value: string, add: boolean) {
+    this.updateAcceptedFilter(key, value, add);
+    this.reload(true);
+  }
+
+  /**
+   * Removes any filters with the same keys as provided and adds new filters as provided
+   *
+   * @param filters new filters to add
+   */
+  public replaceFilters(filters: Array<Pair<string, string>>) {
+    filters.forEach((filter) => {
+      this.acceptedFilters = this.acceptedFilters.filter(
+        (accepted) => accepted.key !== filter.key
+      );
+      if (filter.value) {
+        this.addAcceptedFilter(filter.key, filter.value);
+      }
+    });
+    this.reload(true);
+  }
+
+  private addAcceptedFilter(key: string, value: string) {
+    this.definition.filters?.forEach((f) => {
+      if (f.key === key) {
+        // filter key is valid, create a new accepted filter
+        const onRemove = () => {
+          if (this.onFilterChange) this.onFilterChange(key, value, false);
+          this.reload();
+        };
+        this.acceptedFilters.push(
+          new AcceptedFilter(f.title, key, value, onRemove)
+        );
+      }
+    });
+  }
+
+  private updateAcceptedFilter(key: string, value: string, add: boolean) {
     if (add) {
-      this.definition.filters?.forEach((f) => {
-        if (f.key === key) {
-          // filter key is valid, create a new accepted filter
-          const onRemove = () => {
-            if (this.onFilterChange) this.onFilterChange(key, value, false);
-            this.reload();
-          };
-          this.acceptedFilters.push(
-            new AcceptedFilter(f.title, key, value, onRemove)
-          );
-        }
-      });
+      this.addAcceptedFilter(key, value);
     } else {
       this.acceptedFilters = this.acceptedFilters.filter(
         (filter) => filter.key !== key || filter.value !== value
       );
     }
-    this.reload(true);
   }
 
   /**

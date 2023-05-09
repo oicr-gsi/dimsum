@@ -10,7 +10,15 @@ import ca.on.oicr.gsi.dimsum.data.Sample;
 public enum DateFilterKey {
   // @formatter:off
   AFTER_DATE(string -> {
-    return sample -> sample.getQcDate() != null &&!sample.getQcDate().isBefore(LocalDate.parse(string)); 
+    return sample -> {
+      if (sample.getRun() == null) {
+        return sample.getQcDate() != null && !sample.getQcDate().isBefore(LocalDate.parse(string));
+      } else {
+        // run-library; completion based on data review
+        return sample.getDataReviewDate() != null
+            && !sample.getDataReviewDate().isBefore(LocalDate.parse(string));
+      }
+    }; 
   }) {
       @Override 
       public Function<String, Predicate<RequisitionQc>> requisitionQcPredicate() {
@@ -18,7 +26,15 @@ public enum DateFilterKey {
       }
   }, 
   BEFORE_DATE(string -> {
-    return sample -> sample.getQcDate() != null && !sample.getQcDate().isAfter(LocalDate.parse(string)); 
+    return sample -> {
+      if (sample.getRun() == null) {
+        return sample.getQcDate() != null && !sample.getQcDate().isAfter(LocalDate.parse(string));
+      } else {
+        // run-library; completion based on data review
+        return sample.getDataReviewDate() != null
+            && !sample.getDataReviewDate().isAfter(LocalDate.parse(string));
+      }
+    }; 
   }) {
       @Override 
       public Function<String, Predicate<RequisitionQc>> requisitionQcPredicate() {
@@ -32,23 +48,11 @@ public enum DateFilterKey {
     this.create = create;
   }
 
-  public Function<String, Predicate<Sample>> create() {
+  public Function<String, Predicate<Sample>> samplePredicate() {
     return create;
   }
 
   public Function<String, Predicate<RequisitionQc>> requisitionQcPredicate() {
     return string -> requisitionQC -> true;
-  }
-
-  @Override
-  public String toString() {
-    switch (this) {
-      case AFTER_DATE:
-        return "AFTER_DATE";
-      case BEFORE_DATE:
-        return "BEFORE_DATE";
-      default:
-        return ""; // return empty string for unknown values
-    }
   }
 }

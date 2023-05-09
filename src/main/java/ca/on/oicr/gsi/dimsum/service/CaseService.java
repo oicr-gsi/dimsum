@@ -614,9 +614,6 @@ public class CaseService {
   }
 
   private ProjectSummaryRow getPendingProjectSummaryRow(ProjectSummary projectSummary) {
-    if (projectSummary == null) {
-      return new ProjectSummaryRow.Builder().title("Pending Work").build();
-    }
     return new ProjectSummaryRow.Builder()
         .title("Pending Work")
         .extraction(
@@ -644,9 +641,6 @@ public class CaseService {
   }
 
   private ProjectSummaryRow getPendingQcProjectSummaryRow(ProjectSummary projectSummary) {
-    if (projectSummary == null) {
-      return new ProjectSummaryRow.Builder().title("Pending QC").build();
-    }
     return new ProjectSummaryRow.Builder()
         .title("Pending QC")
         .receipt(

@@ -64,9 +64,6 @@ export function getProjectSummaryRowDefinition(
           addParentContents(projectSummaryRow, fragment) {
             displayCount("Extractions", projectSummaryRow.extraction, fragment);
           },
-          getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.extraction ? "na" : null;
-          },
         },
         {
           title: "Library Preparation",
@@ -76,9 +73,6 @@ export function getProjectSummaryRowDefinition(
               projectSummaryRow.libraryPreparation,
               fragment
             );
-          },
-          getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.libraryPreparation ? "na" : null;
           },
         },
         {
@@ -90,9 +84,6 @@ export function getProjectSummaryRowDefinition(
               fragment
             );
           },
-          getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.libraryQualification ? "na" : null;
-          },
         },
         {
           title: "Full-Depth Sequencing",
@@ -102,9 +93,6 @@ export function getProjectSummaryRowDefinition(
               projectSummaryRow.fullDepthSequencing,
               fragment
             );
-          },
-          getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.fullDepthSequencing ? "na" : null;
           },
         },
         {

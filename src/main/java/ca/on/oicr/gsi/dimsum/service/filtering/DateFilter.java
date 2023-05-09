@@ -25,7 +25,7 @@ public class DateFilter {
   }
 
   public Predicate<Sample> samplePredicate() {
-    return key.create().apply(value);
+    return key.samplePredicate().apply(value);
   }
 
   public Predicate<RequisitionQc> requisitionQcPredicate() {

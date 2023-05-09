@@ -19,7 +19,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.DateFilterKey;
 
 public class MvcUtils {
   private final static List<String> dateFilterKeys =
-      Stream.of(DateFilterKey.values()).map(DateFilterKey::toString).toList();
+      Stream.of(DateFilterKey.values()).map(DateFilterKey::name).toList();
 
 
   public static void validateDataQuery(DataQuery query) {
