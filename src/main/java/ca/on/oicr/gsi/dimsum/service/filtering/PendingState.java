@@ -75,7 +75,7 @@ public enum PendingState {
 
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.hasPendingWork(test.getExtractions());
+      return !test.isExtractionSkipped() && Helpers.hasPendingWork(test.getExtractions());
     }
 
     @Override
@@ -105,7 +105,8 @@ public enum PendingState {
   LIBRARY_PREPARATION("Library Preparation") {
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.hasPendingWork(test.getLibraryPreparations(), test.getExtractions());
+      return !test.isLibraryPreparationSkipped()
+          && Helpers.hasPendingWork(test.getLibraryPreparations(), test.getExtractions());
     }
 
     @Override
