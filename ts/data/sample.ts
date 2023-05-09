@@ -954,6 +954,7 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
     case "Appropriate volume":
       return nullIfUndefined(sample.volume);
     case "Yield":
+    case "Yield (Qubit)":
       return sample.volume && sample.concentration
         ? sample.volume * sample.concentration
         : null;
