@@ -154,3 +154,11 @@ export function updateUrlParams(key: string, value: string, add?: boolean) {
       (add ? appendUrlParam(key, value) : removeUrlParam(key, value))
   );
 }
+
+// create/replace the query param with key to value
+export function replaceUrlParams(key: string, value: string) {
+  const url = new URL(document.location.href);
+  const found = getSearchParams().find((param) => param.key === key);
+  if (found !== undefined) updateUrlParams(found.key, found.value, false);
+  updateUrlParams(key, value, true);
+}

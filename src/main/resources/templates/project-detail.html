@@ -16,7 +16,21 @@
         <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
       </a>
     </div>
-    <div id="projectSummaryTableContainer"></div>
+
+    <div id="projectSummaryDateControls" class="flex gap-2 items-center">
+      <div
+        class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">
+        <label for="date">After Date:</label>
+        <input type="date" id="afterDate" />
+      </div>
+      <div
+        class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">
+        <label for="date">Before Date:</label>
+        <input type="date" id="beforeDate" value="" />
+      </div>
+    </div>
+
+    <div id="projectSummaryContainer"></div>
     <div id="tabBarContainer" class="mt-4"></div>
 
     <div id="tableContainer" th:data-detail-type="${detailType}" th:data-detail-value="${detailValue}"></div>

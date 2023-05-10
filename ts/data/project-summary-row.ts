@@ -26,7 +26,19 @@ export function getProjectSummaryRowDefinition(
 ): TableDefinition<ProjectSummaryRow, void> {
   return {
     queryUrl: queryUrl,
-    filters: caseFilters,
+    filters: [
+      ...caseFilters,
+      {
+        title: "After Date",
+        key: "AFTER_DATE",
+        type: "text",
+      },
+      {
+        title: "Before Date",
+        key: "BEFORE_DATE",
+        type: "text",
+      },
+    ],
     disablePageControls: true,
     generateColumns(data) {
       return [

@@ -46,6 +46,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
@@ -328,15 +329,21 @@ public class CaseService {
   }
 
   public TableData<ProjectSummaryRow> getProjectSummaryRows(String projectName,
-      List<CaseFilter> filters) {
+      Collection<CaseFilter> filters, Collection<DateFilter> dateFilters) {
     ProjectSummary projectSummary;
     TableData<ProjectSummaryRow> data = new TableData<>();
-    if (filters == null) {
+    if (filters == null && (dateFilters == null || dateFilters.isEmpty())) {
       projectSummary = caseData.getProjectSummariesByName().get(projectName);
+    } else if (filters == null) {
+      // only when date filters are applied
+      Map<String, ProjectSummary> projectSummariesByName =
+          CaseLoader.calculateProjectSummaries(caseData.getCases(), dateFilters);
+      projectSummary = projectSummariesByName.get(projectName);
     } else {
+      // when both date filter and case filters applied
       Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
       Map<String, ProjectSummary> projectSummariesByName =
-          CaseLoader.calculateFilteredProjectSummaries(testsByCase);
+          CaseLoader.calculateFilteredProjectSummaries(testsByCase, dateFilters);
       projectSummary = projectSummariesByName.get(projectName);
     }
 
@@ -344,11 +351,17 @@ public class CaseService {
       return data;
     }
 
-    ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
-    ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
     ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
+    if (dateFilters == null) {
+      ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
+      ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
+      data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
+    } else {
+      data.setItems(Arrays.asList(completed));
+    }
 
-    data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
+
+
     data.setFilteredCount(data.getItems().size());
     data.setTotalCount(data.getItems().size());
     return data;
