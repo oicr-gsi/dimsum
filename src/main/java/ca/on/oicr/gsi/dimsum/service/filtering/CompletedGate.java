@@ -46,7 +46,7 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.isCompleted(test.getExtractions());
+      return test.isExtractionSkipped() || Helpers.isCompleted(test.getExtractions());
     }
 
     @Override
@@ -67,7 +67,8 @@ public enum CompletedGate {
 
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.isCompleted(test.getLibraryPreparations());
+      return test.isLibraryPreparationSkipped()
+          || Helpers.isCompleted(test.getLibraryPreparations());
     }
 
     @Override
