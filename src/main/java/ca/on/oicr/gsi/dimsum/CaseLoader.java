@@ -756,8 +756,9 @@ public class CaseLoader {
       caseSummary.receiptCompletedCount(testSize);
     }
     for (Test test : tests) {
-      if (CompletedGate.EXTRACTION.qualifyTest(test)
-          && anySamplesMatch(test.getExtractions(), dateFilters)) {
+      if ((test.isExtractionSkipped() && emptyOrNull(dateFilters))
+          || (CompletedGate.EXTRACTION.qualifyTest(test)
+              && anySamplesMatch(test.getExtractions(), dateFilters))) {
         caseSummary.incrementExtractionCompletedCount();
       } else if (PendingState.EXTRACTION_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementExtractionPendingQcCount();
@@ -766,8 +767,9 @@ public class CaseLoader {
       }
 
       // library Preparation
-      if (CompletedGate.LIBRARY_PREPARATION.qualifyTest(test)
-          && anySamplesMatch(test.getLibraryPreparations(), dateFilters)) {
+      if ((test.isLibraryPreparationSkipped() && emptyOrNull(dateFilters))
+          || (CompletedGate.LIBRARY_PREPARATION.qualifyTest(test)
+              && anySamplesMatch(test.getLibraryPreparations(), dateFilters))) {
         caseSummary.incrementLibraryPrepCompletedCount();
       } else if (PendingState.LIBRARY_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementLibraryPrepPendingQcCount();
@@ -867,6 +869,10 @@ public class CaseLoader {
     return requisitionQcs.stream()
         .anyMatch(qc -> filters.stream()
             .allMatch(filter -> filter.requisitionQcPredicate().test(qc)));
+  }
+
+  private static boolean emptyOrNull(Collection<?> collection) {
+    return collection == null || collection.isEmpty();
   }
 
 }
