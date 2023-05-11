@@ -7,6 +7,22 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.9.0] - 2023-05-11
+
+### Added
+
+* A date range for the summary table on the Project Details page. This includes:
+  - dropdown of common ranges (today, yesterday, this week, etc.)
+  - custom ranges
+  
+  
+
+### Fixed
+
+* display of "Yield (Qubit)" metric
+* tests that skip a gate should be counted as having completed that gate
+
+
 ## [1.8.1] - 2023-04-28
 
 ### Fixed
