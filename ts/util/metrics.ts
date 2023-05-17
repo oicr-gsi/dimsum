@@ -184,7 +184,7 @@ function formatDecimal(value: number, decimalPlaces?: number) {
 }
 
 function formatThreshold(value?: number) {
-  if (!value) {
+  if (value === undefined) {
     return "Unknown";
   }
   if (Number.isInteger(value)) {
