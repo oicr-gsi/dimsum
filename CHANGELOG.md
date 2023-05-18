@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.9.1] - 2023-05-18
+
+### Fixed
+
+* Display of thresholds with min/max values of zero
+
+
 ## [1.9.0] - 2023-05-11
 
 ### Added
