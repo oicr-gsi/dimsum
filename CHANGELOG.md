@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.9.2] - 2023-06-15
+
+### Fixed
+
+* yield showing not found instead of zero if sample volume or concentration is zero
+
+
 ## [1.9.1] - 2023-05-18
 
 ### Fixed
