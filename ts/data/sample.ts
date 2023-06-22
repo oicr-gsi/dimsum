@@ -3,6 +3,7 @@ import {
   CellStatus,
   makeIcon,
   makeNameDiv,
+  makeTextDiv,
 } from "../util/html-utils";
 import { siteConfig } from "../util/site-config";
 import {
@@ -35,6 +36,13 @@ const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
 const METRIC_LABEL_CLUSTERS_PF_2 = "Min Reads Delivered (PF)";
 const METRIC_LABEL_PHIX = "PhiX Control";
+const METRIC_LABELS_CLUSTERS = [
+  "Clusters Per Sample",
+  "Pass Filter Clusters",
+  "Total Clusters (Passed Filter)",
+  "Pipeline Filtered Clusters",
+];
+const METRIC_LABEL_COVERAGE = "Mean Coverage Deduplicated";
 export const RUN_METRIC_LABELS = [
   METRIC_LABEL_Q30,
   METRIC_LABEL_CLUSTERS_PF_1,
@@ -67,8 +75,10 @@ export interface Sample extends Qcable {
   donor: Donor;
   meanInsertSize?: number;
   clustersPerSample?: number;
+  preliminaryClustersPerSample?: number;
   duplicationRate?: number;
   meanCoverageDeduplicated?: number;
+  preliminaryMeanCoverageDeduplicated?: number;
   rRnaContamination?: number;
   mappedToCoding?: number;
   rawCoverage?: number;
@@ -524,6 +534,11 @@ export function getSampleMetricCellHighlight(
   if (/^Adaptor Contamination/.test(metricName)) {
     return null;
   }
+  // handle metrics that may be preliminary
+  if (isPreliminary(metricName, sample)) {
+    return "warning";
+  }
+
   const value = getMetricValue(metricName, sample);
   if (value == null) {
     return "warning";
@@ -532,6 +547,25 @@ export function getSampleMetricCellHighlight(
     return "error";
   }
   return null;
+}
+
+function isPreliminary(metricName: string, sample: Sample) {
+  if (METRIC_LABELS_CLUSTERS.includes(metricName)) {
+    if (
+      sample.clustersPerSample == null &&
+      sample.preliminaryClustersPerSample != null
+    ) {
+      return true;
+    }
+  } else if (metricName === METRIC_LABEL_COVERAGE) {
+    if (
+      sample.meanCoverageDeduplicated == null &&
+      sample.preliminaryMeanCoverageDeduplicated != null
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function addMetricValueContents(
@@ -588,7 +622,25 @@ export function addMetricValueContents(
       fragment.appendChild(makeNotFoundIcon());
     }
   } else {
-    fragment.append(makeMetricDisplay(value, metrics, addTooltip));
+    const preliminary = isPreliminary(metricName, sample);
+    let additionalTooltip = undefined;
+    if (preliminary) {
+      additionalTooltip = makeTextDiv("PRELIMINARY VALUE ONLY");
+      additionalTooltip.classList.add("font-bold");
+    }
+    const contents = makeMetricDisplay(
+      value,
+      metrics,
+      addTooltip,
+      undefined,
+      additionalTooltip
+    );
+    if (preliminary) {
+      const icon = makeIcon("pen-ruler");
+      icon.classList.add("mr-1");
+      contents.prepend(icon);
+    }
+    fragment.append(contents);
   }
 }
 
@@ -962,15 +1014,23 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.meanInsertSize);
     case "Duplication Rate":
       return nullIfUndefined(sample.duplicationRate);
-    case "Clusters Per Sample":
-    case "Pass Filter Clusters":
-    case "Total Clusters (Passed Filter)":
-    case "Pipeline Filtered Clusters":
-      return nullIfUndefined(sample.clustersPerSample);
+    case METRIC_LABELS_CLUSTERS[0]:
+    case METRIC_LABELS_CLUSTERS[1]:
+    case METRIC_LABELS_CLUSTERS[2]:
+    case METRIC_LABELS_CLUSTERS[3]:
+      if (sample.clustersPerSample != null) {
+        return sample.clustersPerSample;
+      } else {
+        return nullIfUndefined(sample.preliminaryClustersPerSample);
+      }
     case "rRNA Contamination":
       return nullIfUndefined(sample.rRnaContamination);
-    case "Mean Coverage Deduplicated":
-      return nullIfUndefined(sample.meanCoverageDeduplicated);
+    case METRIC_LABEL_COVERAGE:
+      if (sample.meanCoverageDeduplicated != null) {
+        return sample.meanCoverageDeduplicated;
+      } else {
+        return nullIfUndefined(sample.preliminaryMeanCoverageDeduplicated);
+      }
     case "Coverage (Raw)":
     case "Mean Bait Coverage":
       return nullIfUndefined(sample.rawCoverage);

@@ -39,17 +39,9 @@ class Legend {
     const body = document.createElement("div");
     body.className = "m-4 grid grid-rows-5 grid-flow-col gap-2";
     for (const qcStatus of Object.values(qcStatuses)) {
-      const labelContainer = document.createElement("div");
-      labelContainer.className =
-        "flex items-center space-x-2 bg-grey-100 rounded-md font-inter font-medium p-2 text-12";
-      const icon = makeIcon(qcStatus.icon);
-      icon.classList.add("text-black");
-      const label = document.createElement("span");
-      label.innerHTML = qcStatus.label;
-      labelContainer.appendChild(icon);
-      labelContainer.appendChild(label);
-      body.appendChild(labelContainer);
+      body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label));
     }
+    body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
 
     this.container.append(header);
     this.container.append(body);
@@ -168,4 +160,17 @@ export function toggleLegend() {
   } else {
     legendWindow.remove();
   }
+}
+
+function makeLegendEntry(iconName: string, text: string) {
+  const labelContainer = document.createElement("div");
+  labelContainer.className =
+    "flex items-center space-x-2 bg-grey-100 rounded-md font-inter font-medium p-2 text-12";
+  const icon = makeIcon(iconName);
+  icon.classList.add("text-black");
+  const label = document.createElement("span");
+  label.innerHTML = text;
+  labelContainer.appendChild(icon);
+  labelContainer.appendChild(label);
+  return labelContainer;
 }
