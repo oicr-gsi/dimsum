@@ -35,8 +35,10 @@ public class Sample {
   private final Donor donor;
   private final BigDecimal meanInsertSize;
   private final Integer clustersPerSample; // AKA "Pass Filter Clusters" for full-depth (call ready)
+  private final Integer preliminaryClustersPerSample;
   private final BigDecimal duplicationRate;
   private final BigDecimal meanCoverageDeduplicated;
+  private final BigDecimal preliminaryMeanCoverageDeduplicated;
   private final BigDecimal rRnaContamination;
   private final BigDecimal mappedToCoding;
   private final BigDecimal rawCoverage;
@@ -80,8 +82,10 @@ public class Sample {
     this.donor = requireNonNull(builder.donor);
     this.meanInsertSize = builder.meanInsertSize;
     this.clustersPerSample = builder.clustersPerSample;
+    this.preliminaryClustersPerSample = builder.preliminaryClustersPerSample;
     this.duplicationRate = builder.duplicationRate;
     this.meanCoverageDeduplicated = builder.meanCoverageDeduplicated;
+    this.preliminaryMeanCoverageDeduplicated = builder.preliminaryMeanCoverageDeduplicated;
     this.rRnaContamination = builder.rRnaContamination;
     this.mappedToCoding = builder.mappedToCoding;
     this.rawCoverage = builder.rawCoverage;
@@ -198,12 +202,20 @@ public class Sample {
     return clustersPerSample;
   }
 
+  public Integer getPreliminaryClustersPerSample() {
+    return preliminaryClustersPerSample;
+  }
+
   public BigDecimal getDuplicationRate() {
     return duplicationRate;
   }
 
   public BigDecimal getMeanCoverageDeduplicated() {
     return meanCoverageDeduplicated;
+  }
+
+  public BigDecimal getPreliminaryMeanCoverageDeduplicated() {
+    return preliminaryMeanCoverageDeduplicated;
   }
 
   public BigDecimal getrRnaContamination() {
@@ -317,8 +329,10 @@ public class Sample {
     private Donor donor;
     private BigDecimal meanInsertSize;
     private Integer clustersPerSample;
+    private Integer preliminaryClustersPerSample;
     private BigDecimal duplicationRate;
     private BigDecimal meanCoverageDeduplicated;
+    private BigDecimal preliminaryMeanCoverageDeduplicated;
     private BigDecimal rRnaContamination;
     private BigDecimal mappedToCoding;
     private BigDecimal rawCoverage;
@@ -446,6 +460,11 @@ public class Sample {
       return this;
     }
 
+    public Builder preliminaryClustersPerSample(Integer preliminaryClustersPerSample) {
+      this.preliminaryClustersPerSample = preliminaryClustersPerSample;
+      return this;
+    }
+
     public Builder duplicationRate(BigDecimal duplicationRate) {
       this.duplicationRate = duplicationRate;
       return this;
@@ -453,6 +472,12 @@ public class Sample {
 
     public Builder meanCoverageDeduplicated(BigDecimal meanCoverageDeduplicated) {
       this.meanCoverageDeduplicated = meanCoverageDeduplicated;
+      return this;
+    }
+
+    public Builder preliminaryMeanCoverageDeduplicated(
+        BigDecimal preliminaryMeanCoverageDeduplicated) {
+      this.preliminaryMeanCoverageDeduplicated = preliminaryMeanCoverageDeduplicated;
       return this;
     }
 

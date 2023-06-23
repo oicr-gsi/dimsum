@@ -246,8 +246,12 @@ public class CaseLoader {
           .donor(donorsById.get(parseString(json, "donor_id")))
           .meanInsertSize(parseDecimal(json, "mean_insert", false))
           .clustersPerSample(parseInteger(json, "clusters_per_sample", false))
+          .preliminaryClustersPerSample(
+              parseInteger(json, "preliminary_clusters_per_sample", false))
           .duplicationRate(parseDecimal(json, "duplication_rate", false))
           .meanCoverageDeduplicated(parseDecimal(json, "mean_coverage_deduplicated", false))
+          .preliminaryMeanCoverageDeduplicated(
+              parseDecimal(json, "preliminary_mean_coverage_deduplicated", false))
           .rRnaContamination(parseDecimal(json, "rrna_contamination", false))
           .mappedToCoding(parseDecimal(json, "mapped_to_coding", false))
           .rawCoverage(parseDecimal(json, "raw_coverage", false))

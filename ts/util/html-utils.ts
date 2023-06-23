@@ -152,10 +152,14 @@ export function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
 
-export function addTextDiv(text: string, container: Node) {
+export function makeTextDiv(text: string) {
   const divContainer = document.createElement("div");
   divContainer.appendChild(document.createTextNode(text));
-  container.appendChild(divContainer);
+  return divContainer;
+}
+
+export function addTextDiv(text: string, container: Node) {
+  container.appendChild(makeTextDiv(text));
 }
 
 // transform given string to title case
