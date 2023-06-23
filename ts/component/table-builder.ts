@@ -117,7 +117,7 @@ export class TableBuilder<ParentType, ChildType> {
   columns: ColumnDefinition<ParentType, ChildType>[];
   sortColumn?: string;
   sortDescending: boolean;
-  pageSize: number = 10;
+  pageSize: number = 50;
   pageNumber: number = 1;
   totalCount: number = 0;
   filteredCount: number = 0;
