@@ -111,8 +111,10 @@ export class TableBuilder<ParentType, ChildType> {
   table?: HTMLTableElement;
   thead?: HTMLTableSectionElement;
   pageDescription?: HTMLSpanElement;
-  pageLeftButton?: HTMLButtonElement;
-  pageRightButton?: HTMLButtonElement;
+  pageLeftButtonTop?: HTMLButtonElement;
+  pageRightButtonTop?: HTMLButtonElement;
+  pageLeftButtonBottom?: HTMLButtonElement;
+  pageRightButtonBottom?: HTMLButtonElement;
 
   columns: ColumnDefinition<ParentType, ChildType>[];
   sortColumn?: string;
@@ -252,6 +254,7 @@ export class TableBuilder<ParentType, ChildType> {
       bottomControlsContainer.className =
         "flex justify-end mt-4 items-top space-x-2";
       this.addActionButtons(bottomControlsContainer);
+      this.addBottomPageControls(bottomControlsContainer);
       this.container.appendChild(bottomControlsContainer);
     }
 
@@ -536,18 +539,30 @@ export class TableBuilder<ParentType, ChildType> {
       "font-inter font-medium text-black text-12";
     pagingContainer.appendChild(this.pageDescription);
 
-    this.pageLeftButton = addIconButton(pagingContainer, "angle-left");
-    this.pageLeftButton.disabled = true;
-    this.pageLeftButton.onclick = (event) => {
-      this.pageNumber--;
+    this.pageLeftButtonTop = this.addPageButton(pagingContainer, false);
+    this.pageRightButtonTop = this.addPageButton(pagingContainer, true);
+  }
+
+  private addPageButton(container: HTMLElement, forward: boolean) {
+    const button = addIconButton(
+      container,
+      forward ? "angle-right" : "angle-left"
+    );
+    button.disabled = true;
+    const step = forward ? 1 : -1;
+    button.onclick = (event) => {
+      this.pageNumber += step;
       this.reload();
+      if (this.container.getBoundingClientRect().y < 0) {
+        this.container.scrollIntoView();
+      }
     };
-    this.pageRightButton = addIconButton(pagingContainer, "angle-right");
-    this.pageRightButton.disabled = true;
-    this.pageRightButton.onclick = (event) => {
-      this.pageNumber++;
-      this.reload();
-    };
+    return button;
+  }
+
+  private addBottomPageControls(container: HTMLElement) {
+    this.pageLeftButtonBottom = this.addPageButton(container, false);
+    this.pageRightButtonBottom = this.addPageButton(container, true);
   }
 
   private load(data?: ParentType[]) {
@@ -676,18 +691,24 @@ export class TableBuilder<ParentType, ChildType> {
   private showLoading() {
     // TODO: Disable all inputs, show indeterminate progress
     if (!this.definition.disablePageControls) {
-      getElement(this.pageLeftButton).disabled = true;
-      getElement(this.pageRightButton).disabled = true;
+      [
+        this.pageLeftButtonTop,
+        this.pageRightButtonTop,
+        this.pageLeftButtonBottom,
+        this.pageRightButtonBottom,
+      ].forEach((button) => (getElement(button).disabled = true));
     }
   }
 
   private showLoaded(data: any) {
     if (!this.definition.disablePageControls) {
       if (this.pageNumber > 1) {
-        getElement(this.pageLeftButton).disabled = false;
+        getElement(this.pageLeftButtonTop).disabled = false;
+        getElement(this.pageLeftButtonBottom).disabled = false;
       }
       if (data.filteredCount > this.pageSize * this.pageNumber) {
-        getElement(this.pageRightButton).disabled = false;
+        getElement(this.pageRightButtonTop).disabled = false;
+        getElement(this.pageRightButtonBottom).disabled = false;
       }
       const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
       const pageEnd = Math.min(
