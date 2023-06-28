@@ -120,6 +120,10 @@ public class CaseService {
     }
   }
 
+  public Stream<Case> getCaseStream(Collection<CaseFilter> filters) {
+    return filterCases(caseData.getCases(), filters);
+  }
+
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
       CaseFilter baseFilter, Collection<CaseFilter> filters) {
     List<Case> baseCases = getCases(baseFilter);

@@ -1,5 +1,6 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
 import { makeNameDiv } from "../util/html-utils";
+import { postDownload } from "../util/requests";
 import { urls } from "../util/urls";
 
 export interface ProjectSummary {
@@ -40,6 +41,19 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
       key: "NAME",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.projectNames,
+    },
+  ],
+  bulkActions: [
+    {
+      title: "Download",
+      handler: (items) => {
+        const params: any = {};
+        if (items && items.length) {
+          params.projects = items.map((project) => project.name).join(",");
+        }
+        // May be expanded in the future to handle different reports, but for now there is only one
+        postDownload(urls.rest.downloads.reports("tgl-tracking-sheet"), params);
+      },
     },
   ],
   generateColumns(data) {

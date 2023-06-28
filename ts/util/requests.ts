@@ -1,7 +1,7 @@
-export function post(url: string, body: any) {
-  let headers: any = {
-    "Content-Type": "application/json",
-  };
+export function post(url: string, body: any, extraHeaders?: any) {
+  const headers = extraHeaders || {};
+  headers["Content-Type"] = "application/json";
+
   const csrfHeader = getMetaContent("_csrf_header");
   const csrfValue = getMetaContent("_csrf_token");
   if (csrfHeader && csrfValue) {
@@ -12,6 +12,28 @@ export function post(url: string, body: any) {
     method: "POST",
     headers: headers,
     body: JSON.stringify(body),
+  });
+}
+
+export function postDownload(url: string, body: any) {
+  post(url, body, {
+    Accept: "application/octet-stream",
+  }).then((response) => {
+    const disposition = response.headers.get("Content-Disposition");
+    if (!disposition) {
+      throw new Error("Server did not set content disposition header");
+    }
+    const regexResult = /filename=(.*)$/.exec(disposition);
+    if (!regexResult) {
+      throw new Error("Server did not send filename");
+    }
+    const filename = regexResult[1];
+    response.blob().then((blob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    });
   });
 }
 
