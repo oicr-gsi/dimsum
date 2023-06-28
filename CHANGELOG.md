@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.10.0] - 2023-06-28
+
+### Added
+
+* Preliminary values for full-depth WG coverage and WT clusters metrics. These (single lane total)
+  values will be shown when available if the final (call ready) value is not yet available
+* Page controls at the bottom of tables
+
+### Changed
+
+* Default page size for all tables to 50
+
+
 ## [1.9.2] - 2023-06-15
 
 ### Fixed
