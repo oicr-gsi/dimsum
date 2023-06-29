@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.10.1] - 2023-06-29
+
+### Fixed
+
+* Project list was failing to load and showing "NO DATA"
+
+
 ## [1.10.0] - 2023-06-28
 
 ### Added
