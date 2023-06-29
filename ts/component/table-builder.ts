@@ -249,12 +249,16 @@ export class TableBuilder<ParentType, ChildType> {
     tableContainer.appendChild(this.table);
     this.container.appendChild(tableContainer);
 
+    const bottomControlsContainer = document.createElement("div");
     if (this.definition.bulkActions || this.definition.staticActions) {
-      const bottomControlsContainer = document.createElement("div");
       bottomControlsContainer.className =
         "flex justify-end mt-4 items-top space-x-2";
       this.addActionButtons(bottomControlsContainer);
+    }
+    if (!this.definition.disablePageControls) {
       this.addBottomPageControls(bottomControlsContainer);
+    }
+    if (bottomControlsContainer.children.length) {
       this.container.appendChild(bottomControlsContainer);
     }
 
