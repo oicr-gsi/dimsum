@@ -46,6 +46,10 @@ export const urls = {
       list: `${restBaseUrl}/projects`,
     },
     tests: `${restBaseUrl}/tests`,
+    downloads: {
+      reports: (reportName: string) =>
+        `${restBaseUrl}/downloads/reports/${reportName}`,
+    },
   },
   miso: {
     sample: function (sampleId: string) {
