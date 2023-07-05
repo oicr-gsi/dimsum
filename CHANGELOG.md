@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.11.0] - 2023-07-05
+
+### Added
+
+* TGL Tracking Sheet project downloads
+
+
 ## [1.10.1] - 2023-06-29
 
 ### Fixed
