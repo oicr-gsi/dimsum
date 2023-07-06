@@ -4,7 +4,7 @@ The Runs page lists all the runs currently in Dimsum, alongside their completion
 
 To access the Runs page, click the green "Runs" link in the top right corner of the page.
 
-![Runs list](/images/runs_list.png)
+![Runs list](../../images/runs_list.png)
 
 ---
 

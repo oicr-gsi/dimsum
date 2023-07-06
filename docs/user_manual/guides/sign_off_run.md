@@ -7,19 +7,19 @@ based on metrics defined by the assay. Dimsum offers an easy way to review metri
 MISO where you can complete the sign-offs.
 
 When any run or run-library sign-off is required in production, Dimsum will create a JIRA ticket.
-You will usually get to the [Run Details](/user_manual/details/) page in Dimsum by clicking the link
-in this ticket, but you can also locate the run using the Runs or Notifications list pages, as in
-this example.
+You will usually get to the [Run Details](../../details/) page in Dimsum by clicking the
+link in this ticket, but you can also locate the run using the Runs or Notifications list pages, as
+in this example.
 
-1. Go to the [Notifications](/user_manual/notifications/) list page and locate the run you'd like to
-   review. Note that the sign-offs required for each run are displayed in the table. Click the run
-   name to get to the [Run Details](/user_manual/details/) page.
+1. Go to the [Notifications](../../notifications/) list page and locate the run you'd
+   like to review. Note that the sign-offs required for each run are displayed in the table. Click
+   the run name to get to the [Run Details](../../details/) page.
 
       - if the run does not show up in the Active Notifications list, it either does not have any
         pending sign-offs, or metrics are not yet available because QC analysis has not completed
 
 2. Depending on the type of run, a Library Qualifications and/or Full-Depth Sequencing table appears
-   on the [Run Details](/user_manual/details/) page. Here, you can see all of the run and
+   on the [Run Details](../../details/) page. Here, you can see all of the run and
    run-library metrics for each library in the run. Review the table and ensure that metrics for the
    libraries in question look good. Metrics that do not pass the threshold defined in the assay will
    be shaded red, while metrics that are unavailable will be shaded yellow.
