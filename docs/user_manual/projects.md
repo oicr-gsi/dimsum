@@ -6,4 +6,4 @@ To access the Projects page, click the green "Projects" link in the top right co
 
 ---
 
-For more information on common page and table features, see [Common Features](../features/).
+For more information on common page and table features, see [Common Features](features.md).

@@ -16,7 +16,7 @@ run-libraries requiring sign-off.
 
 ### 2. Project Tracking (not yet completed)
 
-Dimsum holds [Project Detail](/user_manual/details/) pages which aid in determining the overall
+Dimsum holds [Project Detail](user_manual/details.md) pages which aid in determining the overall
 status of a project.
 
 ### 3. Task Tracking (not yet completed)

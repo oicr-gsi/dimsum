@@ -3,13 +3,13 @@
 ## Links
 
 Text links within Dimsum usually take you to other pages within Dimsum. For example, clicking a run
-name will take you to the [Run Details](/user_manual/details/) page.
+name will take you to the [Run Details](details.md) page.
 
 An exception to this is JIRA ticket number links, which will open the issue in JIRA in a new tab.
 
 ### MISO
 
-The MISO icon (![MISO icon](/images/miso_logo.svg)) appears adjacent to any item with a
+The MISO icon (![MISO icon](../images/miso_logo.svg)) appears adjacent to any item with a
 corresponding page in [MISO LIMS](http://miso-lims.github.io/miso-lims/). Clicking the MISO icon
 opens the MISO page in a new tab.
 
@@ -18,7 +18,7 @@ opens the MISO page in a new tab.
 Hovering over certain text will cause a "Tool Tip" to pop up, which can clarify or provide more
 details about data that is initially displayed in a compact form.
 
-![Describing tooltip](/images/tooltip_describe.png)
+![Describing tooltip](../images/tooltip_describe.png)
 
 ## Tables
 
@@ -29,7 +29,7 @@ Tables in Dimsum have a standard set of controls added above and/or below the ta
 Tables can be sorted by clicking the dropdown next to the sort icon at the top left of the table and
 selecting the desired option. Sort options will differ depending on the table.
 
-![Sorting controls](/images/sort_controls.png)
+![Sorting controls](../images/sort_controls.png)
 
 ### Filtering
 
@@ -39,7 +39,7 @@ prompt you to select a value from a dropdown, while others may require you to en
 your selection. Applying any filters will automatically refresh the page with entries that follow
 all the filter requirements.
 
-![Filtering controls](/images/filter_controls.png)
+![Filtering controls](../images/filter_controls.png)
 
 Multiple filters can be applied to a table. Filters of the same type will be treated as "OR"
 conditions, while different filter types function as "AND" conditions. For example, you can view all
@@ -60,10 +60,10 @@ bookmarked to save a set of filters that you use frequently, or copied to share 
 Adjust the number of entries in the table by clicking on the "Items per page" drop down at the top
 right of the table and selecting the number of entries you'd like to see.
 
-![Page controls](/images/page_controls.png)
+![Page controls](../images/page_controls.png)
 
-Move between pages in the table using the "<" (previous) and ">" (next) buttons at the top right of
-the table.
+Move between pages in the table using the "<" (previous) and ">" (next) buttons that appear at both
+the top right and bottom right of the table.
 
 ### Action Buttons
 

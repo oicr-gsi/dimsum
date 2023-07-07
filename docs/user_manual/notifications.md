@@ -16,7 +16,7 @@ A JIRA ticket is created automatically for each run, and includes
 - A count and list of run-libraries that are pending QC
 - A count and list of run-libraries that are pending data review
 - A count of run-libraries that are still pending analysis and not yet ready for QC
-- A link to the Dimsum [Run Details](/user_manual/details/) page, where you can view metrics and
+- A link to the Dimsum [Run Details](details.md) page, where you can view metrics and
   start the sign-off process
 
 When any of this information changes, Dimsum will post a comment on the ticket with the updated
@@ -42,8 +42,8 @@ page. This page lists all active notifications, including
 - Counts of libraries that are pending analysis, QC, and data review
 - The JIRA ticket number, linking to JIRA
 
-![Active Notifications page](/images/active_notifications.png)
+![Active Notifications page](../images/active_notifications.png)
 
 ---
 
-For more information on common page and table features, see [Common Features](../features/).
+For more information on common page and table features, see [Common Features](features.md).

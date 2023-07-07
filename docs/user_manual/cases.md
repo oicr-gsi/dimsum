@@ -2,19 +2,25 @@
 
 A case consists of all of the work that is required to complete an assay for a set of samples.
 Dimsum is based heavily upon this structure. Because an assay is required to construct a case, a
-sample can only be included if the sample belongs to a requisition that specifies a well-defined
-assay. Samples not meeting this criteria appear on the [Omissions Page](../omissions).
+sample can only be included in Dimsum if the sample belongs to a requisition that specifies a
+well-defined assay. Well-defined means that the assay has one or more tests defined. Samples not
+meeting this criteria appear on the [Omissions Page](omissions.md).
 
 ## Case Grouping
 
-A case represents a unique combination of the following **tumour** sample attributes.
+A requisition forms the boundary for case grouping - all samples belonging to the case must be
+included in the same requisition. If a sample from a previous case needs to be grouped with new
+samples in a new requisition, it can be added to the new requisition as a supplemental sample.
+
+Within the requisition, **tumour** samples are grouped by the following attributes to form cases.
 
 - Donor
 - Tissue type
 - Tissue origin
 - Timepoint
 
-All normals from the same donor will be included in all cases for that donor.
+All normals from the same donor within the requisition will be included in all of the requisition's
+cases for that donor.
 
 ## Sample Grouping Criteria
 
