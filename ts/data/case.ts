@@ -614,7 +614,8 @@ export function makeSampleTooltip(sample: Sample) {
           ? sample.run.name + " (L" + sample.sequencingLane + ")"
           : sample.run.name,
         urls.miso.run(sample.run.name),
-        urls.dimsum.run(sample.run.name)
+        urls.dimsum.run(sample.run.name),
+        sample.run.name
       )
     );
   }
