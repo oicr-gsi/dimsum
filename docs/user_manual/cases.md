@@ -4,7 +4,7 @@ A case consists of all of the work that is required to complete an assay for a s
 Dimsum is based heavily upon this structure. Because an assay is required to construct a case, a
 sample can only be included in Dimsum if the sample belongs to a requisition that specifies a
 well-defined assay. Well-defined means that the assay has one or more tests defined. Samples not
-meeting this criteria appear on the [Omissions Page](../omissions).
+meeting this criteria appear on the [Omissions Page](omissions.md).
 
 ## Case Grouping
 

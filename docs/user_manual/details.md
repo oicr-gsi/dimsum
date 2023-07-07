@@ -30,7 +30,7 @@ The Details page includes tables detailing the following:
 
 Navigate through each of the tables using the tabbed bar at the top of the page.
 
-![Detail page tabs](../../images/detail_tabs.png)
+![Detail page tabs](../images/detail_tabs.png)
 
 ## 2. Run Details Page
 
@@ -38,7 +38,7 @@ This page includes details about the selected run including its QC status, flow 
 parameters. A table showing all of the library qualification and/or full-depth sequencing results is
 included below, as applicable for the selected run.
 
-![Run Details page](../../images/run_details.png)
+![Run Details page](../images/run_details.png)
 
 ### Bulk QC Operations in MISO
 
@@ -50,4 +50,4 @@ page in a new tab. You can then perform your desired QC operations for all of th
 
 ---
 
-For more information on common page and table features, see [Common Features](../features/).
+For more information on common page and table features, see [Common Features](features.md).

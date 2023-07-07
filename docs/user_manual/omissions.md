@@ -9,4 +9,4 @@ other areas of Dimsum. Samples appearing here either
 
 ---
 
-For more information on common page and table features, see [Common Features](../features/).
+For more information on common page and table features, see [Common Features](features.md).

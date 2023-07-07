@@ -1,10 +1,10 @@
 # QC Dashboard
 
 This is the main dashboard users are presented with. All cases are presented in a table format. See
-[Cases](../cases/) for details about how cases are constructed. Navigate back to this page
+[Cases](cases.md) for details about how cases are constructed. Navigate back to this page
 by clicking on the Dimsum logo on the top left of all pages.
 
-![QC Dashboard](../../images/qc_dashboard.png)
+![QC Dashboard](../images/qc_dashboard.png)
 
 The table columns are described below.
 
@@ -14,7 +14,7 @@ Lists the project(s) involved in the case, and their appropriate pipeline. Multi
 involved in cases where relevant samples from the case's donor have been propagated to a different
 project.
 
-Clicking on a project name will take you to the [Project Details](../details/) page. Clicking on the
+Clicking on a project name will take you to the [Project Details](details.md) page. Clicking on the
 MISO icon next to the project name will open the MISO
 [Edit Project](https://miso-lims.readthedocs.io/projects/docs/en/latest/user_manual/projects/#edit-project-page)
 page in a new tab.
@@ -24,7 +24,7 @@ page in a new tab.
 Lists the case donor's internal and external names, and the tumour tissue origin, tissue type, and
 timepoint examined in the case.
 
-Clicking on the donor name will take you to the [Donor Details](../details/) page. Clicking on the
+Clicking on the donor name will take you to the [Donor Details](details.md) page. Clicking on the
 MISO icon next to the donor name will open the MISO
 [Edit Sample](https://miso-lims.readthedocs.io/projects/docs/en/latest/user_manual/samples/#editing-a-single-sample)
 page for the donor in a new tab.
@@ -33,9 +33,9 @@ page for the donor in a new tab.
 
 Lists the case assay and requisition.
 
-Clicking on the assay name will take you to the [Case Details](../details/) page.
+Clicking on the assay name will take you to the [Case Details](details.md) page.
 
-Clicking on the requisition name will take you to the [Requisition Details](../details/) page.
+Clicking on the requisition name will take you to the [Requisition Details](details.md) page.
 Clicking on the MISO icon next to the requisition name will open the MISO
 [Edit Requisition](https://miso-lims.readthedocs.io/projects/docs/en/latest/user_manual/requisitions/#editing-requisitions)
 page in a new tab.
@@ -50,7 +50,7 @@ number of days from the start date until the Final Report sign-off.
 ### Test
 
 Each assay includes one or more tests. Tests must be repeated for each group ID present. See
-[Cases](../cases/) for more details about how cases are constructed.
+[Cases](cases.md) for more details about how cases are constructed.
 
 ### QC Gates
 
