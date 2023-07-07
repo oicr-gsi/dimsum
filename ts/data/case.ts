@@ -176,14 +176,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
         }
-        const requisitionDiv = document.createElement("div");
-        addLink(
-          requisitionDiv,
-          requisition.name,
-          urls.dimsum.requisition(requisition.id)
+        fragment.appendChild(
+          makeNameDiv(
+            requisition.name,
+            urls.miso.requisition(requisition.id),
+            urls.dimsum.requisition(requisition.id),
+            requisition.name
+          )
         );
-        addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
-        fragment.appendChild(requisitionDiv);
       },
     },
     {

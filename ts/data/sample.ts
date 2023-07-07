@@ -150,7 +150,8 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
               ? runName + " (L" + sample.sequencingLane + ")"
               : runName,
             urls.miso.run(runName),
-            urls.dimsum.run(runName)
+            urls.dimsum.run(runName),
+            runName
           )
         );
         // TODO: add Dashi icon link

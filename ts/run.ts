@@ -4,7 +4,7 @@ import {
   getLibraryQualificationsDefinition,
   Sample,
 } from "./data/sample";
-import { makeIcon, shadeElement } from "./util/html-utils";
+import { makeCopyButton, makeIcon, shadeElement } from "./util/html-utils";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { urls } from "./util/urls";
 
@@ -16,6 +16,8 @@ const runName = misoRunLink.getAttribute("data-run-name");
 if (!runName) {
   throw new Error("Missing run name data attribute");
 }
+const copyButton = makeCopyButton(runName);
+misoRunLink.parentNode?.insertBefore(copyButton, misoRunLink);
 misoRunLink.setAttribute("href", urls.miso.run(runName));
 
 function makeTable(

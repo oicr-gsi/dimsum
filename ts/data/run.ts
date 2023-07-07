@@ -28,7 +28,8 @@ export const runDefinition: TableDefinition<Run, void> = {
             makeNameDiv(
               run.name,
               urls.miso.run(run.name),
-              urls.dimsum.run(run.name)
+              urls.dimsum.run(run.name),
+              run.name
             )
           );
         },
