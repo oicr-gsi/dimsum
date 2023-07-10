@@ -86,12 +86,13 @@ export function makeStatusIcon(
     element.append(span, icon);
   }
   const tooltip = Tooltip.getInstance();
-  const fragment = document.createDocumentFragment();
-  addTextDiv(statusText, fragment);
-  if (tooltipAdditionalContents) {
-    fragment.appendChild(tooltipAdditionalContents);
-  }
-  tooltip.addTarget(element, fragment);
+  const addContents = (fragment: DocumentFragment) => {
+    addTextDiv(statusText, fragment);
+    if (tooltipAdditionalContents) {
+      fragment.appendChild(tooltipAdditionalContents);
+    }
+  };
+  tooltip.addTarget(element, addContents);
   return element;
 }
 
@@ -110,17 +111,18 @@ export function makeMetricDisplay(
   const div = document.createElement("div");
   div.innerText = (prefix || "") + displayValue;
   if (addTooltip) {
-    const tooltipFragment = document.createDocumentFragment();
-    if (tooltipAdditionalContents) {
-      tooltipFragment.appendChild(tooltipAdditionalContents);
-    }
-    metrics.forEach((metric) => {
-      const div = document.createElement("div");
-      div.innerText = "Required: " + getMetricRequirementText(metric);
-      tooltipFragment.appendChild(div);
-    });
+    const addContents = (fragment: DocumentFragment) => {
+      if (tooltipAdditionalContents) {
+        fragment.appendChild(tooltipAdditionalContents);
+      }
+      metrics.forEach((metric) => {
+        const div = document.createElement("div");
+        div.innerText = "Required: " + getMetricRequirementText(metric);
+        fragment.appendChild(div);
+      });
+    };
     const tooltip = Tooltip.getInstance();
-    tooltip.addTarget(div, tooltipFragment);
+    tooltip.addTarget(div, addContents);
   }
   return div;
 }

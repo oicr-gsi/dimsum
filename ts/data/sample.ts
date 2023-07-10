@@ -710,24 +710,24 @@ function addClustersPfContents(
     metrics,
     divisorUnit
   );
-  if (addTooltip) {
-    const tooltipContents = document.createDocumentFragment();
-    if (perRunMetrics.length) {
-      // whether originally or not, these metrics are per run
+  if (addTooltip && perRunMetrics.length) {
+    // whether originally or not, these metrics are per run
+    const addContents = (fragment: DocumentFragment) => {
       perRunMetrics.forEach((metric) =>
-        addMetricRequirementText(metric, tooltipContents)
+        addMetricRequirementText(metric, fragment)
       );
-      tooltip.addTarget(runDiv, tooltipContents);
-    }
+    };
+    tooltip.addTarget(runDiv, addContents);
   }
   fragment.appendChild(runDiv);
 
   if (sample.run.lanes.length > 1) {
-    const laneTooltipContents = document.createDocumentFragment();
-    // these metrics are per lane
-    perLaneMetrics.forEach((metric) =>
-      addMetricRequirementText(metric, laneTooltipContents)
-    );
+    const addContents = (fragment: DocumentFragment) => {
+      // these metrics are per lane
+      perLaneMetrics.forEach((metric) =>
+        addMetricRequirementText(metric, fragment)
+      );
+    };
     sample.run.lanes.forEach((lane) => {
       if (lane.clustersPf) {
         const laneDiv = document.createElement("div");
@@ -738,7 +738,7 @@ function addClustersPfContents(
           divisorUnit
         )}`;
         if (addTooltip && perLaneMetrics.length) {
-          tooltip.addTarget(laneDiv, laneTooltipContents.cloneNode(true));
+          tooltip.addTarget(laneDiv, addContents);
         }
         fragment.appendChild(laneDiv);
       }
@@ -853,10 +853,9 @@ function addPhixContents(
   }
 
   const tooltip = Tooltip.getInstance();
-  const laneTooltipContents = document.createDocumentFragment();
-  metrics.forEach((metric) =>
-    addMetricRequirementText(metric, laneTooltipContents)
-  );
+  const addContents = (fragment: DocumentFragment) => {
+    metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
+  };
 
   const multipleLanes = sample.run.lanes.length > 1;
   sample.run.lanes.forEach((lane) => {
@@ -878,7 +877,7 @@ function addPhixContents(
       }
       laneDiv.innerText = text;
       if (addTooltip) {
-        tooltip.addTarget(laneDiv, laneTooltipContents);
+        tooltip.addTarget(laneDiv, addContents);
       }
     }
     fragment.appendChild(laneDiv);

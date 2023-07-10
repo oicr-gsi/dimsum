@@ -151,9 +151,9 @@ export function makeCopyButton(text: string): HTMLButtonElement {
   button.type = "button";
   button.title = "Copy Name";
   button.className = "fa-solid fa-copy active:text-green-200";
-  button.onclick = (event) => {
+  button.addEventListener("click", (event) => {
     navigator.clipboard.writeText(text);
-  };
+  });
   return button;
 }
 
@@ -161,7 +161,9 @@ export function makeTextDivWithTooltip(text: string, tooltip: string) {
   const div = document.createElement("div");
   div.appendChild(document.createTextNode(text));
   const tooltipInstance = Tooltip.getInstance();
-  tooltipInstance.addTarget(div, document.createTextNode(tooltip));
+  const addContents = (fragment: DocumentFragment) =>
+    fragment.appendChild(document.createTextNode(tooltip));
+  tooltipInstance.addTarget(div, addContents);
   return div;
 }
 
