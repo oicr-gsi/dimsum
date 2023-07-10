@@ -70,15 +70,19 @@ export class Tooltip {
     return Tooltip.instance;
   }
 
-  public addTarget(target: HTMLElement, contents: Node) {
+  public addTarget(
+    target: HTMLElement,
+    addContents: (fragment: DocumentFragment) => void
+  ) {
     target.onmouseenter = () => {
       this.mouseOnIcon = true;
       this.activeTarget = target;
       const targetHitBox = this.getOffset(target);
       const targetY = targetHitBox.bottom;
       const targetX = targetHitBox.left;
-      // node needs to be cloned since adding to DOM removes node argument
-      this.tooltipContainer.replaceChildren(contents.cloneNode(true));
+      const fragment = new DocumentFragment();
+      addContents(fragment);
+      this.tooltipContainer.replaceChildren(fragment);
       this.tooltipContainer.style.top = targetY + "px";
       this.tooltipContainer.style.left = targetX + "px";
       this.update();

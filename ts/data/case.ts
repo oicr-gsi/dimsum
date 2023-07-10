@@ -147,14 +147,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               (kase.timepoint ? " " + kase.timepoint : "")
           )
         );
-        const tooltipDiv = document.createElement("div");
-        addTextDiv(`Tissue Origin: ${kase.tissueOrigin}`, tooltipDiv);
-        addTextDiv(`Tissue Type: ${kase.tissueType}`, tooltipDiv);
-        if (kase.timepoint) {
-          addTextDiv(`Timepoint: ${kase.timepoint}`, tooltipDiv);
-        }
+        const addContents = (fragment: DocumentFragment) => {
+          addTextDiv(`Tissue Origin: ${kase.tissueOrigin}`, fragment);
+          addTextDiv(`Tissue Type: ${kase.tissueType}`, fragment);
+          if (kase.timepoint) {
+            addTextDiv(`Timepoint: ${kase.timepoint}`, fragment);
+          }
+        };
         const tooltipInstance = Tooltip.getInstance();
-        tooltipInstance.addTarget(tumourDetailDiv, tooltipDiv);
+        tooltipInstance.addTarget(tumourDetailDiv, addContents);
         fragment.appendChild(tumourDetailDiv);
       },
     },
@@ -176,14 +177,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
         }
-        const requisitionDiv = document.createElement("div");
-        addLink(
-          requisitionDiv,
-          requisition.name,
-          urls.dimsum.requisition(requisition.id)
+        fragment.appendChild(
+          makeNameDiv(
+            requisition.name,
+            urls.miso.requisition(requisition.id),
+            urls.dimsum.requisition(requisition.id),
+            requisition.name
+          )
         );
-        addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
-        fragment.appendChild(requisitionDiv);
       },
     },
     {
@@ -230,10 +231,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           const groupIdDiv = document.createElement("div");
           groupIdDiv.appendChild(document.createTextNode(test.groupId));
           const tooltipInstance = Tooltip.getInstance();
-          tooltipInstance.addTarget(
-            groupIdDiv,
-            document.createTextNode("Group ID")
-          );
+          const addContents = (fragment: DocumentFragment) =>
+            fragment.appendChild(document.createTextNode("Group ID"));
+          tooltipInstance.addTarget(groupIdDiv, addContents);
           fragment.appendChild(groupIdDiv);
         }
       },
@@ -600,65 +600,68 @@ export function addSampleIcons(
 }
 
 export function makeSampleTooltip(sample: Sample) {
-  const tooltipContainer = new DocumentFragment();
-  const topContainer = document.createElement("div");
-  topContainer.className = "flex flex-col space-y-1 text-black";
-  const bottomContainer = document.createElement("div");
-  bottomContainer.className =
-    "grid grid-cols-2 grid-flow-row gap-y-1 font-inter font-medium font-14 text-black mt-3";
-  // sample run links
-  if (sample.run) {
-    topContainer.appendChild(
-      makeNameDiv(
-        sample.sequencingLane
-          ? sample.run.name + " (L" + sample.sequencingLane + ")"
-          : sample.run.name,
-        urls.miso.run(sample.run.name),
-        urls.dimsum.run(sample.run.name)
-      )
+  return (fragment: DocumentFragment) => {
+    const topContainer = document.createElement("div");
+    topContainer.className = "flex flex-col space-y-1 text-black";
+    const bottomContainer = document.createElement("div");
+    bottomContainer.className =
+      "grid grid-cols-2 grid-flow-row gap-y-1 font-inter font-medium font-14 text-black mt-3";
+    // sample run links
+    if (sample.run) {
+      topContainer.appendChild(
+        makeNameDiv(
+          sample.sequencingLane
+            ? sample.run.name + " (L" + sample.sequencingLane + ")"
+            : sample.run.name,
+          urls.miso.run(sample.run.name),
+          urls.dimsum.run(sample.run.name),
+          sample.run.name
+        )
+      );
+    }
+    // sample name links
+    const sampleNameContainer = makeNameDiv(
+      sample.name,
+      urls.miso.sample(sample.id)
     );
-  }
-  // sample name links
-  const sampleNameContainer = makeNameDiv(
-    sample.name,
-    urls.miso.sample(sample.id)
-  );
-  topContainer.appendChild(sampleNameContainer);
+    topContainer.appendChild(sampleNameContainer);
 
-  // project links
-  addTooltipRow(
-    bottomContainer,
-    "Project",
-    sample.project,
-    urls.miso.project(sample.project),
-    urls.dimsum.project(sample.project)
-  );
-  // donor links
-  addTooltipRow(
-    bottomContainer,
-    "Donor",
-    sample.donor.name,
-    urls.miso.sample(sample.donor.id),
-    urls.dimsum.donor(sample.donor.name),
-    sample.donor.externalName
-  );
-  // requisition links
-  if (sample.requisitionId && sample.requisitionName) {
+    // project links
     addTooltipRow(
       bottomContainer,
-      "Requisition",
-      sample.requisitionName,
-      urls.miso.requisition(sample.requisitionId),
-      urls.dimsum.requisition(sample.requisitionId)
+      "Project",
+      sample.project,
+      urls.miso.project(sample.project),
+      urls.dimsum.project(sample.project)
     );
-  }
-  if (sample.assayId) {
-    const assay = siteConfig.assaysById[sample.assayId];
-    addTooltipRow(bottomContainer, "Assay", assay.name);
-  }
-  tooltipContainer.appendChild(topContainer);
-  tooltipContainer.appendChild(bottomContainer);
-  return tooltipContainer;
+    // donor links
+    addTooltipRow(
+      bottomContainer,
+      "Donor",
+      sample.donor.name,
+      urls.miso.sample(sample.donor.id),
+      urls.dimsum.donor(sample.donor.name),
+      sample.donor.externalName
+    );
+    // requisition links
+    if (sample.requisitionId && sample.requisitionName) {
+      addTooltipRow(
+        bottomContainer,
+        "Requisition",
+        sample.requisitionName,
+        urls.miso.requisition(sample.requisitionId),
+        urls.dimsum.requisition(sample.requisitionId),
+        undefined,
+        sample.requisitionName
+      );
+    }
+    if (sample.assayId) {
+      const assay = siteConfig.assaysById[sample.assayId];
+      addTooltipRow(bottomContainer, "Assay", assay.name);
+    }
+    fragment.appendChild(topContainer);
+    fragment.appendChild(bottomContainer);
+  };
 }
 
 function addRequisitionIcons(
@@ -689,11 +692,16 @@ function addRequisitionIcon(
 }
 
 function makeRequisitionTooltip(requisition: Requisition) {
-  return makeNameDiv(
-    requisition.name,
-    urls.miso.requisition(requisition.id),
-    urls.dimsum.requisition(requisition.id)
-  );
+  return (fragment: DocumentFragment) => {
+    fragment.appendChild(
+      makeNameDiv(
+        requisition.name,
+        urls.miso.requisition(requisition.id),
+        urls.dimsum.requisition(requisition.id),
+        requisition.name
+      )
+    );
+  };
 }
 
 function addTooltipRow(
@@ -702,12 +710,13 @@ function addTooltipRow(
   name: string,
   misoUrl?: string,
   dimsumUrl?: string,
-  additionalText?: string
+  additionalText?: string,
+  copyText?: string
 ) {
   const labelContainer = document.createElement("span");
   labelContainer.innerHTML = `${label}:`;
   const valueContainer = document.createElement("div");
-  valueContainer.appendChild(makeNameDiv(name, misoUrl, dimsumUrl));
+  valueContainer.appendChild(makeNameDiv(name, misoUrl, dimsumUrl, copyText));
   if (additionalText) {
     const externalDonorNameContainer = document.createElement("span");
     externalDonorNameContainer.className = "block";

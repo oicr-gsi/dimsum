@@ -94,14 +94,15 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
               (testTableView.timepoint ? " " + testTableView.timepoint : "")
           )
         );
-        const tooltipDiv = document.createElement("div");
-        addTextDiv(`Tissue Origin: ${testTableView.tissueOrigin}`, tooltipDiv);
-        addTextDiv(`Tissue Type: ${testTableView.tissueType}`, tooltipDiv);
-        if (testTableView.timepoint) {
-          addTextDiv(`Timepoint: ${testTableView.timepoint}`, tooltipDiv);
-        }
+        const addContents = (fragment: DocumentFragment) => {
+          addTextDiv(`Tissue Origin: ${testTableView.tissueOrigin}`, fragment);
+          addTextDiv(`Tissue Type: ${testTableView.tissueType}`, fragment);
+          if (testTableView.timepoint) {
+            addTextDiv(`Timepoint: ${testTableView.timepoint}`, fragment);
+          }
+        };
         const tooltipInstance = Tooltip.getInstance();
-        tooltipInstance.addTarget(tumourDetailDiv, tooltipDiv);
+        tooltipInstance.addTarget(tumourDetailDiv, addContents);
         fragment.appendChild(tumourDetailDiv);
       },
     },
@@ -147,9 +148,8 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
             document.createTextNode(testTableView.test.groupId)
           );
           const tooltipInstance = Tooltip.getInstance();
-          tooltipInstance.addTarget(
-            groupIdDiv,
-            document.createTextNode("Group ID")
+          tooltipInstance.addTarget(groupIdDiv, (fragment) =>
+            fragment.appendChild(document.createTextNode("Group ID"))
           );
           fragment.appendChild(groupIdDiv);
         }

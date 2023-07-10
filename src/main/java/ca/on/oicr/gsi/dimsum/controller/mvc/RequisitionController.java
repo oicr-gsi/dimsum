@@ -42,6 +42,7 @@ public class RequisitionController {
     model.put("titleLink", makeMisoRequisitionUrl(requisitionId));
     model.put("detailType", CaseFilterKey.REQUISITION_ID.name());
     model.put("detailValue", requisitionId);
+    model.put("detailName", requisition.getName());
     return "detail";
   }
 

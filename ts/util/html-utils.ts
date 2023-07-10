@@ -123,10 +123,11 @@ export function makeClickout() {
 export function makeNameDiv(
   name: string,
   misoUrl?: string,
-  dimsumUrl?: string
+  dimsumUrl?: string,
+  copyText?: string
 ) {
   const div = document.createElement("div");
-  div.className = "flex flex-row space-x-2 items-center";
+  div.className = "flex flex-row space-x-1 items-center";
   if (dimsumUrl) {
     addLink(div, name, dimsumUrl);
   } else {
@@ -134,17 +135,35 @@ export function makeNameDiv(
     nameSpan.innerHTML = name;
     div.appendChild(nameSpan);
   }
+  if (copyText) {
+    const button = makeCopyButton(copyText);
+    button.classList.add("text-12");
+    div.appendChild(button);
+  }
   if (misoUrl) {
     addMisoIcon(div, misoUrl);
   }
   return div;
 }
 
+export function makeCopyButton(text: string): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.title = "Copy Name";
+  button.className = "fa-solid fa-copy active:text-green-200";
+  button.addEventListener("click", (event) => {
+    navigator.clipboard.writeText(text);
+  });
+  return button;
+}
+
 export function makeTextDivWithTooltip(text: string, tooltip: string) {
   const div = document.createElement("div");
   div.appendChild(document.createTextNode(text));
   const tooltipInstance = Tooltip.getInstance();
-  tooltipInstance.addTarget(div, document.createTextNode(tooltip));
+  const addContents = (fragment: DocumentFragment) =>
+    fragment.appendChild(document.createTextNode(tooltip));
+  tooltipInstance.addTarget(div, addContents);
   return div;
 }
 

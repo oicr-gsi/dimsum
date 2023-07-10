@@ -16,6 +16,7 @@ import { getSearchParams, updateUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
+import { makeCopyButton } from "./util/html-utils";
 
 const tableContainerId = "tableContainer";
 const tableContainer = document.getElementById(tableContainerId); // use same table container across all tables
@@ -61,32 +62,46 @@ function reload(definition: TableDefinition<any, any>) {
   ).build();
 }
 
-// add QC Report button if it's a case page
-if (tableContainer.getAttribute("data-detail-type") === "CASE_ID") {
-  const caseId = tableContainer.getAttribute("data-detail-value");
-  if (!caseId) {
-    throw new Error("Missing case ID value");
+switch (tableContainer.getAttribute("data-detail-type")) {
+  case "REQUISITION_ID": {
+    const titleMisoLink = document.getElementById("titleMisoLink");
+    if (titleMisoLink === null) {
+      throw Error("title link not found on page");
+    }
+    const requisitionName = tableContainer.getAttribute("data-detail-name");
+    if (requisitionName === null) {
+      throw Error("requisition name data attribute missing");
+    }
+    const copyButton = makeCopyButton(requisitionName);
+    titleMisoLink.parentNode?.insertBefore(copyButton, titleMisoLink);
   }
-  const actionContainer = document.getElementById("pageActionsContainer"); // use same table container across all tables
-  if (actionContainer === null) {
-    throw Error(`Container ID "${actionContainer}" not found on page`);
+  case "CASE_ID": {
+    // add QC Report button
+    const caseId = tableContainer.getAttribute("data-detail-value");
+    if (!caseId) {
+      throw new Error("Missing case ID value");
+    }
+    const actionContainer = document.getElementById("pageActionsContainer"); // use same table container across all tables
+    if (actionContainer === null) {
+      throw Error(`Container ID "${actionContainer}" not found on page`);
+    }
+    const button = document.createElement("button");
+    button.classList.add(
+      "bg-green-200",
+      "rounded-md",
+      "hover:ring-2",
+      "ring-offset-1",
+      "ring-green-200",
+      "text-white",
+      "font-inter",
+      "font-medium",
+      "text-12",
+      "px-2",
+      "py-1"
+    );
+    button.innerText = "QC Report";
+    button.onclick = (event) =>
+      (window.location.href = urls.dimsum.caseQcReport(caseId));
+    actionContainer.appendChild(button);
   }
-  const button = document.createElement("button");
-  button.classList.add(
-    "bg-green-200",
-    "rounded-md",
-    "hover:ring-2",
-    "ring-offset-1",
-    "ring-green-200",
-    "text-white",
-    "font-inter",
-    "font-medium",
-    "text-12",
-    "px-2",
-    "py-1"
-  );
-  button.innerText = "QC Report";
-  button.onclick = (event) =>
-    (window.location.href = urls.dimsum.caseQcReport(caseId));
-  actionContainer.appendChild(button);
 }

@@ -31,7 +31,8 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
             makeNameDiv(
               runName,
               urls.miso.run(runName),
-              urls.dimsum.run(runName)
+              urls.dimsum.run(runName),
+              runName
             )
           );
         },
