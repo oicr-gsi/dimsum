@@ -7,6 +7,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.12.0] - 2023-07-13
+
+### Changed
+
+* Updated case definition in user manual
+
+### Fixed
+
+* Broken links and images within user manual
+
+
 ## [1.11.0] - 2023-07-05
 
 ### Added
