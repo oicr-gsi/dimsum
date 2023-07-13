@@ -9,6 +9,10 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ## [1.12.0] - 2023-07-13
 
+### Added
+
+* Copy button next to run and requisition names to copy the name to clipboard
+
 ### Changed
 
 * Updated case definition in user manual
