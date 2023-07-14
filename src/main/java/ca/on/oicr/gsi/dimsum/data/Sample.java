@@ -34,6 +34,7 @@ public class Sample {
   private final Run run;
   private final Donor donor;
   private final BigDecimal meanInsertSize;
+  private final BigDecimal medianInsertSize;
   private final Integer clustersPerSample; // AKA "Pass Filter Clusters" for full-depth (call ready)
   private final Integer preliminaryClustersPerSample;
   private final BigDecimal duplicationRate;
@@ -81,6 +82,7 @@ public class Sample {
     this.run = builder.run;
     this.donor = requireNonNull(builder.donor);
     this.meanInsertSize = builder.meanInsertSize;
+    this.medianInsertSize = builder.medianInsertSize;
     this.clustersPerSample = builder.clustersPerSample;
     this.preliminaryClustersPerSample = builder.preliminaryClustersPerSample;
     this.duplicationRate = builder.duplicationRate;
@@ -196,6 +198,10 @@ public class Sample {
 
   public BigDecimal getMeanInsertSize() {
     return meanInsertSize;
+  }
+
+  public BigDecimal getMedianInsertSize() {
+    return medianInsertSize;
   }
 
   public Integer getClustersPerSample() {
@@ -328,6 +334,7 @@ public class Sample {
     private Run run;
     private Donor donor;
     private BigDecimal meanInsertSize;
+    private BigDecimal medianInsertSize;
     private Integer clustersPerSample;
     private Integer preliminaryClustersPerSample;
     private BigDecimal duplicationRate;
@@ -452,6 +459,11 @@ public class Sample {
 
     public Builder meanInsertSize(BigDecimal meanInsertSize) {
       this.meanInsertSize = meanInsertSize;
+      return this;
+    }
+
+    public Builder medianInsertSize(BigDecimal medianInsertSize) {
+      this.medianInsertSize = medianInsertSize;
       return this;
     }
 
