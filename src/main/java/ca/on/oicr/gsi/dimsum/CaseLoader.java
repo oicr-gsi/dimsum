@@ -1,20 +1,5 @@
 package ca.on.oicr.gsi.dimsum;
 
-import ca.on.oicr.gsi.dimsum.data.*;
-import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
-import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilterKey;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -25,14 +10,50 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import ca.on.oicr.gsi.dimsum.data.Assay;
+import ca.on.oicr.gsi.dimsum.data.Case;
+import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.Donor;
+import ca.on.oicr.gsi.dimsum.data.Lane;
+import ca.on.oicr.gsi.dimsum.data.Metric;
+import ca.on.oicr.gsi.dimsum.data.MetricCategory;
+import ca.on.oicr.gsi.dimsum.data.MetricSubcategory;
+import ca.on.oicr.gsi.dimsum.data.OmittedSample;
+import ca.on.oicr.gsi.dimsum.data.Project;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
+import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.dimsum.data.RequisitionQc;
+import ca.on.oicr.gsi.dimsum.data.RequisitionQcGroup;
+import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.dimsum.data.ThresholdType;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 @Component
 public class CaseLoader {
@@ -245,6 +266,7 @@ public class CaseLoader {
           .run(runsById.get(runId))
           .donor(donorsById.get(parseString(json, "donor_id")))
           .meanInsertSize(parseDecimal(json, "mean_insert", false))
+          .medianInsertSize(parseDecimal(json, "median_insert", false))
           .clustersPerSample(parseInteger(json, "clusters_per_sample", false))
           .preliminaryClustersPerSample(
               parseInteger(json, "preliminary_clusters_per_sample", false))

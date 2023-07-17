@@ -74,6 +74,7 @@ export interface Sample extends Qcable {
   run?: Run;
   donor: Donor;
   meanInsertSize?: number;
+  medianInsertSize?: number;
   clustersPerSample?: number;
   preliminaryClustersPerSample?: number;
   duplicationRate?: number;
@@ -1012,6 +1013,8 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
         : null;
     case "Mean Insert Size":
       return nullIfUndefined(sample.meanInsertSize);
+    case "Median Insert Size":
+      return nullIfUndefined(sample.medianInsertSize);
     case "Duplication Rate":
       return nullIfUndefined(sample.duplicationRate);
     case METRIC_LABELS_CLUSTERS[0]:
