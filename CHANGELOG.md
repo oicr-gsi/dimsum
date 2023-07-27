@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.13.0] - 2023-07-27
+
+### Added
+
+* Support for median insert size metric
+
+
 ## [1.12.0] - 2023-07-13
 
 ### Added
