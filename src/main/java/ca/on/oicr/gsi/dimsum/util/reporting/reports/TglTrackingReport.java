@@ -153,7 +153,7 @@ public class TglTrackingReport extends Report {
       }
       for (Metric metric : subcategory.getMetrics()) {
         if (metric.getTissueType() != null
-            && (metric.isNegateTissueType() != metric.getTissueType()
+            && (metric.isNegateTissueType() == metric.getTissueType()
                 .equals(test.getTissueType()))) {
           continue;
         }
