@@ -2,8 +2,11 @@ package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
 import javax.annotation.concurrent.Immutable;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 @Immutable
+@JsonDeserialize(builder = ProjectSummary.Builder.class)
 public class ProjectSummary {
   private final String name;
 
@@ -168,6 +171,7 @@ public class ProjectSummary {
     return finalReportCompletedCount;
   }
 
+  @JsonPOJOBuilder(withPrefix = "")
   public static class Builder {
 
     private String name;

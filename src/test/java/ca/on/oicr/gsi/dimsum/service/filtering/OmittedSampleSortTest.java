@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.Donor;
-import ca.on.oicr.gsi.dimsum.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 public class OmittedSampleSortTest {
 

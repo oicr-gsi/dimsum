@@ -2,7 +2,7 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
-import ca.on.oicr.gsi.dimsum.data.Run;;
+import ca.on.oicr.gsi.cardea.data.Run;;
 
 public enum RunFilterKey {
   NAME(string -> run -> run.getName().toLowerCase().startsWith(string.toLowerCase()));

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
-import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;

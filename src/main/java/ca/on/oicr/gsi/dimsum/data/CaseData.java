@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 
 @Immutable
 public class CaseData {

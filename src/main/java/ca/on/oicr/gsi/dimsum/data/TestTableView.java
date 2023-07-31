@@ -7,6 +7,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.Project;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
+import ca.on.oicr.gsi.cardea.data.Case;
+
 import javax.annotation.concurrent.Immutable;
 
 @Immutable

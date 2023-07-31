@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
-import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
+import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import java.util.List;
-import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
 

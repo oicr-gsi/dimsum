@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.Assay;
-import ca.on.oicr.gsi.dimsum.data.Donor;
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public class TestTableViewSortTest {
@@ -108,7 +108,7 @@ public class TestTableViewSortTest {
 
   private static TestTableView mockTestTableView(int testTableViewNumber) {
     TestTableView testTableView = mock(TestTableView.class);
-    ca.on.oicr.gsi.dimsum.data.Test test = mock(ca.on.oicr.gsi.dimsum.data.Test.class);
+    ca.on.oicr.gsi.cardea.data.Test test = mock(ca.on.oicr.gsi.cardea.data.Test.class);
     when(test.getName()).thenReturn(testNames[testTableViewNumber]);
     when(testTableView.getTest()).thenReturn(test);
     Assay assay = mock(Assay.class);

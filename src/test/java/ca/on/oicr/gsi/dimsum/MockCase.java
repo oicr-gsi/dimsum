@@ -3,7 +3,7 @@ package ca.on.oicr.gsi.dimsum;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import ca.on.oicr.gsi.dimsum.data.*;
+import ca.on.oicr.gsi.cardea.data.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,13 +27,13 @@ public class MockCase {
     final int caseNumber = 0;
     Case kase = makeCase("PRO1_0001", "WGTS assay 1", "PRO1", "REQ01", caseNumber);
     // Test 1 is pending extraction
-    ca.on.oicr.gsi.dimsum.data.Test test1 = addTest(kase, 0, 1, "Normal WG", "WG");
+    ca.on.oicr.gsi.cardea.data.Test test1 = addTest(kase, 0, 1, "Normal WG", "WG");
     // Test 2 is pending extraction QC
-    ca.on.oicr.gsi.dimsum.data.Test test2 = addTest(kase, 0, 2, "Tumour WG", "WG");
+    ca.on.oicr.gsi.cardea.data.Test test2 = addTest(kase, 0, 2, "Tumour WG", "WG");
     String test2ExtractionId = makeSampleId(caseNumber, 2, MetricCategory.EXTRACTION, 1);
     addSample(test2.getExtractions(), test2ExtractionId, null, null);
     // Test 3 is pending library prep and has an extra failed extraction
-    ca.on.oicr.gsi.dimsum.data.Test test3 =
+    ca.on.oicr.gsi.cardea.data.Test test3 =
         addTest(kase, caseNumber, 3, "Tumour WT", "WT", true, false, false, false);
     String test3ExtractionId = makeSampleId(caseNumber, 3, MetricCategory.EXTRACTION, 2);
     addSample(test3.getExtractions(), test3ExtractionId, false, "Bad");
@@ -44,15 +44,15 @@ public class MockCase {
     final int caseNumber = 1;
     Case kase = makeCase("PRO2_0001", "WGTS assay 2", "PRO2", "REQ02", caseNumber);
     // Test 1 is pending library QC
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Normal WG", "WG", true, false, false, false);
     String test1LibraryId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_PREP, 1);
     addSample(test1.getLibraryPreparations(), test1LibraryId, null, null);
     // Test 2 is pending library qualification
-    ca.on.oicr.gsi.dimsum.data.Test test2 =
+    ca.on.oicr.gsi.cardea.data.Test test2 =
         addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, false, false);
     // Test 3 is pending library qualification QC
-    ca.on.oicr.gsi.dimsum.data.Test test3 =
+    ca.on.oicr.gsi.cardea.data.Test test3 =
         addTest(kase, caseNumber, 3, "Tumour WT", "WT", true, true, false, false);
     String test3LibQualId = makeSampleId(caseNumber, 3, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addSample(test3.getLibraryQualifications(), test3LibQualId, null, null);
@@ -63,12 +63,12 @@ public class MockCase {
     final int caseNumber = 2;
     Case kase = makeCase("PRO1_0001", "WG assay 1", "PRO1", "REQ03", caseNumber);
     // Test 1 is pending library qualification data review
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Normal WG", "WG", true, true, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addRunLibrary(test1.getLibraryQualifications(), sampleId, true, "Good", null);
     // Test 2 is pending full depth sequencing
-    ca.on.oicr.gsi.dimsum.data.Test test2 =
+    ca.on.oicr.gsi.cardea.data.Test test2 =
         addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, true, false);
     return kase;
   }
@@ -77,12 +77,12 @@ public class MockCase {
     final int caseNumber = 3;
     Case kase = makeCase("PRO2_0002", "WG assay 2", "PRO2", "REQ02", caseNumber);
     // Test 1 is pending full depth QC
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Normal WG", "WG", true, true, true, false);
     String test1SampleId = makeSampleId(caseNumber, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1);
     addRunLibrary(test1.getFullDepthSequencings(), test1SampleId, null, null, null);
     // Test 2 is pending full depth data review
-    ca.on.oicr.gsi.dimsum.data.Test test2 =
+    ca.on.oicr.gsi.cardea.data.Test test2 =
         addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, true, false);
     String test2SampleId = makeSampleId(caseNumber, 2, MetricCategory.FULL_DEPTH_SEQUENCING, 1);
     addRunLibrary(test2.getFullDepthSequencings(), test2SampleId, true, "Good", null);
@@ -123,7 +123,7 @@ public class MockCase {
     final int caseNumber = 7;
     Case kase = makeCase("PRO7_0001", "Single Test", "PRO7", "REQ07", caseNumber);
     // Test 1 is pending extraction
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     return kase;
   }
@@ -132,7 +132,7 @@ public class MockCase {
     final int caseNumber = 8;
     Case kase = makeCase("PRO8_0001", "Single Test", "PRO8", "REQ08", caseNumber);
     // Test 1 is pending extraction QC
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.EXTRACTION, 1);
     addSample(test1.getExtractions(), sampleId, null, null);
@@ -143,7 +143,7 @@ public class MockCase {
     final int caseNumber = 9;
     Case kase = makeCase("PRO9_0001", "Single Test", "PRO9", "REQ09", caseNumber);
     // Test 1 is pending library prep
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, false, false, false);
     return kase;
   }
@@ -152,7 +152,7 @@ public class MockCase {
     final int caseNumber = 10;
     Case kase = makeCase("PRO10_0001", "Single Test", "PRO10", "REQ10", caseNumber);
     // Test 1 is pending library QC
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, false, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_PREP, 1);
     addSample(test1.getLibraryPreparations(), sampleId, null, null);
@@ -163,7 +163,7 @@ public class MockCase {
     final int caseNumber = 11;
     Case kase = makeCase("PRO11_0001", "Single Test", "PRO11", "REQ11", caseNumber);
     // Test 1 is pending library qualification
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     return kase;
   }
@@ -172,7 +172,7 @@ public class MockCase {
     final int caseNumber = 12;
     Case kase = makeCase("PRO12_0001", "Single Test", "PRO12", "REQ12", caseNumber);
     // Test 1 is pending library qualification (top-up required)
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addRunLibrary(test1.getLibraryQualifications(), sampleId, null, "Top-up Required", true);
@@ -183,7 +183,7 @@ public class MockCase {
     final int caseNumber = 13;
     Case kase = makeCase("PRO13_0001", "Single Test", "PRO13", "REQ13", caseNumber);
     // Test 1 is pending library qualification QC (library aliquot)
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addSample(test1.getLibraryQualifications(), sampleId, null, null);
@@ -194,7 +194,7 @@ public class MockCase {
     final int caseNumber = 14;
     Case kase = makeCase("PRO14_0001", "Single Test", "PRO14", "REQ14", caseNumber);
     // Test 1 is pending library qualification QC (run-library)
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addRunLibrary(test1.getLibraryQualifications(), sampleId, null, null, null);
@@ -205,7 +205,7 @@ public class MockCase {
     final int caseNumber = 15;
     Case kase = makeCase("PRO15_0001", "Single Test", "PRO15", "REQ15", caseNumber);
     // Test 1 is pending library qualification data review
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addRunLibrary(test1.getLibraryQualifications(), sampleId, true, "Good", null);
@@ -216,7 +216,7 @@ public class MockCase {
     final int caseNumber = 16;
     Case kase = makeCase("PRO16_0001", "Single Test", "PRO16", "REQ16", caseNumber);
     // Test 1 is pending full depth sequencing
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, false);
     return kase;
   }
@@ -225,7 +225,7 @@ public class MockCase {
     final int caseNumber = 17;
     Case kase = makeCase("PRO17_0001", "Single Test", "PRO17", "REQ17", caseNumber);
     // Test 1 is pending full depth sequencing (top-up required)
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1);
     addRunLibrary(test1.getFullDepthSequencings(), sampleId, null, "Top-up Required", true);
@@ -236,7 +236,7 @@ public class MockCase {
     final int caseNumber = 18;
     Case kase = makeCase("PRO18_0001", "Single Test", "PRO18", "REQ18", caseNumber);
     // Test 1 is pending full depth sequencing QC
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1);
     addRunLibrary(test1.getFullDepthSequencings(), sampleId, null, null, null);
@@ -247,7 +247,7 @@ public class MockCase {
     final int caseNumber = 19;
     Case kase = makeCase("PRO19_0001", "Single Test", "PRO19", "REQ19", caseNumber);
     // Test 1 is pending full depth sequencing data review
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1);
     addRunLibrary(test1.getFullDepthSequencings(), sampleId, true, "Good", null);
@@ -258,7 +258,7 @@ public class MockCase {
     final int caseNumber = 20;
     Case kase = makeCase("PRO20_0001", "Single Test", "PRO20", "REQ20", caseNumber);
     // Test 1 is pending library prep (1 failed attempt already)
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, false, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_PREP, 1);
     addSample(test1.getLibraryPreparations(), sampleId, false, "Bad");
@@ -269,7 +269,7 @@ public class MockCase {
     final int caseNumber = 21;
     Case kase = makeCase("PRO21_0001", "Single Test", "PRO21", "REQ21", caseNumber);
     // Test 1 is pending library qualification (with 1 failed and 1 passed library prep)
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_PREP, 2);
     addSample(test1.getLibraryPreparations(), sampleId, false, "Bad");
@@ -283,7 +283,7 @@ public class MockCase {
     kase.getReceipts().remove(0);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.RECEIPT, 1);
     addSample(kase.getReceipts(), sampleId, null, null);
-    ca.on.oicr.gsi.dimsum.data.Test test1 =
+    ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     return kase;
   }
@@ -346,9 +346,9 @@ public class MockCase {
     qcs.add(qc);
   }
 
-  private static ca.on.oicr.gsi.dimsum.data.Test addTest(Case kase, int caseNumber, int testNumber,
+  private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,
       String name, String libraryDesignCode) {
-    ca.on.oicr.gsi.dimsum.data.Test test = mock(ca.on.oicr.gsi.dimsum.data.Test.class);
+    ca.on.oicr.gsi.cardea.data.Test test = mock(ca.on.oicr.gsi.cardea.data.Test.class);
     when(test.getName()).thenReturn(name);
     when(test.getLibraryDesignCode()).thenReturn(libraryDesignCode);
     when(test.getGroupId()).thenReturn(makeTestGroupId(caseNumber, testNumber));
@@ -360,11 +360,11 @@ public class MockCase {
     return test;
   }
 
-  private static ca.on.oicr.gsi.dimsum.data.Test addTest(Case kase, int caseNumber, int testNumber,
+  private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,
       String name, String libraryDesignCode,
       boolean extractionComplete, boolean libraryPrepComplete, boolean libraryQualificationComplete,
       boolean fullDepthComplete) {
-    ca.on.oicr.gsi.dimsum.data.Test test =
+    ca.on.oicr.gsi.cardea.data.Test test =
         addTest(kase, caseNumber, testNumber, name, libraryDesignCode);
     if (extractionComplete) {
       String extractionId = makeSampleId(caseNumber, testNumber, MetricCategory.EXTRACTION, 1);

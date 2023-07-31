@@ -5,6 +5,8 @@ import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.Sample;
 
 @Immutable
 public class Notification {
