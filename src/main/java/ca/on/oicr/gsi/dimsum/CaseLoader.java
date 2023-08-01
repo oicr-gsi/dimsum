@@ -284,6 +284,7 @@ public class CaseLoader {
           .puc19Clusters(parseInteger(json, "puc19_clusters", false))
           .qcPassed(parseQcPassed(json, "qc_state"))
           .qcReason(parseString(json, "qc_reason"))
+          .qcNote(parseString(json, "qc_note"))
           .qcUser(parseString(json, "qc_user"))
           .qcDate(parseDate(json, "qc_date"))
           .dataReviewPassed(parseDataReviewPassed(json, "data_review_state"))

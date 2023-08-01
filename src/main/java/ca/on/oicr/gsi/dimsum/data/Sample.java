@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.stream.Stream;
-
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -50,6 +49,7 @@ public class Sample {
   private final Integer puc19Clusters;
   private final Boolean qcPassed;
   private final String qcReason;
+  private final String qcNote;
   private final String qcUser;
   private final LocalDate qcDate;
   private final Boolean dataReviewPassed;
@@ -98,6 +98,7 @@ public class Sample {
     this.puc19Clusters = builder.puc19Clusters;
     this.qcPassed = builder.qcPassed;
     this.qcReason = builder.qcReason;
+    this.qcNote = builder.qcNote;
     this.qcUser = builder.qcUser;
     this.qcDate = builder.qcDate;
     this.dataReviewPassed = builder.dataReviewPassed;
@@ -264,6 +265,10 @@ public class Sample {
     return qcReason;
   }
 
+  public String getQcNote() {
+    return qcNote;
+  }
+
   public String getQcUser() {
     return qcUser;
   }
@@ -350,6 +355,7 @@ public class Sample {
     private Integer puc19Clusters;
     private Boolean qcPassed;
     private String qcReason;
+    private String qcNote;
     private String qcUser;
     private LocalDate qcDate;
     private Boolean dataReviewPassed;
@@ -540,6 +546,11 @@ public class Sample {
 
     public Builder qcReason(String qcReason) {
       this.qcReason = qcReason;
+      return this;
+    }
+
+    public Builder qcNote(String qcNote) {
+      this.qcNote = qcNote;
       return this;
     }
 
