@@ -45,7 +45,11 @@ module.exports = {
       4: "4px",
     },
 
-    extend: {},
+    extend: {
+      spacing: {
+        "1em": "1em",
+      },
+    },
   },
   plugins: [],
 };

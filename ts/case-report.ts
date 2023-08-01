@@ -24,7 +24,7 @@ import {
   Sample,
   subcategoryApplies as sampleSubcategoryApplies,
 } from "./data/sample";
-import { addTextDiv, makeNameDiv } from "./util/html-utils";
+import { addTextDiv, makeNameDiv, makeTextDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
 import { siteConfig } from "./util/site-config";
@@ -413,7 +413,8 @@ function displayQcSignOff(fragment: DocumentFragment, qcable: Qcable) {
     qcable.qcPassed,
     qcable.qcReason,
     qcable.qcUser,
-    qcable.qcDate
+    qcable.qcDate,
+    qcable.qcNote
   );
 }
 
@@ -432,7 +433,8 @@ function displaySignOff(
   qcPassed?: boolean,
   qcReason?: string,
   qcUser?: string,
-  qcDate?: string
+  qcDate?: string,
+  qcNote?: string
 ) {
   if (qcDate) {
     if (!qcUser) {
@@ -441,6 +443,11 @@ function displaySignOff(
     addBoldText(fragment, qcReason || (qcPassed ? "Passed" : "Failed"));
     addTextDiv(qcUser, fragment);
     addTextDiv(qcDate, fragment);
+    if (qcNote) {
+      const noteDiv = makeTextDiv("Note: " + qcNote);
+      noteDiv.classList.add("mt-1em");
+      fragment.appendChild(noteDiv);
+    }
   } else {
     addPendingText(fragment);
   }

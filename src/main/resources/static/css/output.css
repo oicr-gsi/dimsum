@@ -602,6 +602,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-top: 2rem;
 }
 
+.mt-1em{
+  margin-top: 1em;
+}
+
 .mb-2{
   margin-bottom: 0.5rem;
 }
