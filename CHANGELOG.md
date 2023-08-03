@@ -7,6 +7,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.14.0] - 2023-08-03
+
+### Added
+
+* QC notes on Case QC Report
+
+### Fixed
+
+* TGL Tracking Sheet was showing reversed coverage requirements for tumour vs. normal
+
+
 ## [1.13.0] - 2023-07-27
 
 ### Added
