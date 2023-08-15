@@ -124,6 +124,7 @@ public class CaseLoader {
                 .id(cardeaCase.getId())
                 .projects(cardeaCase.getProjects())
                 .receipts(cardeaCase.getReceipts())
+                .startDate(cardeaCase.getStartDate())
                 .requisition(cardeaCase.getRequisition())
                 .tests(cardeaCase.getTests())
                 .timepoint(cardeaCase.getTimepoint())
