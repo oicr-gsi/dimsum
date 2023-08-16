@@ -25,7 +25,6 @@ import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
-import ca.on.oicr.gsi.dimsum.data.CardeaCaseData;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
@@ -43,7 +42,9 @@ public class CaseLoader {
 
   String cardeaUrl; // to store Cardea url that is passed in CaseLoader constructor
   int limitForDataLoad = 1073741824; // 1GB to load the data from Cardea
-  CardeaCaseData cardeaCaseData;
+  // CardeaCaseData cardeaCaseData;
+
+  ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData;
 
 
 
@@ -103,7 +104,7 @@ public class CaseLoader {
         builder
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(limitForDataLoad))
             .build().get().uri(cardeaUrl + "/dimsum").retrieve()
-            .bodyToFlux(CardeaCaseData.class).blockLast();
+            .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class).blockLast();
   }
 
 
