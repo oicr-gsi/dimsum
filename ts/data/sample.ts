@@ -574,7 +574,9 @@ export function addMetricValueContents(
   sample: Sample,
   metrics: Metric[],
   fragment: DocumentFragment,
-  addTooltip: boolean
+  addTooltip: boolean,
+  shouldCollapse: boolean = true,
+  forceVisible: boolean = false
 ) {
   const metricNames = metrics
     .map((metric) => metric.name)
@@ -586,16 +588,38 @@ export function addMetricValueContents(
   // handle metrics that have multiple values
   switch (metricName) {
     case METRIC_LABEL_Q30:
-      addQ30Contents(sample, metrics, fragment, addTooltip);
+      addQ30Contents(
+        sample,
+        metrics,
+        fragment,
+        addTooltip,
+        shouldCollapse,
+        forceVisible
+      );
       return;
     case METRIC_LABEL_CLUSTERS_PF_1:
     case METRIC_LABEL_CLUSTERS_PF_2:
-      addClustersPfContents(sample, metrics, fragment, addTooltip);
+      addClustersPfContents(
+        sample,
+        metrics,
+        fragment,
+        addTooltip,
+        shouldCollapse,
+        forceVisible
+      );
       return;
     case METRIC_LABEL_PHIX:
-      addPhixContents(sample, metrics, fragment, addTooltip);
+      addPhixContents(
+        sample,
+        metrics,
+        fragment,
+        addTooltip,
+        shouldCollapse,
+        forceVisible
+      );
       return;
   }
+
   if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
     // pass/fail based on QC status
     if (sample.qcPassed) {
@@ -646,11 +670,43 @@ export function addMetricValueContents(
   }
 }
 
+function createCollapseButton(
+  contentWrapper: HTMLElement,
+  toggleText: string,
+  shouldCollapse: boolean
+): HTMLButtonElement {
+  const toggleButton = document.createElement("button");
+  toggleButton.classList.add("fa", "fa-caret-down", "text-sm", "icon-button");
+  toggleButton.style.color = "";
+  toggleButton.textContent = toggleText;
+  toggleButton.classList.toggle("fa-caret-down", shouldCollapse);
+
+  if (shouldCollapse) {
+    toggleButton.addEventListener("click", () => {
+      const isExpanded = contentWrapper.classList.toggle("hidden");
+      toggleButton.classList.toggle("fa-caret-down", isExpanded);
+      toggleButton.classList.toggle("fa-caret-up", !isExpanded);
+    });
+
+    toggleButton.addEventListener("mouseover", () => {
+      toggleButton.style.color = "rgb(91, 158, 90)";
+    });
+
+    toggleButton.addEventListener("mouseout", () => {
+      toggleButton.style.color = "";
+    });
+  }
+
+  return toggleButton;
+}
+
 function addQ30Contents(
   sample: Sample,
   metrics: Metric[],
   fragment: DocumentFragment,
-  addTooltip: boolean
+  addTooltip: boolean,
+  shouldCollapse: boolean = true,
+  forceVisible: boolean = false
 ) {
   // run-level value is checked, but run and lane-level are both displayed
   if (!sample.run || !sample.run.percentOverQ30) {
@@ -661,33 +717,85 @@ function addQ30Contents(
     }
     return;
   }
+
+  // Create a wrapper for the contents
+  const contentWrapper = document.createElement("div");
   fragment.appendChild(
     makeMetricDisplay(sample.run.percentOverQ30, metrics, addTooltip)
   );
-  sample.run.lanes.forEach((lane) => {
-    if (!lane.percentOverQ30Read1) {
-      return;
-    }
-    let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
-    text += `R1: ${lane.percentOverQ30Read1}`;
-    if (lane.percentOverQ30Read2) {
-      text += ";";
-    }
-    if (lane.percentOverQ30Read2) {
-      text += ` R2: ${lane.percentOverQ30Read2}`;
-    }
-    const div = document.createElement("div");
-    div.classList.add("whitespace-nowrap", "print-hanging");
-    div.appendChild(document.createTextNode(text));
-    fragment.appendChild(div);
-  });
+
+  if (forceVisible) {
+    // Skip collapsing and directly show content
+    sample.run.lanes.forEach((lane) => {
+      if (!lane.percentOverQ30Read1) {
+        return;
+      }
+      let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
+      text += `R1: ${lane.percentOverQ30Read1}`;
+      if (lane.percentOverQ30Read2) {
+        text += `; R2: ${lane.percentOverQ30Read2}`;
+      }
+      const div = document.createElement("div");
+      div.classList.add("whitespace-nowrap", "print-hanging");
+      div.appendChild(document.createTextNode(text));
+      contentWrapper.appendChild(div);
+    });
+
+    fragment.appendChild(contentWrapper);
+  } else if (shouldCollapse) {
+    // Button to toggle the content
+    const toggleButton = createCollapseButton(
+      contentWrapper,
+      "",
+      shouldCollapse
+    );
+
+    fragment.appendChild(toggleButton);
+
+    // Div to hold the collapsible content (only if shouldCollapse is true)
+    contentWrapper.classList.add("hidden");
+    sample.run.lanes.forEach((lane) => {
+      if (!lane.percentOverQ30Read1) {
+        return;
+      }
+      let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
+      text += `R1: ${lane.percentOverQ30Read1}`;
+      if (lane.percentOverQ30Read2) {
+        text += `; R2: ${lane.percentOverQ30Read2}`;
+      }
+      const div = document.createElement("div");
+      div.classList.add("whitespace-nowrap", "print-hanging");
+      div.appendChild(document.createTextNode(text));
+      contentWrapper.appendChild(div);
+    });
+
+    fragment.appendChild(contentWrapper);
+  } else {
+    // Content will not be collapsed, but still added to fragment
+    sample.run.lanes.forEach((lane) => {
+      if (!lane.percentOverQ30Read1) {
+        return;
+      }
+      let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
+      text += `R1: ${lane.percentOverQ30Read1}`;
+      if (lane.percentOverQ30Read2) {
+        text += `; R2: ${lane.percentOverQ30Read2}`;
+      }
+      const div = document.createElement("div");
+      div.classList.add("whitespace-nowrap", "print-hanging");
+      div.appendChild(document.createTextNode(text));
+      fragment.appendChild(div);
+    });
+  }
 }
 
 function addClustersPfContents(
   sample: Sample,
   metrics: Metric[],
   fragment: DocumentFragment,
-  addTooltip: boolean
+  addTooltip: boolean,
+  shouldCollapse: boolean = true,
+  forceVisible: boolean = false
 ) {
   // For joined flowcells, run-level is checked
   // For non-joined, each lane is checked
@@ -700,17 +808,20 @@ function addClustersPfContents(
     }
     return;
   }
+
   const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
   const perRunMetrics = separatedMetrics[0];
   const perLaneMetrics = separatedMetrics[1];
   const tooltip = Tooltip.getInstance();
   const runDiv = document.createElement("div");
   const divisorUnit = getDivisorUnit(metrics);
+
   runDiv.innerText = formatMetricValue(
     sample.run.clustersPf,
     metrics,
     divisorUnit
   );
+
   if (addTooltip && perRunMetrics.length) {
     // whether originally or not, these metrics are per run
     const addContents = (fragment: DocumentFragment) => {
@@ -723,27 +834,59 @@ function addClustersPfContents(
   fragment.appendChild(runDiv);
 
   if (sample.run.lanes.length > 1) {
+    const contentWrapper = document.createElement("div");
     const addContents = (fragment: DocumentFragment) => {
       // these metrics are per lane
       perLaneMetrics.forEach((metric) =>
         addMetricRequirementText(metric, fragment)
       );
     };
-    sample.run.lanes.forEach((lane) => {
-      if (lane.clustersPf) {
-        const laneDiv = document.createElement("div");
-        laneDiv.classList.add("whitespace-nowrap", "print-hanging");
-        laneDiv.innerText = `L${lane.laneNumber}: ${formatMetricValue(
-          lane.clustersPf,
-          metrics,
-          divisorUnit
-        )}`;
-        if (addTooltip && perLaneMetrics.length) {
-          tooltip.addTarget(laneDiv, addContents);
+
+    if (shouldCollapse) {
+      const toggleButton = createCollapseButton(
+        contentWrapper,
+        "",
+        shouldCollapse
+      );
+
+      fragment.appendChild(toggleButton);
+
+      contentWrapper.classList.add("hidden");
+      sample.run.lanes.forEach((lane) => {
+        if (lane.clustersPf) {
+          const laneDiv = document.createElement("div");
+          laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+          laneDiv.innerText = `L${lane.laneNumber}: ${formatMetricValue(
+            lane.clustersPf,
+            metrics,
+            divisorUnit
+          )}`;
+          if (addTooltip && perLaneMetrics.length) {
+            tooltip.addTarget(laneDiv, addContents);
+          }
+          contentWrapper.appendChild(laneDiv);
         }
-        fragment.appendChild(laneDiv);
-      }
-    });
+      });
+
+      fragment.appendChild(contentWrapper);
+    } else {
+      // Content will not be collapsed, but still added to fragment
+      sample.run.lanes.forEach((lane) => {
+        if (lane.clustersPf) {
+          const laneDiv = document.createElement("div");
+          laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+          laneDiv.innerText = `L${lane.laneNumber}: ${formatMetricValue(
+            lane.clustersPf,
+            metrics,
+            divisorUnit
+          )}`;
+          if (addTooltip && perLaneMetrics.length) {
+            tooltip.addTarget(laneDiv, addContents);
+          }
+          fragment.appendChild(laneDiv);
+        }
+      });
+    }
   }
 }
 
@@ -836,7 +979,9 @@ function addPhixContents(
   sample: Sample,
   metrics: Metric[],
   fragment: DocumentFragment,
-  addTooltip: boolean
+  addTooltip: boolean,
+  shouldCollapse: boolean = true,
+  forceVisible: boolean = false
 ) {
   // There is no run-level metric, so we check each read of each lane
   if (
@@ -853,36 +998,85 @@ function addPhixContents(
     return;
   }
 
+  const contentWrapper = document.createElement("div");
+
+  const minPhixValue = Math.min(
+    ...sample.run.lanes.map((lane) => lane.percentPfixRead1)
+  );
+  const minPhixDiv = document.createElement("div");
+  minPhixDiv.classList.add("whitespace-nowrap", "print-hanging");
+  minPhixDiv.innerText = `${minPhixValue.toFixed(2)}+/R`;
+  fragment.appendChild(minPhixDiv);
+
   const tooltip = Tooltip.getInstance();
   const addContents = (fragment: DocumentFragment) => {
     metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
   };
 
-  const multipleLanes = sample.run.lanes.length > 1;
-  sample.run.lanes.forEach((lane) => {
-    const laneDiv = document.createElement("div");
-    laneDiv.classList.add("whitespace-nowrap", "print-hanging");
-    let text = multipleLanes ? `L${lane.laneNumber}` : "";
-    if (nullOrUndefined(lane.percentPfixRead1)) {
-      const span = document.createElement("span");
-      span.innerText = text + ": ";
-      laneDiv.appendChild(span);
-      laneDiv.appendChild(makeNotFoundIcon());
-    } else {
-      if (multipleLanes) {
-        text += " ";
+  if (shouldCollapse) {
+    const toggleButton = createCollapseButton(
+      contentWrapper,
+      "",
+      shouldCollapse
+    );
+
+    fragment.appendChild(toggleButton);
+
+    contentWrapper.classList.add("hidden");
+    const multipleLanes = sample.run.lanes.length > 1;
+    sample.run.lanes.forEach((lane) => {
+      const laneDiv = document.createElement("div");
+      laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+      let text = multipleLanes ? `L${lane.laneNumber}` : "";
+      if (nullOrUndefined(lane.percentPfixRead1)) {
+        const span = document.createElement("span");
+        span.innerText = text + ": ";
+        laneDiv.appendChild(span);
+        laneDiv.appendChild(makeNotFoundIcon());
+      } else {
+        if (multipleLanes) {
+          text += " ";
+        }
+        text += `R1: ${lane.percentPfixRead1}`;
+        if (!nullOrUndefined(lane.percentPfixRead2)) {
+          text += `; R2: ${lane.percentPfixRead2}`;
+        }
+        laneDiv.innerText = text;
+        if (addTooltip) {
+          tooltip.addTarget(laneDiv, addContents);
+        }
       }
-      text += `R1: ${lane.percentPfixRead1}`;
-      if (!nullOrUndefined(lane.percentPfixRead2)) {
-        text += `; R2: ${lane.percentPfixRead2}`;
+      contentWrapper.appendChild(laneDiv);
+    });
+
+    fragment.appendChild(contentWrapper);
+  } else {
+    const multipleLanes = sample.run.lanes.length > 1;
+    sample.run.lanes.forEach((lane) => {
+      const laneDiv = document.createElement("div");
+      laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+      let text = multipleLanes ? `L${lane.laneNumber}` : "";
+      if (nullOrUndefined(lane.percentPfixRead1)) {
+        const span = document.createElement("span");
+        span.innerText = text + ": ";
+        laneDiv.appendChild(span);
+        laneDiv.appendChild(makeNotFoundIcon());
+      } else {
+        if (multipleLanes) {
+          text += " ";
+        }
+        text += `R1: ${lane.percentPfixRead1}`;
+        if (!nullOrUndefined(lane.percentPfixRead2)) {
+          text += `; R2: ${lane.percentPfixRead2}`;
+        }
+        laneDiv.innerText = text;
+        if (addTooltip) {
+          tooltip.addTarget(laneDiv, addContents);
+        }
       }
-      laneDiv.innerText = text;
-      if (addTooltip) {
-        tooltip.addTarget(laneDiv, addContents);
-      }
-    }
-    fragment.appendChild(laneDiv);
-  });
+      fragment.appendChild(laneDiv);
+    });
+  }
 }
 
 function getPhixHighlight(
