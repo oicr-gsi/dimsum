@@ -71,6 +71,10 @@ public class CaseLoader {
     }
     ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
+    if (cardeaCaseData == null) {
+      log.debug("Cardea's Case API returned an empty response; aborting reload.")
+    }
+
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
     Map<String, RunAndLibraries> runsByName = sortRuns(cardeaCaseData.getCases());
     List<OmittedSample> omittedSamples = cardeaCaseData.getOmittedSamples();
