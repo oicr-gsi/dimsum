@@ -136,16 +136,9 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <!-- <groupId>ca.on.oicr.gsi.cardea</groupId>
-      <artifactId>cardea-data</artifactId>
-      <version>1.3.0</version> -->
-      
       <groupId>ca.on.oicr.gsi.cardea</groupId>
       <artifactId>cardea-data</artifactId>
-      <version>1.3.1-SNAPSHOT</version>
-      <scope>system</scope>
-      <systemPath>/home/agandevia/Desktop/DIMSUM/dimsum/cardea-data-1.3.1-SNAPSHOT.jar</systemPath>
-   
+      <version>1.4.0</version>
     </dependency>
   </dependencies>
 

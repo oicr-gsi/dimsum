@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
@@ -676,7 +675,7 @@ public class CaseService {
   private void refreshData() {
     try {
       ZonedDateTime previousTimestamp = caseData == null ? null : caseData.getTimestamp();
-      CaseData newData = dataLoader.load(WebClient.builder(), previousTimestamp);
+      CaseData newData = dataLoader.load(previousTimestamp);
       refreshFailures = 0;
       if (newData != null) {
         caseData = newData;

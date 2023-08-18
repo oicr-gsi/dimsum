@@ -4,14 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Donor;
 
@@ -20,7 +17,6 @@ public class CaseSortTest {
   private static final String[] assaysOrdered = {"A", "B", "C", "D", "E"};
   private static final String[] caseAssays =
       {assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]};
-  private static Map<Long, String> assaysById = new HashMap<Long, String>();
 
   private static String[] donorsOrdered =
       {"APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"};
@@ -36,13 +32,13 @@ public class CaseSortTest {
   @Test
   public void testSortByAssayAscending() {
     List<Case> cases = getCasesSorted(CaseSort.ASSAY, false);
-    assertOrder(cases, kase -> assaysById.get(kase.getAssayId()), assaysOrdered, false);
+    assertOrder(cases, Case::getAssayName, assaysOrdered, false);
   }
 
   @Test
   public void testSortByAssayDescending() {
     List<Case> cases = getCasesSorted(CaseSort.ASSAY, true);
-    assertOrder(cases, kase -> assaysById.get(kase.getAssayId()), assaysOrdered, true);
+    assertOrder(cases, Case::getAssayName, assaysOrdered, true);
   }
 
   @Test
@@ -83,9 +79,6 @@ public class CaseSortTest {
 
   private static <T> void assertOrder(List<Case> cases, Function<Case, T> getter, T[] expectedOrder,
       boolean reversed) {
-    if (assaysById == null) {
-      initializeMap();
-    }
     assertNotNull(cases);
     assertEquals(cases.size(), expectedOrder.length);
     assertEquals(expectedOrder[reversed ? 4 : 0], getter.apply(cases.get(0)));
@@ -93,14 +86,6 @@ public class CaseSortTest {
     assertEquals(expectedOrder[reversed ? 2 : 2], getter.apply(cases.get(2)));
     assertEquals(expectedOrder[reversed ? 1 : 3], getter.apply(cases.get(3)));
     assertEquals(expectedOrder[reversed ? 0 : 4], getter.apply(cases.get(4)));
-  }
-
-  private static void initializeMap() {
-    assaysById.put(0L, assaysOrdered[0]);
-    assaysById.put(1L, assaysOrdered[1]);
-    assaysById.put(2L, assaysOrdered[2]);
-    assaysById.put(3L, assaysOrdered[3]);
-    assaysById.put(4L, assaysOrdered[4]);
   }
 
   private static List<Case> getCasesSorted(CaseSort sort, boolean descending) {
@@ -115,24 +100,12 @@ public class CaseSortTest {
 
   private static Case mockCase(int caseNumber) {
     Case kase = mock(Case.class);
-    Assay assay = mock(Assay.class);
-    when(assay.getName()).thenReturn(caseAssays[caseNumber]);
-    when(kase.getAssayId()).thenReturn(getKey(caseAssays[caseNumber]));
-    // when(kase.getAssay()).thenReturn(assay);
+    when(kase.getAssayName()).thenReturn(caseAssays[caseNumber]);
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(caseDonors[caseNumber]);
     when(kase.getDonor()).thenReturn(donor);
     when(kase.getStartDate()).thenReturn(caseReceiptDates[caseNumber]);
     when(kase.getLatestActivityDate()).thenReturn(caseActivityDates[caseNumber]);
     return kase;
-  }
-
-  private static long getKey(String name) {
-    for (Map.Entry<Long, String> entry : assaysById.entrySet()) {
-      if (name.equals(entry.getValue())) {
-        return entry.getKey();
-      }
-    }
-    return 0L;
   }
 }

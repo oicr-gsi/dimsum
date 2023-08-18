@@ -22,7 +22,8 @@ public class TestTableView {
   private final Requisition requisition;
   private final Donor donor;
   private final Set<Project> projects;
-  private final Assay assay;
+  private final long assayId;
+  private final String assayName;
   private final String tissueOrigin;
   private final String tissueType;
   private final String timepoint;
@@ -35,7 +36,8 @@ public class TestTableView {
     this.requisition = kase.getRequisition();
     this.donor = requireNonNull(kase.getDonor());
     this.projects = kase.getProjects();
-    this.assay = requireNonNull(assaysById.get(kase.getAssayId()));
+    this.assayId = kase.getAssayId();
+    this.assayName = kase.getAssayName();
     this.tissueOrigin = requireNonNull(kase.getTissueOrigin());
     this.tissueType = requireNonNull(kase.getTissueType());
     this.timepoint = kase.getTimepoint();
@@ -66,8 +68,12 @@ public class TestTableView {
     return projects;
   }
 
-  public Assay getAssay() {
-    return assay;
+  public long getAssayId() {
+    return assayId;
+  }
+
+  public String getAssayName() {
+    return assayName;
   }
 
   public String getTissueOrigin() {

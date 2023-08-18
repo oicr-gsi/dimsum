@@ -1,19 +1,14 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
@@ -53,7 +48,7 @@ public class TestTableViewSortTest {
   public void testSortByAssayAscending() {
     List<TestTableView> testTableViews =
         getTestTableViewsSorted(TestTableViewSort.ASSAY, false);
-    assertOrder(testTableViews, testTableView -> testTableView.getAssay().getName(), assaysOrdered,
+    assertOrder(testTableViews, testTableView -> testTableView.getAssayName(), assaysOrdered,
         false);
   }
 
@@ -61,7 +56,7 @@ public class TestTableViewSortTest {
   public void testSortByAssayDescending() {
     List<TestTableView> testTableViews =
         getTestTableViewsSorted(TestTableViewSort.ASSAY, true);
-    assertOrder(testTableViews, testTableView -> testTableView.getAssay().getName(), assaysOrdered,
+    assertOrder(testTableViews, testTableView -> testTableView.getAssayName(), assaysOrdered,
         true);
   }
 
@@ -111,9 +106,7 @@ public class TestTableViewSortTest {
     ca.on.oicr.gsi.cardea.data.Test test = mock(ca.on.oicr.gsi.cardea.data.Test.class);
     when(test.getName()).thenReturn(testNames[testTableViewNumber]);
     when(testTableView.getTest()).thenReturn(test);
-    Assay assay = mock(Assay.class);
-    when(assay.getName()).thenReturn(testAssays[testTableViewNumber]);
-    when(testTableView.getAssay()).thenReturn(assay);
+    when(testTableView.getAssayName()).thenReturn(testAssays[testTableViewNumber]);
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(testDonors[testTableViewNumber]);
     when(testTableView.getDonor()).thenReturn(donor);
