@@ -2,7 +2,6 @@ package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,15 +30,13 @@ public class TglTrackingReport extends Report {
   private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
   private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
 
-  private static Map<Long, Assay> assaysById = new HashMap<Long, Assay>();
+  public static class RowData {
 
-  public static class Triplet {
+    private final Case kase;
+    private final Test test;
+    private final Assay assay;
 
-    private Case kase;
-    private Test test;
-    private Assay assay;
-
-    public Triplet(Case kase, Test test, Assay assay) {
+    public RowData(Case kase, Test test, Assay assay) {
       this.kase = kase;
       this.test = test;
       this.assay = assay;
@@ -49,29 +46,17 @@ public class TglTrackingReport extends Report {
       return kase;
     }
 
-    public void setCase(Case kase) {
-      this.kase = kase;
-    }
-
     public Test getTest() {
       return test;
-    }
-
-    public void setTest(Test test) {
-      this.test = test;
     }
 
     public Assay getAssay() {
       return assay;
     }
-
-    public void setAssay(Assay assay) {
-      this.assay = assay;
-    }
   }
 
-  private static final ReportSection<Triplet> trackerSection =
-      new TableReportSection<Triplet>("Tracker",
+  private static final ReportSection<RowData> trackerSection =
+      new TableReportSection<RowData>("Tracker",
           Arrays.asList(
               Column.forString("Case ID", x -> x.getCase().getId()),
               Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),
@@ -111,7 +96,7 @@ public class TglTrackingReport extends Report {
               Column.forString("Case Status", x -> getCaseStatus(x.getCase())))) {
 
         @Override
-        public List<Triplet> getData(CaseService caseService,
+        public List<RowData> getData(CaseService caseService,
             Map<String, String> parameters) {
           Set<String> projectNames = getParameterStringSet(parameters, "projects");
           List<CaseFilter> filters = null;
@@ -125,7 +110,7 @@ public class TglTrackingReport extends Report {
 
           return caseService.getCaseStream(filters)
               .flatMap(kase -> kase.getTests().stream()
-                  .map(test -> new Triplet(kase, test, assaysById.get(kase.getAssayId()))))
+                  .map(test -> new RowData(kase, test, assaysById.get(kase.getAssayId()))))
               .toList();
         }
       };
@@ -148,24 +133,24 @@ public class TglTrackingReport extends Report {
     }
   }
 
-  private static BigDecimal getCoverageRequired(Triplet triplet) {
-    Metric metric = getCoverageMetric(triplet.getAssay(), triplet.getTest());
+  private static BigDecimal getCoverageRequired(RowData rowData) {
+    Metric metric = getCoverageMetric(rowData.getAssay(), rowData.getTest());
     if (metric == null) {
       return null;
     }
     return metric.getMinimum();
   }
 
-  private static BigDecimal getCoverageAchieved(Triplet triplet) {
-    Metric metric = getCoverageMetric(triplet.getAssay(), triplet.getTest());
+  private static BigDecimal getCoverageAchieved(RowData rowData) {
+    Metric metric = getCoverageMetric(rowData.getAssay(), rowData.getTest());
     if (metric == null) {
       return null;
     }
     switch (metric.getName()) {
       case METRIC_COVERAGE:
-        return getMetricValue(triplet.getTest(), Sample::getMeanCoverageDeduplicated);
+        return getMetricValue(rowData.getTest(), Sample::getMeanCoverageDeduplicated);
       case METRIC_CLUSTERS:
-        return getMetricValue(triplet.getTest(),
+        return getMetricValue(rowData.getTest(),
             sample -> sample.getClustersPerSample() == null ? null
                 : new BigDecimal(sample.getClustersPerSample()));
       default:

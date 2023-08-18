@@ -37,7 +37,8 @@ export interface TestTableView {
   requisition: Requisition;
   donor: Donor;
   projects: Project[];
-  assay: Assay;
+  assayName: string;
+  assayId: number;
   tissueOrigin: string;
   tissueType: string;
   timepoint: string;
@@ -111,7 +112,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       sortType: "text",
       addParentContents(testTableView, fragment) {
         const assayDiv = document.createElement("div");
-        const assay = siteConfig.assaysById[testTableView.assay.id];
+        const assay = siteConfig.assaysById[testTableView.assayId];
         addLink(assayDiv, assay.name, urls.dimsum.case(testTableView.caseId));
         fragment.appendChild(assayDiv);
 
@@ -175,7 +176,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView.assay.id,
+          testTableView.assayId,
           testTableView.test.extractions,
           fragment
         );
@@ -223,7 +224,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView.assay.id,
+          testTableView.assayId,
           testTableView.test.libraryPreparations,
           fragment
         );
@@ -264,7 +265,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView.assay.id,
+          testTableView.assayId,
           testTableView.test.libraryQualifications,
           fragment
         );
@@ -299,7 +300,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           return;
         }
         addSampleIcons(
-          testTableView.assay.id,
+          testTableView.assayId,
           testTableView.test.fullDepthSequencings,
           fragment
         );

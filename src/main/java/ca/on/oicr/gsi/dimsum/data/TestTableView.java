@@ -3,11 +3,9 @@ package ca.on.oicr.gsi.dimsum.data;
 import static java.util.Objects.requireNonNull;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.concurrent.Immutable;
-import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Project;
@@ -30,7 +28,7 @@ public class TestTableView {
   private final List<Sample> receipts;
   private final LocalDate latestActivityDate;
 
-  public TestTableView(Case kase, Test test, Map<Long, Assay> assaysById) {
+  public TestTableView(Case kase, Test test) {
     this.test = requireNonNull(test);
     this.caseId = requireNonNull(kase.getId());
     this.requisition = kase.getRequisition();

@@ -40,15 +40,13 @@ public class CaseLoader {
 
   private Timer refreshTimer = null;
 
+  @Value("${cardea.url}")
   private String cardeaUrl; // to store Cardea url that is passed in CaseLoader constructor
   private final int LIMIT_FOR_DATA_LOAD = 1073741824; // 1GB to load the data from Cardea
 
 
 
-  public CaseLoader(@Value("${cardea.url}") String url,
-      @Autowired MeterRegistry meterRegistry) {
-
-    cardeaUrl = url;
+  public CaseLoader(@Autowired MeterRegistry meterRegistry) {
     if (meterRegistry != null) {
       refreshTimer = Timer.builder("case_data_refresh_time")
           .description("Time taken to refresh the case data").register(meterRegistry);

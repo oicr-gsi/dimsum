@@ -512,7 +512,7 @@ public class CaseService {
       Collection<CaseFilter> filters) {
     Stream<TestTableView> stream = filterCases(cases, filters)
         .flatMap(kase -> kase.getTests().stream()
-            .map(test -> new TestTableView(kase, test, caseData.getAssaysById())));
+            .map(test -> new TestTableView(kase, test)));
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<TestTableView>> filterMap =
           buildFilterMap(filters, CaseFilter::testTableViewPredicate);
