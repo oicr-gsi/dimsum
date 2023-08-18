@@ -1,15 +1,20 @@
 package ca.on.oicr.gsi.dimsum;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import ca.on.oicr.gsi.cardea.data.*;
-
+import static org.mockito.Mockito.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.time.*;
 import java.util.List;
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.Project;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.RequisitionQc;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class MockCase {
 
@@ -304,7 +309,7 @@ public class MockCase {
     Assay assay = mock(Assay.class);
     when(assay.getName()).thenReturn(assayName);
     when(assay.getDescription()).thenReturn(assayName);
-    when(kase.getAssay()).thenReturn(assay);
+    when(assay.getId()).thenReturn(assay.getId());
     when(kase.getProjects()).thenReturn(new HashSet<>());
     kase.getProjects().add(makeProject(projectName));
     when(kase.getReceipts()).thenReturn(new ArrayList<>());

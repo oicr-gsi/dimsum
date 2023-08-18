@@ -2,6 +2,7 @@ package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
-//import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Metric;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
@@ -26,12 +27,12 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
 
-import ca.on.oicr.gsi.cardea.data.Assay;
-
 public class TglTrackingReport extends Report {
 
   private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
   private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
+
+  private static Map<Long, Assay> assaysById = new HashMap<Long, Assay>();
 
   private static final ReportSection<Pair<Case, Test>> trackerSection =
       new TableReportSection<Pair<Case, Test>>("Tracker",
@@ -84,6 +85,8 @@ public class TglTrackingReport extends Report {
                 .toList();
           }
 
+          assaysById = caseService.getAssaysById();
+
           return caseService.getCaseStream(filters)
               .flatMap(kase -> kase.getTests().stream().map(test -> Pair.of(kase, test)))
               .toList();
@@ -109,7 +112,7 @@ public class TglTrackingReport extends Report {
   }
 
   private static BigDecimal getCoverageRequired(Pair<Case, Test> pair) {
-    Metric metric = getCoverageMetric(pair.getLeft().getAssay(), pair.getRight());
+    Metric metric = getCoverageMetric(assaysById.get(pair.getLeft().getAssayId()), pair.getRight());
     if (metric == null) {
       return null;
     }
@@ -117,7 +120,7 @@ public class TglTrackingReport extends Report {
   }
 
   private static BigDecimal getCoverageAchieved(Pair<Case, Test> pair) {
-    Metric metric = getCoverageMetric(pair.getLeft().getAssay(), pair.getRight());
+    Metric metric = getCoverageMetric(assaysById.get(pair.getLeft().getAssayId()), pair.getRight());
     if (metric == null) {
       return null;
     }

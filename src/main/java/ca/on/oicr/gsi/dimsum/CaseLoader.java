@@ -75,22 +75,23 @@ public class CaseLoader {
     }
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
-    List<Case> cases = loadCases(cardeaCaseData.getCases(), assaysById);
-    Map<String, RunAndLibraries> runsByName = sortRuns(cases);
+    Map<String, RunAndLibraries> runsByName = sortRuns(cardeaCaseData.getCases());
     List<OmittedSample> omittedSamples = cardeaCaseData.getOmittedSamples();
     Set<String> requisitionNames = loadRequisitionNames(cardeaCaseData.getCases());
     Set<String> projectsNames = loadProjectsNames(cardeaCaseData.getCases());
     Set<String> donorNames = loadDonorNames(cardeaCaseData.getCases());
-    Set<String> testNames = getTestNames(cases);
-    Map<String, ProjectSummary> projectSummariesByName = calculateProjectSummaries(cases, null);
+    Set<String> testNames = getTestNames(cardeaCaseData.getCases());
+    Map<String, ProjectSummary> projectSummariesByName =
+        calculateProjectSummaries(cardeaCaseData.getCases(), null);
     ZonedDateTime afterTimestamp = cardeaCaseData.getTimestamp();
 
-    CaseData caseData = new CaseData(cases, runsByName, assaysById, omittedSamples,
-        afterTimestamp,
-        requisitionNames, projectsNames, donorNames, getRunNames(runsByName), testNames,
-        projectSummariesByName);
+    CaseData caseData =
+        new CaseData(cardeaCaseData.getCases(), runsByName, assaysById, omittedSamples,
+            afterTimestamp,
+            requisitionNames, projectsNames, donorNames, getRunNames(runsByName), testNames,
+            projectSummariesByName);
 
-    log.debug(String.format("Completed loading %d cases.", cases.size()));
+    log.debug(String.format("Completed loading %d cases.", cardeaCaseData.getCases().size()));
 
     return caseData;
   }
@@ -107,33 +108,6 @@ public class CaseLoader {
             .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class).blockLast();
   }
 
-
-  /**
-   * Cardea doesn't have the assay field populated for cases, but Dimsum needs this, so this
-   * rebuilds all the cases but adds assays
-   * 
-   * @param cases cases loaded with the information taken from the Cardea API `/dimsum` endpoint
-   * @param assaysById Map of assays by IDs to help complete the case structure for dimsum
-   * @return cases with the assay assigned
-   */
-  public List<Case> loadCases(List<Case> cases, Map<Long, Assay> assaysById) {
-    return cases.stream()
-        .map(
-            cardeaCase -> new Case.Builder().assay(assaysById.get(cardeaCase.getAssayId()))
-                .assayId(cardeaCase.getAssayId())
-                .donor(cardeaCase.getDonor())
-                .id(cardeaCase.getId())
-                .projects(cardeaCase.getProjects())
-                .receipts(cardeaCase.getReceipts())
-                .startDate(cardeaCase.getStartDate())
-                .requisition(cardeaCase.getRequisition())
-                .tests(cardeaCase.getTests())
-                .timepoint(cardeaCase.getTimepoint())
-                .tissueOrigin(cardeaCase.getTissueOrigin())
-                .tissueType(cardeaCase.getTissueType())
-                .build())
-        .collect(Collectors.toList());
-  }
 
   public Set<String> loadRequisitionNames(List<Case> cases) {
     Set<String> requisitionNames = new HashSet<>();

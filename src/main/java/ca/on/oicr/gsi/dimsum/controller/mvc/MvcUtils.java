@@ -8,14 +8,14 @@ import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilterKey;
 
 public class MvcUtils {
   private final static List<String> dateFilterKeys =

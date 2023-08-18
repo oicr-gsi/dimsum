@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
@@ -123,6 +124,10 @@ public class CaseService {
 
   public Stream<Case> getCaseStream(Collection<CaseFilter> filters) {
     return filterCases(caseData.getCases(), filters);
+  }
+
+  public Map<Long, Assay> getAssaysById() {
+    return caseData.getAssaysById();
   }
 
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
@@ -507,7 +512,8 @@ public class CaseService {
   private Stream<TestTableView> filterTestTableViews(List<Case> cases,
       Collection<CaseFilter> filters) {
     Stream<TestTableView> stream = filterCases(cases, filters)
-        .flatMap(kase -> kase.getTests().stream().map(test -> new TestTableView(kase, test)));
+        .flatMap(kase -> kase.getTests().stream()
+            .map(test -> new TestTableView(kase, test, caseData.getAssaysById())));
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<TestTableView>> filterMap =
           buildFilterMap(filters, CaseFilter::testTableViewPredicate);
