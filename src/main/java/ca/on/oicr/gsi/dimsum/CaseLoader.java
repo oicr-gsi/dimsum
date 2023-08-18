@@ -40,16 +40,14 @@ public class CaseLoader {
 
   private Timer refreshTimer = null;
 
-  String cardeaUrl; // to store Cardea url that is passed in CaseLoader constructor
-  int limitForDataLoad = 1073741824; // 1GB to load the data from Cardea
-  // CardeaCaseData cardeaCaseData;
-
-  ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData;
+  private String cardeaUrl; // to store Cardea url that is passed in CaseLoader constructor
+  private final int LIMIT_FOR_DATA_LOAD = 1073741824; // 1GB to load the data from Cardea
 
 
 
   public CaseLoader(@Value("${cardea.url}") String url,
       @Autowired MeterRegistry meterRegistry) {
+
     cardeaUrl = url;
     if (meterRegistry != null) {
       refreshTimer = Timer.builder("case_data_refresh_time")
@@ -62,10 +60,10 @@ public class CaseLoader {
    * @param previousTimestamp timestamp of previous successful load
    * @return case data if it is available and newer than the previous Timestamp; null otherwise
    */
-  public CaseData load(WebClient.Builder builder, ZonedDateTime previousTimestamp) {
+  public CaseData load(ZonedDateTime previousTimestamp) {
     log.debug("Loading case data...");
-    loadCardeaData(builder);
 
+    WebClient.Builder builder = WebClient.builder();
     ZonedDateTime currentTimeStamp = builder.build().get().uri(cardeaUrl + "/timestamp").retrieve()
         .bodyToMono(ZonedDateTime.class).block();
 
@@ -73,6 +71,7 @@ public class CaseLoader {
       log.debug("Current case data is up to date with data files; aborting reload.");
       return null;
     }
+    ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
     Map<String, RunAndLibraries> runsByName = sortRuns(cardeaCaseData.getCases());
@@ -100,12 +99,11 @@ public class CaseLoader {
    * 
    * @param builder WebClient builder state used to fetch data from Cardea API `/dimsum` endpoint
    */
-  public void loadCardeaData(WebClient.Builder builder) {
-    cardeaCaseData =
-        builder
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(limitForDataLoad))
-            .build().get().uri(cardeaUrl + "/dimsum").retrieve()
-            .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class).blockLast();
+  public ca.on.oicr.gsi.cardea.data.CaseData loadCardeaData(WebClient.Builder builder) {
+    return builder
+        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(LIMIT_FOR_DATA_LOAD))
+        .build().get().uri(cardeaUrl + "/dimsum").retrieve()
+        .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class).blockLast();
   }
 
 
