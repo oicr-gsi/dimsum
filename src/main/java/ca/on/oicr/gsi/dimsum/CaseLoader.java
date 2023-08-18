@@ -72,7 +72,8 @@ public class CaseLoader {
     ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
     if (cardeaCaseData == null) {
-      log.debug("Cardea's Case API returned an empty response; aborting reload.")
+      log.debug("Cardea's Case API returned an empty response; aborting reload.");
+      return null;
     }
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
