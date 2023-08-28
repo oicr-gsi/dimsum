@@ -25,14 +25,14 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
-import ca.on.oicr.gsi.dimsum.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
-import ca.on.oicr.gsi.dimsum.data.Metric;
-import ca.on.oicr.gsi.dimsum.data.MetricCategory;
-import ca.on.oicr.gsi.dimsum.data.MetricSubcategory;
-import ca.on.oicr.gsi.dimsum.data.Run;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
-import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Metric;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
+import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class NotificationManagerTest {
 

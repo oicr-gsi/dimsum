@@ -4,7 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.function.Predicate;
 
-import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.cardea.data.Run;
 
 public class RunFilter {
 

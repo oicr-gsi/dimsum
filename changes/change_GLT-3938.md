@@ -1,0 +1,1 @@
+The way cases are loaded; uses the case data from live Cardea API instead of QC-Gate-ETL files

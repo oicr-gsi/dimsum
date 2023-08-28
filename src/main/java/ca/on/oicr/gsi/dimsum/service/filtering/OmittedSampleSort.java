@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.dimsum.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 public enum OmittedSampleSort {
 

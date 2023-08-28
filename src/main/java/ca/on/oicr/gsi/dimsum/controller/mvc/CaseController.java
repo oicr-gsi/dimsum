@@ -7,9 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
-import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
+
+import ca.on.oicr.gsi.cardea.data.Case;
 
 @Controller
 @RequestMapping("/cases")

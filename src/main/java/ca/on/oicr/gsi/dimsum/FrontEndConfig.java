@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ca.on.oicr.gsi.dimsum.data.Assay;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 
+import ca.on.oicr.gsi.cardea.data.Assay;
 /**
  * This class contains configuration needed on the front-end and is served as a JavaScript file by
  * SiteConfigController. Some values are updated by CaseService when new data is loaded

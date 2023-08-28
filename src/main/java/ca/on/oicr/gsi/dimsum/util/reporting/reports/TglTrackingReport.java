@@ -9,14 +9,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
-import ca.on.oicr.gsi.dimsum.data.Assay;
-import ca.on.oicr.gsi.dimsum.data.Case;
-import ca.on.oicr.gsi.dimsum.data.Metric;
-import ca.on.oicr.gsi.dimsum.data.MetricCategory;
-import ca.on.oicr.gsi.dimsum.data.MetricSubcategory;
-import ca.on.oicr.gsi.dimsum.data.Sample;
-import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.Metric;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
@@ -31,48 +30,73 @@ public class TglTrackingReport extends Report {
   private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
   private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
 
-  private static final ReportSection<Pair<Case, Test>> trackerSection =
-      new TableReportSection<Pair<Case, Test>>("Tracker",
+  private static class RowData {
+
+    private final Case kase;
+    private final Test test;
+    private final Assay assay;
+
+    public RowData(Case kase, Test test, Assay assay) {
+      this.kase = kase;
+      this.test = test;
+      this.assay = assay;
+    }
+
+    public Case getCase() {
+      return kase;
+    }
+
+    public Test getTest() {
+      return test;
+    }
+
+    public Assay getAssay() {
+      return assay;
+    }
+  }
+
+  private static final ReportSection<RowData> trackerSection =
+      new TableReportSection<RowData>("Tracker",
           Arrays.asList(
-              Column.forString("Case ID", x -> x.getLeft().getId()),
-              Column.forString("External Name", x -> x.getLeft().getDonor().getExternalName()),
-              Column.forString("Test", x -> x.getRight().getName()),
-              Column.forString("Tissue Type", x -> x.getRight().getTissueType()),
-              Column.forString("Group ID", x -> x.getRight().getGroupId()),
+              Column.forString("Case ID", x -> x.getCase().getId()),
+              Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),
+              Column.forString("Test", x -> x.getTest().getName()),
+              Column.forString("Tissue Type", x -> x.getTest().getTissueType()),
+              Column.forString("Group ID", x -> x.getTest().getGroupId()),
               Column.forString("Extraction Pass?",
-                  x -> CompletedGate.EXTRACTION.qualifyTest(x.getRight()) ? "Yes" : null),
-              Column.forString("Stock ID", x -> x.getRight().getExtractions().stream()
+                  x -> CompletedGate.EXTRACTION.qualifyTest(x.getTest()) ? "Yes" : null),
+              Column.forString("Stock ID", x -> x.getTest().getExtractions().stream()
                   .map(Sample::getId).collect(Collectors.joining(", "))),
-              Column.forString("Stock Name", x -> x.getRight().getExtractions().stream()
+              Column.forString("Stock Name", x -> x.getTest().getExtractions().stream()
                   .map(Sample::getName).collect(Collectors.joining(", "))),
               Column.forString("Library Aliquot ID",
                   x -> Stream
-                      .concat(x.getRight().getLibraryQualifications().stream(),
-                          x.getRight().getFullDepthSequencings().stream())
+                      .concat(x.getTest().getLibraryQualifications().stream(),
+                          x.getTest().getFullDepthSequencings().stream())
                       .map(Sample::getId).collect(Collectors.joining(", "))),
               Column.forString("Library Aliquot Name",
                   x -> Stream
-                      .concat(x.getRight().getLibraryQualifications().stream(),
-                          x.getRight().getFullDepthSequencings().stream())
+                      .concat(x.getTest().getLibraryQualifications().stream(),
+                          x.getTest().getFullDepthSequencings().stream())
                       .map(Sample::getName).collect(Collectors.joining(", "))),
               Column.forString("Library Qualification Runs",
-                  x -> x.getRight().getLibraryQualifications().stream()
+                  x -> x.getTest().getLibraryQualifications().stream()
                       .filter(sample -> sample.getRun() != null)
                       .map(runlib -> runlib.getRun().getName())
                       .collect(Collectors.joining(", "))),
               Column.forString("Library Qualification Pass?",
-                  x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.getRight()) ? "Yes"
+                  x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.getTest()) ? "Yes"
                       : null),
               Column.forString("Full-Depth Runs",
-                  x -> x.getRight().getFullDepthSequencings().stream()
+                  x -> x.getTest().getFullDepthSequencings().stream()
                       .map(runlib -> runlib.getRun().getName())
                       .collect(Collectors.joining(", "))),
               Column.forDecimal("Coverage Required", TglTrackingReport::getCoverageRequired),
               Column.forDecimal("Coverage Achieved", TglTrackingReport::getCoverageAchieved),
-              Column.forString("Case Status", x -> getCaseStatus(x.getLeft())))) {
+              Column.forString("Case Status", x -> getCaseStatus(x.getCase())))) {
 
         @Override
-        public List<Pair<Case, Test>> getData(CaseService caseService,
+        public List<RowData> getData(CaseService caseService,
             Map<String, String> parameters) {
           Set<String> projectNames = getParameterStringSet(parameters, "projects");
           List<CaseFilter> filters = null;
@@ -82,8 +106,11 @@ public class TglTrackingReport extends Report {
                 .toList();
           }
 
+          Map<Long, Assay> assaysById = caseService.getAssaysById();
+
           return caseService.getCaseStream(filters)
-              .flatMap(kase -> kase.getTests().stream().map(test -> Pair.of(kase, test)))
+              .flatMap(kase -> kase.getTests().stream()
+                  .map(test -> new RowData(kase, test, assaysById.get(kase.getAssayId()))))
               .toList();
         }
       };
@@ -106,24 +133,24 @@ public class TglTrackingReport extends Report {
     }
   }
 
-  private static BigDecimal getCoverageRequired(Pair<Case, Test> pair) {
-    Metric metric = getCoverageMetric(pair.getLeft().getAssay(), pair.getRight());
+  private static BigDecimal getCoverageRequired(RowData rowData) {
+    Metric metric = getCoverageMetric(rowData.getAssay(), rowData.getTest());
     if (metric == null) {
       return null;
     }
     return metric.getMinimum();
   }
 
-  private static BigDecimal getCoverageAchieved(Pair<Case, Test> pair) {
-    Metric metric = getCoverageMetric(pair.getLeft().getAssay(), pair.getRight());
+  private static BigDecimal getCoverageAchieved(RowData rowData) {
+    Metric metric = getCoverageMetric(rowData.getAssay(), rowData.getTest());
     if (metric == null) {
       return null;
     }
     switch (metric.getName()) {
       case METRIC_COVERAGE:
-        return getMetricValue(pair.getRight(), Sample::getMeanCoverageDeduplicated);
+        return getMetricValue(rowData.getTest(), Sample::getMeanCoverageDeduplicated);
       case METRIC_CLUSTERS:
-        return getMetricValue(pair.getRight(),
+        return getMetricValue(rowData.getTest(),
             sample -> sample.getClustersPerSample() == null ? null
                 : new BigDecimal(sample.getClustersPerSample()));
       default:

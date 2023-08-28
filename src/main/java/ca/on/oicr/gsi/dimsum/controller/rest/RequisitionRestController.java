@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;

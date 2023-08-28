@@ -1,10 +1,12 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import groovy.transform.Immutable;
 
 @Immutable
+@JsonDeserialize(builder = ProjectSummaryRow.Builder.class)
 public class ProjectSummaryRow {
   private final String title;
   private final ProjectSummaryField receipt;
@@ -64,6 +66,7 @@ public class ProjectSummaryRow {
     return finalReport;
   }
 
+  @JsonPOJOBuilder(withPrefix = "")
   public static class Builder {
     private String title;
     private ProjectSummaryField receipt;

@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.Donor;
-import ca.on.oicr.gsi.dimsum.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 public class OmittedSampleFilterTest {
 

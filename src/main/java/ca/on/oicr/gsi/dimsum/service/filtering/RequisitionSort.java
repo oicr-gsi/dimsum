@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Requisition;
 
 public enum RequisitionSort {
 

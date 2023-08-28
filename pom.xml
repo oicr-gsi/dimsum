@@ -38,6 +38,10 @@
       <id>atlassian-maven-external</id>
       <url>https://packages.atlassian.com/mvn/maven-external/</url>
     </repository>
+    <repository>
+      <id>artifacts-gsi-release</id>
+      <url>https://artifacts.oicr.on.ca/artifactory/gsi-release/</url>
+    </repository>
   </repositories>
 
   <dependencyManagement>
@@ -115,6 +119,10 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-saml2-service-provider</artifactId>
     </dependency>
@@ -126,6 +134,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>ca.on.oicr.gsi.cardea</groupId>
+      <artifactId>cardea-data</artifactId>
+      <version>1.4.0</version>
     </dependency>
   </dependencies>
 

@@ -7,6 +7,8 @@ import org.joda.time.DateTime;
 import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 
+import ca.on.oicr.gsi.cardea.data.Run;
+
 @Immutable
 public class RunQcCommentSummary {
 

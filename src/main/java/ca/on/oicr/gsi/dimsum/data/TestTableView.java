@@ -1,13 +1,17 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import javax.annotation.concurrent.Immutable;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.Project;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
 
 @Immutable
 public class TestTableView {
@@ -16,7 +20,8 @@ public class TestTableView {
   private final Requisition requisition;
   private final Donor donor;
   private final Set<Project> projects;
-  private final Assay assay;
+  private final long assayId;
+  private final String assayName;
   private final String tissueOrigin;
   private final String tissueType;
   private final String timepoint;
@@ -29,7 +34,8 @@ public class TestTableView {
     this.requisition = kase.getRequisition();
     this.donor = requireNonNull(kase.getDonor());
     this.projects = kase.getProjects();
-    this.assay = requireNonNull(kase.getAssay());
+    this.assayId = kase.getAssayId();
+    this.assayName = kase.getAssayName();
     this.tissueOrigin = requireNonNull(kase.getTissueOrigin());
     this.tissueType = requireNonNull(kase.getTissueType());
     this.timepoint = kase.getTimepoint();
@@ -60,8 +66,12 @@ public class TestTableView {
     return projects;
   }
 
-  public Assay getAssay() {
-    return assay;
+  public long getAssayId() {
+    return assayId;
+  }
+
+  public String getAssayName() {
+    return assayName;
   }
 
   public String getTissueOrigin() {

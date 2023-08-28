@@ -1,8 +1,8 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import java.util.Arrays;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,25 +19,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.Project;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.FrontEndConfig;
-import ca.on.oicr.gsi.dimsum.data.Case;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
-import ca.on.oicr.gsi.dimsum.data.MetricCategory;
-import ca.on.oicr.gsi.dimsum.data.OmittedSample;
-import ca.on.oicr.gsi.dimsum.data.Project;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
-import ca.on.oicr.gsi.dimsum.data.Sample;
-import ca.on.oicr.gsi.dimsum.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
+import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
@@ -46,16 +49,14 @@ import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
-import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
-import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
-import ca.on.oicr.gsi.dimsum.data.Run;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
+import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 
 @Service
 public class CaseService {
@@ -122,6 +123,10 @@ public class CaseService {
 
   public Stream<Case> getCaseStream(Collection<CaseFilter> filters) {
     return filterCases(caseData.getCases(), filters);
+  }
+
+  public Map<Long, Assay> getAssaysById() {
+    return caseData.getAssaysById();
   }
 
   public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
@@ -506,7 +511,8 @@ public class CaseService {
   private Stream<TestTableView> filterTestTableViews(List<Case> cases,
       Collection<CaseFilter> filters) {
     Stream<TestTableView> stream = filterCases(cases, filters)
-        .flatMap(kase -> kase.getTests().stream().map(test -> new TestTableView(kase, test)));
+        .flatMap(kase -> kase.getTests().stream()
+            .map(test -> new TestTableView(kase, test)));
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<TestTableView>> filterMap =
           buildFilterMap(filters, CaseFilter::testTableViewPredicate);

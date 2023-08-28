@@ -1,27 +1,23 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.Assay;
-import ca.on.oicr.gsi.dimsum.data.Case;
-import ca.on.oicr.gsi.dimsum.data.Donor;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.Donor;
 
 public class CaseSortTest {
 
   private static final String[] assaysOrdered = {"A", "B", "C", "D", "E"};
   private static final String[] caseAssays =
       {assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]};
+
   private static String[] donorsOrdered =
       {"APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"};
   private static String[] caseDonors =
@@ -36,13 +32,13 @@ public class CaseSortTest {
   @Test
   public void testSortByAssayAscending() {
     List<Case> cases = getCasesSorted(CaseSort.ASSAY, false);
-    assertOrder(cases, kase -> kase.getAssay().getName(), assaysOrdered, false);
+    assertOrder(cases, Case::getAssayName, assaysOrdered, false);
   }
 
   @Test
   public void testSortByAssayDescending() {
     List<Case> cases = getCasesSorted(CaseSort.ASSAY, true);
-    assertOrder(cases, kase -> kase.getAssay().getName(), assaysOrdered, true);
+    assertOrder(cases, Case::getAssayName, assaysOrdered, true);
   }
 
   @Test
@@ -104,9 +100,7 @@ public class CaseSortTest {
 
   private static Case mockCase(int caseNumber) {
     Case kase = mock(Case.class);
-    Assay assay = mock(Assay.class);
-    when(assay.getName()).thenReturn(caseAssays[caseNumber]);
-    when(kase.getAssay()).thenReturn(assay);
+    when(kase.getAssayName()).thenReturn(caseAssays[caseNumber]);
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(caseDonors[caseNumber]);
     when(kase.getDonor()).thenReturn(donor);
@@ -114,5 +108,4 @@ public class CaseSortTest {
     when(kase.getLatestActivityDate()).thenReturn(caseActivityDates[caseNumber]);
     return kase;
   }
-
 }

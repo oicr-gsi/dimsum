@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
-import ca.on.oicr.gsi.dimsum.data.Run;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @Controller
