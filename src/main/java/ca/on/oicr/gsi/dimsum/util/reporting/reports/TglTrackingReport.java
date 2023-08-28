@@ -30,7 +30,7 @@ public class TglTrackingReport extends Report {
   private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
   private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
 
-  public static class RowData {
+  private static class RowData {
 
     private final Case kase;
     private final Test test;

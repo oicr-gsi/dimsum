@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +59,7 @@ public class CaseLoader {
    * @param previousTimestamp timestamp of previous successful load
    * @return case data if it is available and newer than the previous Timestamp; null otherwise
    */
-  public CaseData load(ZonedDateTime previousTimestamp) {
+  public CaseData load(ZonedDateTime previousTimestamp) throws IOException {
     log.debug("Loading case data...");
 
     WebClient.Builder builder = WebClient.builder();
@@ -66,15 +67,11 @@ public class CaseLoader {
         .bodyToMono(ZonedDateTime.class).block();
 
     if (previousTimestamp != null && !currentTimeStamp.isAfter(previousTimestamp)) {
-      log.debug("Current case data is up to date with data files; aborting reload.");
+      log.debug("Current case data is up to date with Cardea; aborting reload.");
       return null;
     }
-    ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
-    if (cardeaCaseData == null) {
-      log.debug("Cardea's Case API returned an empty response; aborting reload.");
-      return null;
-    }
+    ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
     Map<String, RunAndLibraries> runsByName = sortRuns(cardeaCaseData.getCases());
@@ -102,11 +99,16 @@ public class CaseLoader {
    * 
    * @param builder WebClient builder state used to fetch data from Cardea API `/dimsum` endpoint
    */
-  public ca.on.oicr.gsi.cardea.data.CaseData loadCardeaData(WebClient.Builder builder) {
-    return builder
+  public ca.on.oicr.gsi.cardea.data.CaseData loadCardeaData(WebClient.Builder builder)
+      throws IOException {
+    ca.on.oicr.gsi.cardea.data.CaseData data = builder
         .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(LIMIT_FOR_DATA_LOAD))
         .build().get().uri(cardeaUrl + "/dimsum").retrieve()
         .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class).blockLast();
+    if (data == null) {
+      throw new IOException("Cardea's Case API returned an empty response");
+    }
+    return data;
   }
 
 
