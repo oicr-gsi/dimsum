@@ -40,6 +40,7 @@ export interface Qcable {
   qcReason?: string;
   qcUser?: string;
   qcDate?: string;
+  qcNote?: string;
   dataReviewPassed?: boolean;
   dataReviewUser?: string;
   dataReviewDate?: string;

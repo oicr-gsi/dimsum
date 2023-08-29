@@ -4,6 +4,7 @@ import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
 import { Case, Qcable } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
+import { makeTextDiv } from "./util/html-utils";
 import {
   getMetricValue,
   getRequisitionMetricCellHighlight,
@@ -202,15 +203,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
-        const shouldCollapse = false;
-        addMetricValueContents(
-          parent.sample,
-          [object],
-          fragment,
-          false,
-          false,
-          true
-        );
+        addMetricValueContents(parent.sample, [object], fragment, false, !true);
       },
       getCellHighlight(reportSample, metric) {
         if (metric == null) {
@@ -421,7 +414,8 @@ function displayQcSignOff(fragment: DocumentFragment, qcable: Qcable) {
     qcable.qcPassed,
     qcable.qcReason,
     qcable.qcUser,
-    qcable.qcDate
+    qcable.qcDate,
+    qcable.qcNote
   );
 }
 
@@ -440,7 +434,8 @@ function displaySignOff(
   qcPassed?: boolean,
   qcReason?: string,
   qcUser?: string,
-  qcDate?: string
+  qcDate?: string,
+  qcNote?: string
 ) {
   if (qcDate) {
     if (!qcUser) {
@@ -449,6 +444,11 @@ function displaySignOff(
     addBoldText(fragment, qcReason || (qcPassed ? "Passed" : "Failed"));
     addTextDiv(qcUser, fragment);
     addTextDiv(qcDate, fragment);
+    if (qcNote) {
+      const noteDiv = makeTextDiv("Note: " + qcNote);
+      noteDiv.classList.add("mt-1em");
+      fragment.appendChild(noteDiv);
+    }
   } else {
     addPendingText(fragment);
   }
@@ -487,10 +487,7 @@ async function loadCase(caseId: string) {
 
   const receipts = getReportSamples(data, data.receipts, "RECEIPT");
   new TableBuilder(sampleGateMetricsDefinition, "receiptTableContainer").build(
-    receipts.map((reportSample) => ({
-      ...reportSample,
-      shouldCollapse: true,
-    }))
+    receipts
   );
 
   const extractions = getReportSamples(
@@ -502,6 +499,7 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "extractionTableContainer"
   ).build(extractions);
+
   const libraryPreps = getReportSamples(
     data,
     data.tests.flatMap((test) => test.libraryPreparations),
@@ -511,6 +509,7 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "libraryPreparationTableContainer"
   ).build(libraryPreps);
+
   const libraryQualifications = getReportSamples(
     data,
     data.tests.flatMap((test) => test.libraryQualifications),
@@ -520,21 +519,16 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "libraryQualificationTableContainer"
   ).build(libraryQualifications);
+
   const fullDepths = getReportSamples(
     data,
     data.tests.flatMap((test) => test.fullDepthSequencings),
     "FULL_DEPTH_SEQUENCING"
   );
-
   new TableBuilder(
     sampleGateMetricsDefinition,
     "fullDepthSequencingTableContainer"
-  ).build(
-    fullDepths.map((reportSample) => ({
-      ...reportSample,
-      shouldCollapse: false,
-    }))
-  );
+  ).build(fullDepths);
 
   const informatics = getReportInformatics(data);
   new TableBuilder(
