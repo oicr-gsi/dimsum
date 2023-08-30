@@ -134,23 +134,17 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const nameDiv = makeNameDiv(
           kase.donor.name,
           urls.miso.sample(kase.donor.id),
-          urls.dimsum.donor(kase.donor.name)
+          urls.dimsum.donor(kase.donor.name),
+          kase.donor.name
         );
         fragment.appendChild(nameDiv);
-        // Add copy button for donor name
-        const copyButtonForName = makeCopyButton(kase.donor.name);
-        fragment.appendChild(copyButtonForName);
 
         const externalNameDiv = makeTextDivWithTooltip(
           kase.donor.externalName,
-          "External Name"
+          "External Name",
+          true
         );
         fragment.appendChild(externalNameDiv);
-        // Add copy button for external name
-        const copyButtonForExternalName = makeCopyButton(
-          kase.donor.externalName
-        );
-        fragment.appendChild(copyButtonForExternalName);
 
         const tumourDetailDiv = document.createElement("div");
         tumourDetailDiv.appendChild(
