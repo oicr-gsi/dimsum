@@ -600,7 +600,7 @@ export function addMetricValueContents(
       );
       return;
     case METRIC_LABEL_PHIX:
-      addPhixContents(sample, metrics, fragment, shouldCollapse);
+      addPhixContents(sample, metrics, fragment, addTooltip, shouldCollapse);
       return;
   }
 
@@ -654,43 +654,40 @@ export function addMetricValueContents(
   }
 }
 
-function createCollapseButton(
-  contentWrapper: HTMLElement,
-  toggleText: string,
-  shouldCollapse: boolean
-): HTMLButtonElement {
+function createCollapseButton(contentWrapper: HTMLElement): HTMLButtonElement {
   const toggleButton = document.createElement("button");
   toggleButton.classList.add("fa", "fa-caret-down", "text-sm", "icon-button");
 
-  toggleButton.textContent = toggleText;
+  toggleButton.addEventListener("click", () => {
+    const isExpanded = contentWrapper.classList.toggle("hidden");
+    toggleButton.classList.toggle("fa-caret-down", isExpanded);
+    toggleButton.classList.toggle("fa-caret-up", !isExpanded);
+  });
 
-  if (shouldCollapse) {
-    toggleButton.addEventListener("click", () => {
-      const isExpanded = contentWrapper.classList.toggle("hidden");
-      toggleButton.classList.toggle("fa-caret-down", isExpanded);
-      toggleButton.classList.toggle("fa-caret-up", !isExpanded);
-    });
+  toggleButton.addEventListener("mouseover", () => {
+    toggleButton.classList.add("text-green-200");
+  });
 
-    toggleButton.addEventListener("mouseover", () => {
-      toggleButton.classList.add("text-green-200");
-    });
-
-    toggleButton.addEventListener("mouseout", () => {
-      toggleButton.classList.remove("text-green-200");
-    });
-  }
+  toggleButton.addEventListener("mouseout", () => {
+    toggleButton.classList.remove("text-green-200");
+  });
 
   return toggleButton;
 }
 
 function handleCollapse(
+  metricDisplay: HTMLElement,
   contentWrapper: HTMLElement,
-  metricWrapper: HTMLElement,
   fragment: DocumentFragment,
   shouldCollapse: boolean
 ) {
+  const metricWrapper = document.createElement("div");
+  metricWrapper.className = "flex space-x-1";
+
+  metricWrapper.appendChild(metricDisplay);
+
   if (shouldCollapse) {
-    const toggleButton = createCollapseButton(contentWrapper, "", true);
+    const toggleButton = createCollapseButton(contentWrapper);
     metricWrapper.appendChild(toggleButton);
     contentWrapper.classList.add("hidden");
   }
@@ -716,15 +713,13 @@ function addQ30Contents(
     return;
   }
 
-  // Create a wrapper for the metric and the button
-  const metricWrapper = document.createElement("div");
-  metricWrapper.style.display = "flex";
-  metricWrapper.appendChild(
-    makeMetricDisplay(sample.run.percentOverQ30, metrics, addTooltip)
+  const metricDisplay = makeMetricDisplay(
+    sample.run.percentOverQ30,
+    metrics,
+    addTooltip
   );
 
   const contentWrapper = document.createElement("div");
-
   sample.run!.lanes.forEach((lane) => {
     if (!lane.percentOverQ30Read1) return;
     let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
@@ -736,7 +731,7 @@ function addQ30Contents(
     contentWrapper.appendChild(div);
   });
 
-  handleCollapse(contentWrapper, metricWrapper, fragment, shouldCollapse);
+  handleCollapse(metricDisplay, contentWrapper, fragment, shouldCollapse);
 }
 
 function addClustersPfContents(
@@ -746,6 +741,9 @@ function addClustersPfContents(
   addTooltip: boolean,
   shouldCollapse: boolean = true
 ) {
+  // For joined flowcells, run-level is checked
+  // For non-joined, each lane is checked
+  // Metric is sometimes specified "/lane", sometimes per run
   if (!sample.run || !sample.run.clustersPf) {
     if (sample.run && !sample.run.completionDate) {
       fragment.appendChild(makeSequencingIcon());
@@ -777,13 +775,6 @@ function addClustersPfContents(
     tooltip.addTarget(runDiv, addContents);
   }
 
-  // Create a wrapper for the metric and the button
-  const metricWrapper = document.createElement("div");
-  metricWrapper.style.display = "flex";
-  metricWrapper.style.alignItems = "center";
-
-  metricWrapper.appendChild(runDiv);
-
   if (sample.run.lanes.length > 1) {
     const processLaneContents = () => {
       const contentWrapper = document.createElement("div");
@@ -809,10 +800,12 @@ function addClustersPfContents(
         }
       });
 
-      handleCollapse(contentWrapper, metricWrapper, fragment, shouldCollapse);
+      handleCollapse(runDiv, contentWrapper, fragment, shouldCollapse);
     };
 
     processLaneContents();
+  } else {
+    fragment.appendChild(runDiv);
   }
 }
 
@@ -905,8 +898,10 @@ function addPhixContents(
   sample: Sample,
   metrics: Metric[],
   fragment: DocumentFragment,
+  addTooltip: boolean,
   shouldCollapse: boolean = true
 ) {
+  // There is no run-level metric, so we check each read of each lane
   if (
     !sample.run ||
     !sample.run.lanes ||
@@ -920,6 +915,11 @@ function addPhixContents(
     }
     return;
   }
+
+  const tooltip = Tooltip.getInstance();
+  const addContents = (fragment: DocumentFragment) => {
+    metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
+  };
 
   const processLane = (lane: Lane, multipleLanes: boolean) => {
     const laneDiv = document.createElement("div");
@@ -939,11 +939,9 @@ function addPhixContents(
         text += `; R2: ${lane.percentPfixRead2}`;
       }
       laneDiv.innerText = text;
-      const tooltip = Tooltip.getInstance();
-      const addContents = (fragment: DocumentFragment) => {
-        metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
-      };
-      tooltip.addTarget(laneDiv, addContents);
+      if (addTooltip) {
+        tooltip.addTarget(laneDiv, addContents);
+      }
     }
     return laneDiv;
   };
@@ -951,14 +949,10 @@ function addPhixContents(
   const minPhixValue = Math.min(
     ...sample.run.lanes.map((lane) => lane.percentPfixRead1)
   );
-  const metricWrapper = document.createElement("div");
-  metricWrapper.style.display = "flex"; // Set metricWrapper to be a flex container
-  metricWrapper.style.alignItems = "center"; // Vertically center contents
 
   const minPhixDiv = document.createElement("div");
   minPhixDiv.classList.add("whitespace-nowrap", "print-hanging");
   minPhixDiv.innerText = `${minPhixValue.toFixed(2)}+/R`;
-  metricWrapper.appendChild(minPhixDiv);
 
   const contentWrapper = document.createElement("div");
   const multipleLanes = sample.run.lanes.length > 1;
@@ -966,7 +960,7 @@ function addPhixContents(
     contentWrapper.appendChild(processLane(lane, multipleLanes));
   });
 
-  handleCollapse(contentWrapper, metricWrapper, fragment, shouldCollapse);
+  handleCollapse(minPhixDiv, contentWrapper, fragment, shouldCollapse);
 }
 
 function getPhixHighlight(

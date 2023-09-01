@@ -203,7 +203,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
-        addMetricValueContents(parent.sample, [object], fragment, false, !true);
+        addMetricValueContents(parent.sample, [object], fragment, false, false);
       },
       getCellHighlight(reportSample, metric) {
         if (metric == null) {
