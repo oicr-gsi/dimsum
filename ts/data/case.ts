@@ -21,6 +21,7 @@ import {
 } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
+import { makeCopyButton } from "../util/html-utils";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -130,16 +131,20 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Donor",
       sortType: "text",
       addParentContents(kase, fragment) {
-        fragment.appendChild(
-          makeNameDiv(
-            kase.donor.name,
-            urls.miso.sample(kase.donor.id),
-            urls.dimsum.donor(kase.donor.name)
-          )
+        const nameDiv = makeNameDiv(
+          kase.donor.name,
+          urls.miso.sample(kase.donor.id),
+          urls.dimsum.donor(kase.donor.name),
+          kase.donor.name
         );
-        fragment.appendChild(
-          makeTextDivWithTooltip(kase.donor.externalName, "External Name")
+        fragment.appendChild(nameDiv);
+
+        const externalNameDiv = makeTextDivWithTooltip(
+          kase.donor.externalName,
+          "External Name",
+          true
         );
+        fragment.appendChild(externalNameDiv);
 
         const tumourDetailDiv = document.createElement("div");
         tumourDetailDiv.appendChild(
