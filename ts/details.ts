@@ -74,6 +74,7 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     }
     const copyButton = makeCopyButton(requisitionName);
     titleMisoLink.parentNode?.insertBefore(copyButton, titleMisoLink);
+    break;
   }
   case "CASE_ID": {
     // add QC Report button
@@ -103,5 +104,6 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     button.onclick = (event) =>
       (window.location.href = urls.dimsum.caseQcReport(caseId));
     actionContainer.appendChild(button);
+    break;
   }
 }

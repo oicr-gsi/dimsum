@@ -20,6 +20,7 @@ import {
 } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
+import { makeCopyButton } from "../util/html-utils";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
