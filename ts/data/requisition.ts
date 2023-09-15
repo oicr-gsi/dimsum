@@ -48,9 +48,9 @@ export interface Requisition {
   stopped: boolean;
   stopReason?: string;
   qcGroups: RequisitionQcGroup[];
-  informaticsReviews: RequisitionQc[];
-  draftReports: RequisitionQc[];
-  finalReports: RequisitionQc[];
+  analysisReviews: RequisitionQc[];
+  releaseApprovals: RequisitionQc[];
+  releases: RequisitionQc[];
   latestActivityDate?: string;
 }
 
@@ -96,38 +96,38 @@ const latestActivityColumn: ColumnDefinition<Requisition, void> = {
   },
 };
 
-export const informaticsReviewDefinition: TableDefinition<Requisition, void> = {
+export const analysisReviewDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: (data?: Requisition[]) => [
-    qcStatusColumn((requisition) => requisition.informaticsReviews),
+    qcStatusColumn((requisition) => requisition.analysisReviews),
     requisitionColumn,
     ...generateMetricColumns(data),
     latestActivityColumn,
   ],
 };
 
-export const draftReportDefinition: TableDefinition<Requisition, void> = {
+export const releaseApprovalDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
-    qcStatusColumn((requisition) => requisition.draftReports),
+    qcStatusColumn((requisition) => requisition.releaseApprovals),
     requisitionColumn,
     latestActivityColumn,
   ],
 };
 
-export const finalReportDefinition: TableDefinition<Requisition, void> = {
+export const releaseDefinition: TableDefinition<Requisition, void> = {
   queryUrl: urls.rest.requisitions,
   defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
-    qcStatusColumn((requisition) => requisition.finalReports),
+    qcStatusColumn((requisition) => requisition.releases),
     requisitionColumn,
     latestActivityColumn,
   ],
@@ -142,7 +142,7 @@ function generateMetricColumns(
   const assayIds = requisitions
     .map((requisition) => requisition.assayId || 0)
     .filter((assayId) => assayId > 0);
-  const metricNames = getMetricNames("INFORMATICS", assayIds);
+  const metricNames = getMetricNames("ANALYSIS_REVIEW", assayIds);
   return metricNames.map((metricName) => {
     return {
       title: metricName,
@@ -323,7 +323,7 @@ function getMatchingMetrics(
     return null;
   }
   return siteConfig.assaysById[requisition.assayId].metricCategories[
-    "INFORMATICS"
+    "ANALYSIS_REVIEW"
   ]
     .filter((subcategory) => subcategoryApplies(subcategory, qcGroup))
     .flatMap((subcategory) => subcategory.metrics)

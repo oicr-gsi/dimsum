@@ -16,9 +16,9 @@ export interface ProjectSummaryRow {
   libraryPreparation: ProjectSummaryField;
   libraryQualification: ProjectSummaryField;
   fullDepthSequencing: ProjectSummaryField;
-  informaticsReview: ProjectSummaryField;
-  draftReport: ProjectSummaryField;
-  finalReport: ProjectSummaryField;
+  analysisReview: ProjectSummaryField;
+  releaseApproval: ProjectSummaryField;
+  release: ProjectSummaryField;
 }
 
 export function getProjectSummaryRowDefinition(
@@ -96,42 +96,38 @@ export function getProjectSummaryRowDefinition(
           },
         },
         {
-          title: "Informatics Review",
+          title: "Analysis Review",
           addParentContents(projectSummaryRow, fragment) {
             displayCount(
-              "Informatics Reviews",
-              projectSummaryRow.informaticsReview,
+              "Analysis Reviews",
+              projectSummaryRow.analysisReview,
               fragment
             );
           },
           getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.informaticsReview ? "na" : null;
+            return !projectSummaryRow.analysisReview ? "na" : null;
           },
         },
         {
-          title: "Draft Report",
+          title: "Release Approval",
           addParentContents(projectSummaryRow, fragment) {
             displayCount(
-              "Draft Reports",
-              projectSummaryRow.draftReport,
+              "Release Approvals",
+              projectSummaryRow.releaseApproval,
               fragment
             );
           },
           getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.draftReport ? "na" : null;
+            return !projectSummaryRow.releaseApproval ? "na" : null;
           },
         },
         {
-          title: "Final Report",
+          title: "Release",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(
-              "Final Reports",
-              projectSummaryRow.finalReport,
-              fragment
-            );
+            displayCount("Releases", projectSummaryRow.release, fragment);
           },
           getCellHighlight(projectSummaryRow) {
-            return !projectSummaryRow.finalReport ? "na" : null;
+            return !projectSummaryRow.release ? "na" : null;
           },
         },
       ];

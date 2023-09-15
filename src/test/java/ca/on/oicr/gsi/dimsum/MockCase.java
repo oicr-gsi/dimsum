@@ -31,7 +31,7 @@ public class MockCase {
     final int caseNumber = 0;
     Case kase = makeCase("PRO1_0001", "WGTS assay 1", "PRO1", "REQ01", caseNumber);
     // Test 1 is pending extraction
-    ca.on.oicr.gsi.cardea.data.Test test1 = addTest(kase, 0, 1, "Normal WG", "WG");
+    addTest(kase, 0, 1, "Normal WG", "WG");
     // Test 2 is pending extraction QC
     ca.on.oicr.gsi.cardea.data.Test test2 = addTest(kase, 0, 2, "Tumour WG", "WG");
     String test2ExtractionId = makeSampleId(caseNumber, 2, MetricCategory.EXTRACTION, 1);
@@ -53,8 +53,7 @@ public class MockCase {
     String test1LibraryId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_PREP, 1);
     addSample(test1.getLibraryPreparations(), test1LibraryId, null, null);
     // Test 2 is pending library qualification
-    ca.on.oicr.gsi.cardea.data.Test test2 =
-        addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, false, false);
+    addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, false, false);
     // Test 3 is pending library qualification QC
     ca.on.oicr.gsi.cardea.data.Test test3 =
         addTest(kase, caseNumber, 3, "Tumour WT", "WT", true, true, false, false);
@@ -72,8 +71,7 @@ public class MockCase {
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.LIBRARY_QUALIFICATION, 1);
     addRunLibrary(test1.getLibraryQualifications(), sampleId, true, "Good", null);
     // Test 2 is pending full depth sequencing
-    ca.on.oicr.gsi.cardea.data.Test test2 =
-        addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, true, false);
+    addTest(kase, caseNumber, 2, "Tumour WG", "WG", true, true, true, false);
     return kase;
   }
 
@@ -95,7 +93,7 @@ public class MockCase {
 
   private static Case makeCase4() {
     final int caseNumber = 4;
-    // Case is pending informatics review
+    // Case is pending analysis review
     Case kase = makeCase("PRO3_0001", "Single Test", "PRO3", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     return kase;
@@ -103,23 +101,23 @@ public class MockCase {
 
   private static Case makeCase5() {
     final int caseNumber = 5;
-    // Case is pending draft report
+    // Case is pending release approval
     Case kase = makeCase("PRO4_0001", "Single Test", "PRO4", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     Requisition requisition = kase.getRequisition();
-    addRequisitionQc(requisition.getInformaticsReviews(), true);
+    addRequisitionQc(requisition.getAnalysisReviews(), true);
     return kase;
   }
 
   private static Case makeCase6() {
     final int caseNumber = 6;
-    // Case is pending final report
+    // Case is pending release
     Case kase = makeCase("PRO5_0001", "Single Test", "PRO5", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     addTest(kase, caseNumber, 2, "Test", "WG", true, true, true, true);
     Requisition requisition = kase.getRequisition();
-    addRequisitionQc(requisition.getInformaticsReviews(), true);
-    addRequisitionQc(requisition.getDraftReports(), true);
+    addRequisitionQc(requisition.getAnalysisReviews(), true);
+    addRequisitionQc(requisition.getReleaseApprovals(), true);
     return kase;
   }
 
@@ -127,8 +125,7 @@ public class MockCase {
     final int caseNumber = 7;
     Case kase = makeCase("PRO7_0001", "Single Test", "PRO7", "REQ07", caseNumber);
     // Test 1 is pending extraction
-    ca.on.oicr.gsi.cardea.data.Test test1 =
-        addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
+    addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     return kase;
   }
 
@@ -147,8 +144,7 @@ public class MockCase {
     final int caseNumber = 9;
     Case kase = makeCase("PRO9_0001", "Single Test", "PRO9", "REQ09", caseNumber);
     // Test 1 is pending library prep
-    ca.on.oicr.gsi.cardea.data.Test test1 =
-        addTest(kase, caseNumber, 1, "Test", "WG", true, false, false, false);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, false, false, false);
     return kase;
   }
 
@@ -167,8 +163,7 @@ public class MockCase {
     final int caseNumber = 11;
     Case kase = makeCase("PRO11_0001", "Single Test", "PRO11", "REQ11", caseNumber);
     // Test 1 is pending library qualification
-    ca.on.oicr.gsi.cardea.data.Test test1 =
-        addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, false, false);
     return kase;
   }
 
@@ -220,8 +215,7 @@ public class MockCase {
     final int caseNumber = 16;
     Case kase = makeCase("PRO16_0001", "Single Test", "PRO16", "REQ16", caseNumber);
     // Test 1 is pending full depth sequencing
-    ca.on.oicr.gsi.cardea.data.Test test1 =
-        addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, false);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, false);
     return kase;
   }
 
@@ -287,8 +281,7 @@ public class MockCase {
     kase.getReceipts().remove(0);
     String sampleId = makeSampleId(caseNumber, 1, MetricCategory.RECEIPT, 1);
     addSample(kase.getReceipts(), sampleId, null, null);
-    ca.on.oicr.gsi.cardea.data.Test test1 =
-        addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
+    addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     return kase;
   }
 
@@ -333,9 +326,9 @@ public class MockCase {
     when(requisition.getId()).thenReturn(Long.valueOf(caseNumber));
     when(requisition.isStopped()).thenReturn(caseNumber == 23);
     when(requisition.getName()).thenReturn(name);
-    when(requisition.getInformaticsReviews()).thenReturn(new ArrayList<>());
-    when(requisition.getDraftReports()).thenReturn(new ArrayList<>());
-    when(requisition.getFinalReports()).thenReturn(new ArrayList<>());
+    when(requisition.getAnalysisReviews()).thenReturn(new ArrayList<>());
+    when(requisition.getReleaseApprovals()).thenReturn(new ArrayList<>());
+    when(requisition.getReleases()).thenReturn(new ArrayList<>());
     when(kase.getRequisition()).thenReturn(requisition);
     return requisition;
   }

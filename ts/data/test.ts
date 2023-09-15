@@ -1,7 +1,6 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
 import {
   addLink,
-  makeIcon,
   styleText,
   addMisoIcon,
   makeNameDiv,
@@ -15,7 +14,6 @@ import {
   Test,
   Donor,
   Project,
-  makeSampleTooltip,
   samplePhaseComplete,
   addConstructionIcon,
   addSpace,
@@ -25,7 +23,6 @@ import {
   handleNaSamplePhase,
   addSampleIcons,
 } from "./case";
-import { Assay } from "./assay";
 import { Sample } from "./sample";
 import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";

@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Requisition;
@@ -232,7 +231,7 @@ public enum PendingState {
       }
     }
   },
-  INFORMATICS_REVIEW("Informatics Review") {
+  ANALYSIS_REVIEW("Analysis Review") {
     @Override
     public boolean qualifyCase(Case kase) {
       return kase.getTests().stream().allMatch(Helpers.isCompleted(Test::getFullDepthSequencings))
@@ -241,32 +240,32 @@ public enum PendingState {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getInformaticsReviews().isEmpty();
+      return requisition.getAnalysisReviews().isEmpty();
     }
   },
-  DRAFT_REPORT("Draft Report") {
+  RELEASE_APPROVAL("Release Approval") {
 
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews)
+      return Helpers.isCompletedRequisitionQc(kase, Requisition::getAnalysisReviews)
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getDraftReports().isEmpty();
+      return requisition.getReleaseApprovals().isEmpty();
     }
   },
-  FINAL_REPORT("Final Report") {
+  RELEASE("Release") {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getDraftReports)
+      return Helpers.isCompletedRequisitionQc(kase, Requisition::getReleaseApprovals)
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getFinalReports().isEmpty();
+      return requisition.getReleases().isEmpty();
     }
   };
   // @formatter:on

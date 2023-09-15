@@ -4,7 +4,7 @@ export type MetricCategory =
   | "LIBRARY_PREP"
   | "LIBRARY_QUALIFICATION"
   | "FULL_DEPTH_SEQUENCING"
-  | "INFORMATICS";
+  | "ANALYSIS_REVIEW";
 
 export interface Metric {
   name: string;

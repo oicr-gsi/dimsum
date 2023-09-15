@@ -38,7 +38,7 @@ interface ReportSample {
   caseAssayId: number;
 }
 
-interface ReportInformatics {
+interface ReportAnalysisReview {
   requisition: Requisition;
   requisitionQcGroup: RequisitionQcGroup;
   requisitionQc: RequisitionQc | null; // null if no informatics review QC has been added
@@ -304,7 +304,7 @@ function addAssayMismatchText(fragment: Node, object: ReportSample) {
 }
 
 const requisitionGateMetricsDefinition: TableDefinition<
-  ReportInformatics,
+  ReportAnalysisReview,
   Metric
 > = {
   disablePageControls: true,
@@ -524,11 +524,11 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "fullDepthSequencingTableContainer"
   ).build(fullDepths);
-  const informatics = getReportInformatics(data);
+  const analysisReviews = getReportAnalysisReviews(data);
   new TableBuilder(
     requisitionGateMetricsDefinition,
-    "informaticsTableContainer"
-  ).build(informatics);
+    "analysisReviewTableContainer"
+  ).build(analysisReviews);
 
   setupPrint(data);
 }
@@ -599,11 +599,11 @@ function getReportSamples(
     }, []);
 }
 
-function getReportInformatics(kase: Case) {
+function getReportAnalysisReviews(kase: Case) {
   const assay = siteConfig.assaysById[kase.assayId];
-  const qc = !kase.requisition.informaticsReviews.length
+  const qc = !kase.requisition.analysisReviews.length
     ? null
-    : kase.requisition.informaticsReviews.reduce((accumulator, current) => {
+    : kase.requisition.analysisReviews.reduce((accumulator, current) => {
         if (!accumulator || current.qcDate > accumulator.qcDate) {
           return current;
         } else {
@@ -613,14 +613,14 @@ function getReportInformatics(kase: Case) {
   return kase.requisition.qcGroups
     .filter((qcGroup) => qcGroup.donor.id === kase.donor.id)
     .flatMap((qcGroup) => {
-      return assay.metricCategories.INFORMATICS.filter((subcategory) =>
+      return assay.metricCategories.ANALYSIS_REVIEW.filter((subcategory) =>
         requisitionSubcategoryApplies(subcategory, qcGroup)
-      ).map((subcategory): ReportInformatics => {
+      ).map((subcategory): ReportAnalysisReview => {
         return {
           requisition: kase.requisition,
           requisitionQcGroup: qcGroup,
           requisitionQc: qc,
-          metricCategory: "INFORMATICS",
+          metricCategory: "ANALYSIS_REVIEW",
           metricSubcategory: subcategory,
         };
       });

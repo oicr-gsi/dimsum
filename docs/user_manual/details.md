@@ -24,9 +24,9 @@ The Details page includes tables detailing the following:
 - Library Preparations
 - Library Qualifications
 - Full Depth Sequencings
-- Informatics Review
-- Draft Report
-- Final Report
+- Analysis Review
+- Release Approvals
+- Releases
 
 Navigate through each of the tables using the tabbed bar at the top of the page.
 
