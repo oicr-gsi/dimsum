@@ -611,15 +611,15 @@ public class CaseService {
         .fullDepthSequencing(
             new ProjectSummaryField(projectSummary.getFullDepthSeqCompletedCount(),
                 CaseFilterKey.COMPLETED.name(), CompletedGate.FULL_DEPTH_SEQUENCING.getLabel()))
-        .informaticsReview(
-            new ProjectSummaryField(projectSummary.getInformaticsCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.INFORMATICS_REVIEW.getLabel()))
-        .draftReport(
-            new ProjectSummaryField(projectSummary.getDraftReportCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.DRAFT_REPORT.getLabel()))
-        .finalReport(
-            new ProjectSummaryField(projectSummary.getFinalReportCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.FINAL_REPORT.getLabel()))
+        .analysisReview(
+            new ProjectSummaryField(projectSummary.getAnalysisReviewCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.ANALYSIS_REVIEW.getLabel()))
+        .releaseApproval(
+            new ProjectSummaryField(projectSummary.getReleaseApprovalCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.RELEASE_APPROVAL.getLabel()))
+        .release(
+            new ProjectSummaryField(projectSummary.getReleaseCompletedCount(),
+                CaseFilterKey.COMPLETED.name(), CompletedGate.RELEASE.getLabel()))
         .build();
   }
 
@@ -638,15 +638,15 @@ public class CaseService {
         .fullDepthSequencing(
             new ProjectSummaryField(projectSummary.getFullDepthSeqPendingCount(),
                 CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_SEQUENCING.getLabel()))
-        .informaticsReview(
-            new ProjectSummaryField(projectSummary.getInformaticsPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.INFORMATICS_REVIEW.getLabel()))
-        .draftReport(
-            new ProjectSummaryField(projectSummary.getDraftReportPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.DRAFT_REPORT.getLabel()))
-        .finalReport(
-            new ProjectSummaryField(projectSummary.getFinalReportPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.FINAL_REPORT.getLabel()))
+        .analysisReview(
+            new ProjectSummaryField(projectSummary.getAnalysisReviewPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.ANALYSIS_REVIEW.getLabel()))
+        .releaseApproval(
+            new ProjectSummaryField(projectSummary.getReleaseApprovalPendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.RELEASE_APPROVAL.getLabel()))
+        .release(
+            new ProjectSummaryField(projectSummary.getReleasePendingCount(),
+                CaseFilterKey.PENDING.name(), PendingState.RELEASE.getLabel()))
         .build();
   }
 

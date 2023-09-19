@@ -1,9 +1,9 @@
 import { caseDefinition } from "./data/case";
 import { testDefinition } from "./data/test";
 import {
-  draftReportDefinition,
-  finalReportDefinition,
-  informaticsReviewDefinition,
+  releaseApprovalDefinition,
+  releaseDefinition,
+  analysisReviewDefinition,
 } from "./data/requisition";
 import {
   extractionDefinition,
@@ -166,9 +166,9 @@ const tables = [
       getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
     )
   ),
-  new Pair("Informatics Reviews", () => reload(informaticsReviewDefinition)),
-  new Pair("Draft Reports", () => reload(draftReportDefinition)),
-  new Pair("Final Reports", () => reload(finalReportDefinition)),
+  new Pair("Analysis Reviews", () => reload(analysisReviewDefinition)),
+  new Pair("Release Approvals", () => reload(releaseApprovalDefinition)),
+  new Pair("Releases", () => reload(releaseDefinition)),
 ];
 
 // tabbed interface defaults to the cases table

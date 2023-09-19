@@ -45,7 +45,7 @@ page in a new tab.
 Displays the case start date and total turn-around time. Start date is the earliest receipt date of
 the tumour sample(s) involved in the case. For ongoing cases, the turn-around time is the number of
 days from the start date until the current date. For completed cases, the turn-around time is the
-number of days from the start date until the Final Report sign-off.
+number of days from the start date until the Release sign-off.
 
 ### Test
 
@@ -63,9 +63,9 @@ The following are QC gate columns, and their associated items:
 | Library Preparation   | Libraries                                                 |
 | Library Qualification | Library aliquots or run-libraries, depending on the assay |
 | Full-Depth Sequencing | Run-libraries                                             |
-| Informatics Review    | Requisition-level QC                                      |
-| Draft Report          | Requisition-level QC                                      |
-| Final Report          | Requisition-level QC                                      |
+| Analysis Review       | Requisition-level QC                                      |
+| Release Approvals     | Requisition-level QC                                      |
+| Releases              | Requisition-level QC                                      |
 
 Each QC gate cell includes icons representing the QC status of each item relevant to that gate. A
 checkmark represents an item that has passed QC, while an 'X' represents a QC failure. Click the

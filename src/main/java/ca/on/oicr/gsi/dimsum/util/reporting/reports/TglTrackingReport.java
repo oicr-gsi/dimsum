@@ -122,7 +122,7 @@ public class TglTrackingReport extends Report {
   }
 
   private static String getCaseStatus(Case kase) {
-    if (CompletedGate.FINAL_REPORT.qualifyCase(kase)) {
+    if (CompletedGate.RELEASE.qualifyCase(kase)) {
       return "Completed";
     } else if (kase.isStopped()) {
       return "Failed (%s)".formatted(

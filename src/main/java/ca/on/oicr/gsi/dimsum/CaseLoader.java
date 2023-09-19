@@ -261,31 +261,31 @@ public class CaseLoader {
       }
     }
 
-    // informatics review
-    if (CompletedGate.INFORMATICS_REVIEW.qualifyCase(kase)
-        && anyRequisitionQcsMatch(kase.getRequisition().getInformaticsReviews(), dateFilters)) {
-      caseSummary.informaticsCompletedCount(testSize);
+    // analysis review
+    if (CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase)
+        && anyRequisitionQcsMatch(kase.getRequisition().getAnalysisReviews(), dateFilters)) {
+      caseSummary.analysisReviewCompletedCount(testSize);
     }
-    if (PendingState.INFORMATICS_REVIEW.qualifyCase(kase) && !kase.isStopped()) {
-      caseSummary.informaticsPendingCount(testSize);
-    }
-
-    // draft report
-    if (CompletedGate.DRAFT_REPORT.qualifyCase(kase)
-        && anyRequisitionQcsMatch(kase.getRequisition().getDraftReports(), dateFilters)) {
-      caseSummary.draftReportCompletedCount(testSize);
-    }
-    if (PendingState.DRAFT_REPORT.qualifyCase(kase) && !kase.isStopped()) {
-      caseSummary.draftReportPendingCount(testSize);
+    if (PendingState.ANALYSIS_REVIEW.qualifyCase(kase) && !kase.isStopped()) {
+      caseSummary.analysisReviewPendingCount(testSize);
     }
 
-    // final report
-    if (CompletedGate.FINAL_REPORT.qualifyCase(kase)
-        && anyRequisitionQcsMatch(kase.getRequisition().getFinalReports(), dateFilters)) {
-      caseSummary.finalReportCompletedCount(testSize);
+    // release approval
+    if (CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
+        && anyRequisitionQcsMatch(kase.getRequisition().getReleaseApprovals(), dateFilters)) {
+      caseSummary.releaseApprovalCompletedCount(testSize);
     }
-    if (PendingState.FINAL_REPORT.qualifyCase(kase) && !kase.isStopped()) {
-      caseSummary.finalReportPendingCount(testSize);
+    if (PendingState.RELEASE_APPROVAL.qualifyCase(kase) && !kase.isStopped()) {
+      caseSummary.releaseApprovalPendingCount(testSize);
+    }
+
+    // release
+    if (CompletedGate.RELEASE.qualifyCase(kase)
+        && anyRequisitionQcsMatch(kase.getRequisition().getReleases(), dateFilters)) {
+      caseSummary.releaseCompletedCount(testSize);
+    }
+    if (PendingState.RELEASE.qualifyCase(kase) && !kase.isStopped()) {
+      caseSummary.releasePendingCount(testSize);
     }
 
     // add the counts to each project in the case if the project exists in the

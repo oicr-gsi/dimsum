@@ -1,8 +1,6 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -442,42 +440,43 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingInformaticsFilter() {
+  public void testPendingAnalysisFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.INFORMATICS_REVIEW.getLabel());
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.ANALYSIS_REVIEW.getLabel());
     testFilterCases(filter, Arrays.asList(4));
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingInformaticsRequisitionFilter() {
+  public void testPendingAnalysisRequisitionFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.INFORMATICS_REVIEW.getLabel());
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.ANALYSIS_REVIEW.getLabel());
     testFilterRequisitions(filter, Arrays.asList(4L));
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingDraftReportFilter() {
-    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING, PendingState.DRAFT_REPORT.getLabel());
+  public void testPendingReleaseApprovalFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_APPROVAL.getLabel());
     testFilterCases(filter, Arrays.asList(5));
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingDraftReportRequisitionFilter() {
+  public void testPendingReleaseApprovalRequisitionFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.DRAFT_REPORT.getLabel());
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_APPROVAL.getLabel());
     testFilterRequisitions(filter, Arrays.asList(5L));
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingFinalReportFilter() {
-    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING, PendingState.FINAL_REPORT.getLabel());
+  public void testPendingReleaseFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE.getLabel());
     testFilterCases(filter, Arrays.asList(6));
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingFinalReportRequisitionFilter() {
+  public void testPendingReleaseRequisitionFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.FINAL_REPORT.getLabel());
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE.getLabel());
     testFilterRequisitions(filter, Arrays.asList(6L));
   }
 
@@ -776,48 +775,48 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedInformaticsFilter() {
+  public void testCompletedAnalysisFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.INFORMATICS_REVIEW.getLabel());
+            CompletedGate.ANALYSIS_REVIEW.getLabel());
     testFilterCases(filter, Arrays.asList(5, 6));
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedInformaticsRequisitionFilter() {
+  public void testCompletedAnalysisRequisitionFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.INFORMATICS_REVIEW.getLabel());
+            CompletedGate.ANALYSIS_REVIEW.getLabel());
     testFilterRequisitions(filter, Arrays.asList(5L, 6L));
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedDraftReportFilter() {
+  public void testCompletedReleaseApprovalFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.DRAFT_REPORT.getLabel());
+            CompletedGate.RELEASE_APPROVAL.getLabel());
     testFilterCases(filter, Arrays.asList(6));
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedDraftReportRequisitionFilter() {
+  public void testCompletedReleaseApprovalRequisitionFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.DRAFT_REPORT.getLabel());
+        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE_APPROVAL.getLabel());
     testFilterRequisitions(filter, Arrays.asList(6L));
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedFinalReportFilter() {
+  public void testCompletedReleaseFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.FINAL_REPORT.getLabel());
+            CompletedGate.RELEASE.getLabel());
     testFilterCases(filter, Collections.emptyList());
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedFinalReportRequisitionFilter() {
+  public void testCompletedReleaseRequisitionFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.FINAL_REPORT.getLabel());
+        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE.getLabel());
     testFilterRequisitions(filter, Collections.emptyList());
   }
 
