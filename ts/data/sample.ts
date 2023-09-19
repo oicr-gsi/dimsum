@@ -657,12 +657,12 @@ export function addMetricValueContents(
 function createCollapseButton(contentWrapper: HTMLElement): HTMLButtonElement {
   const toggleButton = document.createElement("button");
   toggleButton.classList.add("fa-solid", "fa-caret-down", "text-sm");
+  toggleButton.classList.add("active:text-green-200");
 
   toggleButton.addEventListener("click", () => {
     const isExpanded = contentWrapper.classList.toggle("hidden");
     toggleButton.classList.toggle("fa-caret-down", isExpanded);
     toggleButton.classList.toggle("fa-caret-up", !isExpanded);
-    toggleButton.classList.add("active:text-green-200");
   });
 
   return toggleButton;
@@ -787,7 +787,7 @@ function addClustersPfContents(
           metrics,
           divisorUnit
         )}`;
-        if (perLaneMetrics.length) {
+        if (addTooltip && perLaneMetrics.length) {
           tooltip.addTarget(laneDiv, addContents);
         }
         contentWrapper.appendChild(laneDiv);
@@ -892,18 +892,47 @@ function addPhixContents(
   addTooltip: boolean,
   shouldCollapse: boolean = true
 ) {
-  if (!sample.run || !sample.run.lanes || !sample.run.lanes.length) {
-    fragment.appendChild(
-      sample.run && !sample.run.completionDate
-        ? makeSequencingIcon()
-        : makeNotFoundIcon()
-    );
+  // There is no run-level metric, so we check each read of each lane
+  if (
+    !sample.run ||
+    !sample.run.lanes ||
+    !sample.run.lanes.length ||
+    sample.run.lanes.every((lane) => nullOrUndefined(lane.percentPfixRead1))
+  ) {
+    if (sample.run && !sample.run.completionDate) {
+      fragment.appendChild(makeSequencingIcon());
+    } else {
+      fragment.appendChild(makeNotFoundIcon());
+    }
     return;
   }
 
   const tooltip = Tooltip.getInstance();
   const addContents = (fragment: DocumentFragment) => {
     metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
+  };
+
+  const processLane = (lane: Lane, multipleLanes: boolean) => {
+    const laneDiv = document.createElement("div");
+    laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+
+    let text = multipleLanes ? `L${lane.laneNumber}: ` : "";
+    if (nullOrUndefined(lane.percentPfixRead1)) {
+      text += `<span>${makeNotFoundIcon()}</span>`;
+    } else {
+      text += `R1: ${lane.percentPfixRead1}`;
+      if (!nullOrUndefined(lane.percentPfixRead2)) {
+        text += `; R2: ${lane.percentPfixRead2}`;
+      }
+    }
+
+    laneDiv.innerHTML = text;
+
+    if (addTooltip && !nullOrUndefined(lane.percentPfixRead1)) {
+      tooltip.addTarget(laneDiv, addContents);
+    }
+
+    return laneDiv;
   };
 
   const minPhixValue = Math.min(
@@ -916,27 +945,11 @@ function addPhixContents(
   const multipleLanes = sample.run.lanes.length > 1;
 
   sample.run.lanes.forEach((lane) => {
-    const laneDiv = document.createElement("div");
-    laneDiv.classList.add("whitespace-nowrap", "print-hanging");
-
-    const laneText = multipleLanes ? `L${lane.laneNumber}: ` : "";
-    laneDiv.innerHTML = nullOrUndefined(lane.percentPfixRead1)
-      ? `${laneText}<span>${makeNotFoundIcon()}</span>`
-      : `${laneText}R1: ${lane.percentPfixRead1}${
-          !nullOrUndefined(lane.percentPfixRead2)
-            ? `; R2: ${lane.percentPfixRead2}`
-            : ""
-        }`;
-
-    if (addTooltip && !nullOrUndefined(lane.percentPfixRead1)) {
-      tooltip.addTarget(laneDiv, addContents);
-    }
-
+    const laneDiv = processLane(lane, multipleLanes);
     contentWrapper.appendChild(laneDiv);
   });
 
   const minPhixDiv = document.createElement("div");
-  minPhixDiv.classList.add("whitespace-nowrap", "print-hanging");
   minPhixDiv.innerText = `${minPhixValue.toFixed(2)}+/R`;
 
   handleCollapse(minPhixDiv, contentWrapper, fragment, shouldCollapse);
