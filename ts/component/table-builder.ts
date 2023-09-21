@@ -226,6 +226,11 @@ export class TableBuilder<ParentType, ChildType> {
       this.addFilterControls(topControlsContainer);
       this.addPagingControls(topControlsContainer);
       this.container.appendChild(topControlsContainer);
+      if (this.definition.bulkActions || this.definition.staticActions) {
+        topControlsContainer.className =
+          "flex justify-end mt-4 items-top space-x-2";
+        this.addActionButtons(topControlsContainer);
+      }
     }
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
