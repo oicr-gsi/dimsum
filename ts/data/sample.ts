@@ -916,20 +916,25 @@ function addPhixContents(
     const laneDiv = document.createElement("div");
     laneDiv.classList.add("whitespace-nowrap", "print-hanging");
 
-    let text = multipleLanes ? `L${lane.laneNumber}: ` : "";
-    if (nullOrUndefined(lane.percentPfixRead1)) {
-      text += `<span>${makeNotFoundIcon()}</span>`;
-    } else {
-      text += `R1: ${lane.percentPfixRead1}`;
-      if (!nullOrUndefined(lane.percentPfixRead2)) {
-        text += `; R2: ${lane.percentPfixRead2}`;
-      }
+    if (multipleLanes) {
+      const laneLabel = document.createTextNode(`L${lane.laneNumber}: `);
+      laneDiv.appendChild(laneLabel);
     }
 
-    laneDiv.innerHTML = text;
+    if (nullOrUndefined(lane.percentPfixRead1)) {
+      laneDiv.appendChild(makeNotFoundIcon());
+    } else {
+      const text =
+        `R1: ${lane.percentPfixRead1}` +
+        (!nullOrUndefined(lane.percentPfixRead2)
+          ? `; R2: ${lane.percentPfixRead2}`
+          : "");
+      const textNode = document.createTextNode(text);
+      laneDiv.appendChild(textNode);
 
-    if (addTooltip && !nullOrUndefined(lane.percentPfixRead1)) {
-      tooltip.addTarget(laneDiv, addContents);
+      if (addTooltip) {
+        tooltip.addTarget(laneDiv, addContents);
+      }
     }
 
     return laneDiv;
