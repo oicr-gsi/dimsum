@@ -912,7 +912,17 @@ function addPhixContents(
     metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
   };
 
-  const processLane = (lane: Lane, multipleLanes: boolean) => {
+  const multipleLanes = sample.run.lanes.length > 1;
+
+  const minPhixValue = Math.min(
+    ...sample.run.lanes
+      .flatMap((lane) => [lane.percentPfixRead1, lane.percentPfixRead2])
+      .filter((value) => typeof value === "number")
+  );
+
+  const contentWrapper = document.createElement("div");
+
+  sample.run.lanes.forEach((lane) => {
     const laneDiv = document.createElement("div");
     laneDiv.classList.add("whitespace-nowrap", "print-hanging");
 
@@ -936,21 +946,6 @@ function addPhixContents(
         tooltip.addTarget(laneDiv, addContents);
       }
     }
-
-    return laneDiv;
-  };
-
-  const minPhixValue = Math.min(
-    ...sample.run.lanes
-      .flatMap((lane) => [lane.percentPfixRead1, lane.percentPfixRead2])
-      .filter((value) => typeof value === "number")
-  );
-
-  const contentWrapper = document.createElement("div");
-  const multipleLanes = sample.run.lanes.length > 1;
-
-  sample.run.lanes.forEach((lane) => {
-    const laneDiv = processLane(lane, multipleLanes);
     contentWrapper.appendChild(laneDiv);
   });
 
