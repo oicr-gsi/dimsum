@@ -7,6 +7,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.17.0] - 2023-09-28
+
+### Changed
+
+* Action buttons now appear at both top and bottom of the table
+
+### Fixed
+
+* Removed QC report button from Requisition Details page
+
+
 ## [1.16.0] - 2023-09-20
 
 ### Changed
