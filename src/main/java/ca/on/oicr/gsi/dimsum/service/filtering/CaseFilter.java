@@ -3,11 +3,11 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 import static java.util.Objects.requireNonNull;
 
 import java.util.function.Predicate;
-import ca.on.oicr.gsi.dimsum.data.Case;
-import ca.on.oicr.gsi.dimsum.data.MetricCategory;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
-import ca.on.oicr.gsi.dimsum.data.Sample;
-import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public class CaseFilter {

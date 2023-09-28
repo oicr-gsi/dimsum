@@ -4,8 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.function.Predicate;
 
-import ca.on.oicr.gsi.dimsum.data.Sample;
-import ca.on.oicr.gsi.dimsum.data.RequisitionQc;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 
 
 

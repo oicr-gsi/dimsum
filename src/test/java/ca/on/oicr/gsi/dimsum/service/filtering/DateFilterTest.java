@@ -9,8 +9,8 @@ import java.util.List;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
-import ca.on.oicr.gsi.dimsum.data.RequisitionQc;
-import ca.on.oicr.gsi.dimsum.data.Sample;
+import ca.on.oicr.gsi.cardea.data.RequisitionQc;
+import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class DateFilterTest {
   private static List<Sample> samples = Arrays.asList(

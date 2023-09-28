@@ -6,13 +6,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import ca.on.oicr.gsi.dimsum.data.Case;
-import ca.on.oicr.gsi.dimsum.data.MetricCategory;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
-import ca.on.oicr.gsi.dimsum.data.RequisitionQc;
-import ca.on.oicr.gsi.dimsum.data.Sample;
-import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.RequisitionQc;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 /**
@@ -232,7 +231,7 @@ public enum PendingState {
       }
     }
   },
-  INFORMATICS_REVIEW("Informatics Review") {
+  ANALYSIS_REVIEW("Analysis Review") {
     @Override
     public boolean qualifyCase(Case kase) {
       return kase.getTests().stream().allMatch(Helpers.isCompleted(Test::getFullDepthSequencings))
@@ -241,32 +240,32 @@ public enum PendingState {
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getInformaticsReviews().isEmpty();
+      return requisition.getAnalysisReviews().isEmpty();
     }
   },
-  DRAFT_REPORT("Draft Report") {
+  RELEASE_APPROVAL("Release Approval") {
 
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getInformaticsReviews)
+      return Helpers.isCompletedRequisitionQc(kase, Requisition::getAnalysisReviews)
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getDraftReports().isEmpty();
+      return requisition.getReleaseApprovals().isEmpty();
     }
   },
-  FINAL_REPORT("Final Report") {
+  RELEASE("Release") {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getDraftReports)
+      return Helpers.isCompletedRequisitionQc(kase, Requisition::getReleaseApprovals)
           && this.qualifyRequisition(kase.getRequisition());
     }
 
     @Override
     public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getFinalReports().isEmpty();
+      return requisition.getReleases().isEmpty();
     }
   };
   // @formatter:on

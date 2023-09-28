@@ -3,7 +3,7 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 import static java.util.Objects.requireNonNull;
 
 import java.util.function.Predicate;
-import ca.on.oicr.gsi.dimsum.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 public class OmittedSampleFilter {
 

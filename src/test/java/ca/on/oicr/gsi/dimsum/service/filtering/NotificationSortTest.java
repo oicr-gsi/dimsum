@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ca.on.oicr.gsi.dimsum.data.Notification;
-import ca.on.oicr.gsi.dimsum.data.Run;
+import ca.on.oicr.gsi.cardea.data.Run;
 
 public class NotificationSortTest {
 

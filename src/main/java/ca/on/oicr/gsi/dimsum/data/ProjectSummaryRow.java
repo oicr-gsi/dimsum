@@ -1,10 +1,12 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import groovy.transform.Immutable;
 
 @Immutable
+@JsonDeserialize(builder = ProjectSummaryRow.Builder.class)
 public class ProjectSummaryRow {
   private final String title;
   private final ProjectSummaryField receipt;
@@ -12,9 +14,9 @@ public class ProjectSummaryRow {
   private final ProjectSummaryField libraryPreparation;
   private final ProjectSummaryField libraryQualification;
   private final ProjectSummaryField fullDepthSequencing;
-  private final ProjectSummaryField informaticsReview;
-  private final ProjectSummaryField draftReport;
-  private final ProjectSummaryField finalReport;
+  private final ProjectSummaryField analysisReview;
+  private final ProjectSummaryField releaseApproval;
+  private final ProjectSummaryField release;
 
   private ProjectSummaryRow(Builder builder) {
     this.title = requireNonNull(builder.title);
@@ -23,9 +25,9 @@ public class ProjectSummaryRow {
     this.libraryPreparation = builder.libraryPreparation;
     this.libraryQualification = builder.libraryQualification;
     this.fullDepthSequencing = builder.fullDepthSequencing;
-    this.informaticsReview = builder.informaticsReview;
-    this.draftReport = builder.draftReport;
-    this.finalReport = builder.finalReport;
+    this.analysisReview = builder.analysisReview;
+    this.releaseApproval = builder.releaseApproval;
+    this.release = builder.release;
   }
 
   public String getTitle() {
@@ -52,18 +54,19 @@ public class ProjectSummaryRow {
     return fullDepthSequencing;
   }
 
-  public ProjectSummaryField getInformaticsReview() {
-    return informaticsReview;
+  public ProjectSummaryField getAnalysisReview() {
+    return analysisReview;
   }
 
-  public ProjectSummaryField getDraftReport() {
-    return draftReport;
+  public ProjectSummaryField getReleaseApproval() {
+    return releaseApproval;
   }
 
-  public ProjectSummaryField getFinalReport() {
-    return finalReport;
+  public ProjectSummaryField getRelease() {
+    return release;
   }
 
+  @JsonPOJOBuilder(withPrefix = "")
   public static class Builder {
     private String title;
     private ProjectSummaryField receipt;
@@ -71,9 +74,9 @@ public class ProjectSummaryRow {
     private ProjectSummaryField libraryPreparation;
     private ProjectSummaryField libraryQualification;
     private ProjectSummaryField fullDepthSequencing;
-    private ProjectSummaryField informaticsReview;
-    private ProjectSummaryField draftReport;
-    private ProjectSummaryField finalReport;
+    private ProjectSummaryField analysisReview;
+    private ProjectSummaryField releaseApproval;
+    private ProjectSummaryField release;
 
     public Builder title(String title) {
       this.title = title;
@@ -105,18 +108,18 @@ public class ProjectSummaryRow {
       return this;
     }
 
-    public Builder informaticsReview(ProjectSummaryField informaticsReview) {
-      this.informaticsReview = informaticsReview;
+    public Builder analysisReview(ProjectSummaryField analysisReview) {
+      this.analysisReview = analysisReview;
       return this;
     }
 
-    public Builder draftReport(ProjectSummaryField draftReport) {
-      this.draftReport = draftReport;
+    public Builder releaseApproval(ProjectSummaryField releaseApproval) {
+      this.releaseApproval = releaseApproval;
       return this;
     }
 
-    public Builder finalReport(ProjectSummaryField finalReport) {
-      this.finalReport = finalReport;
+    public Builder release(ProjectSummaryField release) {
+      this.release = release;
       return this;
     }
 

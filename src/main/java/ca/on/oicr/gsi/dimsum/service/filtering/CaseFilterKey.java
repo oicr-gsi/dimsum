@@ -1,21 +1,20 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.Objects;
-
-import ca.on.oicr.gsi.dimsum.data.Case;
-import ca.on.oicr.gsi.dimsum.data.MetricCategory;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
-import ca.on.oicr.gsi.dimsum.data.Sample;
-import ca.on.oicr.gsi.dimsum.data.Test;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public enum CaseFilterKey {
 
   // @formatter:off
-  ASSAY(string -> kase -> kase.getAssay().getName().toLowerCase().startsWith(string.toLowerCase())
-      || kase.getAssay().getDescription().toLowerCase().startsWith(string.toLowerCase())),
+  ASSAY(string -> kase -> kase.getAssayName().toLowerCase().startsWith(string.toLowerCase())
+      || kase.getAssayDescription().toLowerCase().startsWith(string.toLowerCase())),
   CASE_ID(string -> kase -> kase.getId().toLowerCase().equals(string.toLowerCase())),
   DONOR(string -> kase -> kase.getDonor().getName().toLowerCase().startsWith(string.toLowerCase())
       || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),

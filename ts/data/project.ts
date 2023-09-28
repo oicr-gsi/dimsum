@@ -20,12 +20,12 @@ export interface ProjectSummary {
   fullDepthSeqPendingCount: number;
   fullDepthSeqPendingQcCount: number;
   fullDepthSeqCompletedCount: number;
-  informaticsPendingCount: number;
-  informaticsCompletedCount: number;
-  draftReportPendingCount: number;
-  draftReportCompletedCount: number;
-  finalReportPendingCount: number;
-  finalReportCompletedCount: number;
+  analysisReviewPendingCount: number;
+  analysisReviewCompletedCount: number;
+  releaseApprovalPendingCount: number;
+  releaseApprovalCompletedCount: number;
+  releasePendingCount: number;
+  releaseCompletedCount: number;
 }
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
@@ -140,37 +140,37 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
         },
       },
       {
-        title: "Informatics Reviewed",
+        title: "Analysis Reviewed",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             displayFilteredProject(
-              projectSummary.informaticsCompletedCount,
+              projectSummary.analysisReviewCompletedCount,
               projectSummary.name,
-              "Informatics Review"
+              "Analysis Review"
             )
           );
         },
       },
       {
-        title: "Report Drafted",
+        title: "Release Approved",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             displayFilteredProject(
-              projectSummary.draftReportCompletedCount,
+              projectSummary.releaseApprovalCompletedCount,
               projectSummary.name,
-              "Draft Report"
+              "Release Approval"
             )
           );
         },
       },
       {
-        title: "Report Finalized",
+        title: "Released",
         addParentContents(projectSummary, fragment) {
           fragment.appendChild(
             displayFilteredProject(
-              projectSummary.finalReportCompletedCount,
+              projectSummary.releaseCompletedCount,
               projectSummary.name,
-              "Final Report"
+              "Release"
             )
           );
         },

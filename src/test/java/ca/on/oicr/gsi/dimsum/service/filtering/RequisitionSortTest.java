@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.Requisition;
+import ca.on.oicr.gsi.cardea.data.Requisition;
 
 public class RequisitionSortTest {
 

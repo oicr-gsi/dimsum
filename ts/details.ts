@@ -1,9 +1,9 @@
 import { caseDefinition } from "./data/case";
 import { testDefinition } from "./data/test";
 import {
-  draftReportDefinition,
-  finalReportDefinition,
-  informaticsReviewDefinition,
+  releaseApprovalDefinition,
+  releaseDefinition,
+  analysisReviewDefinition,
 } from "./data/requisition";
 import {
   extractionDefinition,
@@ -42,9 +42,9 @@ const tables = [
       getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
     )
   ),
-  new Pair("Informatics Review", () => reload(informaticsReviewDefinition)),
-  new Pair("Draft Reports", () => reload(draftReportDefinition)),
-  new Pair("Final Reports", () => reload(finalReportDefinition)),
+  new Pair("Analysis Reviews", () => reload(analysisReviewDefinition)),
+  new Pair("Release Approvals", () => reload(releaseApprovalDefinition)),
+  new Pair("Releases", () => reload(releaseDefinition)),
 ];
 
 // tabbed interface defaults to the cases table
@@ -74,6 +74,7 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     }
     const copyButton = makeCopyButton(requisitionName);
     titleMisoLink.parentNode?.insertBefore(copyButton, titleMisoLink);
+    break;
   }
   case "CASE_ID": {
     // add QC Report button
@@ -103,5 +104,6 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     button.onclick = (event) =>
       (window.location.href = urls.dimsum.caseQcReport(caseId));
     actionContainer.appendChild(button);
+    break;
   }
 }

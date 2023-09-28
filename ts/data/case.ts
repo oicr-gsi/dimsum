@@ -3,7 +3,6 @@ import {
   addLink,
   makeIcon,
   styleText,
-  addMisoIcon,
   makeNameDiv,
   addNaText,
   addTextDiv,
@@ -130,16 +129,20 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Donor",
       sortType: "text",
       addParentContents(kase, fragment) {
-        fragment.appendChild(
-          makeNameDiv(
-            kase.donor.name,
-            urls.miso.sample(kase.donor.id),
-            urls.dimsum.donor(kase.donor.name)
-          )
+        const nameDiv = makeNameDiv(
+          kase.donor.name,
+          urls.miso.sample(kase.donor.id),
+          urls.dimsum.donor(kase.donor.name),
+          kase.donor.name
         );
-        fragment.appendChild(
-          makeTextDivWithTooltip(kase.donor.externalName, "External Name")
+        fragment.appendChild(nameDiv);
+
+        const externalNameDiv = makeTextDivWithTooltip(
+          kase.donor.externalName,
+          "External Name",
+          true
         );
+        fragment.appendChild(externalNameDiv);
 
         const tumourDetailDiv = document.createElement("div");
         tumourDetailDiv.appendChild(
@@ -379,10 +382,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
     },
     {
-      title: "Informatics Review",
+      title: "Analysis Review",
       addParentContents(kase, fragment) {
         if (
-          handleNaRequisitionPhase(kase, (x) => x.informaticsReviews, fragment)
+          handleNaRequisitionPhase(kase, (x) => x.analysisReviews, fragment)
         ) {
           return;
         }
@@ -391,7 +394,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         );
         addRequisitionIcons(
           kase.requisition,
-          (requisition) => requisition.informaticsReviews,
+          (requisition) => requisition.analysisReviews,
           sequencingComplete,
           fragment
         );
@@ -399,47 +402,49 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          (requisition) => requisition.informaticsReviews
+          (requisition) => requisition.analysisReviews
         );
       },
     },
     {
-      title: "Draft Report",
+      title: "Release Approval",
       addParentContents(kase, fragment) {
-        if (handleNaRequisitionPhase(kase, (x) => x.draftReports, fragment)) {
+        if (
+          handleNaRequisitionPhase(kase, (x) => x.releaseApprovals, fragment)
+        ) {
           return;
         }
-        const informaticsComplete = requisitionPhaseComplete(
+        const analysisReviewComplete = requisitionPhaseComplete(
           kase.requisition,
-          (requisition) => requisition.informaticsReviews
+          (requisition) => requisition.analysisReviews
         );
         addRequisitionIcons(
           kase.requisition,
-          (requisition) => requisition.draftReports,
-          informaticsComplete,
+          (requisition) => requisition.releaseApprovals,
+          analysisReviewComplete,
           fragment
         );
       },
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          (requisition) => requisition.draftReports
+          (requisition) => requisition.releaseApprovals
         );
       },
     },
     {
-      title: "Final Report",
+      title: "Release",
       addParentContents(kase, fragment) {
-        if (handleNaRequisitionPhase(kase, (x) => x.finalReports, fragment)) {
+        if (handleNaRequisitionPhase(kase, (x) => x.releases, fragment)) {
           return;
         }
         const draftComplete = requisitionPhaseComplete(
           kase.requisition,
-          (requisition) => requisition.draftReports
+          (requisition) => requisition.releaseApprovals
         );
         addRequisitionIcons(
           kase.requisition,
-          (requisition) => requisition.finalReports,
+          (requisition) => requisition.releases,
           draftComplete,
           fragment
         );
@@ -447,7 +452,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          (requisition) => requisition.finalReports
+          (requisition) => requisition.releases
         );
       },
     },
@@ -734,11 +739,11 @@ function getElapsedMessage(kase: Case, startDateString: string) {
   if (
     requisitionPhaseComplete(
       kase.requisition,
-      (requisition) => requisition.finalReports
+      (requisition) => requisition.releases
     )
   ) {
     endDate = new Date(
-      kase.requisition.finalReports
+      kase.requisition.releases
         .map((qc) => qc.qcDate)
         .reduce((previous, current) =>
           previous > current ? previous : current

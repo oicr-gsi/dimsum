@@ -2,72 +2,59 @@ package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
 import javax.annotation.concurrent.Immutable;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 @Immutable
+@JsonDeserialize(builder = ProjectSummary.Builder.class)
 public class ProjectSummary {
   private final String name;
 
   private final int totalTestCount;
-  // receipt
   private final int receiptPendingQcCount;
   private final int receiptCompletedCount;
-  // extraction
   private final int extractionPendingCount;
   private final int extractionPendingQcCount;
   private final int extractionCompletedCount;
-  // library preparation
   private final int libraryPrepPendingCount;
   private final int libraryPrepPendingQcCount;
   private final int libraryPrepCompletedCount;
-  // library qualification
   private final int libraryQualPendingCount;
   private final int libraryQualPendingQcCount;
   private final int libraryQualCompletedCount;
-  // full depth sequencing
   private final int fullDepthSeqPendingCount;
   private final int fullDepthSeqPendingQcCount;
   private final int fullDepthSeqCompletedCount;
-  // informatics review
-  private final int informaticsPendingCount;
-  private final int informaticsCompletedCount;
-  // draft report
-  private final int draftReportPendingCount;
-  private final int draftReportCompletedCount;
-  // final report
-  private final int finalReportPendingCount;
-  private final int finalReportCompletedCount;
+  private final int analysisReviewPendingCount;
+  private final int analysisReviewCompletedCount;
+  private final int releaseApprovalPendingCount;
+  private final int releaseApprovalCompletedCount;
+  private final int releasePendingCount;
+  private final int releaseCompletedCount;
 
   private ProjectSummary(Builder builder) {
     this.name = requireNonNull(builder.name);
     this.totalTestCount = builder.totalTestCount;
-    // receipt
     this.receiptPendingQcCount = builder.receiptPendingQcCount;
     this.receiptCompletedCount = builder.receiptCompletedCount;
-    // extraction
     this.extractionPendingCount = builder.extractionPendingCount;
     this.extractionPendingQcCount = builder.extractionPendingQcCount;
     this.extractionCompletedCount = builder.extractionCompletedCount;
-    // library preparation
     this.libraryPrepPendingCount = builder.libraryPrepPendingCount;
     this.libraryPrepPendingQcCount = builder.libraryPrepPendingQcCount;
     this.libraryPrepCompletedCount = builder.libraryPrepCompletedCount;
-    // library qualification
     this.libraryQualPendingCount = builder.libraryQualPendingCount;
     this.libraryQualPendingQcCount = builder.libraryQualPendingQcCount;
     this.libraryQualCompletedCount = builder.libraryQualCompletedCount;
-    // full depth sequencing
     this.fullDepthSeqPendingCount = builder.fullDepthSeqPendingCount;
     this.fullDepthSeqPendingQcCount = builder.fullDepthSeqPendingQcCount;
     this.fullDepthSeqCompletedCount = builder.fullDepthSeqCompletedCount;
-    // informatics review
-    this.informaticsPendingCount = builder.informaticsPendingCount;
-    this.informaticsCompletedCount = builder.informaticsCompletedCount;
-    // draft report
-    this.draftReportPendingCount = builder.draftReportPendingCount;
-    this.draftReportCompletedCount = builder.draftReportCompletedCount;
-    // final report
-    this.finalReportPendingCount = builder.finalReportPendingCount;
-    this.finalReportCompletedCount = builder.finalReportCompletedCount;
+    this.analysisReviewPendingCount = builder.analysisReviewPendingCount;
+    this.analysisReviewCompletedCount = builder.analysisReviewCompletedCount;
+    this.releaseApprovalPendingCount = builder.releaseApprovalPendingCount;
+    this.releaseApprovalCompletedCount = builder.releaseApprovalCompletedCount;
+    this.releasePendingCount = builder.releasePendingCount;
+    this.releaseCompletedCount = builder.releaseCompletedCount;
 
 
   }
@@ -88,7 +75,6 @@ public class ProjectSummary {
     return receiptCompletedCount;
   }
 
-  // extraction
   public int getExtractionPendingCount() {
     return extractionPendingCount;
   }
@@ -101,7 +87,6 @@ public class ProjectSummary {
     return extractionCompletedCount;
   }
 
-  // library preparation
   public int getLibraryPrepPendingCount() {
     return libraryPrepPendingCount;
   }
@@ -114,7 +99,6 @@ public class ProjectSummary {
     return libraryPrepCompletedCount;
   }
 
-  // library qualification
   public int getLibraryQualPendingCount() {
     return libraryQualPendingCount;
   }
@@ -128,7 +112,6 @@ public class ProjectSummary {
 
   }
 
-  // full depth sequencing
   public int getFullDepthSeqPendingCount() {
     return fullDepthSeqPendingCount;
   }
@@ -141,65 +124,55 @@ public class ProjectSummary {
     return fullDepthSeqCompletedCount;
   }
 
-  // informatics review
-  public int getInformaticsPendingCount() {
-    return informaticsPendingCount;
+  public int getAnalysisReviewPendingCount() {
+    return analysisReviewPendingCount;
   }
 
-  public int getInformaticsCompletedCount() {
-    return informaticsCompletedCount;
+  public int getAnalysisReviewCompletedCount() {
+    return analysisReviewCompletedCount;
   }
 
-  // draft report
-  public int getDraftReportPendingCount() {
-    return draftReportPendingCount;
+  public int getReleaseApprovalPendingCount() {
+    return releaseApprovalPendingCount;
   }
 
-  public int getDraftReportCompletedCount() {
-    return draftReportCompletedCount;
+  public int getReleaseApprovalCompletedCount() {
+    return releaseApprovalCompletedCount;
   }
 
-  // final report
-  public int getFinalReportPendingCount() {
-    return finalReportPendingCount;
+  public int getReleasePendingCount() {
+    return releasePendingCount;
   }
 
-  public int getFinalReportCompletedCount() {
-    return finalReportCompletedCount;
+  public int getReleaseCompletedCount() {
+    return releaseCompletedCount;
   }
 
+  @JsonPOJOBuilder(withPrefix = "")
   public static class Builder {
 
     private String name;
     private int totalTestCount = 0;
-    // receipt
     private int receiptPendingQcCount = 0;
     private int receiptCompletedCount = 0;
-    // extraction
     private int extractionPendingCount = 0;
     private int extractionPendingQcCount = 0;
     private int extractionCompletedCount = 0;
-    // library preparation
     private int libraryPrepPendingCount = 0;
     private int libraryPrepPendingQcCount = 0;
     private int libraryPrepCompletedCount = 0;
-    // library qualification
     private int libraryQualPendingCount = 0;
     private int libraryQualPendingQcCount = 0;
     private int libraryQualCompletedCount = 0;
-    // full depth sequencing
     private int fullDepthSeqPendingCount = 0;
     private int fullDepthSeqPendingQcCount = 0;
     private int fullDepthSeqCompletedCount = 0;
-    // informatics review
-    private int informaticsPendingCount = 0;
-    private int informaticsCompletedCount = 0;
-    // draft report
-    private int draftReportPendingCount = 0;
-    private int draftReportCompletedCount = 0;
-    // final report
-    private int finalReportPendingCount = 0;
-    private int finalReportCompletedCount = 0;
+    private int analysisReviewPendingCount = 0;
+    private int analysisReviewCompletedCount = 0;
+    private int releaseApprovalPendingCount = 0;
+    private int releaseApprovalCompletedCount = 0;
+    private int releasePendingCount = 0;
+    private int releaseCompletedCount = 0;
 
 
     public Builder name(String name) {
@@ -219,7 +192,6 @@ public class ProjectSummary {
       this.receiptCompletedCount = receiptCompletedCount;
     }
 
-    // extraction
     public void incrementExtractionPendingCount() {
       this.extractionPendingCount += 1;
     }
@@ -232,7 +204,6 @@ public class ProjectSummary {
       this.extractionCompletedCount += 1;
     }
 
-    // library preparation
     public void incrementLibraryPrepPendingCount() {
       this.libraryPrepPendingCount += 1;
     }
@@ -245,7 +216,6 @@ public class ProjectSummary {
       this.libraryPrepCompletedCount += 1;
     }
 
-    // library qualification
     public void incrementLibraryQualPendingCount() {
       this.libraryQualPendingCount += 1;
     }
@@ -258,7 +228,6 @@ public class ProjectSummary {
       this.libraryQualCompletedCount += 1;
     }
 
-    // full depth sequencing
     public void incrementFullDepthSeqPendingCount() {
       this.fullDepthSeqPendingCount += 1;
     }
@@ -272,65 +241,52 @@ public class ProjectSummary {
       this.fullDepthSeqCompletedCount += 1;
     }
 
-    // informatics review
-    public void informaticsPendingCount(int informaticsPendingCount) {
-      this.informaticsPendingCount = informaticsPendingCount;
+    public void analysisReviewPendingCount(int analysisReviewPendingCount) {
+      this.analysisReviewPendingCount = analysisReviewPendingCount;
     }
 
-    public void informaticsCompletedCount(int informaticsCompletedCount) {
-      this.informaticsCompletedCount = informaticsCompletedCount;
+    public void analysisReviewCompletedCount(int analysisReviewCompletedCount) {
+      this.analysisReviewCompletedCount = analysisReviewCompletedCount;
     }
 
-    // draft report
-    public void draftReportPendingCount(int draftReportPendingCount) {
-      this.draftReportPendingCount = draftReportPendingCount;
+    public void releaseApprovalPendingCount(int releaseApprovalPendingCount) {
+      this.releaseApprovalPendingCount = releaseApprovalPendingCount;
     }
 
-    public void draftReportCompletedCount(int draftReportCompletedCount) {
-      this.draftReportCompletedCount = draftReportCompletedCount;
+    public void releaseApprovalCompletedCount(int releaseApprovalCompletedCount) {
+      this.releaseApprovalCompletedCount = releaseApprovalCompletedCount;
     }
 
-    // final report
-    public void finalReportPendingCount(int finalReportPendingCount) {
-      this.finalReportPendingCount = finalReportPendingCount;
+    public void releasePendingCount(int releasePendingCount) {
+      this.releasePendingCount = releasePendingCount;
     }
 
-    public void finalReportCompletedCount(int finalReportCompletedCount) {
-      this.finalReportCompletedCount = finalReportCompletedCount;
+    public void releaseCompletedCount(int releaseCompletedCount) {
+      this.releaseCompletedCount = releaseCompletedCount;
     }
-
-
 
     public Builder addCounts(ProjectSummary.Builder builder) {
       this.totalTestCount += builder.totalTestCount;
-      // receipt
       this.receiptPendingQcCount += builder.receiptPendingQcCount;
       this.receiptCompletedCount += builder.receiptCompletedCount;
-      // extraction
       this.extractionPendingCount += builder.extractionPendingCount;
       this.extractionPendingQcCount += builder.extractionPendingQcCount;
       this.extractionCompletedCount += builder.extractionCompletedCount;
-      // library preparation
       this.libraryPrepPendingCount += builder.libraryPrepPendingCount;
       this.libraryPrepPendingQcCount += builder.libraryPrepPendingQcCount;
       this.libraryPrepCompletedCount += builder.libraryPrepCompletedCount;
-      // library qualification
       this.libraryQualPendingCount += builder.libraryQualPendingCount;
       this.libraryQualPendingQcCount += builder.libraryQualPendingQcCount;
       this.libraryQualCompletedCount += builder.libraryQualCompletedCount;
-      // full depth sequencing
       this.fullDepthSeqPendingCount += builder.fullDepthSeqPendingCount;
       this.fullDepthSeqPendingQcCount += builder.fullDepthSeqPendingQcCount;
       this.fullDepthSeqCompletedCount += builder.fullDepthSeqCompletedCount;
-      // informatics review
-      this.informaticsPendingCount += builder.informaticsPendingCount;
-      this.informaticsCompletedCount += builder.informaticsCompletedCount;
-      // draft report
-      this.draftReportPendingCount += builder.draftReportPendingCount;
-      this.draftReportCompletedCount += builder.draftReportCompletedCount;
-      // final report
-      this.finalReportPendingCount += builder.finalReportPendingCount;
-      this.finalReportCompletedCount += builder.finalReportCompletedCount;
+      this.analysisReviewPendingCount += builder.analysisReviewPendingCount;
+      this.analysisReviewCompletedCount += builder.analysisReviewCompletedCount;
+      this.releaseApprovalPendingCount += builder.releaseApprovalPendingCount;
+      this.releaseApprovalCompletedCount += builder.releaseApprovalCompletedCount;
+      this.releasePendingCount += builder.releasePendingCount;
+      this.releaseCompletedCount += builder.releaseCompletedCount;
       return this;
     }
 

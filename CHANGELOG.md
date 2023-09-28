@@ -7,6 +7,27 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.16.0] - 2023-09-20
+
+### Changed
+
+* Renamed steps:
+  * Informatics Review -> Analysis Review
+  * Draft Report -> Release Approval
+  * Final Report -> Release
+
+
+## [1.15.0] - 2023-09-14
+
+### Added
+
+* Copy button next to Donor name and External Donor name to copy the name to clipboard
+
+### Changed
+
+* The way cases are loaded; uses the case data from live Cardea API instead of QC-Gate-ETL files
+
+
 ## [1.14.0] - 2023-08-03
 
 ### Added

@@ -157,13 +157,30 @@ export function makeCopyButton(text: string): HTMLButtonElement {
   return button;
 }
 
-export function makeTextDivWithTooltip(text: string, tooltip: string) {
+export function makeTextDivWithTooltip(
+  text: string,
+  tooltip: string,
+  addCopyButton = false
+) {
   const div = document.createElement("div");
-  div.appendChild(document.createTextNode(text));
+  div.className = "flex flex-row space-x-1 items-center";
+  const textSpan = document.createElement("span");
+  textSpan.appendChild(document.createTextNode(text));
+
+  if (addCopyButton) {
+    const copyButton = makeCopyButton(text);
+    copyButton.classList.add("text-12");
+    div.appendChild(textSpan);
+    div.appendChild(copyButton);
+  } else {
+    div.appendChild(textSpan);
+  }
+
   const tooltipInstance = Tooltip.getInstance();
   const addContents = (fragment: DocumentFragment) =>
     fragment.appendChild(document.createTextNode(tooltip));
-  tooltipInstance.addTarget(div, addContents);
+  tooltipInstance.addTarget(textSpan, addContents);
+
   return div;
 }
 

@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.dimsum.data.Case;
+import ca.on.oicr.gsi.cardea.data.Case;
 
 public enum CaseSort {
 
   // @formatter:off
-  ASSAY("Assay", Comparator.comparing(kase -> kase.getAssay().getName())),
+  ASSAY("Assay", Comparator.comparing(kase -> kase.getAssayName())),
   DONOR("Donor", Comparator.comparing(kase -> kase.getDonor().getName())),
   START_DATE("Start Date", Comparator.comparing(Case::getStartDate, Comparator.nullsLast(Comparator.naturalOrder()))),
   LAST_ACTIVITY("Latest Activity", Comparator.comparing(Case::getLatestActivityDate, Comparator.nullsLast(Comparator.naturalOrder())));
