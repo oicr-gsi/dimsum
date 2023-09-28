@@ -220,21 +220,21 @@ export class TableBuilder<ParentType, ChildType> {
       throw new Error("Query url is required for loading table via AJAX");
     }
     const topControlsContainer = document.createElement("div");
-    topControlsContainer.className = "flex mt-4 items-top space-x-2";
+    topControlsContainer.className = "flex justify-end mt-4 items-top space-x-2";
 
     if (!this.definition.disablePageControls) {
       this.addSortControls(topControlsContainer);
       this.addFilterControls(topControlsContainer);
     }
     if (this.definition.bulkActions || this.definition.staticActions) {
-      topControlsContainer.className =
-        "flex justify-end mt-4 items-top space-x-2";
       this.addActionButtons(topControlsContainer);
     }
     if (!this.definition.disablePageControls) {
       this.addPagingControls(topControlsContainer);
     }
-    this.container.appendChild(topControlsContainer);
+    if (topControlsContainer.children.length > 0) {
+      this.container.appendChild(topControlsContainer);
+    }
 
     const tableContainer = document.createElement("div");
     tableContainer.className = "mt-4 overflow-auto";
