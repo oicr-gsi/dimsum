@@ -4,6 +4,7 @@ import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
 import { Case, Qcable } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
+import { makeTextDiv } from "./util/html-utils";
 import {
   getMetricValue,
   getRequisitionMetricCellHighlight,
@@ -24,7 +25,7 @@ import {
   Sample,
   subcategoryApplies as sampleSubcategoryApplies,
 } from "./data/sample";
-import { addTextDiv, makeNameDiv, makeTextDiv } from "./util/html-utils";
+import { addTextDiv, makeNameDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
 import { siteConfig } from "./util/site-config";
@@ -202,7 +203,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
-        addMetricValueContents(parent.sample, [object], fragment, false);
+        addMetricValueContents(parent.sample, [object], fragment, false, false);
       },
       getCellHighlight(reportSample, metric) {
         if (metric == null) {
@@ -488,6 +489,7 @@ async function loadCase(caseId: string) {
   new TableBuilder(sampleGateMetricsDefinition, "receiptTableContainer").build(
     receipts
   );
+
   const extractions = getReportSamples(
     data,
     data.tests.flatMap((test) => test.extractions),
@@ -497,6 +499,7 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "extractionTableContainer"
   ).build(extractions);
+
   const libraryPreps = getReportSamples(
     data,
     data.tests.flatMap((test) => test.libraryPreparations),
@@ -506,6 +509,7 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "libraryPreparationTableContainer"
   ).build(libraryPreps);
+
   const libraryQualifications = getReportSamples(
     data,
     data.tests.flatMap((test) => test.libraryQualifications),
@@ -515,6 +519,7 @@ async function loadCase(caseId: string) {
     sampleGateMetricsDefinition,
     "libraryQualificationTableContainer"
   ).build(libraryQualifications);
+
   const fullDepths = getReportSamples(
     data,
     data.tests.flatMap((test) => test.fullDepthSequencings),

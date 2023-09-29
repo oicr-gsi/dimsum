@@ -37,9 +37,9 @@ export interface Donor {
 export interface Qcable {
   qcPassed?: boolean;
   qcReason?: string;
-  qcNote?: string;
   qcUser?: string;
   qcDate?: string;
+  qcNote?: string;
   dataReviewPassed?: boolean;
   dataReviewUser?: string;
   dataReviewDate?: string;
