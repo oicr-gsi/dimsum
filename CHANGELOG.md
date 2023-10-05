@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.18.0] - 2023-10-05
+
+### Changed
+
+* Collapse lane-level values to reduce run metric visual clutter
+
+
 ## [1.17.0] - 2023-09-28
 
 ### Changed
