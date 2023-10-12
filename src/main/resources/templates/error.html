@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Error</title>
+</head>
+
+<body class="overflow-y-visible bg-white">
+  <div layout:fragment="content" class="m-4">
+
+    <h1 class="font-inter font-medium text-32 mb-4">
+      <span th:text="${errorStatus} ?: 'N/A'"></span>
+    </h1>
+
+    <div class="flex items-center mt-4 bg-pink border-2 border-red">
+      <i class="fas fa-exclamation-circle text-red ml-2"></i>
+      <p class="font-inter font-medium text-16 text-red ml-2" th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="mt-4">
+      <a href="/" class="text-green-200 hover:underline font-bold block mb-2">Go to Home</a>
+      <a href="#" onclick="window.history.back();" class="text-green-200 hover:underline font-bold">Return to previous
+        page</a>
+    </div>
+
+  </div>
+</body>
+
+</html>

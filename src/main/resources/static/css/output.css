@@ -586,6 +586,18 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-top: 1rem;
 }
 
+.mb-4{
+  margin-bottom: 1rem;
+}
+
+.ml-2{
+  margin-left: 0.5rem;
+}
+
+.mb-2{
+  margin-bottom: 0.5rem;
+}
+
 .ml-4{
   margin-left: 1rem;
 }
@@ -604,14 +616,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .mt-1em{
   margin-top: 1em;
-}
-
-.mb-2{
-  margin-bottom: 0.5rem;
-}
-
-.ml-2{
-  margin-left: 0.5rem;
 }
 
 .-ml-8{
@@ -834,6 +838,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   overflow: hidden;
 }
 
+.overflow-y-visible{
+  overflow-y: visible;
+}
+
 .whitespace-nowrap{
   white-space: nowrap;
 }
@@ -882,6 +890,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-style: dotted;
 }
 
+.border-red{
+  --tw-border-opacity: 1;
+  border-color: rgb(223 132 132 / var(--tw-border-opacity));
+}
+
 .border-grey-200{
   --tw-border-opacity: 1;
   border-color: rgb(170 176 184 / var(--tw-border-opacity));
@@ -897,6 +910,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(91 158 90 / var(--tw-bg-opacity));
 }
 
+.bg-white{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
+.bg-pink{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 246 246 / var(--tw-bg-opacity));
+}
+
 .bg-grey-100{
   --tw-bg-opacity: 1;
   background-color: rgb(240 243 248 / var(--tw-bg-opacity));
@@ -905,11 +928,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .bg-grey-300{
   --tw-bg-opacity: 1;
   background-color: rgb(127 133 140 / var(--tw-bg-opacity));
-}
-
-.bg-white{
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
 .bg-grey-150{
@@ -1066,6 +1084,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+.text-red{
+  --tw-text-opacity: 1;
+  color: rgb(223 132 132 / var(--tw-text-opacity));
+}
+
 .text-black{
   --tw-text-opacity: 1;
   color: rgb(40 41 47 / var(--tw-text-opacity));
@@ -1079,11 +1102,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-grey-300{
   --tw-text-opacity: 1;
   color: rgb(127 133 140 / var(--tw-text-opacity));
-}
-
-.text-red{
-  --tw-text-opacity: 1;
-  color: rgb(223 132 132 / var(--tw-text-opacity));
 }
 
 .outline-0{
