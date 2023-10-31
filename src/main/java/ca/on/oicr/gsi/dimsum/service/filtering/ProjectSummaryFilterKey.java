@@ -5,7 +5,8 @@ import java.util.function.Predicate;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public enum ProjectSummaryFilterKey {
-  NAME(string -> projectSummary -> projectSummary.getName().equalsIgnoreCase(string));
+  NAME(string -> projectSummary -> projectSummary.getName().equalsIgnoreCase(string)), PIPELINE(
+      string -> projectSummary -> projectSummary.getPipeline().equals(string));
 
   private final Function<String, Predicate<ProjectSummary>> create;
 

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = ProjectSummary.Builder.class)
 public class ProjectSummary {
   private final String name;
+  private final String pipeline;
 
   private final int totalTestCount;
   private final int receiptPendingQcCount;
@@ -34,6 +35,8 @@ public class ProjectSummary {
 
   private ProjectSummary(Builder builder) {
     this.name = requireNonNull(builder.name);
+    this.pipeline = requireNonNull(builder.pipeline);
+
     this.totalTestCount = builder.totalTestCount;
     this.receiptPendingQcCount = builder.receiptPendingQcCount;
     this.receiptCompletedCount = builder.receiptCompletedCount;
@@ -61,6 +64,10 @@ public class ProjectSummary {
 
   public String getName() {
     return name;
+  }
+
+  public String getPipeline() {
+    return pipeline;
   }
 
   public int getTotalTestCount() {
@@ -152,6 +159,8 @@ public class ProjectSummary {
   public static class Builder {
 
     private String name;
+    private String pipeline;
+
     private int totalTestCount = 0;
     private int receiptPendingQcCount = 0;
     private int receiptCompletedCount = 0;
@@ -177,6 +186,11 @@ public class ProjectSummary {
 
     public Builder name(String name) {
       this.name = name;
+      return this;
+    }
+
+    public Builder pipeline(String pipeline) {
+      this.pipeline = pipeline;
       return this;
     }
 

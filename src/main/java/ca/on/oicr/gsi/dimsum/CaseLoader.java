@@ -296,7 +296,8 @@ public class CaseLoader {
         tempProjectSummariesByName.get(project.getName()).addCounts(caseSummary);
       } else {
         ProjectSummary.Builder projectSummary =
-            new ProjectSummary.Builder().name(project.getName()).addCounts(caseSummary);
+            new ProjectSummary.Builder().name(project.getName()).addCounts(caseSummary)
+                .pipeline(project.getPipeline());
         tempProjectSummariesByName.put(project.getName(), projectSummary);
       }
     }
