@@ -1,9 +1,7 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -11,14 +9,24 @@ import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public class ProjectSummaryFilterTest {
 
-  private static List<ProjectSummary> projectSummaries = Arrays.asList(makeProjectSummary("PROJ1"),
-      makeProjectSummary("PROJ2"), makeProjectSummary("PROJ3"), makeProjectSummary("PROJ4"),
-      makeProjectSummary("PROJ5"));
+  private static List<ProjectSummary> projectSummaries = Arrays.asList(
+      makeProjectSummary("PROJ1", "PipelineA"),
+      makeProjectSummary("PROJ2", "PipelineB"),
+      makeProjectSummary("PROJ3", "PipelineC"),
+      makeProjectSummary("PROJ4", "PipelineA"),
+      makeProjectSummary("PROJ5", "PipelineB"));
 
   @Test
   public void testFilterName() {
     ProjectSummaryFilter filter = new ProjectSummaryFilter(ProjectSummaryFilterKey.NAME, "PROJ1");
     testFilter(filter, Arrays.asList("PROJ1"));
+  }
+
+  @Test
+  public void testFilterPipeline() {
+    ProjectSummaryFilter filter =
+        new ProjectSummaryFilter(ProjectSummaryFilterKey.PIPELINE, "PipelineA");
+    testFilter(filter, Arrays.asList("PROJ1", "PROJ4"));
   }
 
   private static void testFilter(ProjectSummaryFilter filter, List<String> expectedNames) {
@@ -30,9 +38,10 @@ public class ProjectSummaryFilterTest {
     assertEquals(expectedNames.size(), filtered.size(), "Project Summary count");
   }
 
-  private static ProjectSummary makeProjectSummary(String name) {
+  private static ProjectSummary makeProjectSummary(String name, String pipelineName) {
     ProjectSummary projectSummary = mock(ProjectSummary.class);
     when(projectSummary.getName()).thenReturn(name);
+    when(projectSummary.getPipeline()).thenReturn(pipelineName);
     return projectSummary;
   }
 }
