@@ -179,10 +179,16 @@ export function getDivisor(unit: string | null) {
 }
 
 function formatDecimal(value: number, decimalPlaces?: number) {
-  return value.toLocaleString("en-CA", {
+  let val = value.toLocaleString("en-CA", {
     minimumFractionDigits: decimalPlaces,
-    maximumFractionDigits: decimalPlaces,
   });
+  if (decimalPlaces) {
+    const decimalIndex = val.indexOf(".");
+    if (decimalIndex > -1) {
+      val = val.substring(0, decimalIndex + decimalPlaces + 1);
+    }
+  }
+  return val;
 }
 
 function formatThreshold(value?: number) {
