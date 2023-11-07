@@ -299,10 +299,15 @@ public class NotificationManager {
           String.format("Unexpected metric category: %s", metricCategory));
     }
     if (sample.getAssayId() == null) {
-      return false;
+      // no assay means no metrics, so all are available
+      return true;
     }
     Assay assay = assaysById.get(sample.getAssayId());
     List<MetricSubcategory> subcategories = assay.getMetricCategories().get(metricCategory);
+    if (subcategories == null) {
+      // no metrics defined, so all are available
+      return true;
+    }
     for (MetricSubcategory subcategory : subcategories) {
       if (subcategory.getLibraryDesignCode() != null
           && !subcategory.getLibraryDesignCode().equals(sample.getLibraryDesignCode())) {
