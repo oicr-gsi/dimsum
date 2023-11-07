@@ -26,7 +26,7 @@ export interface Metric {
 export interface MetricSubcategory {
   name?: string;
   sortPriority?: number;
-  libraryDesignCode: string;
+  libraryDesignCode?: string;
   metrics: Metric[];
 }
 

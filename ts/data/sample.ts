@@ -989,7 +989,11 @@ function getMatchingMetrics(
   if (!sample.assayId) {
     return null;
   }
-  return siteConfig.assaysById[sample.assayId].metricCategories[category]
+  const assay = siteConfig.assaysById[sample.assayId];
+  if (!assay.metricCategories[category]) {
+    return [];
+  }
+  return assay.metricCategories[category]
     .filter((subcategory) => subcategoryApplies(subcategory, sample))
     .flatMap((subcategory) => subcategory.metrics)
     .filter(
