@@ -545,11 +545,23 @@ function getReportSamples(
 ): ReportSample[] {
   // make one record per applicable sample+subcategory combination
   return samples
-    .flatMap((sample: Sample) => {
+    .flatMap((sample: Sample): ReportSample[] => {
       if (!sample.assayId) {
         throw new Error("Samples must have assays");
       }
       const assay = siteConfig.assaysById[sample.assayId];
+      if (!assay.metricCategories[category]) {
+        return [
+          {
+            sample: sample,
+            metricCategory: category,
+            metricSubcategory: {
+              metrics: [],
+            },
+            caseAssayId: kase.assayId,
+          },
+        ];
+      }
       return assay.metricCategories[category]
         .filter((subcategory) => sampleSubcategoryApplies(subcategory, sample))
         .map((subcategory) => {
@@ -579,6 +591,8 @@ function getReportSamples(
     })
     .reduce((accumulator: ReportSample[], current: ReportSample, i: number) => {
       if (
+        current.metricSubcategory.metrics &&
+        current.metricSubcategory.metrics.length &&
         current.metricSubcategory.metrics.every((metric) =>
           RUN_METRIC_LABELS.includes(metric.name)
         )
