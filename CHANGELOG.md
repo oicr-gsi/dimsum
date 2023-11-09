@@ -7,6 +7,24 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.19.0] - 2023-11-09
+
+### Added
+
+* Pipeline filter to Project list table filters
+
+### Changed
+
+* Metric values are now truncated instead of rounding for display. e.g. 12.999 will now be displayed
+  as "12.99" instead of "13.00"
+
+### Fixed
+
+* Display of samples that have no metrics
+* Updating notifications failed if any requisitions included supplemental samples that did not have
+  their own fully defined assay
+
+
 ## [1.18.0] - 2023-10-05
 
 ### Changed
