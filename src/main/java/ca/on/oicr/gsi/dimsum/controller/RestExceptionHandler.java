@@ -16,33 +16,33 @@ public class RestExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(RestExceptionHandler.class);
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatusException(
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(
             ResponseStatusException ex) {
-        logException(ex.getStatus().value(), ex.getReason(), ex);
-        return prepareErrorResponse(ex.getStatus().value(), ex.getReason(), ex.getStatus());
+        return prepareErrorResponse(ex.getStatus(), ex.getReason(), ex);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
-        int status = HttpStatus.INTERNAL_SERVER_ERROR.value();
-        String message = "Unexpected error";
-        logException(status, message, ex);
-        return prepareErrorResponse(status, message, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+        return prepareErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex);
+    }
+
+    private ResponseEntity<Map<String, Object>> prepareErrorResponse(HttpStatus httpStatus,
+            String errorMessage, Exception ex) {
+        logException(httpStatus.value(), errorMessage, ex);
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("status", httpStatus.value());
+        error.put("error", httpStatus.getReasonPhrase());
+        error.put("message", errorMessage);
+
+        return new ResponseEntity<>(error, httpStatus);
     }
 
     private void logException(int status, String message, Exception ex) {
         if (status >= 500) {
-            logger.error("Error Status: " + status + ". Error Message: " + message, ex);
+            logger.error("Error Status: {}. Error Message: {}", status, message, ex);
         } else {
-            logger.info("Error Status: " + status + ". Error Message: " + message);
+            logger.warn("Error Status: {}. Error Message: {}", status, message);
         }
-    }
-
-    private ResponseEntity<Map<String, String>> prepareErrorResponse(int status,
-            String errorMessage, HttpStatus httpStatus) {
-        Map<String, String> error = new HashMap<>();
-        error.put("status", String.valueOf(status));
-        error.put("error", errorMessage);
-        return new ResponseEntity<>(error, httpStatus);
     }
 }

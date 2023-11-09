@@ -4,39 +4,26 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Error</title>
+  <title th:text="${errorStatus} + ' ' + ${errorReason} + ' - Dimsum'">Error</title>
 </head>
 
-<body class="overflow-y-visible bg-white">
-  <div layout:fragment="content" class="m-4">
-
-    <h1 class="font-inter font-medium text-32 text-red mt-4">
-      Error
-    </h1>
-
-    <table
-      class="attribute-list w-full text-14 text-black font-medium font-inter border-separate border-spacing-0 border-grey-200 border-2 rounded-xl overflow-hidden mt-4">
-      <tbody>
-        <tr>
-          <th
-            class="p-4 text-white font-semibold bg-grey-300 text-left align-text-top whitespace-nowrap w-0 min-w-[200px]">
-            Status Code</th>
-          <td class="p-4 border-grey-200 border-l-1 text-left align-text-top" th:text="${errorStatus} ?: 'N/A'"></td>
-        </tr>
-        <tr>
-          <th
-            class="p-4 text-white font-semibold bg-grey-300 text-left align-text-top whitespace-nowrap border-grey-200 border-t-1">
-            Message</th>
-          <td class="p-4 border-grey-200 border-l-1 text-left align-text-top border-t-1" th:text="${errorMessage}"></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="mt-4">
-      <a href="#" onclick="window.history.back();" class="text-green-200 hover:underline font-bold">Return to previous
-        page</a>
+<body>
+  <div layout:fragment="content">
+    <div class="m-4">
+      <h1 id="error-heading" class="font-inter font-medium text-32 text-red mt-4"
+        th:text="${errorStatus} + ' ' + ${errorReason} + ' - Dimsum'">
+        Error - Dimsum
+      </h1>
+      <table id="error-attribute-list" th:data-status="${errorStatus}" th:data-reason="${errorReason}"
+        th:data-message="${errorMessage}"
+        class="attribute-list w-full text-14 text-black font-medium font-inter overflow-hidden">
+      </table>
+      <div class="mt-4">
+        <a href="#" onclick="window.history.back();" class="text-green-200 hover:underline font-bold">Return to previous
+          page</a>
+      </div>
     </div>
-
+    <script src="/js/error.js"></script>
   </div>
 </body>
 

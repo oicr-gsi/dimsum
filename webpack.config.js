@@ -13,6 +13,7 @@ module.exports = {
     omissions: "./ts/omissions.ts",
     projectList: "./ts/project-list.ts",
     caseReport: "./ts/case-report.ts",
+    error: "./ts/error.ts",
   },
   module: {
     rules: [
