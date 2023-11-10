@@ -36,6 +36,12 @@ export var caseFilters: FilterDefinition[] = [
     values: siteConfig.completedGates,
   },
   {
+    title: "Incomplete",
+    key: "INCOMPLETE",
+    type: "dropdown",
+    values: siteConfig.completedGates,
+  },
+  {
     title: "Pipeline",
     key: "PIPELINE",
     type: "dropdown",

@@ -72,6 +72,25 @@ public enum CaseFilterKey {
       return string -> getGate(string).requisitionPredicate();
     }
   },
+  INCOMPLETE(string -> {
+    CompletedGate gate = getGate(string);
+    return gate.predicate().negate(); // Negate the completed condition
+}) {
+    @Override
+    public Function<String, Predicate<Test>> testPredicate() {
+        return string -> getGate(string).testPredicate().negate();
+    }
+
+    @Override
+    public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
+        return string -> getGate(string).samplePredicate(requestCategory).negate();
+    }
+
+    @Override
+    public Function<String, Predicate<Requisition>> requisitionPredicate() {
+        return string -> getGate(string).requisitionPredicate().negate();
+    }
+},
   LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> test.getLibraryDesignCode().equals(string));
   }) {
       @Override 
