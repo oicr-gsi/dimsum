@@ -24,8 +24,6 @@ public class CustomErrorController implements ErrorController {
         modelAndView.addObject("errorStatus", statusCode);
         modelAndView.addObject("errorReason", statusMessage);
 
-        modelAndView.addObject("title", statusCode + " " + statusMessage + " - Dimsum");
-
         return modelAndView;
     }
 }

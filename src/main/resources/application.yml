@@ -31,4 +31,4 @@ build:
 
 server:
   error:
-    path:/error
+    path: /error

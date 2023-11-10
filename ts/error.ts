@@ -3,7 +3,7 @@ import { AttributeDefinition, AttributeList } from "./component/attribute-list";
 interface ErrorData {
   status: string;
   reason: string;
-  message: string;
+  message?: string;
 }
 
 const errorAttributes: AttributeDefinition<ErrorData>[] = [
@@ -22,7 +22,9 @@ const errorAttributes: AttributeDefinition<ErrorData>[] = [
   {
     title: "Message",
     addContents: (errorData, fragment) => {
-      fragment.textContent = errorData.message;
+      if (errorData.message !== undefined) {
+        fragment.textContent = errorData.message;
+      }
     },
   },
 ];
@@ -32,15 +34,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (container) {
     const errorData: ErrorData = {
-      status: container.dataset.status ?? "N/A",
-      reason: container.dataset.reason ?? "Unknown Reason",
-      message: container.dataset.message ?? "",
+      status: container.dataset.status || "Unknown",
+      reason: container.dataset.reason || "Unknown Reason",
+      message: container.dataset.message,
     };
 
-    // Filter out the "Message" attribute if the message is not available
-    const filteredAttributes = errorData.message
-      ? errorAttributes
-      : errorAttributes.filter((attr) => attr.title !== "Message");
+    // Remove the Message attribute definition if the message is not available
+    const filteredAttributes = errorAttributes.filter((attr) => {
+      return !(attr.title === "Message" && errorData.message === undefined);
+    });
 
     new AttributeList<ErrorData>(
       "error-attribute-list",
