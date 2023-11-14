@@ -28,3 +28,7 @@ spring:
 
 build:
   version: "@project.version@"
+
+server:
+  error:
+    path: /error

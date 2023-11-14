@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Error</title>
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <div class="m-4">
+      <h1 id="error-heading" class="font-inter font-medium text-32 text-red mt-4"
+        th:text="${errorStatus} + ' ' + ${errorReason} + ' - Dimsum'">
+        Error - Dimsum
+      </h1>
+      <table id="error-attribute-list" th:data-status="${errorStatus}" th:data-reason="${errorReason}"
+        th:data-message="${errorMessage}"
+        class="attribute-list w-full text-14 text-black font-medium font-inter overflow-hidden">
+      </table>
+      <div class="mt-4">
+        <a href="#" onclick="window.history.back();" class="text-green-200 hover:underline font-bold">Return to previous
+          page</a>
+      </div>
+    </div>
+    <script src="/js/error.js"></script>
+  </div>
+</body>
+
+</html>
