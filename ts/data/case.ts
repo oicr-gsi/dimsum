@@ -7,6 +7,7 @@ import {
   addNaText,
   addTextDiv,
   makeTextDivWithTooltip,
+  makeTextDiv,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -20,6 +21,7 @@ import {
 } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
+import { AssayTargets } from "./assay";
 
 const dayMillis = 1000 * 60 * 60 * 24;
 
@@ -82,6 +84,10 @@ export interface Test {
   libraryQualifications: Sample[];
   fullDepthSequencings: Sample[];
   latestActivityDate: string;
+  extractionDaysSpent: number;
+  libraryPreparationDaysSpent: number;
+  libraryQualificationDaysSpent: number;
+  fullDepthSequencingDaysSpent: number;
 }
 
 export interface Case {
@@ -97,6 +103,12 @@ export interface Case {
   tests: Test[];
   requisition: Requisition;
   latestActivityDate?: string;
+  receiptDaysSpent: number;
+  analysisReviewDaysSpent: number;
+  releaseApprovalDaysSpent: number;
+  releaseDaysSpent: number;
+  caseDaysSpent: number;
+  pauseDays: number;
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
@@ -205,18 +217,61 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const elapsedDiv = document.createElement("div");
         if (!kase.requisition.stopped) {
           elapsedDiv.appendChild(
-            document.createTextNode(getElapsedMessage(kase, kase.startDate))
+            document.createTextNode(getElapsedMessage(kase))
           );
           fragment.appendChild(elapsedDiv);
+
+          if (!caseComplete(kase)) {
+            const targets = getTargets(kase);
+            if (caseOverdue(kase, targets)) {
+              const behindDiv = makeTextDivWithTooltip(
+                "OVERDUE",
+                `Case target: ${targets.caseDays} days`
+              );
+              styleText(behindDiv, "bold");
+              fragment.appendChild(behindDiv);
+            } else {
+              const overdue = getOverdueStep(kase, targets);
+              if (overdue) {
+                const overdueDiv = makeTextDivWithTooltip(
+                  "BEHIND SCHEDULE",
+                  `${overdue.stepLabel} target: ${overdue.targetDays} days`
+                );
+                styleText(overdueDiv, "error");
+                fragment.appendChild(overdueDiv);
+              }
+            }
+          }
         }
+      },
+      getCellHighlight(kase) {
+        if (kase.requisition.stopped || caseComplete(kase)) {
+          // Never show overdue/behind warning/error for completed or stopped cases
+          return null;
+        }
+        const targets = getTargets(kase);
+        if (caseOverdue(kase, targets)) {
+          return "error";
+        } else if (getOverdueStep(kase, targets)) {
+          return "warning";
+        }
+        return null;
       },
     },
     {
       title: "Receipt/Inspection",
       addParentContents(kase, fragment) {
         addSampleIcons(kase.assayId, kase.receipts, fragment);
-        if (!kase.receipts.length) {
-          addConstructionIcon("receipt", fragment);
+        if (samplePhasePendingWorkOrQc(kase.receipts)) {
+          if (samplePhasePendingWork(kase.receipts)) {
+            addConstructionIcon("receipt", fragment);
+          }
+          const targets = getTargets(kase);
+          addTurnAroundTimeInfo(
+            kase.caseDaysSpent,
+            targets.receiptDays,
+            fragment
+          );
         }
       },
       getCellHighlight(kase) {
@@ -254,14 +309,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.extractions, fragment);
-        if (
-          samplePhaseComplete(kase.receipts) &&
-          samplePhasePendingWork(test.extractions)
-        ) {
-          if (test.extractions.length) {
-            addSpace(fragment);
+        if (samplePhaseComplete(kase.receipts)) {
+          if (samplePhasePendingWorkOrQc(test.extractions)) {
+            if (samplePhasePendingWork(test.extractions)) {
+              if (test.extractions.length) {
+                addSpace(fragment);
+              }
+              addConstructionIcon("extraction", fragment);
+            }
+            const targets = getTargets(kase);
+            addTurnAroundTimeInfo(
+              kase.caseDaysSpent,
+              targets.extractionDays,
+              fragment
+            );
           }
-          addConstructionIcon("extraction", fragment);
         }
       },
       getCellHighlight(kase, test) {
@@ -293,14 +355,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
-        if (
-          samplePhaseComplete(test.extractions) &&
-          samplePhasePendingWork(test.libraryPreparations)
-        ) {
-          if (test.libraryPreparations.length) {
-            addSpace(fragment);
+        if (samplePhaseComplete(test.extractions)) {
+          if (samplePhasePendingWorkOrQc(test.libraryPreparations)) {
+            if (samplePhasePendingWork(test.libraryPreparations)) {
+              if (test.libraryPreparations.length) {
+                addSpace(fragment);
+              }
+              addConstructionIcon("library preparation", fragment);
+            }
+            const targets = getTargets(kase);
+            addTurnAroundTimeInfo(
+              kase.caseDaysSpent,
+              targets.libraryPreparationDays,
+              fragment
+            );
           }
-          addConstructionIcon("library preparation", fragment);
         }
       },
       getCellHighlight(kase, test) {
@@ -331,14 +400,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
-        if (
-          samplePhaseComplete(test.libraryPreparations) &&
-          samplePhasePendingWork(test.libraryQualifications)
-        ) {
-          if (test.libraryQualifications.length) {
-            addSpace(fragment);
+        if (samplePhaseComplete(test.libraryPreparations)) {
+          if (samplePhasePendingWorkOrQc(test.libraryQualifications)) {
+            if (samplePhasePendingWork(test.libraryQualifications)) {
+              if (test.libraryQualifications.length) {
+                addSpace(fragment);
+              }
+              addConstructionIcon("library qualification", fragment);
+            }
+            const targets = getTargets(kase);
+            addTurnAroundTimeInfo(
+              kase.caseDaysSpent,
+              targets.libraryQualificationDays,
+              fragment
+            );
           }
-          addConstructionIcon("library qualification", fragment);
         }
       },
       getCellHighlight(kase, test) {
@@ -363,14 +439,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
-        if (
-          samplePhaseComplete(test.libraryQualifications) &&
-          samplePhasePendingWork(test.fullDepthSequencings)
-        ) {
-          if (test.fullDepthSequencings.length) {
-            addSpace(fragment);
+        if (samplePhaseComplete(test.libraryQualifications)) {
+          if (samplePhasePendingWorkOrQc(test.fullDepthSequencings)) {
+            if (samplePhasePendingWork(test.fullDepthSequencings)) {
+              if (test.fullDepthSequencings.length) {
+                addSpace(fragment);
+              }
+              addConstructionIcon("full-depth sequencing", fragment);
+            }
+            const targets = getTargets(kase);
+            addTurnAroundTimeInfo(
+              kase.caseDaysSpent,
+              targets.fullDepthSequencingDays,
+              fragment
+            );
           }
-          addConstructionIcon("full-depth sequencing", fragment);
         }
       },
       getCellHighlight(kase, test) {
@@ -392,17 +475,19 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const sequencingComplete = kase.tests.every((test) =>
           samplePhaseComplete(test.fullDepthSequencings)
         );
+        const targets = getTargets(kase);
         addRequisitionIcons(
-          kase.requisition,
+          kase,
           (requisition) => requisition.analysisReviews,
           sequencingComplete,
+          targets.analysisReviewDays,
           fragment
         );
       },
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          (requisition) => requisition.analysisReviews
+          kase.requisition.analysisReviews
         );
       },
     },
@@ -415,20 +500,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         const analysisReviewComplete = requisitionPhaseComplete(
-          kase.requisition,
-          (requisition) => requisition.analysisReviews
+          kase.requisition.analysisReviews
         );
+        const targets = getTargets(kase);
         addRequisitionIcons(
-          kase.requisition,
+          kase,
           (requisition) => requisition.releaseApprovals,
           analysisReviewComplete,
+          targets.releaseApprovalDays,
           fragment
         );
       },
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          (requisition) => requisition.releaseApprovals
+          kase.requisition.releaseApprovals
         );
       },
     },
@@ -439,21 +525,19 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         const draftComplete = requisitionPhaseComplete(
-          kase.requisition,
-          (requisition) => requisition.releaseApprovals
+          kase.requisition.releaseApprovals
         );
+        const targets = getTargets(kase);
         addRequisitionIcons(
-          kase.requisition,
+          kase,
           (requisition) => requisition.releases,
           draftComplete,
+          targets.releaseDays,
           fragment
         );
       },
       getCellHighlight(kase) {
-        return getRequisitionPhaseHighlight(
-          kase,
-          (requisition) => requisition.releases
-        );
+        return getRequisitionPhaseHighlight(kase, kase.requisition.releases);
       },
     },
     {
@@ -528,6 +612,25 @@ export function samplePhasePendingWork(samples: Sample[]) {
   );
 }
 
+function samplePhasePendingWorkOrQc(samples: Sample[]) {
+  // pending if there are no samples
+  if (!samples.length) {
+    return true;
+  }
+  // pending if any sample needs QC or data review
+  if (
+    samples.some(
+      (sample) => !sample.qcDate || (sample.run && !sample.dataReviewDate)
+    )
+  ) {
+    return true;
+  }
+  // pending if there are no samples with passed QC and data review (if applicable)
+  return !samples.some(
+    (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
+  );
+}
+
 export function getSamplePhaseHighlight(
   requisition: Requisition,
   samples: Sample[]
@@ -554,25 +657,22 @@ function handleNaRequisitionPhase(
   }
 }
 
-function requisitionPhaseComplete(
-  requisition: Requisition,
-  getQcs: (requisition: Requisition) => RequisitionQc[]
-): boolean {
-  const qcs = getQcs(requisition);
+function requisitionPhaseComplete(qcs: RequisitionQc[]): boolean {
   return !!(qcs.length && getLatestRequisitionQc(qcs).qcPassed);
 }
 
-function getRequisitionPhaseHighlight(
-  kase: Case,
-  getQcs: (requisition: Requisition) => RequisitionQc[]
-) {
-  if (requisitionPhaseComplete(kase.requisition, getQcs)) {
+function getRequisitionPhaseHighlight(kase: Case, qcs: RequisitionQc[]) {
+  if (requisitionPhaseComplete(qcs)) {
     return null;
   } else if (kase.requisition.stopped) {
-    return getQcs(kase.requisition).length ? null : "na";
+    return qcs.length ? null : "na";
   } else {
     return "warning";
   }
+}
+
+function caseComplete(kase: Case) {
+  return requisitionPhaseComplete(kase.requisition.releases);
 }
 
 export function addSpace(fragment: DocumentFragment) {
@@ -671,18 +771,22 @@ export function makeSampleTooltip(sample: Sample) {
 }
 
 function addRequisitionIcons(
-  requisition: Requisition,
+  kase: Case,
   getQcs: (requisition: Requisition) => RequisitionQc[],
   previousComplete: boolean,
+  targetDays: number | null,
   fragment: DocumentFragment
 ) {
-  const qcs = getQcs(requisition);
+  const qcs = getQcs(kase.requisition);
   if (qcs.length) {
     const status = getRequisitionQcStatus(qcs);
-    addRequisitionIcon(requisition, status, fragment);
+    addRequisitionIcon(kase.requisition, status, fragment);
   } else if (previousComplete) {
     const status = qcStatuses.qc;
-    addRequisitionIcon(requisition, status, fragment);
+    addRequisitionIcon(kase.requisition, status, fragment);
+  }
+  if (previousComplete && !requisitionPhaseComplete(qcs)) {
+    addTurnAroundTimeInfo(kase.caseDaysSpent, targetDays, fragment);
   }
 }
 
@@ -733,29 +837,162 @@ function addTooltipRow(
   container.appendChild(valueContainer);
 }
 
-function getElapsedMessage(kase: Case, startDateString: string) {
-  let endDate;
-  let message;
+function getElapsedMessage(kase: Case) {
+  const complete = caseComplete(kase);
+  return `(${complete ? "Completed in" : "Ongoing"} ${
+    kase.caseDaysSpent
+  } days)`;
+}
+
+function caseOverdue(kase: Case, targets: AssayTargets) {
+  return targets.caseDays && kase.caseDaysSpent > targets.caseDays;
+}
+
+interface OverdueStep {
+  stepLabel: string;
+  targetDays: number | null;
+}
+
+function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
+  // Check later steps first to emphasize if we are multiple steps overdue
   if (
-    requisitionPhaseComplete(
-      kase.requisition,
-      (requisition) => requisition.releases
+    requisitionPhaseBehind(
+      kase.requisition.releases,
+      kase.caseDaysSpent,
+      targets.releaseDays
     )
   ) {
-    endDate = new Date(
-      kase.requisition.releases
-        .map((qc) => qc.qcDate)
-        .reduce((previous, current) =>
-          previous > current ? previous : current
-        )
-    );
-    message = "Completed in";
-  } else {
-    endDate = new Date();
-    message = "Ongoing";
+    return {
+      stepLabel: "Release",
+      targetDays: targets.releaseDays,
+    };
+  } else if (
+    requisitionPhaseBehind(
+      kase.requisition.releaseApprovals,
+      kase.caseDaysSpent,
+      targets.releaseApprovalDays
+    )
+  ) {
+    return {
+      stepLabel: "Release approval",
+      targetDays: targets.releaseApprovalDays,
+    };
+  } else if (
+    requisitionPhaseBehind(
+      kase.requisition.analysisReviews,
+      kase.caseDaysSpent,
+      targets.analysisReviewDays
+    )
+  ) {
+    return {
+      stepLabel: "Analysis review",
+      targetDays: targets.analysisReviewDays,
+    };
+  } else if (
+    kase.tests.some((test) =>
+      samplePhaseBehind(
+        test.fullDepthSequencings,
+        kase.caseDaysSpent,
+        targets.fullDepthSequencingDays
+      )
+    )
+  ) {
+    return {
+      stepLabel: "Full-depth sequencing",
+      targetDays: targets.fullDepthSequencingDays,
+    };
+  } else if (
+    kase.tests.some((test) =>
+      samplePhaseBehind(
+        test.libraryQualifications,
+        kase.caseDaysSpent,
+        targets.libraryQualificationDays
+      )
+    )
+  ) {
+    return {
+      stepLabel: "Library qualification",
+      targetDays: targets.libraryQualificationDays,
+    };
+  } else if (
+    kase.tests.some((test) =>
+      samplePhaseBehind(
+        test.libraryPreparations,
+        kase.caseDaysSpent,
+        targets.libraryPreparationDays
+      )
+    )
+  ) {
+    return {
+      stepLabel: "Library preparation",
+      targetDays: targets.libraryPreparationDays,
+    };
+  } else if (
+    kase.tests.some((test) =>
+      samplePhaseBehind(
+        test.extractions,
+        kase.caseDaysSpent,
+        targets.extractionDays
+      )
+    )
+  ) {
+    return {
+      stepLabel: "Extraction",
+      targetDays: targets.extractionDays,
+    };
+  } else if (
+    samplePhaseBehind(kase.receipts, kase.caseDaysSpent, targets.receiptDays)
+  ) {
+    return {
+      stepLabel: "Receipt",
+      targetDays: targets.receiptDays,
+    };
   }
-  const startDate = new Date(startDateString);
-  const milliDiff = endDate.getTime() - startDate.getTime();
-  const dayDiff = Math.ceil(milliDiff / dayMillis);
-  return `(${message} ${dayDiff} days)`;
+  return null;
+}
+
+function samplePhaseBehind(
+  samples: Sample[],
+  caseDaysSpent: number,
+  stepTarget: number | null
+) {
+  return (
+    stepTarget && !samplePhaseComplete(samples) && caseDaysSpent > stepTarget
+  );
+}
+
+function requisitionPhaseBehind(
+  qcs: RequisitionQc[],
+  caseDaysSpent: number,
+  stepTarget: number | null
+) {
+  return (
+    stepTarget && !requisitionPhaseComplete(qcs) && caseDaysSpent > stepTarget
+  );
+}
+
+function addTurnAroundTimeInfo(
+  daysSpent: number,
+  target: number | null,
+  fragment: DocumentFragment
+) {
+  if (!target) {
+    return;
+  }
+  if (daysSpent > target) {
+    const tatDiv = makeTextDivWithTooltip("OVERDUE", `Target: ${target} days`);
+    styleText(tatDiv, "error");
+    fragment.appendChild(tatDiv);
+  } else {
+    const daysRemaining = target - daysSpent;
+    const tatDiv = makeTextDivWithTooltip(
+      `${daysRemaining}d remain`,
+      `Target: ${target} days`
+    );
+    fragment.appendChild(tatDiv);
+  }
+}
+
+function getTargets(kase: Case) {
+  return siteConfig.assaysById[kase.assayId].targets;
 }
