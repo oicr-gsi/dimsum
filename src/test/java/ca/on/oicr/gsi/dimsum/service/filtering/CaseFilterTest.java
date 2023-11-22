@@ -489,6 +489,13 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testInCompleteReceiptFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.RECEIPT.getLabel());
+    testFilterCases(filter, Arrays.asList(22));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedReceiptTestFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -567,6 +574,13 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testIncompleteExtractionFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.EXTRACTION.getLabel());
+    testFilterCases(filter, Arrays.asList(7, 8, 22, 23));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedExtractionTestFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -641,6 +655,13 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testIncompleteLibraryPrepFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.LIBRARY_PREPARATION.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 7, 8, 9, 10, 20, 22, 23));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedLibraryPrepTestFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -705,6 +726,14 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testIncompleteLibraryQualFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE,
+            CompletedGate.LIBRARY_QUALIFICATION.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 1, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 21, 22, 23));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedLibraryQualTestFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -751,6 +780,15 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testIncompleteFullDepthFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE,
+            CompletedGate.FULL_DEPTH_SEQUENCING.getLabel());
+    testFilterCases(filter,
+        Arrays.asList(0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedFullDepthTestFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -783,6 +821,15 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testIncompleteAnalysisFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE,
+            CompletedGate.ANALYSIS_REVIEW.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 7, 8, 9,
+        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedAnalysisRequisitionFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -799,6 +846,15 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testIncompleteReleaseApprovalFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE,
+            CompletedGate.RELEASE_APPROVAL.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 7, 8, 9,
+        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testCompletedReleaseApprovalRequisitionFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE_APPROVAL.getLabel());
@@ -811,6 +867,15 @@ public class CaseFilterTest {
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.RELEASE.getLabel());
     testFilterCases(filter, Collections.emptyList());
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testIncompletedReleaseFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.INCOMPLETE,
+            CompletedGate.RELEASE.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23));
   }
 
   @org.junit.jupiter.api.Test
