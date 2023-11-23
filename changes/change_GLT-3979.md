@@ -1,1 +1,0 @@
-Replaced the default Spring "Whitelabel Error Page" with custom error page

@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.20.0] - 2023-11-23
+
+### Changed
+
+* Replaced the default Spring "Whitelabel Error Page" with custom error page
+
+
 ## [1.19.0] - 2023-11-09
 
 ### Added
