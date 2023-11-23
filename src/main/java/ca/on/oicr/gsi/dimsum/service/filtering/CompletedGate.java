@@ -178,7 +178,7 @@ public enum CompletedGate {
   }
 
   public boolean qualifyCase(Case kase) {
-    return kase.getTests().stream().anyMatch(test -> qualifyTest(test));
+    return kase.getTests().stream().allMatch(test -> qualifyTest(test));
   }
 
   public boolean qualifyTest(Test test) {
