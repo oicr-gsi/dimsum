@@ -1,10 +1,10 @@
 import { siteConfig } from "../util/site-config";
 import { urls } from "../util/urls";
-import { FilterDefinition, SortDefinition } from "./table-builder";
+import { FilterDefinition, Sort } from "./table-builder";
 
 const stopStatus: string[] = ["Yes", "No"];
 
-export const latestActivitySort: SortDefinition = {
+export const latestActivitySort: Sort = {
   columnTitle: "Latest Activity",
   descending: true,
   type: "date",
