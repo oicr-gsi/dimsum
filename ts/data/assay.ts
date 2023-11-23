@@ -30,10 +30,23 @@ export interface MetricSubcategory {
   metrics: Metric[];
 }
 
+export interface AssayTargets {
+  caseDays: number | null;
+  receiptDays: number | null;
+  extractionDays: number | null;
+  libraryPreparationDays: number | null;
+  libraryQualificationDays: number | null;
+  fullDepthSequencingDays: number | null;
+  analysisReviewDays: number | null;
+  releaseApprovalDays: number | null;
+  releaseDays: number | null;
+}
+
 export interface Assay {
   id: number;
   name: string;
   description?: string;
   version: string;
   metricCategories: Record<MetricCategory, MetricSubcategory[]>;
+  targets: AssayTargets;
 }

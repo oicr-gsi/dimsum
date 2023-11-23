@@ -86,12 +86,17 @@ export function shadeElement(element: HTMLElement, status?: CellStatus | null) {
 }
 
 // all supported text styles
-export type TextStyle = "error";
+export type TextStyle = "bold" | "error";
 
 // styles container text to match appropriate text style
 export function styleText(element: HTMLElement, style?: TextStyle | null) {
-  if (style === "error") {
-    element.classList.add("text-red", "font-bold");
+  switch (style) {
+    case "bold":
+      element.classList.add("font-bold");
+      break;
+    case "error":
+      element.classList.add("text-red", "font-bold");
+      break;
   }
 }
 
