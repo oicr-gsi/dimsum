@@ -224,21 +224,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           if (!caseComplete(kase)) {
             const targets = getTargets(kase);
             if (caseOverdue(kase, targets)) {
-              const behindDiv = makeTextDivWithTooltip(
+              const overdueDiv = makeTextDivWithTooltip(
                 "OVERDUE",
                 `Case target: ${targets.caseDays} days`
               );
-              styleText(behindDiv, "bold");
-              fragment.appendChild(behindDiv);
+              styleText(overdueDiv, "bold");
+              fragment.appendChild(overdueDiv);
             } else {
-              const overdue = getOverdueStep(kase, targets);
-              if (overdue) {
-                const overdueDiv = makeTextDivWithTooltip(
+              const overdueStep = getOverdueStep(kase, targets);
+              if (overdueStep) {
+                const behindDiv = makeTextDivWithTooltip(
                   "BEHIND SCHEDULE",
-                  `${overdue.stepLabel} target: ${overdue.targetDays} days`
+                  `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
                 );
-                styleText(overdueDiv, "error");
-                fragment.appendChild(overdueDiv);
+                styleText(behindDiv, "error");
+                fragment.appendChild(behindDiv);
               }
             }
           }
