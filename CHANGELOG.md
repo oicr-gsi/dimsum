@@ -9,6 +9,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ## [1.20.0] - 2023-11-23
 
+### Added
+
+* Indications of cases behind schedule and overdue (Start Date column)
+* Days remaining (or "OVERDUE") for pending steps in Cases table
+
 ### Changed
 
 * Replaced the default Spring "Whitelabel Error Page" with custom error page
