@@ -7,7 +7,6 @@ import {
   addNaText,
   addTextDiv,
   makeTextDivWithTooltip,
-  makeTextDiv,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
@@ -113,7 +112,17 @@ export interface Case {
 
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: urls.rest.cases,
-  defaultSort: latestActivitySort,
+  defaultSort: {
+    columnTitle: "Urgency",
+    type: "number",
+    descending: true,
+  },
+  nonColumnSorting: [
+    {
+      columnTitle: "Urgency",
+      type: "number",
+    },
+  ],
   filters: caseFilters,
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => (kase.requisition.stopped ? "stopped" : null),

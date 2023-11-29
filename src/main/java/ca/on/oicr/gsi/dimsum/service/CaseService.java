@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +139,8 @@ public class CaseService {
       sort = CaseSort.LAST_ACTIVITY;
       descending = true;
     }
-    stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+    Comparator<Case> comparator = sort.comparator(getAssaysById());
+    stream = stream.sorted(descending ? comparator.reversed() : comparator);
 
     List<Case> filteredCases =
         stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());

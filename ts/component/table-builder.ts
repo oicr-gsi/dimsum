@@ -35,8 +35,11 @@ export interface ColumnDefinition<ParentType, ChildType> {
 
 export interface SortDefinition {
   columnTitle: string;
-  descending: boolean;
   type: SortType;
+}
+
+export interface Sort extends SortDefinition {
+  descending: boolean;
 }
 
 export interface FilterDefinition {
@@ -59,7 +62,8 @@ export interface BulkAction<ParentType> {
 
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl?: string; // required if table is loaded via AJAX
-  defaultSort?: SortDefinition; // required if table is loaded via AJAX and pag controls are NOT disabled
+  defaultSort?: Sort; // required if table is loaded via AJAX and page controls are NOT disabled
+  nonColumnSorting?: SortDefinition[];
   filters?: FilterDefinition[];
   getSubheading?: (parent: ParentType) => string | null;
   getChildren?: (parent: ParentType) => ChildType[];
@@ -220,7 +224,8 @@ export class TableBuilder<ParentType, ChildType> {
       throw new Error("Query url is required for loading table via AJAX");
     }
     const topControlsContainer = document.createElement("div");
-    topControlsContainer.className = "flex justify-end mt-4 items-top space-x-2";
+    topControlsContainer.className =
+      "flex justify-end mt-4 items-top space-x-2";
 
     if (!this.definition.disablePageControls) {
       this.addSortControls(topControlsContainer);
@@ -326,9 +331,31 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns
       .filter((column) => column.sortType)
       .forEach((column) => {
-        dropdownOptions.push(this.addSortOption(column, false));
-        dropdownOptions.push(this.addSortOption(column, true));
+        dropdownOptions.push(
+          this.addSortOption(column.title, column.sortType, false)
+        );
+        dropdownOptions.push(
+          this.addSortOption(column.title, column.sortType, true)
+        );
       });
+    if (this.definition.nonColumnSorting) {
+      for (let nonColumnSort of this.definition.nonColumnSorting) {
+        dropdownOptions.push(
+          this.addSortOption(
+            nonColumnSort.columnTitle,
+            nonColumnSort.type,
+            false
+          )
+        );
+        dropdownOptions.push(
+          this.addSortOption(
+            nonColumnSort.columnTitle,
+            nonColumnSort.type,
+            true
+          )
+        );
+      }
+    }
 
     const defaultOption = this.definition.defaultSort
       ? this.definition.defaultSort.columnTitle +
@@ -348,16 +375,14 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addSortOption(
-    column: ColumnDefinition<ParentType, ChildType>,
+    title: string,
+    sortType: SortType | undefined,
     descending: boolean
   ) {
-    const label =
-      column.title +
-      " - " +
-      this.getSortDescriptor(column.sortType, descending);
+    const label = title + " - " + this.getSortDescriptor(sortType, descending);
 
     return new BasicDropdownOption(label, () => {
-      this.sortColumn = column.title;
+      this.sortColumn = title;
       this.sortDescending = descending;
       this.reload();
     });
