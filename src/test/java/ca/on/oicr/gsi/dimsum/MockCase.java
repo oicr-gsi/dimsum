@@ -15,6 +15,9 @@ import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
+
+// note: ensure that each mock case has at least one test added to it.
+
 public class MockCase {
 
   public static List<Case> getCases() {
@@ -288,6 +291,7 @@ public class MockCase {
   private static Case makeCase23() {
     final int caseNumber = 23;
     Case kase = makeCase("PRO23_001", "Single Test", "PRO23", "REQ23", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     return kase;
   }
 
