@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.21.0] - 2023-11-30
+
+### Added
+
+* Incomplete filter to Case QC Report page
+* Option to sort cases by urgency
+
+### Changed
+
+* Cases are now sorted by urgency by default
+
+
 ## [1.20.0] - 2023-11-23
 
 ### Added
