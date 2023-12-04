@@ -4,7 +4,7 @@ import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
 import { Case, Qcable } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
-import { makeTextDiv } from "./util/html-utils";
+import { makeTextDiv, addMisoIcon } from "./util/html-utils";
 import {
   getMetricValue,
   getRequisitionMetricCellHighlight,
@@ -51,9 +51,19 @@ const attributes: AttributeDefinition<Case>[] = [
   {
     title: "Case ID",
     addContents(object, fragment) {
-      fragment.appendChild(
-        makeNameDiv(object.id, undefined, urls.dimsum.case(object.id))
+      const container = document.createElement("div");
+      container.className = "flex flex-row space-x-1 items-center";
+      const caseNameDiv = makeNameDiv(
+        object.id,
+        undefined,
+        urls.dimsum.case(object.id)
       );
+      container.appendChild(caseNameDiv);
+
+      const misoUrl = urls.miso.assay(object.assayId);
+      addMisoIcon(container, misoUrl);
+
+      fragment.appendChild(container);
     },
   },
   {
