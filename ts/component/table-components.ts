@@ -3,6 +3,7 @@ import { urls } from "../util/urls";
 import { FilterDefinition, Sort } from "./table-builder";
 
 const stopStatus: string[] = ["Yes", "No"];
+const pauseStatus: string[] = ["Yes", "No"];
 
 export const latestActivitySort: Sort = {
   columnTitle: "Latest Activity",
@@ -70,6 +71,12 @@ export var caseFilters: FilterDefinition[] = [
     key: "STOPPED",
     type: "dropdown",
     values: stopStatus,
+  },
+  {
+    title: "Paused",
+    key: "PAUSED",
+    type: "dropdown",
+    values: pauseStatus,
   },
   {
     title: "Library Design",

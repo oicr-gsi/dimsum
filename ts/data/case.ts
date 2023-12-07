@@ -125,7 +125,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
   filters: caseFilters,
   getChildren: (parent) => parent.tests,
-  getRowHighlight: (kase) => (kase.requisition.stopped ? "stopped" : null),
+  getRowHighlight: (kase) => {
+    if (kase.requisition.stopped) {
+      return "stopped";
+    } else if (kase.requisition.paused) {
+      return "paused";
+    }
+    return null;
+  },
   staticActions: [legendAction],
   generateColumns: () => [
     {
@@ -201,6 +208,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           );
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
+        }
+        if (kase.requisition.paused) {
+          const pausedDiv = makeTextDivWithTooltip(
+            "CASE PAUSED",
+            `Pause reason: ${requisition.pauseReason || "Unspecified"}`
+          );
+          styleText(pausedDiv, "error");
+          fragment.appendChild(pausedDiv);
         }
         fragment.appendChild(
           makeNameDiv(
@@ -577,6 +592,8 @@ export function handleNaSamplePhase(
   if (requisition.stopped && !samples.length) {
     addNaText(fragment);
     return true;
+  } else if (requisition.paused) {
+    return false;
   } else {
     return false;
   }
@@ -661,6 +678,8 @@ function handleNaRequisitionPhase(
   if (kase.requisition.stopped && !getQcs(kase.requisition).length) {
     addNaText(fragment);
     return true;
+  } else if (kase.requisition.paused) {
+    return false;
   } else {
     return false;
   }

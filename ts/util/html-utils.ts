@@ -68,7 +68,7 @@ export function addMisoIcon(container: HTMLElement, url: string) {
 }
 
 // all supported cell statuses
-export type CellStatus = "na" | "stopped" | "warning" | "error";
+export type CellStatus = "na" | "stopped" | "warning" | "error" | "paused";
 
 // map cell status to styles
 const highlightClasses: Record<CellStatus, string[]> = {
@@ -76,6 +76,7 @@ const highlightClasses: Record<CellStatus, string[]> = {
   stopped: ["bg-grey-100"],
   warning: ["bg-yellow"],
   error: ["bg-red"],
+  paused: ["bg-grey-100"],
 };
 
 // shade cell backgrounds

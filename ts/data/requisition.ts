@@ -46,7 +46,9 @@ export interface Requisition {
   name: string;
   assayId?: number;
   stopped: boolean;
+  paused: boolean;
   stopReason?: string;
+  pauseReason?: string;
   qcGroups: RequisitionQcGroup[];
   analysisReviews: RequisitionQc[];
   releaseApprovals: RequisitionQc[];

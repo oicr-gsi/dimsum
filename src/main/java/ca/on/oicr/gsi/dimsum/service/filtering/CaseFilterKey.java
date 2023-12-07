@@ -20,8 +20,8 @@ public enum CaseFilterKey {
       || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),
   PENDING(string -> {
     PendingState state = getState(string);
-    Predicate<Case> notStopped = kase -> !kase.getRequisition().isStopped();
-    return notStopped.and(state.predicate());
+    Predicate<Case> notStoppedOrPaused = kase -> !kase.getRequisition().isStopped() && !kase.getRequisition().isPaused();
+    return notStoppedOrPaused.and(state.predicate());
   }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
@@ -53,6 +53,7 @@ public enum CaseFilterKey {
     }
   },
   STOPPED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isStopped() : !kase.getRequisition().isStopped()),
+  PAUSED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isPaused() : !kase.getRequisition().isPaused()),
   COMPLETED(string -> {
     CompletedGate gate = getGate(string);
     return gate.predicate();
