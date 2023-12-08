@@ -223,34 +223,38 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         dateDiv.appendChild(document.createTextNode(kase.startDate));
         fragment.appendChild(dateDiv);
 
-        const elapsedDiv = document.createElement("div");
-        if (!kase.requisition.stopped) {
-          elapsedDiv.appendChild(
-            document.createTextNode(getElapsedMessage(kase))
-          );
-          fragment.appendChild(elapsedDiv);
+        if (kase.requisition.stopped) {
+          return;
+        }
+        if (caseComplete(kase)) {
+          addTextDiv(`Completed in ${kase.caseDaysSpent} days`, fragment);
+          return;
+        }
 
-          if (!caseComplete(kase)) {
-            const targets = getTargets(kase);
-            if (caseOverdue(kase, targets)) {
-              const overdueDiv = makeTextDivWithTooltip(
-                "OVERDUE",
-                `Case target: ${targets.caseDays} days`
-              );
-              styleText(overdueDiv, "bold");
-              fragment.appendChild(overdueDiv);
-            } else {
-              const overdueStep = getOverdueStep(kase, targets);
-              if (overdueStep) {
-                const behindDiv = makeTextDivWithTooltip(
-                  "BEHIND SCHEDULE",
-                  `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
-                );
-                styleText(behindDiv, "error");
-                fragment.appendChild(behindDiv);
-              }
-            }
-          }
+        addTextDiv(`${kase.caseDaysSpent}d spent`, fragment);
+        const targets = getTargets(kase);
+        if (caseOverdue(kase, targets)) {
+          const overdueDiv = makeTextDivWithTooltip(
+            "OVERDUE",
+            `Case target: ${targets.caseDays} days`
+          );
+          styleText(overdueDiv, "bold");
+          fragment.appendChild(overdueDiv);
+        } else if (targets.caseDays) {
+          const remainingDiv = makeTextDivWithTooltip(
+            `${targets.caseDays - kase.caseDaysSpent}d remain`,
+            `Case target: ${targets.caseDays} days`
+          );
+          fragment.appendChild(remainingDiv);
+        }
+        const overdueStep = getOverdueStep(kase, targets);
+        if (overdueStep) {
+          const behindDiv = makeTextDivWithTooltip(
+            "BEHIND SCHEDULE",
+            `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
+          );
+          styleText(behindDiv, "error");
+          fragment.appendChild(behindDiv);
         }
       },
       getCellHighlight(kase) {
@@ -844,13 +848,6 @@ function addTooltipRow(
   }
   container.appendChild(labelContainer);
   container.appendChild(valueContainer);
-}
-
-function getElapsedMessage(kase: Case) {
-  const complete = caseComplete(kase);
-  return `(${complete ? "Completed in" : "Ongoing"} ${
-    kase.caseDaysSpent
-  } days)`;
 }
 
 function caseOverdue(kase: Case, targets: AssayTargets) {
