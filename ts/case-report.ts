@@ -51,19 +51,13 @@ const attributes: AttributeDefinition<Case>[] = [
   {
     title: "Case ID",
     addContents(object, fragment) {
-      const container = document.createElement("div");
-      container.className = "flex flex-row space-x-1 items-center";
+      const misoUrl = urls.miso.assay(object.assayId);
       const caseNameDiv = makeNameDiv(
         object.id,
-        undefined,
+        misoUrl,
         urls.dimsum.case(object.id)
       );
-      container.appendChild(caseNameDiv);
-
-      const misoUrl = urls.miso.assay(object.assayId);
-      addMisoIcon(container, misoUrl);
-
-      fragment.appendChild(container);
+      fragment.appendChild(caseNameDiv);
     },
   },
   {

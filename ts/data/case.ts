@@ -189,15 +189,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Assay",
       sortType: "text",
       addParentContents(kase, fragment) {
-        const assayDiv = document.createElement("div");
-        assayDiv.className = "flex flex-row space-x-1 items-center";
-
-        const assayNameDiv = document.createElement("div");
         const assay = siteConfig.assaysById[kase.assayId];
-        addLink(assayDiv, assay.name, urls.dimsum.case(kase.id));
-        assayDiv.appendChild(assayNameDiv);
+        const assayDiv = makeNameDiv(
+          assay.name,
+          urls.miso.assay(kase.assayId),
+          urls.dimsum.case(kase.id),
+          assay.name
+        );
 
-        addMisoIcon(assayDiv, urls.miso.assay(kase.assayId));
         fragment.appendChild(assayDiv);
 
         const requisition = kase.requisition;
@@ -209,6 +208,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
         }
+
         fragment.appendChild(
           makeNameDiv(
             requisition.name,
