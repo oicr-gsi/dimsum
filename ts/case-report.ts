@@ -51,13 +51,9 @@ const attributes: AttributeDefinition<Case>[] = [
   {
     title: "Case ID",
     addContents(object, fragment) {
-      const misoUrl = urls.miso.assay(object.assayId);
-      const caseNameDiv = makeNameDiv(
-        object.id,
-        misoUrl,
-        urls.dimsum.case(object.id)
+      fragment.appendChild(
+        makeNameDiv(object.id, undefined, urls.dimsum.case(object.id))
       );
-      fragment.appendChild(caseNameDiv);
     },
   },
   {
@@ -119,7 +115,12 @@ const attributes: AttributeDefinition<Case>[] = [
     title: "Assay",
     addContents(object, fragment) {
       const assay = siteConfig.assaysById[object.assayId];
-      addText(fragment, `${assay.description || assay.name} v${assay.version}`);
+      const assayDiv = makeNameDiv(
+        `${assay.description || assay.name} v${assay.version}`,
+        urls.miso.assay(object.assayId),
+        undefined
+      );
+      fragment.appendChild(assayDiv);
     },
   },
 ];

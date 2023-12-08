@@ -193,8 +193,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         const assayDiv = makeNameDiv(
           assay.name,
           urls.miso.assay(kase.assayId),
-          urls.dimsum.case(kase.id),
-          assay.name
+          urls.dimsum.case(kase.id)
         );
 
         fragment.appendChild(assayDiv);
