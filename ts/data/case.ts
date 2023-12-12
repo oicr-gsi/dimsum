@@ -126,10 +126,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   filters: caseFilters,
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => {
-    if (kase.requisition.stopped) {
-      return "stopped";
-    } else if (kase.requisition.paused) {
-      return "paused";
+    if (kase.requisition.stopped || kase.requisition.paused) {
+      return "disabled";
     }
     return null;
   },
@@ -592,11 +590,8 @@ export function handleNaSamplePhase(
   if (requisition.stopped && !samples.length) {
     addNaText(fragment);
     return true;
-  } else if (requisition.paused) {
-    return false;
-  } else {
-    return false;
   }
+  return false;
 }
 
 export function samplePhaseComplete(samples: Sample[]) {
