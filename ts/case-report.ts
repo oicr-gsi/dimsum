@@ -4,7 +4,7 @@ import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
 import { Case, Qcable } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
-import { makeTextDiv } from "./util/html-utils";
+import { makeTextDiv, addMisoIcon } from "./util/html-utils";
 import {
   getMetricValue,
   getRequisitionMetricCellHighlight,
@@ -115,7 +115,12 @@ const attributes: AttributeDefinition<Case>[] = [
     title: "Assay",
     addContents(object, fragment) {
       const assay = siteConfig.assaysById[object.assayId];
-      addText(fragment, `${assay.description || assay.name} v${assay.version}`);
+      const assayDiv = makeNameDiv(
+        `${assay.description || assay.name} v${assay.version}`,
+        urls.miso.assay(object.assayId),
+        undefined
+      );
+      fragment.appendChild(assayDiv);
     },
   },
 ];

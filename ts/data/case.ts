@@ -2,6 +2,7 @@ import { legendAction, TableDefinition } from "../component/table-builder";
 import {
   addLink,
   makeIcon,
+  addMisoIcon,
   styleText,
   makeNameDiv,
   addNaText,
@@ -188,9 +189,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Assay",
       sortType: "text",
       addParentContents(kase, fragment) {
-        const assayDiv = document.createElement("div");
         const assay = siteConfig.assaysById[kase.assayId];
-        addLink(assayDiv, assay.name, urls.dimsum.case(kase.id));
+        const assayDiv = makeNameDiv(
+          assay.name,
+          urls.miso.assay(kase.assayId),
+          urls.dimsum.case(kase.id)
+        );
+
         fragment.appendChild(assayDiv);
 
         const requisition = kase.requisition;
@@ -202,6 +207,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
         }
+
         fragment.appendChild(
           makeNameDiv(
             requisition.name,
