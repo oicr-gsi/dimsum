@@ -285,7 +285,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       addParentContents(kase, fragment) {
         addSampleIcons(kase.assayId, kase.receipts, fragment);
         if (samplePhasePendingWorkOrQc(kase.receipts)) {
-          if (samplePhasePendingWork(kase.receipts)) {
+          if (
+            samplePhasePendingWork(kase.receipts) &&
+            !kase.requisition.paused
+          ) {
             addConstructionIcon("receipt", fragment);
           }
           const targets = getTargets(kase);
@@ -333,7 +336,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         addSampleIcons(kase.assayId, test.extractions, fragment);
         if (samplePhaseComplete(kase.receipts)) {
           if (samplePhasePendingWorkOrQc(test.extractions)) {
-            if (samplePhasePendingWork(test.extractions)) {
+            if (
+              samplePhasePendingWork(test.extractions) &&
+              !kase.requisition.paused
+            ) {
               if (test.extractions.length) {
                 addSpace(fragment);
               }
@@ -379,7 +385,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
         if (samplePhaseComplete(test.extractions)) {
           if (samplePhasePendingWorkOrQc(test.libraryPreparations)) {
-            if (samplePhasePendingWork(test.libraryPreparations)) {
+            if (
+              samplePhasePendingWork(test.libraryPreparations) &&
+              !kase.requisition.paused
+            ) {
               if (test.libraryPreparations.length) {
                 addSpace(fragment);
               }
@@ -424,7 +433,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
         if (samplePhaseComplete(test.libraryPreparations)) {
           if (samplePhasePendingWorkOrQc(test.libraryQualifications)) {
-            if (samplePhasePendingWork(test.libraryQualifications)) {
+            if (
+              samplePhasePendingWork(test.libraryQualifications) &&
+              !kase.requisition.paused
+            ) {
               if (test.libraryQualifications.length) {
                 addSpace(fragment);
               }
@@ -463,7 +475,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
         if (samplePhaseComplete(test.libraryQualifications)) {
           if (samplePhasePendingWorkOrQc(test.fullDepthSequencings)) {
-            if (samplePhasePendingWork(test.fullDepthSequencings)) {
+            if (
+              samplePhasePendingWork(test.fullDepthSequencings) &&
+              !kase.requisition.paused
+            ) {
               if (test.fullDepthSequencings.length) {
                 addSpace(fragment);
               }
@@ -656,7 +671,7 @@ export function getSamplePhaseHighlight(
   requisition: Requisition,
   samples: Sample[]
 ) {
-  if (samplePhaseComplete(samples)) {
+  if (samplePhaseComplete(samples) || requisition.paused) {
     return null;
   } else if (requisition.stopped) {
     return samples.length ? null : "na";
@@ -673,11 +688,8 @@ function handleNaRequisitionPhase(
   if (kase.requisition.stopped && !getQcs(kase.requisition).length) {
     addNaText(fragment);
     return true;
-  } else if (kase.requisition.paused) {
-    return false;
-  } else {
-    return false;
   }
+  return false;
 }
 
 function requisitionPhaseComplete(qcs: RequisitionQc[]): boolean {
@@ -685,7 +697,7 @@ function requisitionPhaseComplete(qcs: RequisitionQc[]): boolean {
 }
 
 function getRequisitionPhaseHighlight(kase: Case, qcs: RequisitionQc[]) {
-  if (requisitionPhaseComplete(qcs)) {
+  if (requisitionPhaseComplete(qcs) || kase.requisition.paused) {
     return null;
   } else if (kase.requisition.stopped) {
     return qcs.length ? null : "na";
