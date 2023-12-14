@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.22.0] - 2023-12-14
+
+### Added
+
+* Handling for paused cases, including "CASE PAUSED" text in Assay column, and paused case filter
+* MISO link next to assay names in Cases table and at the top of the Case QC Report
+
+### Changed
+
+* Improved display of case-level turn-around time, including days remaining
+
+
 ## [1.21.0] - 2023-11-30
 
 ### Added
