@@ -75,6 +75,7 @@ export const urls = {
     requisition: (requisitionId: number) =>
       makeMisoUrl("requisition", requisitionId),
     qcRunLibraries: `${misoBaseUrl}/runlibraries/metrics`,
+    assay: (assayId: number) => makeMisoUrl("assay", assayId),
   },
   dashi: {
     singleLaneTar: (runName: string) => makeDashiSingleLaneUrl("tar", runName),
