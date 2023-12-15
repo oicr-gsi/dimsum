@@ -212,7 +212,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
         }
-        
+
         if (kase.requisition.paused) {
           const pausedDiv = makeTextDivWithTooltip(
             "CASE PAUSED",
@@ -954,12 +954,14 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
       targetDays: targets.libraryQualificationDays,
     };
   } else if (
-    kase.tests.some((test) =>
-      samplePhaseBehind(
-        test.libraryPreparations,
-        kase.caseDaysSpent,
-        targets.libraryPreparationDays
-      )
+    kase.tests.some(
+      (test) =>
+        !test.libraryPreparationSkipped &&
+        samplePhaseBehind(
+          test.libraryPreparations,
+          kase.caseDaysSpent,
+          targets.libraryPreparationDays
+        )
     )
   ) {
     return {
@@ -967,12 +969,14 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
       targetDays: targets.libraryPreparationDays,
     };
   } else if (
-    kase.tests.some((test) =>
-      samplePhaseBehind(
-        test.extractions,
-        kase.caseDaysSpent,
-        targets.extractionDays
-      )
+    kase.tests.some(
+      (test) =>
+        !test.extractionSkipped &&
+        samplePhaseBehind(
+          test.extractions,
+          kase.caseDaysSpent,
+          targets.extractionDays
+        )
     )
   ) {
     return {
