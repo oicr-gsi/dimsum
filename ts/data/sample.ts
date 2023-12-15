@@ -1,5 +1,6 @@
 import {
   addNaText,
+  addTextDiv,
   CellStatus,
   makeIcon,
   makeNameDiv,
@@ -533,7 +534,12 @@ export function getSampleMetricCellHighlight(
       return "warning";
     }
   }
-  if (/^Adaptor Contamination/.test(metricName)) {
+  if (
+    /^Adaptor Contamination/.test(metricName) ||
+    /^AUC between/.test(metricName) ||
+    /^Assigned/.test(metricName) ||
+    metricName === "Empty"
+  ) {
     return null;
   }
   // handle metrics that may be preliminary
@@ -615,10 +621,17 @@ export function addMetricValueContents(
     }
     return;
   }
-  if (/^Adaptor Contamination/.test(metricName)) {
+  if (
+    /^Adaptor Contamination/.test(metricName) ||
+    /^AUC between/.test(metricName)
+  ) {
     fragment.append(
       makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id))
     );
+    return;
+  }
+  if (/^Assigned/.test(metricName) || metricName === "Empty") {
+    addTextDiv("Manual check required", fragment);
     return;
   }
   const value = getMetricValue(metricName, sample);
@@ -1079,6 +1092,7 @@ export function metricApplies(metric: Metric, sample: Sample): boolean {
 function getMetricValue(metricName: string, sample: Sample): number | null {
   switch (metricName) {
     case "Appropriate volume":
+    case "Volume":
       return nullIfUndefined(sample.volume);
     case "Yield":
     case "Yield (Qubit)":
