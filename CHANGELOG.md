@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.22.1] - 2023-12-18
+
+### Fixed
+
+* Skipped (N/A) steps were displayed as "BEHIND SCHEDULE"
+
+
 ## [1.22.0] - 2023-12-14
 
 ### Added
