@@ -1,8 +1,6 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
 import {
-  addLink,
   makeIcon,
-  addMisoIcon,
   styleText,
   makeNameDiv,
   addNaText,
@@ -20,10 +18,8 @@ import {
   RequisitionQc,
 } from "./requisition";
 import { Tooltip } from "../component/tooltip";
-import { caseFilters, latestActivitySort } from "../component/table-components";
+import { caseFilters } from "../component/table-components";
 import { AssayTargets } from "./assay";
-
-const dayMillis = 1000 * 60 * 60 * 24;
 
 export interface Project {
   name: string;
@@ -243,9 +239,6 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         dateDiv.appendChild(document.createTextNode(kase.startDate));
         fragment.appendChild(dateDiv);
 
-        if (kase.requisition.stopped) {
-          return;
-        }
         if (caseComplete(kase)) {
           addTextDiv(`Completed in ${kase.caseDaysSpent} days`, fragment);
           return;
@@ -253,7 +246,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
 
         addTextDiv(`${kase.caseDaysSpent}d spent`, fragment);
         const targets = getTargets(kase);
-        if (caseOverdue(kase, targets)) {
+        const overdue = caseOverdue(kase, targets);
+        if (overdue) {
           const overdueDiv = makeTextDivWithTooltip(
             "OVERDUE",
             `Case target: ${targets.caseDays} days`
@@ -267,19 +261,21 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           );
           fragment.appendChild(remainingDiv);
         }
-        const overdueStep = getOverdueStep(kase, targets);
-        if (overdueStep) {
-          const behindDiv = makeTextDivWithTooltip(
-            "BEHIND SCHEDULE",
-            `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
-          );
-          styleText(behindDiv, "error");
-          fragment.appendChild(behindDiv);
+        if (!overdue) {
+          const overdueStep = getOverdueStep(kase, targets);
+          if (overdueStep) {
+            const behindDiv = makeTextDivWithTooltip(
+              "BEHIND SCHEDULE",
+              `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
+            );
+            styleText(behindDiv, "error");
+            fragment.appendChild(behindDiv);
+          }
         }
       },
       getCellHighlight(kase) {
-        if (kase.requisition.stopped || caseComplete(kase)) {
-          // Never show overdue/behind warning/error for completed or stopped cases
+        if (caseComplete(kase)) {
+          // Never show overdue/behind warning/error for completed cases
           return null;
         }
         const targets = getTargets(kase);
@@ -302,12 +298,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           ) {
             addConstructionIcon("receipt", fragment);
           }
-          const targets = getTargets(kase);
-          addTurnAroundTimeInfo(
-            kase.caseDaysSpent,
-            targets.receiptDays,
-            fragment
-          );
+          if (!kase.requisition.stopped) {
+            const targets = getTargets(kase);
+            addTurnAroundTimeInfo(
+              kase.caseDaysSpent,
+              targets.receiptDays,
+              fragment
+            );
+          }
         }
       },
       getCellHighlight(kase) {
@@ -356,12 +354,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               }
               addConstructionIcon("extraction", fragment);
             }
-            const targets = getTargets(kase);
-            addTurnAroundTimeInfo(
-              kase.caseDaysSpent,
-              targets.extractionDays,
-              fragment
-            );
+            if (!kase.requisition.stopped) {
+              const targets = getTargets(kase);
+              addTurnAroundTimeInfo(
+                kase.caseDaysSpent,
+                targets.extractionDays,
+                fragment
+              );
+            }
           }
         }
       },
@@ -405,12 +405,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               }
               addConstructionIcon("library preparation", fragment);
             }
-            const targets = getTargets(kase);
-            addTurnAroundTimeInfo(
-              kase.caseDaysSpent,
-              targets.libraryPreparationDays,
-              fragment
-            );
+            if (!kase.requisition.stopped) {
+              const targets = getTargets(kase);
+              addTurnAroundTimeInfo(
+                kase.caseDaysSpent,
+                targets.libraryPreparationDays,
+                fragment
+              );
+            }
           }
         }
       },
@@ -453,12 +455,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               }
               addConstructionIcon("library qualification", fragment);
             }
-            const targets = getTargets(kase);
-            addTurnAroundTimeInfo(
-              kase.caseDaysSpent,
-              targets.libraryQualificationDays,
-              fragment
-            );
+            if (!kase.requisition.stopped) {
+              const targets = getTargets(kase);
+              addTurnAroundTimeInfo(
+                kase.caseDaysSpent,
+                targets.libraryQualificationDays,
+                fragment
+              );
+            }
           }
         }
       },
@@ -495,12 +499,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
               }
               addConstructionIcon("full-depth sequencing", fragment);
             }
-            const targets = getTargets(kase);
-            addTurnAroundTimeInfo(
-              kase.caseDaysSpent,
-              targets.fullDepthSequencingDays,
-              fragment
-            );
+            if (!kase.requisition.stopped) {
+              const targets = getTargets(kase);
+              addTurnAroundTimeInfo(
+                kase.caseDaysSpent,
+                targets.fullDepthSequencingDays,
+                fragment
+              );
+            }
           }
         }
       },
@@ -528,6 +534,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           kase,
           (requisition) => requisition.analysisReviews,
           sequencingComplete,
+          true,
           targets.analysisReviewDays,
           fragment
         );
@@ -535,18 +542,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          kase.requisition.analysisReviews
+          kase.requisition.analysisReviews,
+          true
         );
       },
     },
     {
       title: "Release Approval",
       addParentContents(kase, fragment) {
-        if (
-          handleNaRequisitionPhase(kase, (x) => x.releaseApprovals, fragment)
-        ) {
-          return;
-        }
         const analysisReviewComplete = requisitionPhaseComplete(
           kase.requisition.analysisReviews
         );
@@ -554,7 +557,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         addRequisitionIcons(
           kase,
           (requisition) => requisition.releaseApprovals,
-          analysisReviewComplete,
+          analysisReviewComplete || kase.requisition.stopped,
+          false,
           targets.releaseApprovalDays,
           fragment
         );
@@ -562,16 +566,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       getCellHighlight(kase) {
         return getRequisitionPhaseHighlight(
           kase,
-          kase.requisition.releaseApprovals
+          kase.requisition.releaseApprovals,
+          false
         );
       },
     },
     {
       title: "Release",
       addParentContents(kase, fragment) {
-        if (handleNaRequisitionPhase(kase, (x) => x.releases, fragment)) {
-          return;
-        }
         const draftComplete = requisitionPhaseComplete(
           kase.requisition.releaseApprovals
         );
@@ -580,12 +582,17 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           kase,
           (requisition) => requisition.releases,
           draftComplete,
+          false,
           targets.releaseDays,
           fragment
         );
       },
       getCellHighlight(kase) {
-        return getRequisitionPhaseHighlight(kase, kase.requisition.releases);
+        return getRequisitionPhaseHighlight(
+          kase,
+          kase.requisition.releases,
+          false
+        );
       },
     },
     {
@@ -707,10 +714,14 @@ function requisitionPhaseComplete(qcs: RequisitionQc[]): boolean {
   return !!(qcs.length && getLatestRequisitionQc(qcs).qcPassed);
 }
 
-function getRequisitionPhaseHighlight(kase: Case, qcs: RequisitionQc[]) {
+function getRequisitionPhaseHighlight(
+  kase: Case,
+  qcs: RequisitionQc[],
+  stoppable: boolean
+) {
   if (requisitionPhaseComplete(qcs) || kase.requisition.paused) {
     return null;
-  } else if (kase.requisition.stopped) {
+  } else if (stoppable && kase.requisition.stopped) {
     return qcs.length ? null : "na";
   } else {
     return "warning";
@@ -820,6 +831,7 @@ function addRequisitionIcons(
   kase: Case,
   getQcs: (requisition: Requisition) => RequisitionQc[],
   previousComplete: boolean,
+  stoppable: boolean,
   targetDays: number | null,
   fragment: DocumentFragment
 ) {
@@ -831,7 +843,11 @@ function addRequisitionIcons(
     const status = qcStatuses.qc;
     addRequisitionIcon(kase.requisition, status, fragment);
   }
-  if (previousComplete && !requisitionPhaseComplete(qcs)) {
+  if (
+    (!stoppable || !kase.requisition.stopped) &&
+    previousComplete &&
+    !requisitionPhaseComplete(qcs)
+  ) {
     addTurnAroundTimeInfo(kase.caseDaysSpent, targetDays, fragment);
   }
 }
@@ -916,6 +932,9 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
       stepLabel: "Release approval",
       targetDays: targets.releaseApprovalDays,
     };
+  }
+  if (kase.requisition.stopped) {
+    return null;
   } else if (
     requisitionPhaseBehind(
       kase.requisition.analysisReviews,

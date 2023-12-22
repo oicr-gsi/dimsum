@@ -44,7 +44,7 @@ import ca.on.oicr.gsi.dimsum.data.TestTableView;
 public enum PendingState {
 
   // @formatter:off
-  RECEIPT_QC("Receipt QC") {
+  RECEIPT_QC("Receipt QC", true) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isPendingReceiptQc(kase);
@@ -64,7 +64,7 @@ public enum PendingState {
       }
     }
   },
-  EXTRACTION("Extraction") {
+  EXTRACTION("Extraction", true) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isReceiptPassed
@@ -86,7 +86,7 @@ public enum PendingState {
       }
     }
   },
-  EXTRACTION_QC("Extraction QC Sign-Off") {
+  EXTRACTION_QC("Extraction QC Sign-Off", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getExtractions());
@@ -101,7 +101,7 @@ public enum PendingState {
       }
     }
   },
-  LIBRARY_PREPARATION("Library Preparation") {
+  LIBRARY_PREPARATION("Library Preparation", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return !test.isLibraryPreparationSkipped()
@@ -119,7 +119,7 @@ public enum PendingState {
       }
     }
   },
-  LIBRARY_QC("Library QC Sign-Off") {
+  LIBRARY_QC("Library QC Sign-Off", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getLibraryPreparations());
@@ -134,7 +134,7 @@ public enum PendingState {
       }
     }
   },
-  LIBRARY_QUALIFICATION("Library Qualification") {
+  LIBRARY_QUALIFICATION("Library Qualification", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations());
@@ -152,7 +152,7 @@ public enum PendingState {
       }
     }
   },
-  LIBRARY_QUALIFICATION_QC("Library Qualification QC Sign-Off") {
+  LIBRARY_QUALIFICATION_QC("Library Qualification QC Sign-Off", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getLibraryQualifications());
@@ -167,7 +167,7 @@ public enum PendingState {
       }
     }
   },
-  LIBRARY_QUALIFICATION_DATA_REVIEW("Library Qualification Data Review") {
+  LIBRARY_QUALIFICATION_DATA_REVIEW("Library Qualification Data Review", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingDataReview(test.getLibraryQualifications());
@@ -182,7 +182,7 @@ public enum PendingState {
       }
     }
   },
-  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing") {
+  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications());
@@ -201,7 +201,7 @@ public enum PendingState {
       }
     }
   },
-  FULL_DEPTH_QC("Full-Depth Sequencing QC Sign-Off") {
+  FULL_DEPTH_QC("Full-Depth Sequencing QC Sign-Off", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingQc(test.getFullDepthSequencings());
@@ -216,7 +216,7 @@ public enum PendingState {
       }
     }
   },
-  FULL_DEPTH_DATA_REVIEW("Full-Depth Sequencing Data Review") {
+  FULL_DEPTH_DATA_REVIEW("Full-Depth Sequencing Data Review", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.hasPendingDataReview(test.getFullDepthSequencings());
@@ -231,7 +231,7 @@ public enum PendingState {
       }
     }
   },
-  ANALYSIS_REVIEW("Analysis Review") {
+  ANALYSIS_REVIEW("Analysis Review", true) {
     @Override
     public boolean qualifyCase(Case kase) {
       return kase.getTests().stream().allMatch(Helpers.isCompleted(Test::getFullDepthSequencings))
@@ -243,11 +243,11 @@ public enum PendingState {
       return requisition.getAnalysisReviews().isEmpty();
     }
   },
-  RELEASE_APPROVAL("Release Approval") {
+  RELEASE_APPROVAL("Release Approval", false) {
 
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getAnalysisReviews)
+      return (kase.isStopped() || Helpers.isCompletedRequisitionQc(kase, Requisition::getAnalysisReviews))
           && this.qualifyRequisition(kase.getRequisition());
     }
 
@@ -256,7 +256,7 @@ public enum PendingState {
       return requisition.getReleaseApprovals().isEmpty();
     }
   },
-  RELEASE("Release") {
+  RELEASE("Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase, Requisition::getReleaseApprovals)
@@ -278,16 +278,22 @@ public enum PendingState {
   }
 
   private final String label;
+  private final boolean stoppable;
   private final Predicate<Case> casePredicate = this::qualifyCase;
   private final Predicate<Test> testPredicate = this::qualifyTest;
   private final Predicate<Requisition> requisitionPredicate = this::qualifyRequisition;
 
-  private PendingState(String label) {
+  private PendingState(String label, boolean stoppable) {
     this.label = label;
+    this.stoppable = stoppable;
   }
 
   public String getLabel() {
     return label;
+  }
+
+  public boolean isStoppable() {
+    return stoppable;
   }
 
   public Predicate<Case> predicate() {

@@ -16,7 +16,7 @@ public enum CaseSort {
     @Override
     public Comparator<Case> comparator(Map<Long, Assay> assaysById) {
       return (a, b) -> {
-        // If one case is inactive (stopped/paused/complete), the other is more urgent
+        // If one case is inactive (paused/complete), the other is more urgent
         // If both cases are inactive, consider them equal
         if (isInactive(a)) {
           if (isInactive(b)) {
@@ -58,8 +58,7 @@ public enum CaseSort {
     }
 
     private static boolean isInactive(Case kase) {
-      return kase.isStopped()
-          || kase.getRequisition().isPaused()
+      return kase.getRequisition().isPaused()
           || CompletedGate.RELEASE.qualifyCase(kase);
     }
 
@@ -93,23 +92,28 @@ public enum CaseSort {
     }
 
     private static boolean isStepBehind(Integer target, Case kase, CompletedGate completedGate) {
-      return target != null && kase.getCaseDaysSpent() > target && !completedGate.qualifyCase(kase);
+      return target != null && kase.getCaseDaysSpent() > target
+          && (!kase.getRequisition().isStopped() || !completedGate.isStoppable())
+          && !completedGate.qualifyCase(kase);
     }
 
     private static int calculateStepDaysRemaining(Case kase, AssayTargets targets) {
-      if (!CompletedGate.RECEIPT.qualifyCase(kase)) {
-        return calculateDaysRemaining(kase, targets.getReceiptDays());
-      } else if (!CompletedGate.EXTRACTION.qualifyCase(kase)) {
-        return calculateDaysRemaining(kase, targets.getExtractionDays());
-      } else if (!CompletedGate.LIBRARY_PREPARATION.qualifyCase(kase)) {
-        return calculateDaysRemaining(kase, targets.getLibraryPreparationDays());
-      } else if (!CompletedGate.LIBRARY_QUALIFICATION.qualifyCase(kase)) {
-        return calculateDaysRemaining(kase, targets.getLibraryQualificationDays());
-      } else if (!CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)) {
-        return calculateDaysRemaining(kase, targets.getFullDepthSequencingDays());
-      } else if (!CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase)) {
-        return calculateDaysRemaining(kase, targets.getAnalysisReviewDays());
-      } else if (!CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)) {
+      if (!kase.getRequisition().isStopped()) {
+        if (!CompletedGate.RECEIPT.qualifyCase(kase)) {
+          return calculateDaysRemaining(kase, targets.getReceiptDays());
+        } else if (!CompletedGate.EXTRACTION.qualifyCase(kase)) {
+          return calculateDaysRemaining(kase, targets.getExtractionDays());
+        } else if (!CompletedGate.LIBRARY_PREPARATION.qualifyCase(kase)) {
+          return calculateDaysRemaining(kase, targets.getLibraryPreparationDays());
+        } else if (!CompletedGate.LIBRARY_QUALIFICATION.qualifyCase(kase)) {
+          return calculateDaysRemaining(kase, targets.getLibraryQualificationDays());
+        } else if (!CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)) {
+          return calculateDaysRemaining(kase, targets.getFullDepthSequencingDays());
+        } else if (!CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase)) {
+          return calculateDaysRemaining(kase, targets.getAnalysisReviewDays());
+        }
+      }
+      if (!CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)) {
         return calculateDaysRemaining(kase, targets.getReleaseApprovalDays());
       } else if (!CompletedGate.RELEASE.qualifyCase(kase)) {
         return calculateDaysRemaining(kase, targets.getReleaseDays());
