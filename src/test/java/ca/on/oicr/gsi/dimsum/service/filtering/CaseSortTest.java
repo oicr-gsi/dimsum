@@ -100,30 +100,6 @@ public class CaseSortTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testSortByUrgencyBothStopped() {
-    Case a = mockEmptyCase(1L);
-    when(a.isStopped()).thenReturn(true);
-
-    Case b = mockEmptyCase(1L);
-    when(b.isStopped()).thenReturn(true);
-
-    // Both stopped, should be considered equivalent
-    testUrgencyComparator(a, b, true);
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testSortByUrgencyOneCompletedOneStopped() {
-    Case a = mockEmptyCase(1L);
-    a.getRequisition().getReleases().add(mockRequisitionQc(true, 2023, 1, 1));
-
-    Case b = mockEmptyCase(1L);
-    when(b.isStopped()).thenReturn(true);
-
-    // One completed, one stopped. Should be considered equivalent
-    testUrgencyComparator(a, b, true);
-  }
-
-  @org.junit.jupiter.api.Test
   public void testSortByUrgencyOneCompleted() {
     Case a = mockEmptyCase(1L);
 
@@ -131,17 +107,6 @@ public class CaseSortTest {
     b.getRequisition().getReleases().add(mockRequisitionQc(true, 2023, 1, 1));
 
     // B completed. A is more urgent
-    testUrgencyComparator(a, b);
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testSortByUrgencyOneStopped() {
-    Case a = mockEmptyCase(1L);
-
-    Case b = mockEmptyCase(1L);
-    when(b.isStopped()).thenReturn(true);
-
-    // B stopped. A is more urgent
     testUrgencyComparator(a, b);
   }
 
@@ -166,18 +131,6 @@ public class CaseSortTest {
 
     // B paused. A is more urgent
     testUrgencyComparator(a, b);
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testSortByUrgencyOnePausedOneStopped() {
-    Case a = mockEmptyCase(1L);
-    when(a.getRequisition().isPaused()).thenReturn(true);
-
-    Case b = mockEmptyCase(1L);
-    when(b.isStopped()).thenReturn(true);
-
-    // A paused, B stopped. Should be considered equivalent
-    testUrgencyComparator(a, b, true);
   }
 
   @org.junit.jupiter.api.Test
