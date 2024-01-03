@@ -17,7 +17,7 @@ import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public enum CompletedGate {
   // @formatter:off
-  RECEIPT("Receipt") {
+  RECEIPT("Receipt", true) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isReceiptCompleted(kase);
@@ -37,7 +37,7 @@ public enum CompletedGate {
       }
     }
   },
-  EXTRACTION("Extraction") {
+  EXTRACTION("Extraction", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isExtractionSkipped() || Helpers.isCompleted(test.getExtractions());
@@ -53,7 +53,7 @@ public enum CompletedGate {
 
     }
   },
-  LIBRARY_PREPARATION("Library Preparation") {
+  LIBRARY_PREPARATION("Library Preparation", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isLibraryPreparationSkipped()
@@ -70,7 +70,7 @@ public enum CompletedGate {
     }
 
   },
-  LIBRARY_QUALIFICATION("Library Qualification") {
+  LIBRARY_QUALIFICATION("Library Qualification", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getLibraryQualifications());
@@ -85,7 +85,7 @@ public enum CompletedGate {
       }
     }
   },
-  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing") {
+  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getFullDepthSequencings());
@@ -100,7 +100,7 @@ public enum CompletedGate {
       }
     }
   },
-  ANALYSIS_REVIEW("Analysis Review") {
+  ANALYSIS_REVIEW("Analysis Review", true) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase.getRequisition(), Requisition::getAnalysisReviews);
@@ -113,7 +113,7 @@ public enum CompletedGate {
     }
 
   },
-  RELEASE_APPROVAL("Release Approval") {
+  RELEASE_APPROVAL("Release Approval", false) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase.getRequisition(), Requisition::getReleaseApprovals);
@@ -124,7 +124,7 @@ public enum CompletedGate {
       return Helpers.isCompletedRequisitionQc(requisition, Requisition::getReleaseApprovals);
     }
   },
-  RELEASE("Release") {
+  RELEASE("Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
       return Helpers.isCompletedRequisitionQc(kase.getRequisition(), Requisition::getReleases);
@@ -145,16 +145,22 @@ public enum CompletedGate {
   }
 
   private final String label;
+  private final boolean stoppable;
   private final Predicate<Case> casePredicate = this::qualifyCase;
   private final Predicate<Test> testPredicate = this::qualifyTest;
   private final Predicate<Requisition> requisitionPredicate = this::qualifyRequisition;
 
-  private CompletedGate(String label) {
+  private CompletedGate(String label, boolean stoppable) {
     this.label = label;
+    this.stoppable = stoppable;
   }
 
   public String getLabel() {
     return label;
+  }
+
+  public boolean isStoppable() {
+    return stoppable;
   }
 
   public Predicate<Case> predicate() {
