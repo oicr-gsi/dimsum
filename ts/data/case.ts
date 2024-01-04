@@ -75,6 +75,7 @@ export interface Test {
   targetedSequencing: string;
   extractionSkipped: boolean;
   libraryPreparationSkipped: boolean;
+  libraryQualificationSkipped: boolean;
   extractions: Sample[];
   libraryPreparations: Sample[];
   libraryQualifications: Sample[];
@@ -443,6 +444,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         ) {
           return;
         }
+        if (
+          !test.libraryQualifications.length &&
+          test.libraryQualificationSkipped
+        ) {
+          addNaText(fragment);
+          return;
+        }
         addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
         if (samplePhaseComplete(test.libraryPreparations)) {
           if (samplePhasePendingWorkOrQc(test.libraryQualifications)) {
@@ -468,6 +476,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       },
       getCellHighlight(kase, test) {
         test = assertNotNull(test);
+        if (
+          !test.libraryQualifications.length &&
+          test.libraryQualificationSkipped
+        ) {
+          return "na";
+        }
         return getSamplePhaseHighlight(
           kase.requisition,
           test.libraryQualifications
