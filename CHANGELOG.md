@@ -7,6 +7,21 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.23.0] - 2024-01-04
+
+### Added
+
+* Support for missing smMIPS assay metrics
+
+### Changed
+
+* Release approval and release steps are now required even for stopped cases
+
+### Fixed
+
+* Steps that were skipped due to the case being stopped could still be shown as overdue
+
+
 ## [1.22.1] - 2023-12-18
 
 ### Fixed
