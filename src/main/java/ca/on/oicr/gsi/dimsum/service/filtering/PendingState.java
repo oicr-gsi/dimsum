@@ -137,7 +137,8 @@ public enum PendingState {
   LIBRARY_QUALIFICATION("Library Qualification", true) {
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations());
+      return !test.isLibraryQualificationSkipped()
+          && Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations());
     }
 
     @Override

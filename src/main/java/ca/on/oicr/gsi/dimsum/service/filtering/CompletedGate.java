@@ -73,7 +73,8 @@ public enum CompletedGate {
   LIBRARY_QUALIFICATION("Library Qualification", true) {
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.isCompleted(test.getLibraryQualifications());
+      return test.isLibraryQualificationSkipped()
+          || Helpers.isCompleted(test.getLibraryQualifications());
     }
 
     @Override
