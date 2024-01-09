@@ -11,7 +11,8 @@ public enum SampleSort {
 
   // @formatter:off
   NAME("Name", Comparator.comparing(Sample::getName)),
-  LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate));
+  LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate)),
+  QC_STATUS("QC Status", new QCStatusSort());
   // @formatter:on
 
   private static final Map<String, SampleSort> map = Stream.of(SampleSort.values())

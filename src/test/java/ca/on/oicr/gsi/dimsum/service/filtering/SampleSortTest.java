@@ -1,9 +1,7 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;

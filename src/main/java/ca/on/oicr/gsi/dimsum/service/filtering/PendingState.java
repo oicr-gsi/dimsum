@@ -338,7 +338,7 @@ public enum PendingState {
     throw new IllegalStateException("This gate does not apply to samples");
   }
 
-  private static class Helpers {
+  public static class Helpers {
     public static String TOP_UP_REASON = "Top-up Required";
     public static Predicate<Sample> pendingQc = Helpers::isPendingQc;
     public static Predicate<Sample> pendingDataReview = Helpers::isPendingDataReview;
@@ -351,7 +351,7 @@ public enum PendingState {
         kase -> kase.getReceipts().stream().anyMatch(passed)
             && kase.getReceipts().stream().noneMatch(pendingQc);
 
-    private static boolean isPassed(Sample sample) {
+    public static boolean isPassed(Sample sample) {
       return isTrue(sample.getQcPassed())
           && (sample.getRun() == null || isTrue(sample.getDataReviewPassed()));
     }
@@ -360,7 +360,7 @@ public enum PendingState {
       return Boolean.TRUE.equals(value);
     }
 
-    private static boolean isPendingQc(Sample sample) {
+    public static boolean isPendingQc(Sample sample) {
       return sample.getQcPassed() == null && !isTopUpRequired(sample);
     }
 
@@ -368,12 +368,12 @@ public enum PendingState {
       return kase.getReceipts().stream().anyMatch(pendingQc);
     }
 
-    private static boolean isPendingDataReview(Sample sample) {
+    public static boolean isPendingDataReview(Sample sample) {
       return sample.getQcUser() != null && sample.getRun() != null
           && sample.getDataReviewPassed() == null;
     }
 
-    private static boolean isTopUpRequired(Sample sample) {
+    public static boolean isTopUpRequired(Sample sample) {
       return TOP_UP_REASON.equals(sample.getQcReason());
     }
 
