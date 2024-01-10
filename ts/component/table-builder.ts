@@ -134,6 +134,7 @@ export class TableBuilder<ParentType, ChildType> {
   selectedItems: Set<ParentType> = new Set<ParentType>();
   selectAllCheckbox?: HTMLInputElement;
   onFilterChange?: (key: string, value: string, add: boolean) => void;
+  lastClickedRowIndex: number | null = null;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
@@ -164,6 +165,17 @@ export class TableBuilder<ParentType, ChildType> {
     this.onFilterChange = onFilterChange;
     this.container = container;
     this.columns = definition.generateColumns();
+    document.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Shift") {
+        this.isShiftKeyPressed = true;
+      }
+    });
+
+    document.addEventListener("keyup", (event: KeyboardEvent) => {
+      if (event.key === "Shift") {
+        this.isShiftKeyPressed = false;
+      }
+    });
   }
 
   public applyFilter(key: string, value: string, add: boolean) {
@@ -662,7 +674,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
     if (data && data.length) {
       let previousSubheading: string | null = null;
-      data.forEach((parent) => {
+      data.forEach((parent, index) => {
         if (this.definition.getSubheading) {
           const currentSubheading = this.definition.getSubheading(parent);
           if (currentSubheading !== previousSubheading) {
@@ -670,7 +682,7 @@ export class TableBuilder<ParentType, ChildType> {
             previousSubheading = currentSubheading;
           }
         }
-        this.addDataRow(table, parent);
+        this.addDataRow(table, parent, index);
       });
     } else {
       this.addNoDataRow(table);
@@ -774,7 +786,11 @@ export class TableBuilder<ParentType, ChildType> {
     th.appendChild(document.createTextNode(text || "Other"));
   }
 
-  private addDataRow(table: HTMLTableElement, parent: ParentType) {
+  private addDataRow(
+    table: HTMLTableElement,
+    parent: ParentType,
+    rowIndex: number
+  ) {
     let children: ChildType[] = [];
     if (this.definition.getChildren) {
       children = this.definition.getChildren(parent);
@@ -784,7 +800,7 @@ export class TableBuilder<ParentType, ChildType> {
     tbody.classList.add("nobreak");
     const tr = this.addBodyRow(tbody, parent);
     if (this.definition.bulkActions) {
-      this.addRowSelectCell(tr, parent);
+      this.addRowSelectCell(tr, parent, rowIndex);
     }
     this.columns.forEach((column, i) => {
       if (column.child) {
@@ -839,22 +855,66 @@ export class TableBuilder<ParentType, ChildType> {
     cell.appendChild(document.createTextNode("NO DATA"));
   }
 
-  private addRowSelectCell(tr: HTMLTableRowElement, item: ParentType) {
+  private isShiftKeyPressed: boolean = false;
+
+  private addRowSelectCell(
+    tr: HTMLTableRowElement,
+    item: ParentType,
+    rowIndex: number
+  ) {
     const td = makeCell(tr, true);
     const checkbox = document.createElement("input");
     checkbox.className = "row-select";
     checkbox.type = "checkbox";
+
     checkbox.onchange = (event) => {
-      if (checkbox.checked) {
-        this.selectedItems.add(item);
+      const currentRowIndex = rowIndex;
+
+      if (this.isShiftKeyPressed && this.lastClickedRowIndex !== null) {
+        this.toggleRange(
+          this.lastClickedRowIndex,
+          currentRowIndex,
+          checkbox.checked
+        );
       } else {
-        if (this.selectAllCheckbox) {
-          this.selectAllCheckbox.checked = false;
+        if (checkbox.checked) {
+          this.selectedItems.add(item);
+        } else {
+          if (this.selectAllCheckbox) {
+            this.selectAllCheckbox.checked = false;
+            this.selectedItems.delete(item);
+          }
+        }
+      }
+      this.lastClickedRowIndex = currentRowIndex;
+    };
+
+    td.appendChild(checkbox);
+  }
+
+  private toggleRange(
+    startIndex: number,
+    endIndex: number,
+    isSelected: boolean
+  ) {
+    const [minIndex, maxIndex] = [
+      Math.min(startIndex, endIndex),
+      Math.max(startIndex, endIndex),
+    ];
+
+    const rowSelects = this.container.getElementsByClassName("row-select");
+    for (let i = minIndex; i <= maxIndex; i++) {
+      const rowSelect = rowSelects[i] as HTMLInputElement;
+      if (rowSelect) {
+        rowSelect.checked = isSelected;
+        const item = this.allItems[i];
+        if (isSelected) {
+          this.selectedItems.add(item);
+        } else {
           this.selectedItems.delete(item);
         }
       }
-    };
-    td.appendChild(checkbox);
+    }
   }
 
   private addParentCell(
