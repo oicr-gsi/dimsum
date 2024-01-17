@@ -99,11 +99,13 @@ public class NotificationManager {
       String runName = parseRunNameFromSummary(issue);
       if (runName == null) {
         // Issue doesn't seem to match expected pattern; ignore
+        log.warn("Unable to parse run name from JIRA ticket: {}", issue.getSummary());
         continue;
       }
+      log.debug("Processing existing JIRA ticket for {}", runName);
       RunAndLibraries runAndLibraries = data.get(runName);
       if (runAndLibraries == null) {
-        log.debug("Orphaned notification - run not found: {}", runName);
+        log.warn("Orphaned notification - run not found: {}", runName);
         continue;
       }
       // track to avoid reprocessing later
@@ -130,6 +132,7 @@ public class NotificationManager {
   private void updateIssue(Issue issue, Notification notification, Counter jiraErrorCounter) {
     try {
       if (notification == null) {
+        log.debug("Closing issue: {}", issue.getSummary());
         jiraService.closeIssue(issue, "All sign-offs have been completed.");
         return;
       }
@@ -138,12 +141,15 @@ public class NotificationManager {
       if (issueState != notificationState) {
         switch (notificationState) {
           case OPEN:
+            log.debug("Reopening issue: {}", issue.getSummary());
             jiraService.reopenIssue(issue, notification.makeComment(baseUrl));
             return;
           case PAUSED:
+            log.debug("Pausing issue: {}", issue.getSummary());
             jiraService.pauseIssue(issue, notification.makeComment(baseUrl));
             return;
           case CLOSED:
+            log.debug("Closing issue: {}", issue.getSummary());
             jiraService.closeIssue(issue, notification.makeComment(baseUrl));
             return;
           default:
@@ -155,7 +161,10 @@ public class NotificationManager {
       Issue issueWithComments = jiraService.getIssueByKey(issue.getKey());
       RunQcCommentSummary issueSummary = RunQcCommentSummary.findLatest(issueWithComments);
       if (issueSummary == null || issueSummary.needsUpdate(notification)) {
+        log.debug("Commenting update on issue: {}", issue.getSummary());
         jiraService.postComment(issue, notification.makeComment(baseUrl));
+      } else {
+        log.debug("No update necessary for issue: {}", issue.getSummary());
       }
     } catch (Exception e) {
       jiraErrorCounter.increment();
@@ -177,7 +186,9 @@ public class NotificationManager {
             newNotifications.add(x);
             return;
           }
-          String issueSummary = x.getRun().getName() + SUMMARY_SUFFIX_RUN_QC;
+          String runName = x.getRun().getName();
+          log.debug("Processing run without existing open ticket: {}", runName);
+          String issueSummary = runName + SUMMARY_SUFFIX_RUN_QC;
           Issue issue = null;
           try {
             issue = jiraService.getIssueBySummary(issueSummary);
@@ -188,6 +199,7 @@ public class NotificationManager {
             return;
           }
           if (issue == null) {
+            log.debug("Creating new JIRA ticket for {}", runName);
             try {
               String newIssueKey =
                   jiraService.createIssue(issueSummary, x.makeComment(baseUrl, resolutionOverride));
@@ -202,6 +214,8 @@ public class NotificationManager {
             if (issueState != IssueState.OVERRIDDEN) {
               updateIssue(issue, x, jiraErrorCounter);
               newNotifications.add(x.withIssueKey(issue.getKey()));
+            } else {
+              log.debug("Aborting update on overridden JIRA ticket {}", issue.getSummary());
             }
           }
         });
