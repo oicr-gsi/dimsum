@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.24.0] - 2024-01-18
+
+### Changed
+
+* Some tests may not have a library qualification step
+
+
 ## [1.23.0] - 2024-01-04
 
 ### Added
