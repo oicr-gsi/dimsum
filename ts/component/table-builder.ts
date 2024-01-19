@@ -135,6 +135,7 @@ export class TableBuilder<ParentType, ChildType> {
   selectAllCheckbox?: HTMLInputElement;
   onFilterChange?: (key: string, value: string, add: boolean) => void;
   lastClickedRowIndex: number | null = null;
+  private isShiftKeyPressed: boolean = false;
 
   constructor(
     definition: TableDefinition<ParentType, ChildType>,
@@ -854,8 +855,6 @@ export class TableBuilder<ParentType, ChildType> {
     cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
   }
-
-  private isShiftKeyPressed: boolean = false;
 
   private addRowSelectCell(
     tr: HTMLTableRowElement,
