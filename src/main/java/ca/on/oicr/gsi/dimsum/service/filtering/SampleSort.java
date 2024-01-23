@@ -39,7 +39,7 @@ public enum SampleSort {
     return comparator;
   }
 
-  public static int getSampleQcStatus(Sample sample) {
+  protected static int getSampleQcStatus(Sample sample) {
     if (SampleUtils.isPendingQc(sample)) {
       return 1;
     } else if (SampleUtils.isPendingDataReview(sample)) {

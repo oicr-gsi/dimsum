@@ -43,6 +43,75 @@ public class SampleSortTest {
     assertOrder(samples, SampleSort::getSampleQcStatus, qcStatusOrdered, true);
   }
 
+  @Test
+  public void testGetSampleQcStatusPending() {
+    Sample sample = mockSampleWithStatus(0); // pending QC
+    assertEquals(1, SampleSort.getSampleQcStatus(sample),
+        "Sample QC Status should be 1 for pending QC");
+  }
+
+  @Test
+  public void testGetSampleQcStatusPendingDataReview() {
+    Sample sample = mockSampleWithStatus(1); // pending data review
+    assertEquals(2, SampleSort.getSampleQcStatus(sample),
+        "Sample QC Status should be 2 for pending data review");
+  }
+
+  @Test
+  public void testGetSampleQcStatusTopUpRequired() {
+    Sample sample = mockSampleWithStatus(2); // top-up required
+    assertEquals(3, SampleSort.getSampleQcStatus(sample),
+        "Sample QC Status should be 3 for top-up required");
+  }
+
+  @Test
+  public void testGetSampleQcStatusPassed() {
+    Sample sample = mockSampleWithStatus(3); // passed
+    assertEquals(4, SampleSort.getSampleQcStatus(sample),
+        "Sample QC Status should be 4 for passed");
+  }
+
+  @Test
+  public void testGetSampleQcStatusOther() {
+    Sample sample = mockSampleWithStatus(4); // other
+    assertEquals(5, SampleSort.getSampleQcStatus(sample),
+        "Sample QC Status should be 5 for other statuses");
+  }
+
+  private Sample mockSampleWithStatus(int status) {
+    Sample sample = mock(Sample.class);
+    switch (status) {
+      case 0: // Pending QC
+        when(sample.getQcPassed()).thenReturn(null);
+        when(sample.getQcReason()).thenReturn(null);
+        when(sample.getRun()).thenReturn(null);
+        break;
+      case 1: // Pending Data Review
+        when(sample.getQcPassed()).thenReturn(true);
+        when(sample.getDataReviewPassed()).thenReturn(null);
+        when(sample.getQcUser()).thenReturn("someUser");
+        when(sample.getRun()).thenReturn(mock(Run.class));
+        break;
+      case 2: // Top-Up Required
+        when(sample.getQcPassed()).thenReturn(true);
+        when(sample.getQcReason()).thenReturn(SampleUtils.TOP_UP_REASON);
+        break;
+
+      case 3: // Passed
+        when(sample.getQcPassed()).thenReturn(true);
+        when(sample.getDataReviewPassed()).thenReturn(true);
+        when(sample.getRun()).thenReturn(mock(Run.class));
+        break;
+      case 4: // Other
+        when(sample.getQcPassed()).thenReturn(false);
+        when(sample.getDataReviewPassed()).thenReturn(false);
+        when(sample.getQcReason()).thenReturn("Some other reason");
+        when(sample.getRun()).thenReturn(null);
+        break;
+    }
+    return sample;
+  }
+
   private static List<Sample> getSamplesSorted(SampleSort sort, boolean descending) {
     Comparator<Sample> comparator = descending ? sort.comparator().reversed() : sort.comparator();
     List<Sample> samples = mockSamples().stream().sorted(comparator).toList();
@@ -58,35 +127,35 @@ public class SampleSortTest {
     when(sample.getName()).thenReturn(sampleNames[sampleNumber]);
 
     switch (sampleNumber) {
-      case 0:
+      case 0: // Pending QC
         when(sample.getQcPassed()).thenReturn(null);
         when(sample.getDataReviewPassed()).thenReturn(null);
         when(sample.getQcUser()).thenReturn(null);
         when(sample.getQcReason()).thenReturn(null);
         when(sample.getRun()).thenReturn(null);
         break;
-      case 1:
+      case 1: // Pending Data Review
         when(sample.getQcPassed()).thenReturn(true);
         when(sample.getDataReviewPassed()).thenReturn(true);
         when(sample.getQcUser()).thenReturn("user1");
         when(sample.getQcReason()).thenReturn(null);
         when(sample.getRun()).thenReturn(mock(Run.class));
         break;
-      case 2:
+      case 2: // Top-Up Required
         when(sample.getQcPassed()).thenReturn(false);
         when(sample.getDataReviewPassed()).thenReturn(false);
         when(sample.getQcUser()).thenReturn("user2");
         when(sample.getQcReason()).thenReturn(SampleUtils.TOP_UP_REASON);
         when(sample.getRun()).thenReturn(mock(Run.class));
         break;
-      case 3:
+      case 3: // Passed
         when(sample.getQcPassed()).thenReturn(true);
         when(sample.getDataReviewPassed()).thenReturn(null);
         when(sample.getQcUser()).thenReturn("user3");
         when(sample.getQcReason()).thenReturn(null);
         when(sample.getRun()).thenReturn(mock(Run.class));
         break;
-      case 4:
+      case 4: // Other
         when(sample.getQcPassed()).thenReturn(false);
         when(sample.getDataReviewPassed()).thenReturn(true);
         when(sample.getQcUser()).thenReturn("user4");
