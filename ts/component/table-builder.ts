@@ -13,7 +13,7 @@ import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
 
-type SortType = "number" | "text" | "date";
+type SortType = "number" | "text" | "date" | "custom";
 type FilterType = "text" | "dropdown";
 
 export interface ColumnDefinition<ParentType, ChildType> {
@@ -412,6 +412,8 @@ export class TableBuilder<ParentType, ChildType> {
         return descending ? "High to Low" : "Low to High";
       case "text":
         return descending ? "Z to A" : "A to Z";
+      case "custom":
+        return descending ? "Descending" : "Ascending";
       default:
         throw new Error(`Unhandled sort type: ${sortType}`);
     }

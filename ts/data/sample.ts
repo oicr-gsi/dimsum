@@ -118,6 +118,7 @@ function makeQcStatusColumn(
   const getStatus = includeRun ? getQcStatus : getSampleQcStatus;
   return {
     title: "QC Status",
+    sortType: "custom",
     addParentContents(sample, fragment) {
       const status = getStatus(sample);
       const icon = makeIcon(status.icon);

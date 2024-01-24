@@ -6,13 +6,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.util.SampleUtils;
 
 public enum SampleSort {
 
   // @formatter:off
-  NAME("Name", Comparator.comparing(Sample::getName)),
-  LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate));
-  // @formatter:on
+    NAME("Name", Comparator.comparing(Sample::getName)),
+    LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate)),
+    QC_STATUS("QC Status", Comparator.comparing(SampleSort::getSampleQcStatus));
+    // @formatter:on
 
   private static final Map<String, SampleSort> map = Stream.of(SampleSort.values())
       .collect(Collectors.toMap(SampleSort::getLabel, Function.identity()));
@@ -37,4 +39,17 @@ public enum SampleSort {
     return comparator;
   }
 
+  protected static int getSampleQcStatus(Sample sample) {
+    if (SampleUtils.isPendingQc(sample)) {
+      return 1;
+    } else if (SampleUtils.isPendingDataReview(sample)) {
+      return 2;
+    } else if (SampleUtils.isTopUpRequired(sample)) {
+      return 3;
+    } else if (SampleUtils.isPassed(sample)) {
+      return 4;
+    } else {
+      return 5;
+    }
+  }
 }
