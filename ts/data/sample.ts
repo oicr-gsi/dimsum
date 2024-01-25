@@ -24,7 +24,6 @@ import {
   getDivisorUnit,
   getMetricNames,
   getMetricRequirementText,
-  getSingleThreshold,
   makeMetricDisplay,
   makeNotFoundIcon,
   makeStatusIcon,
@@ -97,6 +96,7 @@ interface MisoRunLibraryMetric {
   title: string;
   threshold_type: string;
   threshold: number;
+  threshold_2?: number;
   value: number | null;
 }
 
@@ -425,17 +425,17 @@ function generateMetricData(
   category: MetricCategory,
   samples: Sample[]
 ): MisoRunLibrary[] {
-  if (!samples[0].assayId) {
-    throw new Error(`Sample ${samples[0].assayId} has no assay`);
-  }
   const data: MisoRunLibrary[] = [];
-  const metricNames = getMetricNames(category, [samples[0].assayId]).filter(
-    (x) => RUN_METRIC_LABELS.indexOf(x) === -1
-  );
   samples.forEach((sample) => {
+    if (!sample.assayId) {
+      throw new Error(`Sample ${sample.id} has no assay`);
+    }
     if (!sample.run) {
       throw new Error(`Sample ${sample.id} has no run`);
     }
+    const metricNames = getMetricNames(category, [sample.assayId]).filter(
+      (x) => RUN_METRIC_LABELS.indexOf(x) === -1
+    );
     data.push({
       name: extractLibraryName(sample.id),
       run_id: sample.run.id,
@@ -463,13 +463,40 @@ function getSampleMetrics(
         displayValue == null
           ? null
           : parseFloat(displayValue.replaceAll(",", ""));
-      return {
+      const misoMetric: MisoRunLibraryMetric = {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
         threshold: getSingleThreshold(metric),
         value: revisedValue,
       };
+      if (metric.thresholdType == "BETWEEN") {
+        if (metric.maximum === undefined) {
+          throw new Error("Metric is missing maximum value");
+        }
+        misoMetric.threshold_2 = metric.maximum;
+      }
+      return misoMetric;
     });
+}
+
+export function getSingleThreshold(metric: Metric) {
+  switch (metric.thresholdType) {
+    case "GT":
+    case "GE":
+    case "BETWEEN":
+      if (metric.minimum === undefined) {
+        throw new Error("Metric is missing minimum value");
+      }
+      return metric.minimum;
+    case "LT":
+    case "LE":
+      if (metric.maximum === undefined) {
+        throw new Error("Metric is missing maximum value");
+      }
+      return metric.maximum;
+    default:
+      throw new Error("Unhandled threshold type: " + metric.thresholdType);
+  }
 }
 
 function generateMetricColumns(
