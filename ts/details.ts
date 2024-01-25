@@ -1,10 +1,10 @@
-import { caseDefinition } from "./data/case";
-import { testDefinition } from "./data/test";
 import {
+  analysisReviewDefinition,
+  caseDefinition,
   releaseApprovalDefinition,
   releaseDefinition,
-  analysisReviewDefinition,
-} from "./data/requisition";
+} from "./data/case";
+import { testDefinition } from "./data/test";
 import {
   extractionDefinition,
   getFullDepthSequencingsDefinition,

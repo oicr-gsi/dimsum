@@ -2,20 +2,22 @@ import { AttributeDefinition, AttributeList } from "./component/attribute-list";
 import { showAlertDialog } from "./component/dialog";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Metric, MetricCategory, MetricSubcategory } from "./data/assay";
-import { Case, Qcable } from "./data/case";
-import { qcStatuses } from "./data/qc-status";
-import { makeTextDiv, addMisoIcon } from "./util/html-utils";
 import {
-  getMetricValue,
-  getRequisitionMetricCellHighlight,
-  getRequisitionQcStatus,
-  makeRequisitionMetricDisplay,
-  metricApplies as requisitionMetricApplies,
-  Requisition,
-  RequisitionQc,
-  RequisitionQcGroup,
-  subcategoryApplies as requisitionSubcategoryApplies,
-} from "./data/requisition";
+  AnalysisQcGroup,
+  Case,
+  CaseDeliverable,
+  Qcable,
+  analysisMetricApplies,
+  getAnalysisMetricCellHighlight,
+  getAnalysisMetricValue,
+  getDeliverableQcStatus,
+  makeAnalysisMetricDisplay,
+  subcategoryApplies as analysisSubcategoryApplies,
+  Donor,
+  deliverableTypeLabels,
+} from "./data/case";
+import { qcStatuses } from "./data/qc-status";
+import { makeTextDiv } from "./util/html-utils";
 import {
   addMetricValueContents,
   getFirstReviewStatus,
@@ -40,9 +42,9 @@ interface ReportSample {
 }
 
 interface ReportAnalysisReview {
-  requisition: Requisition;
-  requisitionQcGroup: RequisitionQcGroup;
-  requisitionQc: RequisitionQc | null; // null if no informatics review QC has been added
+  kase: Case;
+  qcGroup: AnalysisQcGroup;
+  deliverable: CaseDeliverable;
   metricCategory: MetricCategory;
   metricSubcategory: MetricSubcategory;
 }
@@ -309,27 +311,26 @@ function addAssayMismatchText(fragment: Node, object: ReportSample) {
   }
 }
 
-const requisitionGateMetricsDefinition: TableDefinition<
+const analysisReviewMetricsDefinition: TableDefinition<
   ReportAnalysisReview,
   Metric
 > = {
   disablePageControls: true,
   getChildren(parent) {
     return parent.metricSubcategory.metrics.filter((metric) =>
-      requisitionMetricApplies(metric, parent.requisitionQcGroup)
+      analysisMetricApplies(metric, parent.qcGroup)
     );
   },
+  getSubheading: (object) =>
+    deliverableTypeLabels[object.deliverable.deliverableType],
   generateColumns: () => [
     {
       title: "Item",
       headingClass: "print-width-20",
       addParentContents(object, fragment) {
-        addTextDiv(getQcGroupName(object.requisitionQcGroup), fragment);
-        if (object.requisitionQcGroup.groupId) {
-          addTextDiv(
-            `Group ID: ${object.requisitionQcGroup.groupId}`,
-            fragment
-          );
+        addTextDiv(getQcGroupName(object.kase.donor, object.qcGroup), fragment);
+        if (object.qcGroup.groupId) {
+          addTextDiv(`Group ID: ${object.qcGroup.groupId}`, fragment);
         }
       },
     },
@@ -362,20 +363,17 @@ const requisitionGateMetricsDefinition: TableDefinition<
             document.createTextNode("Standard pipeline removes reads below Q30")
           );
         } else {
-          const value = getMetricValue(object.name, parent.requisitionQcGroup);
+          const value = getAnalysisMetricValue(object.name, parent.qcGroup);
           fragment.appendChild(
-            makeRequisitionMetricDisplay(
-              [object],
-              parent.requisitionQcGroup,
-              false
-            )
+            makeAnalysisMetricDisplay([object], parent.qcGroup, false)
           );
         }
       },
       getCellHighlight(object, metric) {
         if (metric) {
-          return getRequisitionMetricCellHighlight(
-            object.requisition,
+          return getAnalysisMetricCellHighlight(
+            object.qcGroup,
+            object.kase.requisition,
             metric.name
           );
         } else {
@@ -386,19 +384,18 @@ const requisitionGateMetricsDefinition: TableDefinition<
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        const qc = object.requisitionQc;
+        const deliverable = object.deliverable;
         displaySignOff(
           fragment,
-          qc?.qcPassed,
+          deliverable.analysisReviewQcPassed,
           undefined,
-          qc?.qcUser,
-          qc?.qcDate
+          deliverable.analysisReviewQcUser,
+          deliverable.analysisReviewQcDate
         );
       },
       getCellHighlight(object) {
-        return getRequisitionQcStatus(
-          object.requisitionQc ? [object.requisitionQc] : []
-        ).cellStatus;
+        return getDeliverableQcStatus(object.deliverable.analysisReviewQcPassed)
+          .cellStatus;
       },
     },
     {
@@ -478,8 +475,8 @@ function pad(value: number, length: number): string {
   return value.toString().padStart(length, "0");
 }
 
-function getQcGroupName(qcGroup: RequisitionQcGroup) {
-  return `${qcGroup.donor.name}_${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
+function getQcGroupName(donor: Donor, qcGroup: AnalysisQcGroup) {
+  return `${donor.name}_${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
 }
 
 async function loadCase(caseId: string) {
@@ -536,7 +533,7 @@ async function loadCase(caseId: string) {
   ).build(fullDepths);
   const analysisReviews = getReportAnalysisReviews(data);
   new TableBuilder(
-    requisitionGateMetricsDefinition,
+    analysisReviewMetricsDefinition,
     "analysisReviewTableContainer"
   ).build(analysisReviews);
 
@@ -625,39 +622,38 @@ function getReportSamples(
 
 function getReportAnalysisReviews(kase: Case) {
   const assay = siteConfig.assaysById[kase.assayId];
-  const qc = !kase.requisition.analysisReviews.length
-    ? null
-    : kase.requisition.analysisReviews.reduce((accumulator, current) => {
-        if (!accumulator || current.qcDate > accumulator.qcDate) {
-          return current;
-        } else {
-          return accumulator;
-        }
-      });
-  return kase.requisition.qcGroups
-    .filter((qcGroup) => qcGroup.donor.id === kase.donor.id)
-    .flatMap((qcGroup) => {
-      return assay.metricCategories.ANALYSIS_REVIEW.filter((subcategory) =>
-        requisitionSubcategoryApplies(subcategory, qcGroup)
-      ).map((subcategory): ReportAnalysisReview => {
-        return {
-          requisition: kase.requisition,
-          requisitionQcGroup: qcGroup,
-          requisitionQc: qc,
-          metricCategory: "ANALYSIS_REVIEW",
-          metricSubcategory: subcategory,
-        };
+  return kase.deliverables
+    .flatMap((deliverable) => {
+      return kase.qcGroups.flatMap((qcGroup) => {
+        return assay.metricCategories.ANALYSIS_REVIEW.filter((subcategory) =>
+          analysisSubcategoryApplies(subcategory, qcGroup)
+        ).map((subcategory): ReportAnalysisReview => {
+          return {
+            kase: kase,
+            qcGroup: qcGroup,
+            deliverable: deliverable,
+            metricCategory: "ANALYSIS_REVIEW",
+            metricSubcategory: subcategory,
+          };
+        });
       });
     })
     .sort((a, b) => {
-      // sort by subcategory > item name
+      // sort by deliverable type > subcategory > item name
+      if (a.deliverable.deliverableType < b.deliverable.deliverableType) {
+        return -1;
+      } else if (
+        a.deliverable.deliverableType > b.deliverable.deliverableType
+      ) {
+        return 1;
+      }
       const aSubcategorySort = a.metricSubcategory.sortPriority || 0;
       const bSubcategorySort = b.metricSubcategory.sortPriority || 0;
       if (aSubcategorySort !== bSubcategorySort) {
         return aSubcategorySort - bSubcategorySort;
       }
-      const aName = getQcGroupName(a.requisitionQcGroup);
-      const bName = getQcGroupName(b.requisitionQcGroup);
+      const aName = getQcGroupName(a.kase.donor, a.qcGroup);
+      const bName = getQcGroupName(b.kase.donor, b.qcGroup);
       return aName.localeCompare(bName);
     });
 }

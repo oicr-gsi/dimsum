@@ -7,11 +7,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
+import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
-import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
@@ -108,8 +110,7 @@ public class MockCase {
     // Case is pending release approval
     Case kase = makeCase("PRO4_0001", "Single Test", "PRO4", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    Requisition requisition = kase.getRequisition();
-    addRequisitionQc(requisition.getAnalysisReviews(), true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
     return kase;
   }
 
@@ -119,9 +120,8 @@ public class MockCase {
     Case kase = makeCase("PRO5_0001", "Single Test", "PRO5", "REQ04", caseNumber);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     addTest(kase, caseNumber, 2, "Test", "WG", true, true, true, true);
-    Requisition requisition = kase.getRequisition();
-    addRequisitionQc(requisition.getAnalysisReviews(), true);
-    addRequisitionQc(requisition.getReleaseApprovals(), true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markReleaseApproval(kase.getDeliverables().get(0), true);
     return kase;
   }
 
@@ -321,6 +321,16 @@ public class MockCase {
     addSample(kase.getReceipts(), receiptSampleId, true, "Good");
     when(kase.getTests()).thenReturn(new ArrayList<>());
     addRequisition(kase, caseNumber, requisitionName);
+
+    when(kase.getDeliverables()).thenReturn(new ArrayList<>());
+    CaseDeliverable deliverable = mock(CaseDeliverable.class);
+    when(deliverable.getDeliverableType()).thenReturn(DeliverableType.DATA_RELEASE);
+    when(deliverable.getReleases()).thenReturn(new ArrayList<>());
+    CaseRelease release = mock(CaseRelease.class);
+    when(release.getDeliverable()).thenReturn("Full Pipeline");
+    deliverable.getReleases().add(release);
+    kase.getDeliverables().add(deliverable);
+
     return kase;
   }
 
@@ -341,19 +351,20 @@ public class MockCase {
     when(requisition.isStopped()).thenReturn(caseNumber == 23);
     when(requisition.isPaused()).thenReturn(caseNumber == 24);
     when(requisition.getName()).thenReturn(name);
-    when(requisition.getAnalysisReviews()).thenReturn(new ArrayList<>());
-    when(requisition.getReleaseApprovals()).thenReturn(new ArrayList<>());
-    when(requisition.getReleases()).thenReturn(new ArrayList<>());
     when(kase.getRequisition()).thenReturn(requisition);
     return requisition;
   }
 
-  private static void addRequisitionQc(List<RequisitionQc> qcs, boolean qcPassed) {
-    RequisitionQc qc = mock(RequisitionQc.class);
-    when(qc.isQcPassed()).thenReturn(qcPassed);
-    when(qc.getQcUser()).thenReturn("User");
-    when(qc.getQcDate()).thenReturn(LocalDate.now());
-    qcs.add(qc);
+  private static void markAnalysisReview(CaseDeliverable deliverable, Boolean qcPassed) {
+    when(deliverable.getAnalysisReviewQcPassed()).thenReturn(qcPassed);
+    when(deliverable.getAnalysisReviewQcUser()).thenReturn("User");
+    when(deliverable.getAnalysisReviewQcDate()).thenReturn(LocalDate.now());
+  }
+
+  private static void markReleaseApproval(CaseDeliverable deliverable, Boolean qcPassed) {
+    when(deliverable.getReleaseApprovalQcPassed()).thenReturn(qcPassed);
+    when(deliverable.getReleaseApprovalQcUser()).thenReturn("User");
+    when(deliverable.getReleaseApprovalQcDate()).thenReturn(LocalDate.now());
   }
 
   private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,

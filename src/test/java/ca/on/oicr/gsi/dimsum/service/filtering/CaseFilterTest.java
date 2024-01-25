@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
-import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.MockCase;
@@ -447,13 +446,6 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingAnalysisRequisitionFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.ANALYSIS_REVIEW.getLabel());
-    testFilterRequisitions(filter, Arrays.asList(4L));
-  }
-
-  @org.junit.jupiter.api.Test
   public void testPendingReleaseApprovalFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_APPROVAL.getLabel());
@@ -461,23 +453,9 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingReleaseApprovalRequisitionFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_APPROVAL.getLabel());
-    testFilterRequisitions(filter, Arrays.asList(5L));
-  }
-
-  @org.junit.jupiter.api.Test
   public void testPendingReleaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE.getLabel());
     testFilterCases(filter, Arrays.asList(6));
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testPendingReleaseRequisitionFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE.getLabel());
-    testFilterRequisitions(filter, Arrays.asList(6L));
   }
 
   @org.junit.jupiter.api.Test
@@ -827,14 +805,6 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedAnalysisRequisitionFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.ANALYSIS_REVIEW.getLabel());
-    testFilterRequisitions(filter, Arrays.asList(5L, 6L));
-  }
-
-  @org.junit.jupiter.api.Test
   public void testCompletedReleaseApprovalFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -852,13 +822,6 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedReleaseApprovalRequisitionFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE_APPROVAL.getLabel());
-    testFilterRequisitions(filter, Arrays.asList(6L));
-  }
-
-  @org.junit.jupiter.api.Test
   public void testCompletedReleaseFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
@@ -873,13 +836,6 @@ public class CaseFilterTest {
             CompletedGate.RELEASE.getLabel());
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
         10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24));
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testCompletedReleaseRequisitionFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE.getLabel());
-    testFilterRequisitions(filter, Collections.emptyList());
   }
 
   @org.junit.jupiter.api.Test
@@ -954,21 +910,6 @@ public class CaseFilterTest {
           "Sample %s included".formatted(sampleId));
     }
     assertEquals(expectedSamples.size(), samples.size(), "Sample count");
-  }
-
-  private static void testFilterRequisitions(CaseFilter filter,
-      List<Long> expectedRequisitionIds) {
-    List<Requisition> requisitions = cases.stream()
-        .filter(filter.casePredicate())
-        .map(kase -> kase.getRequisition())
-        .filter(filter.requisitionPredicate())
-        .toList();
-    for (Long id : expectedRequisitionIds) {
-      assertTrue(
-          requisitions.stream().anyMatch(requisition -> Objects.equals(requisition.getId(), id)),
-          "Requisition %s included".formatted(id));
-    }
-    assertEquals(expectedRequisitionIds.size(), requisitions.size(), "Requisition count");
   }
 
   private static List<Sample> getSamples(Test test, MetricCategory requestCategory) {
