@@ -8,11 +8,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
-import ca.on.oicr.gsi.cardea.data.Requisition;
-import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
+import ca.on.oicr.gsi.dimsum.util.SampleUtils;
 
 /**
  * <pre>
@@ -58,7 +57,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.RECEIPT) {
-        return Helpers.isPendingQc(sample);
+        return SampleUtils.isPendingQc(sample);
       } else {
         return true;
       }
@@ -67,7 +66,7 @@ public enum PendingState {
   EXTRACTION("Extraction", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isReceiptPassed
+      return CompletedGate.RECEIPT.predicate()
           .and(Helpers.anyTest(this::qualifyTest))
           .test(kase);
     }
@@ -80,7 +79,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.RECEIPT) {
-        return Helpers.isPassed(sample);
+        return SampleUtils.isPassed(sample);
       } else {
         return true;
       }
@@ -95,7 +94,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.EXTRACTION) {
-        return Helpers.isPendingQc(sample);
+        return SampleUtils.isPendingQc(sample);
       } else {
         return true;
       }
@@ -113,7 +112,7 @@ public enum PendingState {
       switch (requestCategory) {
         case RECEIPT:
         case EXTRACTION:
-          return Helpers.isPassed(sample);
+          return SampleUtils.isPassed(sample);
         default:
           return true;
       }
@@ -128,7 +127,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_PREP) {
-        return Helpers.isPendingQc(sample);
+        return SampleUtils.isPendingQc(sample);
       } else {
         return true;
       }
@@ -147,7 +146,7 @@ public enum PendingState {
         case RECEIPT:
         case EXTRACTION:
         case LIBRARY_PREP:
-          return Helpers.isPassed(sample);
+          return SampleUtils.isPassed(sample);
         default:
           return true;
       }
@@ -162,7 +161,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_QUALIFICATION) {
-        return Helpers.isPendingQc(sample);
+        return SampleUtils.isPendingQc(sample);
       } else {
         return true;
       }
@@ -177,7 +176,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_QUALIFICATION) {
-        return Helpers.isPendingDataReview(sample);
+        return SampleUtils.isPendingDataReview(sample);
       } else {
         return true;
       }
@@ -196,7 +195,7 @@ public enum PendingState {
         case EXTRACTION:
         case LIBRARY_PREP:
         case LIBRARY_QUALIFICATION:
-          return Helpers.isPassed(sample);
+          return SampleUtils.isPassed(sample);
         default:
           return true;
       }
@@ -211,7 +210,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.FULL_DEPTH_SEQUENCING) {
-        return Helpers.isPendingQc(sample);
+        return SampleUtils.isPendingQc(sample);
       } else {
         return true;
       }
@@ -226,7 +225,7 @@ public enum PendingState {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.FULL_DEPTH_SEQUENCING) {
-        return Helpers.isPendingDataReview(sample);
+        return SampleUtils.isPendingDataReview(sample);
       } else {
         return true;
       }
@@ -235,38 +234,23 @@ public enum PendingState {
   ANALYSIS_REVIEW("Analysis Review", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return kase.getTests().stream().allMatch(Helpers.isCompleted(Test::getFullDepthSequencings))
-          && this.qualifyRequisition(kase.getRequisition());
-    }
-
-    @Override
-    public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getAnalysisReviews().isEmpty();
+      return CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
+          && !CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase);
     }
   },
   RELEASE_APPROVAL("Release Approval", false) {
 
     @Override
     public boolean qualifyCase(Case kase) {
-      return (kase.isStopped() || Helpers.isCompletedRequisitionQc(kase, Requisition::getAnalysisReviews))
-          && this.qualifyRequisition(kase.getRequisition());
-    }
-
-    @Override
-    public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getReleaseApprovals().isEmpty();
+      return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase))
+          && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase);
     }
   },
   RELEASE("Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return Helpers.isCompletedRequisitionQc(kase, Requisition::getReleaseApprovals)
-          && this.qualifyRequisition(kase.getRequisition());
-    }
-
-    @Override
-    public boolean qualifyRequisition(Requisition requisition) {
-      return requisition.getReleases().isEmpty();
+      return CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
+          && !CompletedGate.RELEASE.qualifyCase(kase);
     }
   };
   // @formatter:on
@@ -282,7 +266,6 @@ public enum PendingState {
   private final boolean stoppable;
   private final Predicate<Case> casePredicate = this::qualifyCase;
   private final Predicate<Test> testPredicate = this::qualifyTest;
-  private final Predicate<Requisition> requisitionPredicate = this::qualifyRequisition;
 
   private PendingState(String label, boolean stoppable) {
     this.label = label;
@@ -305,10 +288,6 @@ public enum PendingState {
     return testPredicate;
   }
 
-  public Predicate<Requisition> requisitionPredicate() {
-    return requisitionPredicate;
-  }
-
   public Predicate<TestTableView> testTableViewPredicate() {
     return view -> qualifyTest(view.getTest());
   }
@@ -329,52 +308,22 @@ public enum PendingState {
     return true;
   }
 
-  public boolean qualifyRequisition(Requisition requisition) {
-    return true;
-  }
-
   protected Function<Case, Stream<Sample>> getFilteredSamples(MetricCategory requestCategory) {
     // override for all values where this is applicable
     throw new IllegalStateException("This gate does not apply to samples");
   }
 
   private static class Helpers {
-    public static String TOP_UP_REASON = "Top-up Required";
-    public static Predicate<Sample> pendingQc = Helpers::isPendingQc;
-    public static Predicate<Sample> pendingDataReview = Helpers::isPendingDataReview;
+    public static Predicate<Sample> pendingQc = SampleUtils::isPendingQc;
+    public static Predicate<Sample> pendingDataReview = SampleUtils::isPendingDataReview;
     public static Predicate<Sample> pendingQcOrDataReview =
-        sample -> isPendingQc(sample) || isPendingDataReview(sample);
-    public static Predicate<Sample> passed = Helpers::isPassed;
+        sample -> SampleUtils.isPendingQc(sample) || SampleUtils.isPendingDataReview(sample);
     public static Predicate<Sample> possiblyCompleted =
-        sample -> isPassed(sample) || isPendingQc(sample) || isPendingDataReview(sample);
-    public static Predicate<Case> isReceiptPassed =
-        kase -> kase.getReceipts().stream().anyMatch(passed)
-            && kase.getReceipts().stream().noneMatch(pendingQc);
-
-    private static boolean isPassed(Sample sample) {
-      return isTrue(sample.getQcPassed())
-          && (sample.getRun() == null || isTrue(sample.getDataReviewPassed()));
-    }
-
-    private static boolean isTrue(Boolean value) {
-      return Boolean.TRUE.equals(value);
-    }
-
-    private static boolean isPendingQc(Sample sample) {
-      return sample.getQcPassed() == null && !isTopUpRequired(sample);
-    }
+        sample -> SampleUtils.isPassed(sample) || SampleUtils.isPendingQc(sample)
+            || SampleUtils.isPendingDataReview(sample);
 
     private static boolean isPendingReceiptQc(Case kase) {
       return kase.getReceipts().stream().anyMatch(pendingQc);
-    }
-
-    private static boolean isPendingDataReview(Sample sample) {
-      return sample.getQcUser() != null && sample.getRun() != null
-          && sample.getDataReviewPassed() == null;
-    }
-
-    private static boolean isTopUpRequired(Sample sample) {
-      return TOP_UP_REASON.equals(sample.getQcReason());
     }
 
     public static Predicate<Case> anyTest(Predicate<Test> testPredicate) {
@@ -387,7 +336,7 @@ public enum PendingState {
 
     public static boolean hasPendingWork(List<Sample> gate, List<Sample> previousGate) {
       return gate.stream().noneMatch(possiblyCompleted)
-          && previousGate.stream().anyMatch(passed)
+          && previousGate.stream().anyMatch(SampleUtils::isPassed)
           && previousGate.stream().noneMatch(pendingQcOrDataReview);
     }
 
@@ -397,17 +346,6 @@ public enum PendingState {
 
     public static boolean hasPendingDataReview(List<Sample> samples) {
       return samples.stream().anyMatch(pendingDataReview);
-    }
-
-    public static Predicate<Test> isCompleted(Function<Test, List<Sample>> getGateItems) {
-      return test -> getGateItems.apply(test).stream().anyMatch(passed)
-          && getGateItems.apply(test).stream().noneMatch(pendingQcOrDataReview);
-    }
-
-    public static boolean isCompletedRequisitionQc(Case kase,
-        Function<Requisition, List<RequisitionQc>> getQcs) {
-      return getQcs.apply(kase.getRequisition()).stream()
-          .anyMatch(qc -> qc.isQcPassed());
     }
   }
 

@@ -1,4 +1,8 @@
-import { legendAction, TableDefinition } from "../component/table-builder";
+import {
+  ColumnDefinition,
+  legendAction,
+  TableDefinition,
+} from "../component/table-builder";
 import {
   makeIcon,
   styleText,
@@ -6,20 +10,24 @@ import {
   addNaText,
   addTextDiv,
   makeTextDivWithTooltip,
+  makeTextDiv,
+  CellStatus,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
 import { getQcStatus, Sample } from "./sample";
-import { QcStatus, qcStatuses } from "./qc-status";
-import {
-  getLatestRequisitionQc,
-  getRequisitionQcStatus,
-  Requisition,
-  RequisitionQc,
-} from "./requisition";
+import { qcStatuses } from "./qc-status";
+import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
-import { caseFilters } from "../component/table-components";
-import { AssayTargets } from "./assay";
+import { caseFilters, latestActivitySort } from "../component/table-components";
+import { AssayTargets, Metric, MetricSubcategory } from "./assay";
+import {
+  anyFail,
+  getMetricNames,
+  makeMetricDisplay,
+  makeNotFoundIcon,
+  nullIfUndefined,
+} from "../util/metrics";
 
 export interface Project {
   name: string;
@@ -87,6 +95,44 @@ export interface Test {
   fullDepthSequencingDaysSpent: number;
 }
 
+export interface CaseRelease {
+  deliverable: string;
+  qcPassed?: boolean;
+  qcUser?: string;
+  qcDate?: string;
+  qcNote?: string;
+}
+
+export type DeliverableType = "DATA_RELEASE" | "CLINICAL_REPORT";
+
+export const deliverableTypeLabels: Record<DeliverableType, string> = {
+  DATA_RELEASE: "Data Release",
+  CLINICAL_REPORT: "Clinical Report",
+};
+
+export interface CaseDeliverable {
+  deliverableType: DeliverableType;
+  analysisReviewQcPassed?: boolean;
+  analysisReviewQcUser?: string;
+  analysisReviewQcDate?: string;
+  analysisReviewQcNote?: string;
+  releaseApprovalQcPassed?: boolean;
+  releaseApprovalQcUser?: string;
+  releaseApprovalQcDate?: string;
+  releaseApprovalQcNote?: string;
+  releases: CaseRelease[];
+}
+
+export interface AnalysisQcGroup {
+  tissueOrigin: string;
+  tissueType: string;
+  libraryDesignCode: string;
+  groupId?: string;
+  purity?: number;
+  collapsedCoverage?: number;
+  callability?: number;
+}
+
 export interface Case {
   id: string;
   projects: Project[];
@@ -99,6 +145,8 @@ export interface Case {
   startDate?: string;
   tests: Test[];
   requisition: Requisition;
+  qcGroups: AnalysisQcGroup[];
+  deliverables: CaseDeliverable[];
   latestActivityDate?: string;
   receiptDaysSpent: number;
   analysisReviewDaysSpent: number;
@@ -131,104 +179,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   },
   staticActions: [legendAction],
   generateColumns: () => [
-    {
-      title: "Project",
-      addParentContents(kase, fragment) {
-        kase.projects.forEach((project) => {
-          fragment.appendChild(
-            makeNameDiv(
-              project.name,
-              urls.miso.project(project.name),
-              urls.dimsum.project(project.name)
-            )
-          );
-
-          const pipelineDiv = document.createElement("div");
-          pipelineDiv.appendChild(document.createTextNode(project.pipeline));
-          fragment.appendChild(pipelineDiv);
-        });
-      },
-    },
-    {
-      title: "Donor",
-      sortType: "text",
-      addParentContents(kase, fragment) {
-        const nameDiv = makeNameDiv(
-          kase.donor.name,
-          urls.miso.sample(kase.donor.id),
-          urls.dimsum.donor(kase.donor.name),
-          kase.donor.name
-        );
-        fragment.appendChild(nameDiv);
-
-        const externalNameDiv = makeTextDivWithTooltip(
-          kase.donor.externalName,
-          "External Name",
-          true
-        );
-        fragment.appendChild(externalNameDiv);
-
-        const tumourDetailDiv = document.createElement("div");
-        tumourDetailDiv.appendChild(
-          document.createTextNode(
-            `${kase.tissueOrigin} ${kase.tissueType}` +
-              (kase.timepoint ? " " + kase.timepoint : "")
-          )
-        );
-        const addContents = (fragment: DocumentFragment) => {
-          addTextDiv(`Tissue Origin: ${kase.tissueOrigin}`, fragment);
-          addTextDiv(`Tissue Type: ${kase.tissueType}`, fragment);
-          if (kase.timepoint) {
-            addTextDiv(`Timepoint: ${kase.timepoint}`, fragment);
-          }
-        };
-        const tooltipInstance = Tooltip.getInstance();
-        tooltipInstance.addTarget(tumourDetailDiv, addContents);
-        fragment.appendChild(tumourDetailDiv);
-      },
-    },
-    {
-      title: "Assay",
-      sortType: "text",
-      addParentContents(kase, fragment) {
-        const assay = siteConfig.assaysById[kase.assayId];
-        const assayDiv = makeNameDiv(
-          assay.name,
-          urls.miso.assay(kase.assayId),
-          urls.dimsum.case(kase.id)
-        );
-
-        fragment.appendChild(assayDiv);
-
-        const requisition = kase.requisition;
-        if (kase.requisition.stopped) {
-          const stoppedDiv = makeTextDivWithTooltip(
-            "CASE STOPPED",
-            `Stop reason: ${requisition.stopReason || "Unspecified"}`
-          );
-          styleText(stoppedDiv, "error");
-          fragment.appendChild(stoppedDiv);
-        }
-
-        if (kase.requisition.paused) {
-          const pausedDiv = makeTextDivWithTooltip(
-            "CASE PAUSED",
-            `Pause reason: ${requisition.pauseReason || "Unspecified"}`
-          );
-          styleText(pausedDiv, "error");
-          fragment.appendChild(pausedDiv);
-        }
-
-        fragment.appendChild(
-          makeNameDiv(
-            requisition.name,
-            urls.miso.requisition(requisition.id),
-            urls.dimsum.requisition(requisition.id),
-            requisition.name
-          )
-        );
-      },
-    },
+    ...makeBaseColumns(),
     {
       title: "Start Date",
       sortType: "date",
@@ -532,95 +483,578 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         );
       },
     },
-    {
-      title: "Analysis Review",
-      addParentContents(kase, fragment) {
-        if (
-          handleNaRequisitionPhase(kase, (x) => x.analysisReviews, fragment)
-        ) {
-          return;
-        }
-        const sequencingComplete = kase.tests.every((test) =>
+    makeDeliverableTypePhaseColumn(
+      "Analysis Review",
+      true,
+      (kase) =>
+        kase.tests.every((test) =>
           samplePhaseComplete(test.fullDepthSequencings)
-        );
-        const targets = getTargets(kase);
-        addRequisitionIcons(
+        ),
+      (targets) => targets.analysisReviewDays,
+      (deliverable) => deliverable.analysisReviewQcPassed
+    ),
+    makeDeliverableTypePhaseColumn(
+      "Release Approval",
+      false,
+      (kase) =>
+        deliverableTypePhaseComplete(
           kase,
-          (requisition) => requisition.analysisReviews,
-          sequencingComplete,
-          true,
-          targets.analysisReviewDays,
-          fragment
-        );
-      },
-      getCellHighlight(kase) {
-        return getRequisitionPhaseHighlight(
-          kase,
-          kase.requisition.analysisReviews,
-          true
-        );
-      },
-    },
-    {
-      title: "Release Approval",
-      addParentContents(kase, fragment) {
-        const analysisReviewComplete = requisitionPhaseComplete(
-          kase.requisition.analysisReviews
-        );
-        const targets = getTargets(kase);
-        addRequisitionIcons(
-          kase,
-          (requisition) => requisition.releaseApprovals,
-          analysisReviewComplete || kase.requisition.stopped,
-          false,
-          targets.releaseApprovalDays,
-          fragment
-        );
-      },
-      getCellHighlight(kase) {
-        return getRequisitionPhaseHighlight(
-          kase,
-          kase.requisition.releaseApprovals,
-          false
-        );
-      },
-    },
+          (deliverable) => deliverable.analysisReviewQcPassed
+        ),
+      (targets) => targets.releaseApprovalDays,
+      (deliverable) => deliverable.releaseApprovalQcPassed
+    ),
     {
       title: "Release",
       addParentContents(kase, fragment) {
-        const draftComplete = requisitionPhaseComplete(
-          kase.requisition.releaseApprovals
+        const tooltipInstance = Tooltip.getInstance();
+        if (!kase.deliverables.length) {
+          addNoDeliverablesIcon(fragment, tooltipInstance);
+          return;
+        }
+        const previousComplete = kase.deliverables.every(
+          (deliverable) => deliverable.releaseApprovalQcPassed
         );
-        const targets = getTargets(kase);
-        addRequisitionIcons(
-          kase,
-          (requisition) => requisition.releases,
-          draftComplete,
-          false,
-          targets.releaseDays,
-          fragment
-        );
+        const anyQcSet = kase.deliverables
+          .flatMap((deliverable) => deliverable.releases)
+          .some((release) => release.qcPassed != null);
+        if (previousComplete || anyQcSet) {
+          addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
+        }
+        if (previousComplete && !caseComplete(kase)) {
+          addTurnAroundTimeInfo(
+            kase.caseDaysSpent,
+            getTargets(kase).releaseDays,
+            fragment
+          );
+        }
       },
       getCellHighlight(kase) {
-        return getRequisitionPhaseHighlight(
-          kase,
-          kase.requisition.releases,
-          false
-        );
+        if (!kase.deliverables.length) {
+          return "error";
+        }
+        if (kase.requisition.paused || caseComplete(kase)) {
+          return null;
+        } else {
+          return "warning";
+        }
+      },
+    },
+    makeLatestActivityColumn(),
+  ],
+};
+
+export const analysisReviewDefinition: TableDefinition<Case, void> = {
+  queryUrl: urls.rest.cases,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
+  staticActions: [legendAction],
+  generateColumns: (data?: Case[]) => [
+    makeDeliverableTypeQcStatusColumn(
+      "QC Status",
+      (deliverable) => deliverable.analysisReviewQcPassed
+    ),
+    ...makeBaseColumns(),
+    ...generateAnalysisReviewMetricColumns(data),
+    makeLatestActivityColumn(),
+  ],
+};
+
+export const releaseApprovalDefinition: TableDefinition<Case, void> = {
+  queryUrl: urls.rest.cases,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
+  staticActions: [legendAction],
+  generateColumns: () => [
+    makeDeliverableTypeQcStatusColumn(
+      "QC Status",
+      (deliverable) => deliverable.releaseApprovalQcPassed
+    ),
+    ...makeBaseColumns(),
+    makeLatestActivityColumn(),
+  ],
+};
+
+export const releaseDefinition: TableDefinition<Case, void> = {
+  queryUrl: urls.rest.cases,
+  defaultSort: latestActivitySort,
+  filters: caseFilters,
+  staticActions: [legendAction],
+  generateColumns: () => [
+    makeReleaseQcStatusColumn("QC Status"),
+    ...makeBaseColumns(),
+    makeLatestActivityColumn(),
+  ],
+};
+
+function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
+  return [
+    {
+      title: "Project",
+      addParentContents(kase, fragment) {
+        kase.projects.forEach((project) => {
+          fragment.appendChild(
+            makeNameDiv(
+              project.name,
+              urls.miso.project(project.name),
+              urls.dimsum.project(project.name)
+            )
+          );
+
+          const pipelineDiv = document.createElement("div");
+          pipelineDiv.appendChild(document.createTextNode(project.pipeline));
+          fragment.appendChild(pipelineDiv);
+        });
       },
     },
     {
-      title: "Latest Activity",
-      sortType: "date",
+      title: "Donor",
+      sortType: "text",
       addParentContents(kase, fragment) {
-        if (!kase.latestActivityDate) {
-          return;
-        }
-        fragment.appendChild(document.createTextNode(kase.latestActivityDate));
+        const nameDiv = makeNameDiv(
+          kase.donor.name,
+          urls.miso.sample(kase.donor.id),
+          urls.dimsum.donor(kase.donor.name),
+          kase.donor.name
+        );
+        fragment.appendChild(nameDiv);
+
+        const externalNameDiv = makeTextDivWithTooltip(
+          kase.donor.externalName,
+          "External Name",
+          true
+        );
+        fragment.appendChild(externalNameDiv);
+
+        const tumourDetailDiv = document.createElement("div");
+        tumourDetailDiv.appendChild(
+          document.createTextNode(
+            `${kase.tissueOrigin} ${kase.tissueType}` +
+              (kase.timepoint ? " " + kase.timepoint : "")
+          )
+        );
+        const addContents = (fragment: DocumentFragment) => {
+          addTextDiv(`Tissue Origin: ${kase.tissueOrigin}`, fragment);
+          addTextDiv(`Tissue Type: ${kase.tissueType}`, fragment);
+          if (kase.timepoint) {
+            addTextDiv(`Timepoint: ${kase.timepoint}`, fragment);
+          }
+        };
+        const tooltipInstance = Tooltip.getInstance();
+        tooltipInstance.addTarget(tumourDetailDiv, addContents);
+        fragment.appendChild(tumourDetailDiv);
       },
     },
-  ],
-};
+    {
+      title: "Assay",
+      sortType: "text",
+      addParentContents(kase, fragment) {
+        const assay = siteConfig.assaysById[kase.assayId];
+        const assayDiv = makeNameDiv(
+          assay.name,
+          urls.miso.assay(kase.assayId),
+          urls.dimsum.case(kase.id)
+        );
+
+        fragment.appendChild(assayDiv);
+
+        const requisition = kase.requisition;
+        if (kase.requisition.stopped) {
+          const stoppedDiv = makeTextDivWithTooltip(
+            "CASE STOPPED",
+            `Stop reason: ${requisition.stopReason || "Unspecified"}`
+          );
+          styleText(stoppedDiv, "error");
+          fragment.appendChild(stoppedDiv);
+        }
+
+        if (kase.requisition.paused) {
+          const pausedDiv = makeTextDivWithTooltip(
+            "CASE PAUSED",
+            `Pause reason: ${requisition.pauseReason || "Unspecified"}`
+          );
+          styleText(pausedDiv, "error");
+          fragment.appendChild(pausedDiv);
+        }
+
+        fragment.appendChild(
+          makeNameDiv(
+            requisition.name,
+            urls.miso.requisition(requisition.id),
+            urls.dimsum.requisition(requisition.id),
+            requisition.name
+          )
+        );
+      },
+    },
+  ];
+}
+
+function makeLatestActivityColumn<ChildType>(): ColumnDefinition<
+  Case,
+  ChildType
+> {
+  return {
+    title: "Latest Activity",
+    sortType: "date",
+    addParentContents(kase, fragment) {
+      if (!kase.latestActivityDate) {
+        return;
+      }
+      fragment.appendChild(document.createTextNode(kase.latestActivityDate));
+    },
+  };
+}
+
+function makeDeliverableTypePhaseColumn(
+  title: string,
+  stoppable: boolean,
+  isPreviousComplete: (kase: Case) => boolean,
+  getTarget: (targets: AssayTargets) => number | null,
+  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined
+): ColumnDefinition<Case, Test> {
+  return {
+    title: title,
+    addParentContents(kase, fragment) {
+      const tooltipInstance = Tooltip.getInstance();
+      if (!kase.deliverables.length) {
+        addNoDeliverablesIcon(fragment, tooltipInstance);
+        return;
+      }
+      const anyQcSet = kase.deliverables.some(
+        (deliverable) => getQcPassed(deliverable) != null
+      );
+      if (stoppable && kase.requisition.stopped && !anyQcSet) {
+        addNaText(fragment);
+        return;
+      }
+      const previousComplete = isPreviousComplete(kase);
+      if (
+        (!stoppable && kase.requisition.stopped) ||
+        previousComplete ||
+        anyQcSet
+      ) {
+        addDeliverableTypeIcons(
+          kase.deliverables,
+          getQcPassed,
+          fragment,
+          tooltipInstance
+        );
+      }
+      const allQcPassed = kase.deliverables.every((deliverable) =>
+        getQcPassed(deliverable)
+      );
+      const targets = getTargets(kase);
+      if (
+        ((!stoppable && kase.requisition.stopped) || previousComplete) &&
+        !allQcPassed
+      ) {
+        addTurnAroundTimeInfo(kase.caseDaysSpent, getTarget(targets), fragment);
+      }
+    },
+    getCellHighlight(kase) {
+      return getDeliverableTypePhaseHighlight(
+        kase,
+        (deliverable) => getQcPassed(deliverable),
+        stoppable
+      );
+    },
+  };
+}
+
+function makeDeliverableTypeQcStatusColumn<ChildType>(
+  title: string,
+  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined
+): ColumnDefinition<Case, ChildType> {
+  return {
+    title: title,
+    addParentContents(kase, fragment) {
+      const tooltipInstance = Tooltip.getInstance();
+      if (!kase.deliverables.length) {
+        addNoDeliverablesIcon(fragment, tooltipInstance);
+        return;
+      }
+      addDeliverableTypeIcons(
+        kase.deliverables,
+        (deliverable) => deliverable.analysisReviewQcPassed,
+        fragment,
+        tooltipInstance
+      );
+    },
+    getCellHighlight(kase) {
+      if (!kase.deliverables.length) {
+        return "error";
+      }
+      const statuses = kase.deliverables.map((deliverable) =>
+        getDeliverableQcStatus(getQcPassed(deliverable))
+      );
+      if (statuses.some((x) => x.cellStatus === "error")) {
+        return "error";
+      } else if (statuses.some((x) => x.cellStatus === "warning")) {
+        return "warning";
+      }
+      return null;
+    },
+  };
+}
+
+function makeReleaseQcStatusColumn<ChildType>(
+  title: string
+): ColumnDefinition<Case, ChildType> {
+  return {
+    title: title,
+    addParentContents(kase, fragment) {
+      const tooltipInstance = Tooltip.getInstance();
+      if (!kase.deliverables.length) {
+        addNoDeliverablesIcon(fragment, tooltipInstance);
+        return;
+      }
+      addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
+    },
+    getCellHighlight(kase) {
+      if (!kase.deliverables.length) {
+        return "error";
+      }
+      const statuses = kase.deliverables
+        .flatMap((deliverable) => deliverable.releases)
+        .map((release) => getDeliverableQcStatus(release.qcPassed));
+      if (statuses.some((x) => x.cellStatus === "error")) {
+        return "error";
+      } else if (statuses.some((x) => x.cellStatus === "warning")) {
+        return "warning";
+      }
+      return null;
+    },
+  };
+}
+
+function generateAnalysisReviewMetricColumns(
+  cases?: Case[]
+): ColumnDefinition<Case, void>[] {
+  if (!cases) {
+    return [];
+  }
+  const assayIds = cases
+    .map((kase) => kase.requisition.assayId || 0)
+    .filter((assayId) => assayId > 0);
+  const metricNames = getMetricNames("ANALYSIS_REVIEW", assayIds);
+  return metricNames.map((metricName) => {
+    return {
+      title: metricName,
+      addParentContents(kase, fragment) {
+        if (metricName === "Trimming; Minimum base quality Q") {
+          fragment.appendChild(
+            document.createTextNode("Standard pipeline removes reads below Q30")
+          );
+        } else if (!kase.qcGroups.length) {
+          fragment.appendChild(makeNotFoundIcon());
+        } else {
+          const groupsToInclude: AnalysisQcGroup[] = [];
+          const metricsPerGroup: Metric[][] = [];
+          kase.qcGroups.forEach((qcGroup) => {
+            const metrics = getMatchingAnalysisReviewMetrics(
+              metricName,
+              kase.requisition,
+              qcGroup
+            );
+            if (metrics && metrics.length) {
+              groupsToInclude.push(qcGroup);
+              metricsPerGroup.push(metrics);
+            }
+          });
+          if (!groupsToInclude.length) {
+            addNaText(fragment);
+            return;
+          }
+          for (let i = 0; i < groupsToInclude.length; i++) {
+            const qcGroup = groupsToInclude[i];
+            const metrics = metricsPerGroup[i];
+            const value = getAnalysisMetricValue(metricName, qcGroup);
+            const div = document.createElement("div");
+            const prefix =
+              groupsToInclude.length > 1
+                ? `${makeQcGroupLabel(qcGroup)}: `
+                : "";
+            let detailsFragment = undefined;
+            if (groupsToInclude.length > 1) {
+              detailsFragment = document.createDocumentFragment();
+              addTextDiv(
+                `Tissue Origin: ${qcGroup.tissueOrigin}`,
+                detailsFragment
+              );
+              addTextDiv(`Tissue Type: ${qcGroup.tissueType}`, detailsFragment);
+              addTextDiv(
+                `Design: ${qcGroup.libraryDesignCode}`,
+                detailsFragment
+              );
+              if (qcGroup.groupId) {
+                addTextDiv(`Group ID: ${qcGroup.groupId}`, detailsFragment);
+              }
+            }
+            fragment.appendChild(
+              makeAnalysisMetricDisplay(
+                metricsPerGroup[i],
+                qcGroup,
+                true,
+                prefix,
+                detailsFragment
+              )
+            );
+          }
+        }
+      },
+      getCellHighlight(kase) {
+        if (metricName === "Trimming; Minimum base quality Q") {
+          return null;
+        } else if (!kase.qcGroups.length) {
+          return "warning";
+        }
+        let anyApplicable = false;
+        for (let i = 0; i < kase.qcGroups.length; i++) {
+          const qcGroup = kase.qcGroups[i];
+          const metrics = getMatchingAnalysisReviewMetrics(
+            metricName,
+            kase.requisition,
+            qcGroup
+          );
+          if (!metrics || !metrics.length) {
+            continue;
+          }
+          anyApplicable = true;
+          const value = getAnalysisMetricValue(metricName, qcGroup);
+          if (value === null) {
+            return "warning";
+          } else if (anyFail(value, metrics)) {
+            return "error";
+          }
+        }
+        return anyApplicable ? null : "na";
+      },
+    };
+  });
+}
+
+function getMatchingAnalysisReviewMetrics(
+  metricName: string,
+  requisition: Requisition,
+  qcGroup: AnalysisQcGroup
+): Metric[] | null {
+  if (!requisition.assayId) {
+    return null;
+  }
+  return siteConfig.assaysById[requisition.assayId].metricCategories[
+    "ANALYSIS_REVIEW"
+  ]
+    .filter((subcategory) => subcategoryApplies(subcategory, qcGroup))
+    .flatMap((subcategory) => subcategory.metrics)
+    .filter(
+      (metric) =>
+        metric.name === metricName && analysisMetricApplies(metric, qcGroup)
+    );
+}
+
+export function subcategoryApplies(
+  subcategory: MetricSubcategory,
+  qcGroup: AnalysisQcGroup
+): boolean {
+  return (
+    !subcategory.libraryDesignCode ||
+    subcategory.libraryDesignCode === qcGroup.libraryDesignCode
+  );
+}
+
+export function analysisMetricApplies(
+  metric: Metric,
+  qcGroup: AnalysisQcGroup
+): boolean {
+  if (metric.tissueOrigin && metric.tissueOrigin !== qcGroup.tissueOrigin) {
+    return false;
+  }
+  if (metric.tissueType) {
+    if (metric.negateTissueType) {
+      if (metric.tissueType === qcGroup.tissueType) {
+        return false;
+      }
+    } else if (metric.tissueType !== qcGroup.tissueType) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function getAnalysisMetricValue(
+  metricName: string,
+  qcGroup: AnalysisQcGroup
+): number | null {
+  switch (metricName) {
+    case "Inferred Tumour Purity":
+      return nullIfUndefined(qcGroup.purity);
+    case "Collapsed Coverage":
+      return nullIfUndefined(qcGroup.collapsedCoverage);
+    case "Callability (exonic space); Target bases above 30X":
+      return nullIfUndefined(qcGroup.callability);
+    default:
+      return null;
+  }
+}
+
+function makeQcGroupLabel(qcGroup: AnalysisQcGroup) {
+  let label = `${qcGroup.tissueOrigin}_${qcGroup.tissueType}_${qcGroup.libraryDesignCode}`;
+  if (qcGroup.groupId) {
+    label += ` - ${qcGroup.groupId}`;
+  }
+  return label;
+}
+
+export function makeAnalysisMetricDisplay(
+  metrics: Metric[],
+  qcGroup: AnalysisQcGroup,
+  addTooltip: boolean,
+  prefix?: string,
+  tooltipAdditionalContents?: Node
+): Node {
+  if (metrics[0].name === "Trimming; Minimum base quality Q") {
+    return document.createTextNode("Standard pipeline removes reads below Q30");
+  }
+  const div = document.createElement("div");
+  const value = getAnalysisMetricValue(metrics[0].name, qcGroup);
+  if (value === null) {
+    div.appendChild(makeNotFoundIcon(prefix, tooltipAdditionalContents));
+  } else {
+    div.appendChild(
+      makeMetricDisplay(
+        value,
+        metrics,
+        addTooltip,
+        prefix,
+        tooltipAdditionalContents
+      )
+    );
+  }
+  return div;
+}
+
+function addNoDeliverablesIcon(
+  fragment: DocumentFragment,
+  tooltipInstance: Tooltip
+) {
+  const icon = makeIcon("question");
+  tooltipInstance.addTarget(
+    icon,
+    (tooltip) => (tooltip.textContent = "Project deliverables not configured")
+  );
+  fragment.appendChild(icon);
+}
+
+export function getDeliverableQcStatus(qcPassed?: boolean) {
+  if (qcPassed == null) {
+    return qcStatuses.qc;
+  } else if (qcPassed) {
+    return qcStatuses.passed;
+  } else {
+    return qcStatuses.failed;
+  }
+}
 
 export function assertNotNull<Type>(object: Type | null) {
   if (object === null) {
@@ -659,6 +1093,16 @@ export function samplePhaseComplete(samples: Sample[]) {
       (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
     );
   }
+}
+
+function deliverableTypePhaseComplete(
+  kase: Case,
+  getStatus: (deliverable: CaseDeliverable) => boolean | undefined
+) {
+  if (!kase.deliverables.length) {
+    return false;
+  }
+  return kase.deliverables.map(getStatus).every((x) => x);
 }
 
 export function samplePhasePendingWork(samples: Sample[]) {
@@ -712,38 +1156,30 @@ export function getSamplePhaseHighlight(
   }
 }
 
-function handleNaRequisitionPhase(
+function getDeliverableTypePhaseHighlight(
   kase: Case,
-  getQcs: (requisition: Requisition) => RequisitionQc[],
-  fragment: DocumentFragment
-) {
-  if (kase.requisition.stopped && !getQcs(kase.requisition).length) {
-    addNaText(fragment);
-    return true;
-  }
-  return false;
-}
-
-function requisitionPhaseComplete(qcs: RequisitionQc[]): boolean {
-  return !!(qcs.length && getLatestRequisitionQc(qcs).qcPassed);
-}
-
-function getRequisitionPhaseHighlight(
-  kase: Case,
-  qcs: RequisitionQc[],
+  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
   stoppable: boolean
 ) {
-  if (requisitionPhaseComplete(qcs) || kase.requisition.paused) {
+  if (!kase.deliverables.length) {
+    return "error";
+  }
+  if (
+    kase.requisition.paused ||
+    kase.deliverables.every((deliverable) => getQcPassed(deliverable))
+  ) {
     return null;
   } else if (stoppable && kase.requisition.stopped) {
-    return qcs.length ? null : "na";
+    if (
+      kase.deliverables.some((deliverable) => getQcPassed(deliverable) != null)
+    ) {
+      return null;
+    } else {
+      return "na";
+    }
   } else {
     return "warning";
   }
-}
-
-function caseComplete(kase: Case) {
-  return requisitionPhaseComplete(kase.requisition.releases);
 }
 
 export function addSpace(fragment: DocumentFragment) {
@@ -841,55 +1277,6 @@ export function makeSampleTooltip(sample: Sample) {
   };
 }
 
-function addRequisitionIcons(
-  kase: Case,
-  getQcs: (requisition: Requisition) => RequisitionQc[],
-  previousComplete: boolean,
-  stoppable: boolean,
-  targetDays: number | null,
-  fragment: DocumentFragment
-) {
-  const qcs = getQcs(kase.requisition);
-  if (qcs.length) {
-    const status = getRequisitionQcStatus(qcs);
-    addRequisitionIcon(kase.requisition, status, fragment);
-  } else if (previousComplete) {
-    const status = qcStatuses.qc;
-    addRequisitionIcon(kase.requisition, status, fragment);
-  }
-  if (
-    (!stoppable || !kase.requisition.stopped) &&
-    previousComplete &&
-    !requisitionPhaseComplete(qcs)
-  ) {
-    addTurnAroundTimeInfo(kase.caseDaysSpent, targetDays, fragment);
-  }
-}
-
-function addRequisitionIcon(
-  requisition: Requisition,
-  status: QcStatus,
-  fragment: DocumentFragment
-) {
-  const tooltipIcon = makeIcon(status.icon);
-  const tooltipInstance = Tooltip.getInstance();
-  tooltipInstance.addTarget(tooltipIcon, makeRequisitionTooltip(requisition));
-  fragment.appendChild(tooltipIcon);
-}
-
-function makeRequisitionTooltip(requisition: Requisition) {
-  return (fragment: DocumentFragment) => {
-    fragment.appendChild(
-      makeNameDiv(
-        requisition.name,
-        urls.miso.requisition(requisition.id),
-        urls.dimsum.requisition(requisition.id),
-        requisition.name
-      )
-    );
-  };
-}
-
 function addTooltipRow(
   container: HTMLElement, // must be a two column grid
   label: string,
@@ -913,6 +1300,57 @@ function addTooltipRow(
   container.appendChild(valueContainer);
 }
 
+function addDeliverableTypeIcons(
+  deliverables: CaseDeliverable[],
+  getStatus: (deliverable: CaseDeliverable) => boolean | undefined,
+  fragment: DocumentFragment,
+  tooltipInstance: Tooltip
+) {
+  deliverables.forEach((deliverable) => {
+    const status = getDeliverableQcStatus(getStatus(deliverable));
+    const icon = makeIcon(status.icon);
+    tooltipInstance.addTarget(icon, (tooltip) => {
+      tooltip.appendChild(
+        makeTextDiv(deliverableTypeLabels[deliverable.deliverableType])
+      );
+      tooltip.appendChild(makeTextDiv("Status: " + status.label));
+    });
+    fragment.appendChild(icon);
+  });
+}
+
+function addReleaseIcons(
+  deliverables: CaseDeliverable[],
+  fragment: DocumentFragment,
+  tooltipInstance: Tooltip
+) {
+  deliverables.forEach((deliverable) => {
+    deliverable.releases.forEach((release) => {
+      const status = getDeliverableQcStatus(release.qcPassed);
+      const icon = makeIcon(status.icon);
+      tooltipInstance.addTarget(icon, (tooltip) => {
+        let deliverableLabel =
+          deliverableTypeLabels[deliverable.deliverableType];
+        if (release.deliverable !== deliverableLabel) {
+          deliverableLabel += " - " + release.deliverable;
+        }
+        tooltip.appendChild(makeTextDiv(deliverableLabel));
+        tooltip.appendChild(makeTextDiv("Status: " + status.label));
+      });
+      fragment.appendChild(icon);
+    });
+  });
+}
+
+function caseComplete(kase: Case) {
+  return (
+    kase.deliverables.length &&
+    kase.deliverables.every((deliverable) =>
+      deliverable.releases.every((release) => release.qcPassed)
+    )
+  );
+}
+
 function caseOverdue(kase: Case, targets: AssayTargets) {
   return targets.caseDays && kase.caseDaysSpent > targets.caseDays;
 }
@@ -924,21 +1362,15 @@ interface OverdueStep {
 
 function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
   // Check later steps first to emphasize if we are multiple steps overdue
-  if (
-    requisitionPhaseBehind(
-      kase.requisition.releases,
-      kase.caseDaysSpent,
-      targets.releaseDays
-    )
-  ) {
+  if (releasePhaseBehind(kase, targets.releaseDays)) {
     return {
       stepLabel: "Release",
       targetDays: targets.releaseDays,
     };
   } else if (
-    requisitionPhaseBehind(
-      kase.requisition.releaseApprovals,
-      kase.caseDaysSpent,
+    deliverableTypePhaseBehind(
+      kase,
+      (x) => x.releaseApprovalQcPassed,
       targets.releaseApprovalDays
     )
   ) {
@@ -950,9 +1382,9 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
   if (kase.requisition.stopped) {
     return null;
   } else if (
-    requisitionPhaseBehind(
-      kase.requisition.analysisReviews,
-      kase.caseDaysSpent,
+    deliverableTypePhaseBehind(
+      kase,
+      (x) => x.analysisReviewQcPassed,
       targets.analysisReviewDays
     )
   ) {
@@ -1037,14 +1469,20 @@ function samplePhaseBehind(
   );
 }
 
-function requisitionPhaseBehind(
-  qcs: RequisitionQc[],
-  caseDaysSpent: number,
+function deliverableTypePhaseBehind(
+  kase: Case,
+  getStatus: (deliverable: CaseDeliverable) => boolean | undefined,
   stepTarget: number | null
 ) {
   return (
-    stepTarget && !requisitionPhaseComplete(qcs) && caseDaysSpent > stepTarget
+    stepTarget &&
+    !deliverableTypePhaseComplete(kase, getStatus) &&
+    kase.caseDaysSpent > stepTarget
   );
+}
+
+function releasePhaseBehind(kase: Case, stepTarget: number | null) {
+  return stepTarget && !caseComplete(kase) && kase.caseDaysSpent > stepTarget;
 }
 
 function addTurnAroundTimeInfo(
@@ -1071,4 +1509,31 @@ function addTurnAroundTimeInfo(
 
 function getTargets(kase: Case) {
   return siteConfig.assaysById[kase.assayId].targets;
+}
+
+export function getAnalysisMetricCellHighlight(
+  qcGroup: AnalysisQcGroup,
+  requisition: Requisition,
+  metricName: string
+): CellStatus | null {
+  if (metricName === "Trimming; Minimum base quality Q") {
+    return null;
+  }
+  let anyApplicable = false;
+  const metrics = getMatchingAnalysisReviewMetrics(
+    metricName,
+    requisition,
+    qcGroup
+  );
+  if (!metrics || !metrics.length) {
+    return null;
+  }
+  anyApplicable = true;
+  const value = getAnalysisMetricValue(metricName, qcGroup);
+  if (value === null) {
+    return "warning";
+  } else if (anyFail(value, metrics)) {
+    return "error";
+  }
+  return anyApplicable ? null : "na";
 }

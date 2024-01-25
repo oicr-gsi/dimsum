@@ -15,7 +15,7 @@ import {
 import { Tooltip } from "../component/tooltip";
 import { urls } from "../util/urls";
 import { Metric, MetricCategory, MetricSubcategory } from "./assay";
-import { Donor, Lane, Qcable, Run } from "./case";
+import { Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   anyFail,
