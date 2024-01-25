@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum.service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +26,6 @@ import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
-import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -41,7 +41,6 @@ import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
@@ -49,7 +48,6 @@ import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
-import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
@@ -266,20 +264,6 @@ public class CaseService {
     }
   }
 
-  public TableData<Requisition> getRequisitions(int pageSize, int pageNumber, RequisitionSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    List<Case> cases = getCases(baseFilter);
-    TableData<Requisition> data = new TableData<>();
-    data.setTotalCount(
-        cases.stream().map(Case::getRequisition).distinct().count());
-    List<Requisition> requisitions = filterRequisitions(cases, filters).distinct().toList();
-    data.setFilteredCount(requisitions.size());
-    data.setItems(requisitions.stream()
-        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
-    return data;
-  }
-
   public TableData<Run> getRuns(int pageSize, int pageNumber, RunSort sort, boolean descending,
       Collection<RunFilter> filters) {
     List<Run> baseRuns =
@@ -340,21 +324,21 @@ public class CaseService {
   }
 
   public TableData<ProjectSummaryRow> getProjectSummaryRows(String projectName,
-      Collection<CaseFilter> filters, Collection<DateFilter> dateFilters) {
+      Collection<CaseFilter> filters, LocalDate afterDate, LocalDate beforeDate) {
     ProjectSummary projectSummary;
     TableData<ProjectSummaryRow> data = new TableData<>();
-    if (filters == null && (dateFilters == null || dateFilters.isEmpty())) {
+    if (filters == null && afterDate == null && beforeDate == null) {
       projectSummary = caseData.getProjectSummariesByName().get(projectName);
     } else if (filters == null) {
       // only when date filters are applied
       Map<String, ProjectSummary> projectSummariesByName =
-          CaseLoader.calculateProjectSummaries(caseData.getCases(), dateFilters);
+          CaseLoader.calculateProjectSummaries(caseData.getCases(), afterDate, beforeDate);
       projectSummary = projectSummariesByName.get(projectName);
     } else {
       // when both date filter and case filters applied
       Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
       Map<String, ProjectSummary> projectSummariesByName =
-          CaseLoader.calculateFilteredProjectSummaries(testsByCase, dateFilters);
+          CaseLoader.calculateFilteredProjectSummaries(testsByCase, afterDate, beforeDate);
       projectSummary = projectSummariesByName.get(projectName);
     }
 
@@ -363,7 +347,7 @@ public class CaseService {
     }
 
     ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
-    if (dateFilters == null) {
+    if (afterDate == null && beforeDate == null) {
       ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
       ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
       data.setItems(Arrays.asList(pendingWork, pendingQc, completed));
@@ -474,20 +458,6 @@ public class CaseService {
       }
     }
     return stream;
-  }
-
-  private Stream<Requisition> filterRequisitions(List<Case> cases, Collection<CaseFilter> filters) {
-    Stream<Requisition> stream = filterCases(cases, filters)
-        .map(Case::getRequisition);
-    if (filters != null && !filters.isEmpty()) {
-      Map<CaseFilterKey, Predicate<Requisition>> filterMap =
-          buildFilterMap(filters, CaseFilter::requisitionPredicate);
-      for (Predicate<Requisition> predicate : filterMap.values()) {
-        stream = stream.filter(predicate);
-      }
-    }
-    return stream;
-
   }
 
   private Stream<ProjectSummary> filterProjectSummaries(List<ProjectSummary> projectSummaries,

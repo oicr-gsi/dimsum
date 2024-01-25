@@ -5,7 +5,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
-import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
@@ -33,11 +32,6 @@ public enum CaseFilterKey {
     @Override
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
       return string -> getState(string).samplePredicate(requestCategory);
-    }
-
-    @Override
-    public Function<String, Predicate<Requisition>> requisitionPredicate() {
-      return string -> getState(string).requisitionPredicate();
     }
   },
   PIPELINE(string -> kase -> kase.getProjects().stream()
@@ -69,11 +63,6 @@ public enum CaseFilterKey {
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
       return string -> getGate(string).samplePredicate(requestCategory);
     }
-
-    @Override
-    public Function<String, Predicate<Requisition>> requisitionPredicate() {
-      return string -> getGate(string).requisitionPredicate();
-    }
   },
   INCOMPLETE(string -> {
     CompletedGate gate = getGate(string);
@@ -87,11 +76,6 @@ public enum CaseFilterKey {
     @Override
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
         return string -> getGate(string).samplePredicate(requestCategory).negate();
-    }
-
-    @Override
-    public Function<String, Predicate<Requisition>> requisitionPredicate() {
-        return string -> getGate(string).requisitionPredicate().negate();
     }
 },
   LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> test.getLibraryDesignCode().equals(string));
@@ -119,10 +103,6 @@ public enum CaseFilterKey {
 
   public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
     return string -> sample -> true;
-  }
-
-  public Function<String, Predicate<Requisition>> requisitionPredicate() {
-    return string -> requisition -> true;
   }
 
   public Function<String, Predicate<TestTableView>> testTableViewPredicate() {

@@ -1,22 +1,18 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
 import ca.on.oicr.gsi.cardea.data.Case;
-import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
+import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
-import ca.on.oicr.gsi.dimsum.service.filtering.RequisitionSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
@@ -104,34 +100,6 @@ public class CaseServiceTest {
     assertEquals(sampleNames.length, data.getItems().size());
     for (String sampleName : sampleNames) {
       assertTrue(data.getItems().stream().anyMatch(sample -> sampleName.equals(sample.getName())));
-    }
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testGetRequisitions() {
-    TableData<Requisition> data =
-        sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null, null);
-    assertContainsRequisitions(data, "REQ_1", "REQ_2");
-  }
-
-  @org.junit.jupiter.api.Test
-  public void testGetRequisitionsDistinct() {
-    // Add duplicates and ensure they get removed from results
-    addCase(caseData, 1, 1);
-    TableData<Requisition> data =
-        sut.getRequisitions(20, 1, RequisitionSort.NAME, true, null, null);
-    assertContainsRequisitions(data, "REQ_1", "REQ_2");
-  }
-
-  private void assertContainsRequisitions(TableData<Requisition> data, String... requisitionNames) {
-    assertNotNull(data);
-    assertEquals(requisitionNames.length, data.getTotalCount());
-    assertEquals(requisitionNames.length, data.getFilteredCount());
-    assertNotNull(data.getItems());
-    assertEquals(requisitionNames.length, data.getItems().size());
-    for (String requisitionName : requisitionNames) {
-      assertTrue(data.getItems().stream()
-          .anyMatch(requisition -> requisitionName.equals(requisition.getName())));
     }
   }
 

@@ -1,9 +1,9 @@
 package ca.on.oicr.gsi.dimsum;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,14 +22,12 @@ import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
-import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -81,7 +79,7 @@ public class CaseLoader {
     Set<String> donorNames = loadDonorNames(cardeaCaseData.getCases());
     Set<String> testNames = getTestNames(cardeaCaseData.getCases());
     Map<String, ProjectSummary> projectSummariesByName =
-        calculateProjectSummaries(cardeaCaseData.getCases(), null);
+        calculateProjectSummaries(cardeaCaseData.getCases(), null, null);
     ZonedDateTime afterTimestamp = cardeaCaseData.getTimestamp();
 
     CaseData caseData =
@@ -181,29 +179,29 @@ public class CaseLoader {
   }
 
   public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases,
-      Collection<DateFilter> dateFilters) {
+      LocalDate afterDate, LocalDate beforeDate) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     for (Case kase : cases) {
-      addCounts(kase, kase.getTests(), tempProjectSummariesByName, dateFilters);
+      addCounts(kase, kase.getTests(), tempProjectSummariesByName, afterDate, beforeDate);
     }
 
     return buildProjectSummaries(tempProjectSummariesByName);
   }
 
   public static Map<String, ProjectSummary> calculateFilteredProjectSummaries(
-      Map<Case, List<Test>> map, Collection<DateFilter> dateFilters) {
+      Map<Case, List<Test>> map, LocalDate afterDate, LocalDate beforeDate) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     List<Case> cases = new ArrayList<>(map.keySet());
     for (Case kase : cases) {
-      addCounts(kase, map.get(kase), tempProjectSummariesByName, dateFilters);
+      addCounts(kase, map.get(kase), tempProjectSummariesByName, afterDate, beforeDate);
     }
     return buildProjectSummaries(tempProjectSummariesByName);
 
   }
 
   private static void addCounts(Case kase, List<Test> tests,
-      Map<String, ProjectSummary.Builder> tempProjectSummariesByName,
-      Collection<DateFilter> dateFilters) {
+      Map<String, ProjectSummary.Builder> tempProjectSummariesByName, LocalDate afterDate,
+      LocalDate beforeDate) {
     ProjectSummary.Builder caseSummary =
         new ProjectSummary.Builder();
     int testSize = tests != null ? tests.size() : 0;
@@ -212,13 +210,13 @@ public class CaseLoader {
       caseSummary.receiptPendingQcCount(testSize);
     }
     if (CompletedGate.RECEIPT.qualifyCase(kase)
-        && anySamplesMatch(kase.getReceipts(), dateFilters)) {
+        && anySamplesMatch(kase.getReceipts(), afterDate, beforeDate)) {
       caseSummary.receiptCompletedCount(testSize);
     }
     for (Test test : tests) {
-      if ((test.isExtractionSkipped() && emptyOrNull(dateFilters))
+      if ((test.isExtractionSkipped() && afterDate == null && beforeDate == null)
           || (CompletedGate.EXTRACTION.qualifyTest(test)
-              && anySamplesMatch(test.getExtractions(), dateFilters))) {
+              && anySamplesMatch(test.getExtractions(), afterDate, beforeDate))) {
         caseSummary.incrementExtractionCompletedCount();
       } else if (PendingState.EXTRACTION_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementExtractionPendingQcCount();
@@ -227,9 +225,9 @@ public class CaseLoader {
       }
 
       // library Preparation
-      if ((test.isLibraryPreparationSkipped() && emptyOrNull(dateFilters))
+      if ((test.isLibraryPreparationSkipped() && afterDate == null && beforeDate == null)
           || (CompletedGate.LIBRARY_PREPARATION.qualifyTest(test)
-              && anySamplesMatch(test.getLibraryPreparations(), dateFilters))) {
+              && anySamplesMatch(test.getLibraryPreparations(), afterDate, beforeDate))) {
         caseSummary.incrementLibraryPrepCompletedCount();
       } else if (PendingState.LIBRARY_QC.qualifyTest(test) && !kase.isStopped()) {
         caseSummary.incrementLibraryPrepPendingQcCount();
@@ -239,7 +237,7 @@ public class CaseLoader {
 
       // Library Qualification
       if (CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(test)
-          && anySamplesMatch(test.getLibraryQualifications(), dateFilters)) {
+          && anySamplesMatch(test.getLibraryQualifications(), afterDate, beforeDate)) {
         caseSummary.incrementLibraryQualCompletedCount();
       } else if ((PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
           || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
@@ -251,7 +249,7 @@ public class CaseLoader {
 
       // Full depth sequncing
       if (CompletedGate.FULL_DEPTH_SEQUENCING.qualifyTest(test)
-          && anySamplesMatch(test.getFullDepthSequencings(), dateFilters)) {
+          && anySamplesMatch(test.getFullDepthSequencings(), afterDate, beforeDate)) {
         caseSummary.incrementFullDepthSeqCompletedCount();
       } else if ((PendingState.FULL_DEPTH_QC.qualifyTest(test)
           || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) && !kase.isStopped()) {
@@ -263,7 +261,8 @@ public class CaseLoader {
 
     // analysis review
     if (CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase)
-        && anyRequisitionQcsMatch(kase.getRequisition().getAnalysisReviews(), dateFilters)) {
+        && kase.getDeliverables().stream()
+            .anyMatch(x -> dateBetween(x.getAnalysisReviewQcDate(), afterDate, beforeDate))) {
       caseSummary.analysisReviewCompletedCount(testSize);
     }
     if (PendingState.ANALYSIS_REVIEW.qualifyCase(kase) && !kase.isStopped()) {
@@ -272,7 +271,8 @@ public class CaseLoader {
 
     // release approval
     if (CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
-        && anyRequisitionQcsMatch(kase.getRequisition().getReleaseApprovals(), dateFilters)) {
+        && kase.getDeliverables().stream()
+            .anyMatch(x -> Boolean.TRUE.equals(x.getReleaseApprovalQcPassed()))) {
       caseSummary.releaseApprovalCompletedCount(testSize);
     }
     if (PendingState.RELEASE_APPROVAL.qualifyCase(kase)) {
@@ -281,7 +281,9 @@ public class CaseLoader {
 
     // release
     if (CompletedGate.RELEASE.qualifyCase(kase)
-        && anyRequisitionQcsMatch(kase.getRequisition().getReleases(), dateFilters)) {
+        && kase.getDeliverables().stream()
+            .anyMatch(d -> d.getReleases() != null && d.getReleases().stream()
+                .anyMatch(r -> dateBetween(r.getQcDate(), afterDate, beforeDate)))) {
       caseSummary.releaseCompletedCount(testSize);
     }
     if (PendingState.RELEASE.qualifyCase(kase)) {
@@ -303,6 +305,20 @@ public class CaseLoader {
     }
   }
 
+  protected static boolean dateBetween(LocalDate date, LocalDate afterDate, LocalDate beforeDate) {
+    // Note: afterDate is inclusive, but beforeDate is exclusive
+    if (date == null) {
+      return false;
+    }
+    if (afterDate != null && date.isBefore(afterDate)) {
+      return false;
+    }
+    if (beforeDate != null && !beforeDate.isAfter(date)) {
+      return false;
+    }
+    return true;
+  }
+
   private static Map<String, ProjectSummary> buildProjectSummaries(
       Map<String, ProjectSummary.Builder> tempProjectSummariesByName) {
     Map<String, ProjectSummary> projectSummariesByName = new HashMap<>();
@@ -313,27 +329,20 @@ public class CaseLoader {
     return projectSummariesByName;
   }
 
-  private static boolean anySamplesMatch(List<Sample> samples, Collection<DateFilter> filters) {
-    if (filters == null || filters.isEmpty()) {
-      return !samples.isEmpty();
+  private static boolean anySamplesMatch(List<Sample> samples, LocalDate afterDate,
+      LocalDate beforeDate) {
+    if (samples.isEmpty()) {
+      return false;
+    } else if (afterDate == null && beforeDate == null) {
+      return true;
     }
-    return samples.stream()
-        .anyMatch(sample -> filters.stream()
-            .allMatch(filter -> filter.samplePredicate().test(sample)));
-  }
-
-  private static boolean anyRequisitionQcsMatch(List<RequisitionQc> requisitionQcs,
-      Collection<DateFilter> filters) {
-    if (filters == null || filters.isEmpty()) {
-      return !requisitionQcs.isEmpty();
-    }
-    return requisitionQcs.stream()
-        .anyMatch(qc -> filters.stream()
-            .allMatch(filter -> filter.requisitionQcPredicate().test(qc)));
-  }
-
-  private static boolean emptyOrNull(Collection<?> collection) {
-    return collection == null || collection.isEmpty();
+    return samples.stream().anyMatch(sample -> {
+      LocalDate qcDate = sample.getRun() == null ? sample.getQcDate() : sample.getDataReviewDate();
+      if (qcDate == null) {
+        return false;
+      }
+      return dateBetween(qcDate, afterDate, beforeDate);
+    });
   }
 
 }

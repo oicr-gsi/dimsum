@@ -14,9 +14,11 @@ import java.util.stream.IntStream;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.AssayTargets;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
+import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Requisition;
-import ca.on.oicr.gsi.cardea.data.RequisitionQc;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 
@@ -90,10 +92,10 @@ public class CaseSortTest {
   @org.junit.jupiter.api.Test
   public void testSortByUrgencyBothCompleted() {
     Case a = mockEmptyCase(1L);
-    a.getRequisition().getReleases().add(mockRequisitionQc(true, 2023, 1, 1));
+    addRelease(a, true, 2023, 1, 1);
 
     Case b = mockEmptyCase(1L);
-    b.getRequisition().getReleases().add(mockRequisitionQc(true, 2023, 1, 1));
+    addRelease(b, true, 2023, 1, 1);
 
     // Both completed, should be considered equivalent
     testUrgencyComparator(a, b, true);
@@ -104,7 +106,7 @@ public class CaseSortTest {
     Case a = mockEmptyCase(1L);
 
     Case b = mockEmptyCase(1L);
-    b.getRequisition().getReleases().add(mockRequisitionQc(true, 2023, 1, 1));
+    addRelease(b, true, 2023, 1, 1);
 
     // B completed. A is more urgent
     testUrgencyComparator(a, b);
@@ -286,14 +288,16 @@ public class CaseSortTest {
     when(kase.getAssayId()).thenReturn(assayId);
 
     Requisition requisition = mock(Requisition.class);
-    when(requisition.getAssayId()).thenReturn(assayId);
-    List<RequisitionQc> analysisReviews = new ArrayList<>();
-    when(requisition.getAnalysisReviews()).thenReturn(analysisReviews);
-    List<RequisitionQc> releaseApprovals = new ArrayList<>();
-    when(requisition.getReleaseApprovals()).thenReturn(releaseApprovals);
-    List<RequisitionQc> releases = new ArrayList<>();
-    when(requisition.getReleases()).thenReturn(releases);
     when(kase.getRequisition()).thenReturn(requisition);
+
+    when(kase.getDeliverables()).thenReturn(new ArrayList<>());
+    CaseDeliverable deliverable = mock(CaseDeliverable.class);
+    when(deliverable.getDeliverableType()).thenReturn(DeliverableType.DATA_RELEASE);
+    when(deliverable.getReleases()).thenReturn(new ArrayList<>());
+    CaseRelease release = mock(CaseRelease.class);
+    when(release.getDeliverable()).thenReturn("Full Pipeline");
+    deliverable.getReleases().add(release);
+    kase.getDeliverables().add(deliverable);
 
     List<Sample> receipts = new ArrayList<>();
     when(kase.getReceipts()).thenReturn(receipts);
@@ -339,11 +343,11 @@ public class CaseSortTest {
     }
   }
 
-  private static RequisitionQc mockRequisitionQc(boolean qcPassed, int year, int month, int day) {
-    RequisitionQc qc = mock(RequisitionQc.class);
-    when(qc.getQcDate()).thenReturn(LocalDate.of(year, month, day));
-    when(qc.isQcPassed()).thenReturn(qcPassed);
-    return qc;
+  private static void addRelease(Case kase, boolean qcPassed, int year, int month, int day) {
+    CaseRelease release = kase.getDeliverables().get(0).getReleases().get(0);
+    when(release.getQcPassed()).thenReturn(qcPassed);
+    when(release.getQcUser()).thenReturn("User");
+    when(release.getQcDate()).thenReturn(LocalDate.of(year, month, day));
   }
 
   private static <T> void assertOrder(List<Case> cases, Function<Case, T> getter, T[] expectedOrder,
