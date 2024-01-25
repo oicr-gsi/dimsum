@@ -1,4 +1,4 @@
-import { legendAction, TableDefinition } from "../component/table-builder";
+import { TableDefinition } from "../component/table-builder";
 import { makeNameDiv } from "../util/html-utils";
 import { postDownload } from "../util/requests";
 import { urls } from "../util/urls";

@@ -1,15 +1,13 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Stream;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.DateFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
@@ -18,8 +16,9 @@ import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
 
 public class MvcUtils {
-  private final static List<String> dateFilterKeys =
-      Stream.of(DateFilterKey.values()).map(DateFilterKey::name).toList();
+
+  private static final String BEFORE_DATE_KEY = "BEFORE_DATE";
+  private static final String AFTER_DATE_KEY = "AFTER_DATE";
 
 
   public static void validateDataQuery(DataQuery query) {
@@ -67,7 +66,8 @@ public class MvcUtils {
     // exclude Date Range Filters before validating each filter KVP
     List<KeyValuePair> queryFilters =
         query.getFilters().stream()
-            .filter(x -> !dateFilterKeys.contains(x.getKey())).toList();
+            .filter(x -> !BEFORE_DATE_KEY.equals(x.getKey()) && !AFTER_DATE_KEY.equals(x.getKey()))
+            .toList();
     if (queryFilters == null || queryFilters.isEmpty()) {
       return null;
     }
@@ -118,25 +118,20 @@ public class MvcUtils {
     }
   }
 
-  public static List<DateFilter> parseDateFilters(DataQuery query) {
-    // exclude Date Range Filters before validating each filter KVP
-    List<KeyValuePair> queryFilters =
-        query.getFilters().stream()
-            .filter(x -> dateFilterKeys.contains(x.getKey())).toList();
-    if (queryFilters == null || queryFilters.isEmpty()) {
-      return null;
-    }
-    return queryFilters.stream()
-        .map(MvcUtils::parseDateFilter).toList();
+  public static LocalDate parseAfterDate(DataQuery query) {
+    return parseDateFilterValue(query, AFTER_DATE_KEY);
   }
 
-  private static DateFilter parseDateFilter(KeyValuePair pair) {
-    try {
-      DateFilterKey key = DateFilterKey.valueOf(pair.getKey());
-      return new DateFilter(key, pair.getValue());
-    } catch (IllegalArgumentException e) {
-      throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
-    }
+  public static LocalDate parseBeforeDate(DataQuery query) {
+    return parseDateFilterValue(query, BEFORE_DATE_KEY);
+  }
+
+  private static LocalDate parseDateFilterValue(DataQuery query, String key) {
+    String value = query.getFilters().stream()
+        .filter(x -> key.equals(x.getKey()))
+        .map(KeyValuePair::getValue)
+        .findFirst().orElse(null);
+    return value == null ? null : LocalDate.parse(value);
   }
 
   public static List<ProjectSummaryFilter> parseProjectSummaryFilters(DataQuery query) {
