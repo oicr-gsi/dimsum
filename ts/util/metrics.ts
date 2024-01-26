@@ -305,22 +305,3 @@ function countDecimalPlaces(num?: number) {
   const i = string.indexOf(".");
   return string.length - i - 1;
 }
-
-export function getSingleThreshold(metric: Metric) {
-  switch (metric.thresholdType) {
-    case "GT":
-    case "GE":
-      if (metric.minimum === undefined) {
-        throw new Error("Metric is missing minimum value");
-      }
-      return metric.minimum;
-    case "LT":
-    case "LE":
-      if (metric.maximum === undefined) {
-        throw new Error("Metric is missing maximum value");
-      }
-      return metric.maximum;
-    default:
-      throw new Error("Metric does not have a single threshold");
-  }
-}
