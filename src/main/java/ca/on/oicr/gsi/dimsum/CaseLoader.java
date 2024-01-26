@@ -275,7 +275,7 @@ public class CaseLoader {
         && anyRequisitionQcsMatch(kase.getRequisition().getReleaseApprovals(), dateFilters)) {
       caseSummary.releaseApprovalCompletedCount(testSize);
     }
-    if (PendingState.RELEASE_APPROVAL.qualifyCase(kase) && !kase.isStopped()) {
+    if (PendingState.RELEASE_APPROVAL.qualifyCase(kase)) {
       caseSummary.releaseApprovalPendingCount(testSize);
     }
 
@@ -284,7 +284,7 @@ public class CaseLoader {
         && anyRequisitionQcsMatch(kase.getRequisition().getReleases(), dateFilters)) {
       caseSummary.releaseCompletedCount(testSize);
     }
-    if (PendingState.RELEASE.qualifyCase(kase) && !kase.isStopped()) {
+    if (PendingState.RELEASE.qualifyCase(kase)) {
       caseSummary.releasePendingCount(testSize);
     }
 
