@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.25.0] - 2024-01-29
+
+### Added
+
+* Range selection by allowing users to click a row, hold the Shift key, and click another row, thereby toggling the selection state of all rows in between
+* Sort by QC status in Receipt, Extraction, Library Qualification, and Full-Depth Sequencing QC step tables
+
+### Fixed
+
+* The QC in MISO function would error and not respond if an assay contained a metric with a range threshold (between x and y)
+* When using the QC in MISO function, a single assay was used to choose the metrics to relay to MISO. This means that MISO would display the wrong metrics for samples with a different assay
+
+
 ## [1.24.0] - 2024-01-18
 
 ### Changed
