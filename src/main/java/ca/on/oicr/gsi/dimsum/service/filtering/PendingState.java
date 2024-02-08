@@ -238,6 +238,22 @@ public enum PendingState {
           && !CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase);
     }
   },
+  ANALYSIS_REVIEW_DATA_RELEASE("Analysis Review - Data Release", true) {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
+          && CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.isApplicable(kase)
+          && !CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.qualifyCase(kase);
+    }
+  },
+  ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true) {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
+          && CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.isApplicable(kase)
+          && !CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.qualifyCase(kase);
+    }
+  },
   RELEASE_APPROVAL("Release Approval", false) {
 
     @Override
@@ -246,11 +262,43 @@ public enum PendingState {
           && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase);
     }
   },
+  RELEASE_APPROVAL_DATA_RELEASE("Release Approval - Data Release", true) {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.qualifyCase(kase))
+          && CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.isApplicable(kase)
+          && !CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.qualifyCase(kase);
+    }
+  },
+  RELEASE_APPROVAL_CLINICAL_REPORT("Release Approval - Clinical Report", true) {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.qualifyCase(kase))
+          && CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.isApplicable(kase)
+          && !CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.qualifyCase(kase);
+    }
+  },
   RELEASE("Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
       return CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
           && !CompletedGate.RELEASE.qualifyCase(kase);
+    }
+  },
+  RELEASE_DATA_RELEASE("Release - Data Release", false) {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.qualifyCase(kase)
+          && CompletedGate.RELEASE_DATA_RELEASE.isApplicable(kase)
+          && !CompletedGate.RELEASE_DATA_RELEASE.qualifyCase(kase);
+    }
+  },
+  RELEASE_CLINICAL_REPORT("Release - Clinical Report", false) {
+    @Override
+    public boolean qualifyCase(Case kase) {
+      return CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.qualifyCase(kase)
+          && CompletedGate.RELEASE_CLINICAL_REPORT.isApplicable(kase)
+          && !CompletedGate.RELEASE_CLINICAL_REPORT.qualifyCase(kase);
     }
   };
   // @formatter:on
