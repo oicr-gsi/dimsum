@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -439,23 +440,68 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testPendingAnalysisFilter() {
+  public void testPendingAnalysisReviewFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.PENDING, PendingState.ANALYSIS_REVIEW.getLabel());
+    testFilterCases(filter, Arrays.asList(4, 25));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingAnalysisReviewDataReleaseFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.ANALYSIS_REVIEW_DATA_RELEASE.getLabel());
     testFilterCases(filter, Arrays.asList(4));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingAnalysisReviewClinicalReportFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING,
+            PendingState.ANALYSIS_REVIEW_CLINICAL_REPORT.getLabel());
+    testFilterCases(filter, Arrays.asList(25));
   }
 
   @org.junit.jupiter.api.Test
   public void testPendingReleaseApprovalFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_APPROVAL.getLabel());
+    testFilterCases(filter, Arrays.asList(5, 26));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingReleaseApprovalDataReleaseFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING,
+            PendingState.RELEASE_APPROVAL_DATA_RELEASE.getLabel());
     testFilterCases(filter, Arrays.asList(5));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingReleaseApprovalClinicalReportFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING,
+            PendingState.RELEASE_APPROVAL_CLINICAL_REPORT.getLabel());
+    testFilterCases(filter, Arrays.asList(26));
   }
 
   @org.junit.jupiter.api.Test
   public void testPendingReleaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE.getLabel());
+    testFilterCases(filter, Arrays.asList(6, 27));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingReleaseDataReleaseFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_DATA_RELEASE.getLabel());
     testFilterCases(filter, Arrays.asList(6));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingReleaseClinicalReportFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_CLINICAL_REPORT.getLabel());
+    testFilterCases(filter, Arrays.asList(27));
   }
 
   @org.junit.jupiter.api.Test
@@ -463,7 +509,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RECEIPT.getLabel());
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21, 23, 24));
+        17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
@@ -509,7 +555,11 @@ public class CaseFilterTest {
         makeTestGroupId(20, 1),
         makeTestGroupId(21, 1),
         makeTestGroupId(23, 1),
-        makeTestGroupId(24, 1)));
+        makeTestGroupId(24, 1),
+        makeTestGroupId(25, 1),
+        makeTestGroupId(26, 1),
+        makeTestGroupId(27, 1),
+        makeTestGroupId(28, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -542,7 +592,11 @@ public class CaseFilterTest {
             makeSampleId(20, 0, MetricCategory.RECEIPT, 1),
             makeSampleId(21, 0, MetricCategory.RECEIPT, 1),
             makeSampleId(23, 0, MetricCategory.RECEIPT, 1),
-            makeSampleId(24, 0, MetricCategory.RECEIPT, 1)));
+            makeSampleId(24, 0, MetricCategory.RECEIPT, 1),
+            makeSampleId(25, 0, MetricCategory.RECEIPT, 1),
+            makeSampleId(26, 0, MetricCategory.RECEIPT, 1),
+            makeSampleId(27, 0, MetricCategory.RECEIPT, 1),
+            makeSampleId(28, 0, MetricCategory.RECEIPT, 1)));
   }
 
 
@@ -551,7 +605,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.EXTRACTION.getLabel());
     testFilterCases(filter, Arrays.asList(1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21));
+        17, 18, 19, 20, 21, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
@@ -590,7 +644,11 @@ public class CaseFilterTest {
         makeTestGroupId(18, 1),
         makeTestGroupId(19, 1),
         makeTestGroupId(20, 1),
-        makeTestGroupId(21, 1)));
+        makeTestGroupId(21, 1),
+        makeTestGroupId(25, 1),
+        makeTestGroupId(26, 1),
+        makeTestGroupId(27, 1),
+        makeTestGroupId(28, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -622,7 +680,11 @@ public class CaseFilterTest {
         makeSampleId(18, 1, MetricCategory.EXTRACTION, 1),
         makeSampleId(19, 1, MetricCategory.EXTRACTION, 1),
         makeSampleId(20, 1, MetricCategory.EXTRACTION, 1),
-        makeSampleId(21, 1, MetricCategory.EXTRACTION, 1)));
+        makeSampleId(21, 1, MetricCategory.EXTRACTION, 1),
+        makeSampleId(25, 1, MetricCategory.EXTRACTION, 1),
+        makeSampleId(26, 1, MetricCategory.EXTRACTION, 1),
+        makeSampleId(27, 1, MetricCategory.EXTRACTION, 1),
+        makeSampleId(28, 1, MetricCategory.EXTRACTION, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -630,7 +692,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.LIBRARY_PREPARATION.getLabel());
     testFilterCases(filter, Arrays.asList(2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 21));
+        17, 18, 19, 21, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
@@ -663,7 +725,11 @@ public class CaseFilterTest {
         makeTestGroupId(17, 1),
         makeTestGroupId(18, 1),
         makeTestGroupId(19, 1),
-        makeTestGroupId(21, 1)));
+        makeTestGroupId(21, 1),
+        makeTestGroupId(25, 1),
+        makeTestGroupId(26, 1),
+        makeTestGroupId(27, 1),
+        makeTestGroupId(28, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -689,7 +755,11 @@ public class CaseFilterTest {
         makeSampleId(17, 1, MetricCategory.LIBRARY_PREP, 1),
         makeSampleId(18, 1, MetricCategory.LIBRARY_PREP, 1),
         makeSampleId(19, 1, MetricCategory.LIBRARY_PREP, 1),
-        makeSampleId(21, 1, MetricCategory.LIBRARY_PREP, 1)));
+        makeSampleId(21, 1, MetricCategory.LIBRARY_PREP, 1),
+        makeSampleId(25, 1, MetricCategory.LIBRARY_PREP, 1),
+        makeSampleId(26, 1, MetricCategory.LIBRARY_PREP, 1),
+        makeSampleId(27, 1, MetricCategory.LIBRARY_PREP, 1),
+        makeSampleId(28, 1, MetricCategory.LIBRARY_PREP, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -697,7 +767,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.LIBRARY_QUALIFICATION.getLabel());
-    testFilterCases(filter, Arrays.asList(3, 4, 5, 6, 16, 17, 18, 19));
+    testFilterCases(filter, Arrays.asList(3, 4, 5, 6, 16, 17, 18, 19, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
@@ -724,7 +794,11 @@ public class CaseFilterTest {
         makeTestGroupId(16, 1),
         makeTestGroupId(17, 1),
         makeTestGroupId(18, 1),
-        makeTestGroupId(19, 1)));
+        makeTestGroupId(19, 1),
+        makeTestGroupId(25, 1),
+        makeTestGroupId(26, 1),
+        makeTestGroupId(27, 1),
+        makeTestGroupId(28, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -742,7 +816,11 @@ public class CaseFilterTest {
         makeSampleId(16, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
         makeSampleId(17, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
         makeSampleId(18, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
-        makeSampleId(19, 1, MetricCategory.LIBRARY_QUALIFICATION, 1)));
+        makeSampleId(19, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
+        makeSampleId(25, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
+        makeSampleId(26, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
+        makeSampleId(27, 1, MetricCategory.LIBRARY_QUALIFICATION, 1),
+        makeSampleId(28, 1, MetricCategory.LIBRARY_QUALIFICATION, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -750,7 +828,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.FULL_DEPTH_SEQUENCING.getLabel());
-    testFilterCases(filter, Arrays.asList(4, 5, 6));
+    testFilterCases(filter, Arrays.asList(4, 5, 6, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
@@ -766,13 +844,16 @@ public class CaseFilterTest {
   @org.junit.jupiter.api.Test
   public void testCompletedFullDepthTestFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.FULL_DEPTH_SEQUENCING.getLabel());
+        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.FULL_DEPTH_SEQUENCING.getLabel());
     testFilterTests(filter, Arrays.asList(
         makeTestGroupId(4, 1),
         makeTestGroupId(5, 1),
         makeTestGroupId(6, 1),
-        makeTestGroupId(6, 2)));
+        makeTestGroupId(6, 2),
+        makeTestGroupId(25, 1),
+        makeTestGroupId(26, 1),
+        makeTestGroupId(27, 1),
+        makeTestGroupId(28, 1)));
   }
 
   @org.junit.jupiter.api.Test
@@ -784,24 +865,26 @@ public class CaseFilterTest {
         makeSampleId(4, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
         makeSampleId(5, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
         makeSampleId(6, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
-        makeSampleId(6, 2, MetricCategory.FULL_DEPTH_SEQUENCING, 1)));
+        makeSampleId(6, 2, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
+        makeSampleId(25, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
+        makeSampleId(26, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
+        makeSampleId(27, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1),
+        makeSampleId(28, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1)));
   }
 
   @org.junit.jupiter.api.Test
-  public void testCompletedAnalysisFilter() {
+  public void testCompletedAnalysisReviewFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.ANALYSIS_REVIEW.getLabel());
-    testFilterCases(filter, Arrays.asList(5, 6));
+        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.ANALYSIS_REVIEW.getLabel());
+    testFilterCases(filter, Arrays.asList(5, 6, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
-  public void testIncompleteAnalysisFilter() {
+  public void testIncompleteAnalysisReviewFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.INCOMPLETE,
-            CompletedGate.ANALYSIS_REVIEW.getLabel());
-    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 7, 8, 9,
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24));
+        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.ANALYSIS_REVIEW.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25));
   }
 
   @org.junit.jupiter.api.Test
@@ -809,16 +892,15 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.RELEASE_APPROVAL.getLabel());
-    testFilterCases(filter, Arrays.asList(6));
+    testFilterCases(filter, Arrays.asList(6, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteReleaseApprovalFilter() {
     CaseFilter filter =
-        new CaseFilter(CaseFilterKey.INCOMPLETE,
-            CompletedGate.RELEASE_APPROVAL.getLabel());
-    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 7, 8, 9,
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24));
+        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.RELEASE_APPROVAL.getLabel());
+    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26));
   }
 
   @org.junit.jupiter.api.Test
@@ -826,7 +908,7 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.COMPLETED,
             CompletedGate.RELEASE.getLabel());
-    testFilterCases(filter, Collections.emptyList());
+    testFilterCases(filter, Collections.singletonList(28));
   }
 
   @org.junit.jupiter.api.Test
@@ -834,8 +916,8 @@ public class CaseFilterTest {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.INCOMPLETE,
             CompletedGate.RELEASE.getLabel());
-    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24));
+    testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+        17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27));
   }
 
   @org.junit.jupiter.api.Test
@@ -848,7 +930,7 @@ public class CaseFilterTest {
   public void testNonStoppedCaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.STOPPED, "No");
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21, 22, 24));
+        17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
@@ -861,7 +943,7 @@ public class CaseFilterTest {
   public void testNonPausedCaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.PAUSED, "No");
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21, 22, 23));
+        17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28));
   }
 
   private static List<Case> getCasesFiltered(CaseFilter filter) {
@@ -874,7 +956,9 @@ public class CaseFilterTest {
       assertTrue(filtered.contains(cases.get(caseNumber)),
           String.format("Case #%d included", caseNumber));
     }
-    assertEquals(expectedCases.size(), filtered.size(), "Case count");
+    assertEquals(expectedCases.size(), filtered.size(),
+        "Case count (%s)".formatted(filtered.stream()
+            .map(kase -> String.valueOf(cases.indexOf(kase))).collect(Collectors.joining(", "))));
   }
 
   private static void testFilterTests(CaseFilter filter, List<String> expectedTestGroupIds) {

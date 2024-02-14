@@ -31,7 +31,7 @@ public class MockCase {
           makeCase6(), makeCase7(), makeCase8(), makeCase9(), makeCase10(), makeCase11(),
           makeCase12(), makeCase13(), makeCase14(), makeCase15(), makeCase16(), makeCase17(),
           makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22(), makeCase23(),
-          makeCase24());
+          makeCase24(), makeCase25(), makeCase26(), makeCase27(), makeCase28());
 
   private static Case makeCase0() {
     final int caseNumber = 0;
@@ -305,6 +305,58 @@ public class MockCase {
     return kase;
   }
 
+  private static Case makeCase25() {
+    final int caseNumber = 25;
+    // Case is pending analysis review - clinical report
+    Case kase = makeCase("PRO25_0001", "Single Test", "PRO25", "REQ25", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markReleaseApproval(kase.getDeliverables().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
+    return kase;
+  }
+
+  private static Case makeCase26() {
+    final int caseNumber = 26;
+    // Case is pending release approval - clinical report
+    Case kase = makeCase("PRO26_0001", "Single Test", "PRO26", "REQ26", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markReleaseApproval(kase.getDeliverables().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    CaseDeliverable deliverable =
+        addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
+    markAnalysisReview(deliverable, true);
+    return kase;
+  }
+
+  private static Case makeCase27() {
+    final int caseNumber = 27;
+    // Case is pending release - clinical report
+    Case kase = makeCase("PRO27_0001", "Single Test", "PRO27", "REQ27", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markReleaseApproval(kase.getDeliverables().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    CaseDeliverable deliverable =
+        addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
+    markAnalysisReview(deliverable, true);
+    markReleaseApproval(deliverable, true);
+    return kase;
+  }
+
+  private static Case makeCase28() {
+    final int caseNumber = 28;
+    // Case is completed
+    Case kase = makeCase("PRO28_0001", "Single Test", "PRO28", "REQ28", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markReleaseApproval(kase.getDeliverables().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    return kase;
+  }
+
   private static Case makeCase(String donorName, String assayName, String projectName,
       String requisitionName, int caseNumber) {
     Case kase = mock(Case.class);
@@ -321,17 +373,25 @@ public class MockCase {
     addSample(kase.getReceipts(), receiptSampleId, true, "Good");
     when(kase.getTests()).thenReturn(new ArrayList<>());
     addRequisition(kase, caseNumber, requisitionName);
-
     when(kase.getDeliverables()).thenReturn(new ArrayList<>());
-    CaseDeliverable deliverable = mock(CaseDeliverable.class);
-    when(deliverable.getDeliverableType()).thenReturn(DeliverableType.DATA_RELEASE);
-    when(deliverable.getReleases()).thenReturn(new ArrayList<>());
-    CaseRelease release = mock(CaseRelease.class);
-    when(release.getDeliverable()).thenReturn("Full Pipeline");
-    deliverable.getReleases().add(release);
-    kase.getDeliverables().add(deliverable);
-
+    addDeliverable(kase, DeliverableType.DATA_RELEASE, "Full Pipeline");
     return kase;
+  }
+
+  private static CaseDeliverable addDeliverable(Case kase, DeliverableType deliverableType,
+      String deliverableName) {
+    CaseDeliverable deliverable = kase.getDeliverables().stream()
+        .filter(x -> x.getDeliverableType() == deliverableType).findFirst().orElse(null);
+    if (deliverable == null) {
+      deliverable = mock(CaseDeliverable.class);
+      when(deliverable.getDeliverableType()).thenReturn(deliverableType);
+      when(deliverable.getReleases()).thenReturn(new ArrayList<>());
+      kase.getDeliverables().add(deliverable);
+    }
+    CaseRelease release = mock(CaseRelease.class);
+    when(release.getDeliverable()).thenReturn(deliverableName);
+    deliverable.getReleases().add(release);
+    return deliverable;
   }
 
   private static String makeSampleId(int caseNumber, int testNumber, MetricCategory gate,
@@ -365,6 +425,12 @@ public class MockCase {
     when(deliverable.getReleaseApprovalQcPassed()).thenReturn(qcPassed);
     when(deliverable.getReleaseApprovalQcUser()).thenReturn("User");
     when(deliverable.getReleaseApprovalQcDate()).thenReturn(LocalDate.now());
+  }
+
+  private static void markRelease(CaseRelease release, Boolean qcPassed) {
+    when(release.getQcPassed()).thenReturn(qcPassed);
+    when(release.getQcUser()).thenReturn("User");
+    when(release.getQcDate()).thenReturn(LocalDate.now());
   }
 
   private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,
@@ -428,6 +494,12 @@ public class MockCase {
 
   private static Sample addRunLibrary(List<Sample> gateItems, String id, Boolean qcPassed,
       String qcReason, Boolean dataReviewPassed) {
+    return addRunLibrary(gateItems, id, qcPassed, qcReason, dataReviewPassed, qcPassed,
+        dataReviewPassed);
+  }
+
+  private static Sample addRunLibrary(List<Sample> gateItems, String id, Boolean qcPassed,
+      String qcReason, Boolean dataReviewPassed, Boolean runQcPassed, Boolean runDataReviewPassed) {
     Sample sample = addSample(gateItems, id, qcPassed, qcReason);
     Run run = mock(Run.class);
     when(sample.getRun()).thenReturn(run);
@@ -435,6 +507,16 @@ public class MockCase {
     if (dataReviewPassed != null) {
       when(sample.getDataReviewUser()).thenReturn("User");
       when(sample.getDataReviewDate()).thenReturn(LocalDate.now());
+    }
+    if (runQcPassed != null) {
+      when(run.getQcPassed()).thenReturn(runQcPassed);
+      when(run.getQcUser()).thenReturn("User");
+      when(run.getQcDate()).thenReturn(LocalDate.now());
+    }
+    if (runDataReviewPassed != null) {
+      when(run.getDataReviewPassed()).thenReturn(runDataReviewPassed);
+      when(run.getDataReviewUser()).thenReturn("User");
+      when(run.getDataReviewDate()).thenReturn(LocalDate.now());
     }
     return sample;
   }
