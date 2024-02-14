@@ -66,7 +66,8 @@ public enum CaseFilterKey {
   },
   INCOMPLETE(string -> {
     CompletedGate gate = getGate(string);
-    return gate.predicate().negate(); // Negate the completed condition
+    Predicate<Case> applicable = x -> gate.isApplicable(x);
+    return applicable.and(gate.predicate().negate()); // Negate the completed condition
 }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
