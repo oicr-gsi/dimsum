@@ -6,6 +6,7 @@ import {
   CellStatus,
   makeIcon,
   shadeElement,
+  addActionButton,
 } from "../util/html-utils";
 import { toggleLegend } from "./legend";
 import { post } from "../util/requests";
@@ -300,7 +301,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addActionButtons(container: HTMLElement) {
     if (this.definition.bulkActions) {
       this.definition.bulkActions.forEach((action) => {
-        this.addActionButton(container, action.title, () => {
+        addActionButton(container, action.title, () => {
           if (!this.selectedItems.size) {
             showErrorDialog("No items selected");
             return;
@@ -311,22 +312,9 @@ export class TableBuilder<ParentType, ChildType> {
     }
     if (this.definition.staticActions) {
       this.definition.staticActions.forEach((action) => {
-        this.addActionButton(container, action.title, action.handler);
+        addActionButton(container, action.title, action.handler);
       });
     }
-  }
-
-  private addActionButton(
-    container: HTMLElement,
-    title: string,
-    handler: () => void
-  ) {
-    const button = document.createElement("button");
-    button.className =
-      "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
-    button.innerText = title;
-    button.onclick = handler;
-    container.appendChild(button);
   }
 
   private addSortControls(container: HTMLElement) {
