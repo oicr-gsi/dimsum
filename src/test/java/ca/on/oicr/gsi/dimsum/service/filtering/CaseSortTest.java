@@ -320,6 +320,7 @@ public class CaseSortTest {
 
   private static Sample mockPassedSample() {
     Sample sample = mock(Sample.class);
+    when(sample.getQcUser()).thenReturn("User");
     when(sample.getQcDate()).thenReturn(LocalDate.now());
     when(sample.getQcPassed()).thenReturn(true);
     return sample;

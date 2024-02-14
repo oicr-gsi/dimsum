@@ -346,7 +346,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
-        if (samplePhaseComplete(test.extractions)) {
+        if (test.extractionSkipped || samplePhaseComplete(test.extractions)) {
           if (samplePhasePendingWorkOrQc(test.libraryPreparations)) {
             if (
               samplePhasePendingWork(test.libraryPreparations) &&
@@ -403,7 +403,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
-        if (samplePhaseComplete(test.libraryPreparations)) {
+        if (
+          test.libraryPreparationSkipped ||
+          samplePhaseComplete(test.libraryPreparations)
+        ) {
           if (samplePhasePendingWorkOrQc(test.libraryQualifications)) {
             if (
               samplePhasePendingWork(test.libraryQualifications) &&
@@ -453,7 +456,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
-        if (samplePhaseComplete(test.libraryQualifications)) {
+        if (
+          test.libraryQualificationSkipped ||
+          samplePhaseComplete(test.libraryQualifications)
+        ) {
           if (samplePhasePendingWorkOrQc(test.fullDepthSequencings)) {
             if (
               samplePhasePendingWork(test.fullDepthSequencings) &&
@@ -486,7 +492,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     makeDeliverableTypePhaseColumn(
       "Analysis Review",
       true,
-      (kase) =>
+      (kase, deliverableType) =>
         kase.tests.every((test) =>
           samplePhaseComplete(test.fullDepthSequencings)
         ),
@@ -496,11 +502,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     makeDeliverableTypePhaseColumn(
       "Release Approval",
       false,
-      (kase) =>
-        deliverableTypePhaseComplete(
-          kase,
-          (deliverable) => deliverable.analysisReviewQcPassed
-        ),
+      (kase, deliverableType) =>
+        kase.deliverables
+          .filter((x) => x.deliverableType == deliverableType)
+          .some((x) => x.analysisReviewQcPassed),
       (targets) => targets.releaseApprovalDays,
       (deliverable) => deliverable.releaseApprovalQcPassed
     ),
@@ -512,16 +517,16 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNoDeliverablesIcon(fragment, tooltipInstance);
           return;
         }
-        const previousComplete = kase.deliverables.every(
+        const anyPreviousComplete = kase.deliverables.some(
           (deliverable) => deliverable.releaseApprovalQcPassed
         );
         const anyQcSet = kase.deliverables
           .flatMap((deliverable) => deliverable.releases)
           .some((release) => release.qcPassed != null);
-        if (previousComplete || anyQcSet) {
+        if (anyPreviousComplete || anyQcSet) {
           addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
         }
-        if (previousComplete && !caseComplete(kase)) {
+        if (anyPreviousComplete && !caseComplete(kase)) {
           addTurnAroundTimeInfo(
             kase.caseDaysSpent,
             getTargets(kase).releaseDays,
@@ -709,7 +714,7 @@ function makeLatestActivityColumn<ChildType>(): ColumnDefinition<
 function makeDeliverableTypePhaseColumn(
   title: string,
   stoppable: boolean,
-  isPreviousComplete: (kase: Case) => boolean,
+  isPreviousComplete: (kase: Case, deliverableType: DeliverableType) => boolean,
   getTarget: (targets: AssayTargets) => number | null,
   getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined
 ): ColumnDefinition<Case, Test> {
@@ -728,25 +733,22 @@ function makeDeliverableTypePhaseColumn(
         addNaText(fragment);
         return;
       }
-      const previousComplete = isPreviousComplete(kase);
+      const anyPreviousComplete = kase.deliverables.some((x) =>
+        isPreviousComplete(kase, x.deliverableType)
+      );
       if (
         (!stoppable && kase.requisition.stopped) ||
-        previousComplete ||
+        anyPreviousComplete ||
         anyQcSet
       ) {
-        addDeliverableTypeIcons(
-          kase.deliverables,
-          getQcPassed,
-          fragment,
-          tooltipInstance
-        );
+        addDeliverableTypeIcons(kase, getQcPassed, fragment, tooltipInstance);
       }
       const allQcPassed = kase.deliverables.every((deliverable) =>
         getQcPassed(deliverable)
       );
       const targets = getTargets(kase);
       if (
-        ((!stoppable && kase.requisition.stopped) || previousComplete) &&
+        ((!stoppable && kase.requisition.stopped) || anyPreviousComplete) &&
         !allQcPassed
       ) {
         addTurnAroundTimeInfo(kase.caseDaysSpent, getTarget(targets), fragment);
@@ -775,7 +777,7 @@ function makeDeliverableTypeQcStatusColumn<ChildType>(
         return;
       }
       addDeliverableTypeIcons(
-        kase.deliverables,
+        kase,
         (deliverable) => deliverable.analysisReviewQcPassed,
         fragment,
         tooltipInstance
@@ -1207,7 +1209,7 @@ export function addSampleIcons(
     tooltipInstance.addTarget(icon, makeSampleTooltip(sample));
     fragment.appendChild(icon);
     if (i < samples.length - 1) {
-      fragment.appendChild(document.createTextNode(" "));
+      addSpace(fragment);
     }
   });
 }
@@ -1301,12 +1303,12 @@ function addTooltipRow(
 }
 
 function addDeliverableTypeIcons(
-  deliverables: CaseDeliverable[],
+  kase: Case,
   getStatus: (deliverable: CaseDeliverable) => boolean | undefined,
   fragment: DocumentFragment,
   tooltipInstance: Tooltip
 ) {
-  deliverables.forEach((deliverable) => {
+  kase.deliverables.forEach((deliverable, i) => {
     const status = getDeliverableQcStatus(getStatus(deliverable));
     const icon = makeIcon(status.icon);
     tooltipInstance.addTarget(icon, (tooltip) => {
@@ -1316,6 +1318,9 @@ function addDeliverableTypeIcons(
       tooltip.appendChild(makeTextDiv("Status: " + status.label));
     });
     fragment.appendChild(icon);
+    if (i < kase.deliverables.length - 1) {
+      addSpace(fragment);
+    }
   });
 }
 
@@ -1324,8 +1329,8 @@ function addReleaseIcons(
   fragment: DocumentFragment,
   tooltipInstance: Tooltip
 ) {
-  deliverables.forEach((deliverable) => {
-    deliverable.releases.forEach((release) => {
+  deliverables.forEach((deliverable, i) => {
+    deliverable.releases.forEach((release, j) => {
       const status = getDeliverableQcStatus(release.qcPassed);
       const icon = makeIcon(status.icon);
       tooltipInstance.addTarget(icon, (tooltip) => {
@@ -1338,7 +1343,13 @@ function addReleaseIcons(
         tooltip.appendChild(makeTextDiv("Status: " + status.label));
       });
       fragment.appendChild(icon);
+      if (j < deliverable.releases.length - 1) {
+        addSpace(fragment);
+      }
     });
+    if (i < deliverables.length - 1) {
+      addSpace(fragment);
+    }
   });
 }
 
