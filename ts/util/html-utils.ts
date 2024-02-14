@@ -209,3 +209,16 @@ export function toTitleCase(text: string) {
     return text.charAt(0).toUpperCase() + text.substring(1).toLowerCase();
   });
 }
+
+export function addActionButton(
+  container: HTMLElement,
+  title: string,
+  handler: () => void
+) {
+  const button = document.createElement("button");
+  button.className =
+    "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
+  button.innerText = title;
+  button.onclick = handler;
+  container.appendChild(button);
+}
