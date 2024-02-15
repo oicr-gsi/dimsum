@@ -1,9 +1,11 @@
 package ca.on.oicr.gsi.dimsum.service;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,11 +94,26 @@ public class JiraService {
   }
 
   public Iterable<Issue> getOpenIssues(String summary) {
-    countRequest();
-    return rest.getSearchClient()
-        .searchJql("project = %s AND labels = %s AND summary ~ \"%s\" AND resolution = Unresolved"
-            .formatted(projectNotification, labelNotification, summary))
-        .claim().getIssues();
+    final int pageSize = 50;
+    List<Issue> issues = new ArrayList<>();
+    String jql = "project = %s AND labels = %s AND summary ~ \"%s\" AND resolution = Unresolved"
+        .formatted(projectNotification, labelNotification, summary);
+    int startAt = 0;
+    while (true) {
+      int previousLength = issues.size();
+      countRequest();
+      Iterable<Issue> newIssues = rest.getSearchClient()
+          .searchJql(jql, pageSize, startAt, null)
+          .claim().getIssues();
+      for (Issue newIssue : newIssues) {
+        issues.add(newIssue);
+      }
+      if (issues.size() < previousLength + pageSize) {
+        break;
+      }
+      startAt += pageSize;
+    }
+    return issues;
   }
 
   public void postComment(Issue issue, String message) {
