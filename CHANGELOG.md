@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.25.1] - 2024-02-16
+
+### Fixed
+
+* Some JIRA tickets were not being closed automatically after QC was completed
+
+
 ## [1.25.0] - 2024-01-29
 
 ### Added
