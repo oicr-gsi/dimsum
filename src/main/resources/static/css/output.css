@@ -682,6 +682,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   width: 0px;
 }
 
+.w-48{
+  width: 12rem;
+}
+
 .w-fit{
   width: -webkit-fit-content;
   width: -moz-fit-content;
@@ -832,6 +836,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .overflow-hidden{
   overflow: hidden;
+}
+
+.text-ellipsis{
+  text-overflow: ellipsis;
 }
 
 .whitespace-nowrap{
@@ -987,6 +995,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .pl-8{
   padding-left: 2rem;
+}
+
+.pb-7{
+  padding-bottom: 1.75rem;
 }
 
 .pt-2{

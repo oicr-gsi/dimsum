@@ -709,24 +709,24 @@ export class TableBuilder<ParentType, ChildType> {
     this.acceptedFilters = this.acceptedFilters.filter(
       (filter) => filter.valid
     );
-    const response = await post(this.definition.queryUrl, {
-      pageSize: this.pageSize,
-      pageNumber: this.pageNumber,
-      baseFilter: this.baseFilterKey
-        ? { key: this.baseFilterKey, value: this.baseFilterValue }
-        : null,
-      filters: this.acceptedFilters.map((filter) => {
-        return { key: filter.key, value: filter.value };
-      }),
-      sortColumn: this.sortColumn,
-      descending: this.sortDescending,
-    });
-    if (!response.ok) {
-      throw new Error(`Error reloading table: ${response.status}`);
+    try {
+      const data = await post(this.definition.queryUrl, {
+        pageSize: this.pageSize,
+        pageNumber: this.pageNumber,
+        baseFilter: this.baseFilterKey
+          ? { key: this.baseFilterKey, value: this.baseFilterValue }
+          : null,
+        filters: this.acceptedFilters.map((filter) => {
+          return { key: filter.key, value: filter.value };
+        }),
+        sortColumn: this.sortColumn,
+        descending: this.sortDescending,
+      });
+      this.load(data.items);
+      this.showLoaded(data);
+    } catch (reason) {
+      showErrorDialog("Error reloading table - " + reason);
     }
-    const data = await response.json();
-    this.load(data.items);
-    this.showLoaded(data);
   }
 
   private showLoading() {
@@ -791,7 +791,7 @@ export class TableBuilder<ParentType, ChildType> {
     tbody.classList.add("nobreak");
     const tr = this.addBodyRow(tbody, parent);
     if (this.definition.bulkActions) {
-      this.addRowSelectCell(tr, parent, rowIndex);
+      this.addRowSelectCell(tr, parent, children, rowIndex);
     }
     this.columns.forEach((column, i) => {
       if (column.child) {
@@ -849,6 +849,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addRowSelectCell(
     tr: HTMLTableRowElement,
     item: ParentType,
+    children: ChildType[],
     rowIndex: number
   ) {
     const td = makeCell(tr, true);
@@ -878,6 +879,9 @@ export class TableBuilder<ParentType, ChildType> {
       this.lastClickedRowIndex = currentRowIndex;
     };
 
+    if (children.length > 1) {
+      td.rowSpan = children.length;
+    }
     td.appendChild(checkbox);
   }
 

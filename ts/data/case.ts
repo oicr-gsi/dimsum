@@ -28,6 +28,15 @@ import {
   makeNotFoundIcon,
   nullIfUndefined,
 } from "../util/metrics";
+import {
+  DropdownField,
+  FormField,
+  showAlertDialog,
+  showErrorDialog,
+  showFormDialog,
+  TextField,
+} from "../component/dialog";
+import { post } from "../util/requests";
 
 export interface Project {
   name: string;
@@ -103,7 +112,8 @@ export interface CaseRelease {
   qcNote?: string;
 }
 
-export type DeliverableType = "DATA_RELEASE" | "CLINICAL_REPORT";
+export const deliverableTypes = ["DATA_RELEASE", "CLINICAL_REPORT"] as const;
+export type DeliverableType = (typeof deliverableTypes)[number];
 
 export const deliverableTypeLabels: Record<DeliverableType, string> = {
   DATA_RELEASE: "Data Release",
@@ -157,7 +167,7 @@ export interface Case {
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
-  queryUrl: urls.rest.cases,
+  queryUrl: urls.rest.cases.list,
   defaultSort: {
     columnTitle: "Urgency",
     type: "number",
@@ -178,6 +188,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     return null;
   },
   staticActions: [legendAction],
+  bulkActions: [
+    {
+      title: "Sign Off",
+      handler: showSignoffDialog,
+    },
+  ],
   generateColumns: () => [
     ...makeBaseColumns(),
     {
@@ -550,7 +566,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
 };
 
 export const analysisReviewDefinition: TableDefinition<Case, void> = {
-  queryUrl: urls.rest.cases,
+  queryUrl: urls.rest.cases.list,
   defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
@@ -566,7 +582,7 @@ export const analysisReviewDefinition: TableDefinition<Case, void> = {
 };
 
 export const releaseApprovalDefinition: TableDefinition<Case, void> = {
-  queryUrl: urls.rest.cases,
+  queryUrl: urls.rest.cases.list,
   defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
@@ -581,7 +597,7 @@ export const releaseApprovalDefinition: TableDefinition<Case, void> = {
 };
 
 export const releaseDefinition: TableDefinition<Case, void> = {
-  queryUrl: urls.rest.cases,
+  queryUrl: urls.rest.cases.list,
   defaultSort: latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
@@ -1547,4 +1563,145 @@ export function getAnalysisMetricCellHighlight(
     return "error";
   }
   return anyApplicable ? null : "na";
+}
+
+function showSignoffDialog(items: Case[]) {
+  const commonDeliverableTypes = new Map<string, DeliverableType>();
+  for (let deliverableType of deliverableTypes) {
+    if (
+      items.every((item) =>
+        item.deliverables.some(
+          (deliverable) => deliverable.deliverableType === deliverableType
+        )
+      )
+    ) {
+      commonDeliverableTypes.set(
+        deliverableTypeLabels[deliverableType],
+        deliverableType
+      );
+    }
+  }
+  if (!commonDeliverableTypes.size) {
+    showErrorDialog("The selected cases have no deliverable type in common");
+    return;
+  }
+
+  const nabuQcSteps = [
+    "ANALYSIS_REVIEW",
+    "RELEASE_APPROVAL",
+    "RELEASE",
+  ] as const;
+  type NabuQcStep = (typeof nabuQcSteps)[number];
+
+  const nabuQcStepLabels: Record<NabuQcStep, string> = {
+    ANALYSIS_REVIEW: "Analysis Review",
+    RELEASE_APPROVAL: "Release Approval",
+    RELEASE: "Release",
+  };
+
+  const qcStepOptions = new Map<string, string>(
+    nabuQcSteps.map((step) => [nabuQcStepLabels[step], step])
+  );
+
+  showFormDialog(
+    "Case QC",
+    [
+      new DropdownField("QC Step", qcStepOptions, "signoffStepName", true),
+      new DropdownField(
+        "Deliverable Type",
+        commonDeliverableTypes,
+        "deliverableType",
+        true,
+        undefined,
+        commonDeliverableTypes.size === 1
+          ? commonDeliverableTypes.keys().next().value
+          : undefined
+      ),
+    ],
+    (result1) => {
+      const formFields: FormField<any>[] = [
+        new DropdownField(
+          "QC Status",
+          new Map<string, boolean | null>([
+            ["Approved", true],
+            ["Failed", false],
+          ]),
+          "qcPassed",
+          false,
+          "Pending"
+        ),
+        new TextField("Note", "comment"),
+      ];
+
+      if (result1.signoffStepName === "RELEASE") {
+        const commonDeliverables = new Map<string, string>();
+        items[0].deliverables
+          .filter(
+            (deliverable) =>
+              deliverable.deliverableType === result1.deliverableType
+          )
+          .flatMap((deliverableType) => deliverableType.releases)
+          .map((release) => release.deliverable)
+          .filter((deliverable) =>
+            items.every((item) => hasDeliverable(item, deliverable))
+          )
+          .forEach((deliverable) =>
+            commonDeliverables.set(deliverable, deliverable)
+          );
+        if (!commonDeliverables.size) {
+          const deliverableTypeLabel =
+            deliverableTypeLabels[result1.deliverableType as DeliverableType];
+          showErrorDialog(
+            `The selected cases have no ${deliverableTypeLabel} deliverable in common`
+          );
+          return;
+        }
+        formFields.unshift(
+          new DropdownField(
+            "Deliverable",
+            commonDeliverables,
+            "deliverable",
+            true,
+            undefined,
+            commonDeliverables.size === 1
+              ? commonDeliverables.keys().next().value
+              : undefined
+          )
+        );
+      }
+
+      const qcStepLabel =
+        nabuQcStepLabels[result1.signoffStepName as NabuQcStep];
+      const deliverableTypeLabel =
+        deliverableTypeLabels[result1.deliverableType as DeliverableType];
+      showFormDialog(
+        `${qcStepLabel} QC - ${deliverableTypeLabel}`,
+        formFields,
+        (result2) => {
+          const data = {
+            caseIdentifiers: items.map((item) => item.id),
+            signoffStepName: result1.signoffStepName,
+            deliverableType: result1.deliverableType,
+            deliverable: result2.deliverable || null,
+            qcPassed: result2.qcPassed,
+            comment: result2.comment || null,
+          };
+          post(urls.rest.cases.bulkSignoff, data)
+            .then(() => {
+              showAlertDialog(
+                "Success",
+                "Sign-off has been recorded in Nabu. It may take a few minutes to show up in Dimsum"
+              );
+            })
+            .catch((reason) => showErrorDialog(reason));
+        }
+      );
+    }
+  );
+}
+
+function hasDeliverable(kase: Case, deliverable: string) {
+  return kase.deliverables
+    .flatMap((deliverableType) => deliverableType.releases)
+    .some((release) => release.deliverable === deliverable);
 }
