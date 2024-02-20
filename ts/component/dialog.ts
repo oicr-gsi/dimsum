@@ -43,7 +43,7 @@ function showDialog(
   });
   header.append(titleElement, spacer, icon);
   const body = document.createElement("div");
-  body.className = "m-4 font-inter";
+  body.className = "m-4 font-inter pb-7";
   const bodyFragment = document.createDocumentFragment();
   makeBody(bodyFragment);
   body.appendChild(bodyFragment);
@@ -150,7 +150,7 @@ export class TextField extends FormField<string> {
   layoutInput(container: Node) {
     const input = document.createElement("input");
     input.type = "text";
-    input.className = "border border-grey-300";
+    input.className = "border border-grey-300 w-48";
     this.input = input;
     container.appendChild(this.input);
   }
@@ -167,22 +167,31 @@ export class TextField extends FormField<string> {
 export class DropdownField<FieldType> extends FormField<FieldType> {
   options: Map<string, FieldType | null>;
   selectedValue: FieldType | null = null;
+  nullLabel?: string;
+  defaultLabel?: string;
 
   constructor(
     title: string,
     options: Map<string, FieldType | null>,
     resultProperty: string,
-    required?: boolean
+    required?: boolean,
+    nullLabel?: string,
+    defaultLabel?: string
   ) {
     super(title, resultProperty, required);
     this.options = options;
+    this.nullLabel = nullLabel;
+    this.defaultLabel = defaultLabel;
+    if (defaultLabel) {
+      this.selectedValue = options.get(defaultLabel) || null;
+    }
   }
 
   layoutInput(container: Node) {
     const dropdownOptions: DropdownOption[] = [];
-    const defaultText = this.required ? "SELECT" : "None";
+    const nullText = this.nullLabel || (this.required ? "SELECT" : "None");
     dropdownOptions.push(
-      new BasicDropdownOption(defaultText, () => {
+      new BasicDropdownOption(nullText, () => {
         this.selectedValue = null;
       })
     );
@@ -198,9 +207,11 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
       dropdownOptions,
       true,
       undefined,
-      defaultText
+      this.defaultLabel || nullText
     );
-    container.appendChild(dropdown.getContainerTag());
+    const element = dropdown.getContainerTag();
+    element.classList.add("w-48");
+    container.appendChild(element);
   }
 
   getValue() {

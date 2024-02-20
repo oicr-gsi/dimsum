@@ -41,6 +41,8 @@ export class Dropdown {
     const dropdownButton = makeDropdownButton();
 
     const dropdownButtonText = document.createElement("div");
+    dropdownButtonText.className =
+      "flex-auto text-left overflow-hidden text-ellipsis";
     dropdownButtonText.innerHTML = makeDisplayText(displayLabel, defaultOption);
     dropdownButton.appendChild(dropdownButtonText);
     dropdownButton.appendChild(makeIcon("caret-down"));
@@ -134,7 +136,7 @@ function makeDisplayText(label?: string, text?: string) {
 function makeDropdownButton() {
   const button = document.createElement("button");
   button.className =
-    "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center";
+    "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center w-full";
   return button;
 }
 
