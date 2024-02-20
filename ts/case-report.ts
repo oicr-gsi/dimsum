@@ -480,7 +480,7 @@ function getQcGroupName(donor: Donor, qcGroup: AnalysisQcGroup) {
 }
 
 async function loadCase(caseId: string) {
-  const response = await get(urls.rest.case(caseId));
+  const response = await get(urls.rest.cases.get(caseId));
   if (!response.ok) {
     throw new Error(`Error loading case: ${response.status}`);
   }

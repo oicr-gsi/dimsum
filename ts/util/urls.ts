@@ -15,8 +15,11 @@ export const urls = {
     run: (name: string) => `/runs/${name}`,
   },
   rest: {
-    case: (caseId: string) => `${restBaseUrl}/cases/${caseId}`,
-    cases: `${restBaseUrl}/cases`,
+    cases: {
+      bulkSignoff: `${restBaseUrl}/cases/bulk-signoff`,
+      get: (caseId: string) => `${restBaseUrl}/cases/${caseId}`,
+      list: `${restBaseUrl}/cases`,
+    },
     receipts: `${restBaseUrl}/receipts`,
     extractions: `${restBaseUrl}/extractions`,
     libraryPreparations: `${restBaseUrl}/library-preparations`,

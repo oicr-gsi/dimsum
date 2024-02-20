@@ -1,4 +1,6 @@
-export function post(url: string, body: any, extraHeaders?: any) {
+const STATUS_NO_CONTENT = 204;
+
+function doPost(url: string, body: any, extraHeaders?: any) {
   const headers = extraHeaders || {};
   headers["Content-Type"] = "application/json";
 
@@ -15,8 +17,36 @@ export function post(url: string, body: any, extraHeaders?: any) {
   });
 }
 
+export function post(url: string, body: any) {
+  return new Promise(
+    (resolve: (result: any) => void, reject: (reason: string) => void) => {
+      doPost(url, body)
+        .then((response) => {
+          if (response.ok) {
+            if (response.status === STATUS_NO_CONTENT) {
+              resolve(null);
+              return;
+            }
+            response
+              .json()
+              .then((data) => resolve(data))
+              .catch(() => reject("Unknown error"));
+          } else {
+            response
+              .json()
+              .then((errorJson) => reject(errorJson.message))
+              .catch(() => reject("Unknown error"));
+          }
+        })
+        .catch(() => {
+          reject("Network error");
+        });
+    }
+  );
+}
+
 export function postDownload(url: string, body: any) {
-  post(url, body, {
+  doPost(url, body, {
     Accept: "application/octet-stream",
   }).then((response) => {
     const disposition = response.headers.get("Content-Disposition");
