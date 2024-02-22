@@ -457,12 +457,12 @@ function getSampleMetrics(
     )
     .map((metric) => {
       const value = getMetricValue(metric.name, sample);
-      const displayValue =
-        value == null ? null : formatMetricValue(value, [metric]);
-      const revisedValue =
-        displayValue == null
-          ? null
-          : parseFloat(displayValue.replaceAll(",", ""));
+      const displayValue = nullOrUndefined(value)
+        ? null
+        : formatMetricValue(value, [metric]);
+      const revisedValue = nullOrUndefined(displayValue)
+        ? null
+        : parseFloat(displayValue.replaceAll(",", ""));
       const misoMetric: MisoRunLibraryMetric = {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
@@ -576,7 +576,7 @@ export function getSampleMetricCellHighlight(
   }
 
   const value = getMetricValue(metricName, sample);
-  if (value == null) {
+  if (nullOrUndefined(value)) {
     return "warning";
   }
   if (anyFail(value, metrics)) {
@@ -588,15 +588,15 @@ export function getSampleMetricCellHighlight(
 function isPreliminary(metricName: string, sample: Sample) {
   if (METRIC_LABELS_CLUSTERS.includes(metricName)) {
     if (
-      sample.clustersPerSample == null &&
-      sample.preliminaryClustersPerSample != null
+      nullOrUndefined(sample.clustersPerSample) &&
+      !nullOrUndefined(sample.preliminaryClustersPerSample)
     ) {
       return true;
     }
   } else if (metricName === METRIC_LABEL_COVERAGE) {
     if (
-      sample.meanCoverageDeduplicated == null &&
-      sample.preliminaryMeanCoverageDeduplicated != null
+      nullOrUndefined(sample.meanCoverageDeduplicated) &&
+      !nullOrUndefined(sample.preliminaryMeanCoverageDeduplicated)
     ) {
       return true;
     }
@@ -738,7 +738,7 @@ function addQ30Contents(
   shouldCollapse: boolean = true
 ) {
   // run-level value is checked, but run and lane-level are both displayed
-  if (!sample.run || !sample.run.percentOverQ30) {
+  if (!sample.run || nullOrUndefined(sample.run.percentOverQ30)) {
     if (sample.run && !sample.run.completionDate) {
       fragment.appendChild(makeSequencingIcon());
     } else {
@@ -755,10 +755,14 @@ function addQ30Contents(
 
   const contentWrapper = document.createElement("div");
   sample.run!.lanes.forEach((lane) => {
-    if (!lane.percentOverQ30Read1) return;
+    if (nullOrUndefined(lane.percentOverQ30Read1)) {
+      return;
+    }
     let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
     text += `R1: ${lane.percentOverQ30Read1}`;
-    if (lane.percentOverQ30Read2) text += `; R2: ${lane.percentOverQ30Read2}`;
+    if (lane.percentOverQ30Read2) {
+      text += `; R2: ${lane.percentOverQ30Read2}`;
+    }
     const div = document.createElement("div");
     div.classList.add("whitespace-nowrap", "print-hanging");
     div.appendChild(document.createTextNode(text));
@@ -778,7 +782,7 @@ function addClustersPfContents(
   // For joined flowcells, run-level is checked
   // For non-joined, each lane is checked
   // Metric is sometimes specified "/lane", sometimes per run
-  if (!sample.run || !sample.run.clustersPf) {
+  if (!sample.run || nullOrUndefined(sample.run.clustersPf)) {
     if (sample.run && !sample.run.completionDate) {
       fragment.appendChild(makeSequencingIcon());
     } else {
@@ -820,7 +824,7 @@ function addClustersPfContents(
     };
 
     sample.run!.lanes.forEach((lane) => {
-      if (lane.clustersPf) {
+      if (!nullOrUndefined(lane.clustersPf)) {
         const laneDiv = document.createElement("div");
         laneDiv.classList.add("whitespace-nowrap", "print-hanging");
         laneDiv.innerText = `L${lane.laneNumber}: ${formatMetricValue(
@@ -851,7 +855,7 @@ function getClustersPfHighlight(
   sample: Sample,
   metrics: Metric[]
 ): CellStatus | null {
-  if (!sample.run || !sample.run.clustersPf) {
+  if (!sample.run || nullOrUndefined(sample.run.clustersPf)) {
     return "warning";
   }
   const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
@@ -872,7 +876,7 @@ function getClustersPfHighlight(
     let highlight: CellStatus | null = null;
     for (let i = 0; i < sample.run.lanes.length; i++) {
       const lane = sample.run.lanes[i];
-      if (!lane.clustersPf) {
+      if (nullOrUndefined(lane.clustersPf)) {
         highlight = "warning";
       } else if (anyFail(lane.clustersPf / divisor, perLaneMetrics)) {
         return "error";
@@ -1124,9 +1128,10 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.volume);
     case "Yield":
     case "Yield (Qubit)":
-      return sample.volume != null && sample.concentration != null
-        ? sample.volume * sample.concentration
-        : null;
+      return nullOrUndefined(sample.volume) ||
+        nullOrUndefined(sample.concentration)
+        ? null
+        : sample.volume * sample.concentration;
     case "Mean Insert Size":
       return nullIfUndefined(sample.meanInsertSize);
     case "Median Insert Size":
@@ -1137,18 +1142,18 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
     case METRIC_LABELS_CLUSTERS[1]:
     case METRIC_LABELS_CLUSTERS[2]:
     case METRIC_LABELS_CLUSTERS[3]:
-      if (sample.clustersPerSample != null) {
-        return sample.clustersPerSample;
-      } else {
+      if (nullOrUndefined(sample.clustersPerSample)) {
         return nullIfUndefined(sample.preliminaryClustersPerSample);
+      } else {
+        return sample.clustersPerSample;
       }
     case "rRNA Contamination":
       return nullIfUndefined(sample.rRnaContamination);
     case METRIC_LABEL_COVERAGE:
-      if (sample.meanCoverageDeduplicated != null) {
-        return sample.meanCoverageDeduplicated;
-      } else {
+      if (nullOrUndefined(sample.meanCoverageDeduplicated)) {
         return nullIfUndefined(sample.preliminaryMeanCoverageDeduplicated);
+      } else {
+        return sample.meanCoverageDeduplicated;
       }
     case "Coverage (Raw)":
     case "Mean Bait Coverage":
@@ -1241,7 +1246,7 @@ function makeSequencingIcon() {
   );
 }
 
-function nullOrUndefined(value: any): boolean {
+function nullOrUndefined(value: unknown): value is null | undefined {
   return value === undefined || value === null;
 }
 
