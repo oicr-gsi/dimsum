@@ -6,8 +6,8 @@
 
 * Java 17 JDK
 * Maven 3.8+
-* Node 17.3+
-* NPM 8.3+
+* Node 20+
+* NPM 9+
 
 ## Configuration
 
