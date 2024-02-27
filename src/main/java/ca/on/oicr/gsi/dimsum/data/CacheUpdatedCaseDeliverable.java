@@ -1,0 +1,139 @@
+package ca.on.oicr.gsi.dimsum.data;
+
+import static java.util.Objects.requireNonNull;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
+import ca.on.oicr.gsi.cardea.data.DeliverableType;
+
+public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
+
+  private final CaseDeliverable baseDeliverable;
+  private final CachedSignoff cachedAnalysisReviewSignoff;
+  private final CachedSignoff cachedReleaseApprovalSignoff;
+  private final List<CaseRelease> cachedReleases;
+
+  public CacheUpdatedCaseDeliverable(CaseDeliverable baseDeliverable, NabuSavedSignoff signoff) {
+    this.baseDeliverable = requireNonNull(baseDeliverable);
+    switch (signoff.getSignoffStepName()) {
+      case ANALYSIS_REVIEW:
+        this.cachedAnalysisReviewSignoff = new CachedSignoff(signoff);
+        this.cachedReleaseApprovalSignoff = null;
+        this.cachedReleases = null;
+        break;
+      case RELEASE_APPROVAL:
+        this.cachedAnalysisReviewSignoff = null;
+        this.cachedReleaseApprovalSignoff = new CachedSignoff(signoff);
+        this.cachedReleases = null;
+        break;
+      case RELEASE:
+        this.cachedAnalysisReviewSignoff = null;
+        this.cachedReleaseApprovalSignoff = null;
+        List<CaseRelease> releases = new ArrayList<>();
+        for (CaseRelease release : baseDeliverable.getReleases()) {
+          if (Objects.equals(release.getDeliverable(), signoff.getDeliverable())) {
+            releases.add(new CacheUpdatedRelease(release, signoff));
+          } else {
+            releases.add(release);
+          }
+        }
+        this.cachedReleases = Collections.unmodifiableList(releases);
+        break;
+      default:
+        throw new IllegalArgumentException(
+            "Invalid signoff step: %s".formatted(signoff.getSignoffStepName()));
+    }
+  }
+
+  @Override
+  public LocalDate getAnalysisReviewQcDate() {
+    if (cachedAnalysisReviewSignoff != null) {
+      return cachedAnalysisReviewSignoff.getQcDate();
+    } else {
+      return baseDeliverable.getAnalysisReviewQcDate();
+    }
+  }
+
+  @Override
+  public String getAnalysisReviewQcNote() {
+    if (cachedAnalysisReviewSignoff != null) {
+      return cachedAnalysisReviewSignoff.getQcNote();
+    } else {
+      return baseDeliverable.getAnalysisReviewQcNote();
+    }
+  }
+
+  @Override
+  public Boolean getAnalysisReviewQcPassed() {
+    if (cachedAnalysisReviewSignoff != null) {
+      return cachedAnalysisReviewSignoff.getQcPassed();
+    } else {
+      return baseDeliverable.getAnalysisReviewQcPassed();
+    }
+  }
+
+  @Override
+  public String getAnalysisReviewQcUser() {
+    if (cachedAnalysisReviewSignoff != null) {
+      return cachedAnalysisReviewSignoff.getQcUser();
+    } else {
+      return baseDeliverable.getAnalysisReviewQcUser();
+    }
+  }
+
+  @Override
+  public DeliverableType getDeliverableType() {
+    return baseDeliverable.getDeliverableType();
+  }
+
+  @Override
+  public LocalDate getLatestActivityDate() {
+    return baseDeliverable.getLatestActivityDate();
+  }
+
+  @Override
+  public LocalDate getReleaseApprovalQcDate() {
+    if (cachedReleaseApprovalSignoff != null) {
+      return cachedReleaseApprovalSignoff.getQcDate();
+    } else {
+      return baseDeliverable.getReleaseApprovalQcDate();
+    }
+  }
+
+  @Override
+  public String getReleaseApprovalQcNote() {
+    if (cachedReleaseApprovalSignoff != null) {
+      return cachedReleaseApprovalSignoff.getQcNote();
+    } else {
+      return baseDeliverable.getReleaseApprovalQcNote();
+    }
+  }
+
+  @Override
+  public Boolean getReleaseApprovalQcPassed() {
+    if (cachedReleaseApprovalSignoff != null) {
+      return cachedReleaseApprovalSignoff.getQcPassed();
+    } else {
+      return baseDeliverable.getReleaseApprovalQcPassed();
+    }
+  }
+
+  @Override
+  public String getReleaseApprovalQcUser() {
+    if (cachedReleaseApprovalSignoff != null) {
+      return cachedReleaseApprovalSignoff.getQcUser();
+    } else {
+      return baseDeliverable.getReleaseApprovalQcUser();
+    }
+  }
+
+  @Override
+  public List<CaseRelease> getReleases() {
+    return cachedReleases != null ? cachedReleases : baseDeliverable.getReleases();
+  }
+
+}

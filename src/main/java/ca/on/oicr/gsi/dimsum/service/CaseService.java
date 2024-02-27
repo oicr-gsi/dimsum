@@ -3,6 +3,8 @@ package ca.on.oicr.gsi.dimsum.service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +34,9 @@ import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.FrontEndConfig;
+import ca.on.oicr.gsi.dimsum.data.CacheUpdatedCase;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.NabuSavedSignoff;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
@@ -60,6 +64,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 @Service
 public class CaseService {
 
+  // overlap to maintain signoffs that may have been completed during data refresh
+  private static final int CACHE_OVERLAP_MINUTES = 10;
+
   private static final Logger log = LoggerFactory.getLogger(CaseService.class);
 
   @Autowired
@@ -72,6 +79,11 @@ public class CaseService {
   private NotificationManager notificationManager;
 
   private CaseData caseData;
+
+  // Note: Any access of cachedSignoffsByCaseId should synchronize on cachedSignoffsByCaseId to
+  // ensure updates are never missed before/during/after refresh
+  private Map<String, List<NabuSavedSignoff>> cachedSignoffsByCaseId = new HashMap<>();
+  private List<Case> cacheUpdatedCases;
 
   private int refreshFailures = 0;
 
@@ -102,26 +114,25 @@ public class CaseService {
   }
 
   public Case getCase(String caseId) {
-    return caseData.getCases().stream()
+    return cacheUpdatedCases.stream()
         .filter(new CaseFilter(CaseFilterKey.CASE_ID, caseId).casePredicate())
         .findFirst()
         .orElse(null);
   }
 
   public List<Case> getCases(CaseFilter baseFilter) {
-    CaseData currentData = caseData;
-    if (currentData == null) {
+    if (cacheUpdatedCases == null) {
       throw new IllegalStateException("Cases have not been loaded yet");
     }
     if (baseFilter != null) {
-      return currentData.getCases().stream().filter(baseFilter.casePredicate()).toList();
+      return cacheUpdatedCases.stream().filter(baseFilter.casePredicate()).toList();
     } else {
-      return currentData.getCases();
+      return cacheUpdatedCases;
     }
   }
 
   public Stream<Case> getCaseStream(Collection<CaseFilter> filters) {
-    return filterCases(caseData.getCases(), filters);
+    return filterCases(cacheUpdatedCases, filters);
   }
 
   public Map<Long, Assay> getAssaysById() {
@@ -147,6 +158,7 @@ public class CaseService {
     data.setTotalCount(baseCases.size());
     data.setFilteredCount(filterCases(baseCases, filters).count());
     data.setItems(filteredCases);
+
     return data;
   }
 
@@ -332,11 +344,11 @@ public class CaseService {
     } else if (filters == null) {
       // only when date filters are applied
       Map<String, ProjectSummary> projectSummariesByName =
-          CaseLoader.calculateProjectSummaries(caseData.getCases(), afterDate, beforeDate);
+          CaseLoader.calculateProjectSummaries(cacheUpdatedCases, afterDate, beforeDate);
       projectSummary = projectSummariesByName.get(projectName);
     } else {
       // when both date filter and case filters applied
-      Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(caseData.getCases(), filters);
+      Map<Case, List<Test>> testsByCase = getFilteredCaseAndTest(cacheUpdatedCases, filters);
       Map<String, ProjectSummary> projectSummariesByName =
           CaseLoader.calculateFilteredProjectSummaries(testsByCase, afterDate, beforeDate);
       projectSummary = projectSummariesByName.get(projectName);
@@ -651,6 +663,7 @@ public class CaseService {
       refreshFailures = 0;
       if (newData != null) {
         caseData = newData;
+        refreshCacheUpdatedCases();
         updateFrontEndConfig();
         notificationManager.update(newData.getRunsAndLibrariesByName(), newData.getAssaysById());
       }
@@ -661,14 +674,61 @@ public class CaseService {
   }
 
   private void updateFrontEndConfig() {
-    frontEndConfig.setPipelines(caseData.getCases().stream()
+    frontEndConfig.setPipelines(cacheUpdatedCases.stream()
         .flatMap(kase -> kase.getProjects().stream())
         .map(Project::getPipeline)
         .collect(Collectors.toSet()));
     frontEndConfig.setAssaysById(caseData.getAssaysById());
     frontEndConfig
-        .setLibraryDesigns(caseData.getCases().stream().flatMap(kase -> kase.getTests().stream())
+        .setLibraryDesigns(cacheUpdatedCases.stream().flatMap(kase -> kase.getTests().stream())
             .map(Test::getLibraryDesignCode).collect(Collectors.toSet()));
+  }
+
+  public void cacheSignoffs(Collection<NabuSavedSignoff> signoffs) {
+    synchronized (cachedSignoffsByCaseId) {
+      for (NabuSavedSignoff signoff : signoffs) {
+        List<NabuSavedSignoff> cachedSignoffs =
+            cachedSignoffsByCaseId.get(signoff.getCaseIdentifier());
+        if (cachedSignoffs == null) {
+          cachedSignoffs = new ArrayList<>();
+        }
+        cachedSignoffs.add(signoff);
+        cachedSignoffsByCaseId.put(signoff.getCaseIdentifier(), cachedSignoffs);
+      }
+      refreshCacheUpdatedCases();
+    }
+  }
+
+  private void refreshCacheUpdatedCases() {
+    synchronized (cachedSignoffsByCaseId) {
+      removeExpiredCachedSignoffs();
+
+      cacheUpdatedCases = caseData.getCases().stream()
+          .map(kase -> cachedSignoffsByCaseId.keySet().contains(kase.getId())
+              ? makeCacheUpdatedCase(kase, cachedSignoffsByCaseId.get(kase.getId()))
+              : kase)
+          .collect(
+              Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+    }
+  }
+
+  private void removeExpiredCachedSignoffs() {
+    ZonedDateTime cutoff = caseData.getTimestamp().minus(CACHE_OVERLAP_MINUTES, ChronoUnit.MINUTES);
+    for (String caseId : cachedSignoffsByCaseId.keySet()) {
+      List<NabuSavedSignoff> signoffs = cachedSignoffsByCaseId.get(caseId);
+      signoffs.removeIf(signoff -> signoff.getCreated().isBefore(cutoff));
+      if (signoffs.isEmpty()) {
+        cachedSignoffsByCaseId.remove(caseId);
+      }
+    }
+  }
+
+  private Case makeCacheUpdatedCase(Case kase, Collection<NabuSavedSignoff> signoffs) {
+    Case result = kase;
+    for (NabuSavedSignoff signoff : signoffs) {
+      result = new CacheUpdatedCase(result, signoff);
+    }
+    return result;
   }
 
 }
