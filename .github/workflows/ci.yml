@@ -13,11 +13,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
       - uses: actions/setup-node@v3
         with:
-          node-version: 17
-          cache: 'npm'
+          node-version: 20
+          cache: "npm"
       - run: mvn --batch-mode package
