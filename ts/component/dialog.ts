@@ -13,7 +13,7 @@ function showDialog(
   title: string,
   makeBody: (body: Node) => void,
   actions?: FormAction[],
-  callback?: (result: any) => void
+  callback?: (result?: any) => void
 ) {
   const dialog = document.createElement("dialog");
   dialog.className =
@@ -75,6 +75,10 @@ function showDialog(
       dialog.remove();
     });
     dialog.append(footer);
+  } else {
+    if (callback) {
+      dialog.addEventListener("close", () => callback());
+    }
   }
   document.body.appendChild(dialog);
   dialog.showModal();
@@ -83,17 +87,23 @@ function showDialog(
 export function showAlertDialog(
   title: string,
   text: string,
-  additionalContent?: Node
+  additionalContent?: Node,
+  callback?: () => void
 ) {
-  showDialog(title, (body) => {
-    const textElement = document.createElement("p");
-    textElement.className = "mb-2";
-    textElement.innerText = text;
-    body.appendChild(textElement);
-    if (additionalContent) {
-      body.appendChild(additionalContent);
-    }
-  });
+  showDialog(
+    title,
+    (body) => {
+      const textElement = document.createElement("p");
+      textElement.className = "mb-2";
+      textElement.innerText = text;
+      body.appendChild(textElement);
+      if (additionalContent) {
+        body.appendChild(additionalContent);
+      }
+    },
+    undefined,
+    callback
+  );
 }
 
 export function showErrorDialog(text: string, additionalContent?: Node) {
