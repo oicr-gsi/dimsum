@@ -21,7 +21,10 @@
         "editor.formatOnSaveMode": "file",
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "editor.tabSize": 2
+    "[markdown]": {
+        "editor.formatOnSave": false // Formatting breaks multi-level lists and doesn't respect config
+    },
+    "editor.tabSize": 2,
     "java.saveActions.organizeImports": true,
     "java.sources.organizeImports.staticStarThreshold": 2
 }
