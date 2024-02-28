@@ -6,7 +6,7 @@ system (Nabu), but can be completed from Dimsum.
 | QC Step | Description | Requirements |
 | ------- | ----------- | ------------ |
 | Analysis Review | Confirmation that the analysis data is good | Approval for each deliverable type - clinical report and/or data release |
-| Release Approval | Approval to release delierables to the collaborator | Approval for each deliverable type - clinical report and/or data release |
+| Release Approval | Approval to release deliverables to the collaborator | Approval for each deliverable type - clinical report and/or data release |
 | Release | Confirmation that a specific deliverable was delivered | Approval for each specific deliverable |
 
 When a case is stopped, release approval and release QC steps are still required in order to
