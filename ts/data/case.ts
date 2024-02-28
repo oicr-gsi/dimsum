@@ -1690,7 +1690,9 @@ function showSignoffDialog(items: Case[]) {
             .then(() => {
               showAlertDialog(
                 "Success",
-                "Sign-off has been recorded in Nabu. It may take a few minutes to show up in Dimsum"
+                "Sign-off has been recorded in Nabu. Refreshing view.",
+                undefined,
+                () => window.location.reload()
               );
             })
             .catch((reason) => showErrorDialog(reason));

@@ -3,6 +3,7 @@ package ca.on.oicr.gsi.dimsum.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,7 @@ public class CaseServiceTest {
     when(caseData.getCases()).thenReturn(new ArrayList<>());
     addCase(caseData, 1, 1);
     addCase(caseData, 2, 2);
+    when(caseData.getTimestamp()).thenReturn(ZonedDateTime.now());
     sut.setCaseData(caseData);
   }
 
