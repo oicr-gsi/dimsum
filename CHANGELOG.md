@@ -7,6 +7,28 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.26.0] - 2024-02-29
+
+### Added
+
+* Separate options for Data Release and Clinical Report in Pending, Completed, and Incomplete filters
+* Ability to sign off cases for Analysis Review, Release Approval, and Release directly from Dimsum
+
+### Changed
+
+* Release sign-offs are now tied to a deliverable such as a clinical report or fastQs. Separate
+  sign-offs are required for each deliverable that is configured for the project
+* Analysis review and release approval sign-offs are now tied to a deliverable type - Clinical Report
+  or Data Release. Separate sign-offs are required for each deliverable type that is configured for
+  the project
+
+### Fixed
+
+* The pending work icon was not appearing when the previous step was "N/A"
+* Some metrics with reported values of zero were wrongly displayed as "Not Found," and their highlighting was inconsistent
+* Pending Release Approvals and Releases were not counted for stopped cases in the project summary
+
+
 ## [1.25.1] - 2024-02-16
 
 ### Fixed
