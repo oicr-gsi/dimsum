@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.27.0] - 2024-03-01
+
+### Added
+
+* Dropdown on the Case QC Report to choose which deliverable type(s) to include in the report
+
+
 ## [1.26.0] - 2024-02-29
 
 ### Added
