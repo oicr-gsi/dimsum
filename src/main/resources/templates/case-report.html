@@ -10,7 +10,8 @@
 <body>
   <div layout:fragment="content" id="content" th:data-case-id="${caseId}">
     <div class="flex space-x-2 justify-between items-center">
-      <h1 class="text-green-200 font-sarabun font-light text-32">Case Quality Control Report</h1>
+      <h1 class="flex-auto text-green-200 font-sarabun font-light text-32">Case Quality Control Report</h1>
+      <div id="deliverableMenuContainer" class="noprint"></div>
       <button id="printButton"
         class="noprint bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1">
         Print

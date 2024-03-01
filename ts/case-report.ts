@@ -32,6 +32,7 @@ import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
 import { siteConfig } from "./util/site-config";
 import { urls } from "./util/urls";
+import { BasicDropdownOption, Dropdown } from "./component/dropdown";
 
 interface ReportSample {
   sample: Sample;
@@ -532,12 +533,61 @@ async function loadCase(caseId: string) {
     "fullDepthSequencingTableContainer"
   ).build(fullDepths);
   const analysisReviews = getReportAnalysisReviews(data);
-  new TableBuilder(
+  const analysisReviewTable = new TableBuilder(
     analysisReviewMetricsDefinition,
     "analysisReviewTableContainer"
   ).build(analysisReviews);
 
+  addDeliverablesMenu(analysisReviewTable, analysisReviews);
   setupPrint(data);
+}
+
+function addDeliverablesMenu(
+  analysisReviewTable: TableBuilder<ReportAnalysisReview, Metric>,
+  analysisReviews: ReportAnalysisReview[]
+) {
+  const deliverableTypes = analysisReviews
+    .map((review) => review.deliverable.deliverableType)
+    .filter(
+      (deliverable, index, array) => array.indexOf(deliverable) === index
+    );
+
+  if (deliverableTypes.length <= 1) {
+    // Only one option - don't show menu
+    return;
+  }
+  const deliverableMenuContainerDiv = document.getElementById(
+    "deliverableMenuContainer"
+  );
+  if (!deliverableMenuContainerDiv) {
+    throw new Error("Deliverable menu container missing");
+  }
+  const deliverableOptions = deliverableTypes.map(
+    (deliverable) =>
+      new BasicDropdownOption(deliverableTypeLabels[deliverable], () => {
+        analysisReviewTable.clear();
+        analysisReviewTable.build(
+          analysisReviews.filter(
+            (review) => review.deliverable.deliverableType === deliverable
+          )
+        );
+      })
+  );
+  deliverableOptions.unshift(
+    new BasicDropdownOption("All", () => {
+      analysisReviewTable.clear();
+      analysisReviewTable.build(analysisReviews);
+    })
+  );
+  const deliverableDropdown = new Dropdown(
+    deliverableOptions,
+    true,
+    "Deliverables",
+    "All"
+  );
+  deliverableMenuContainerDiv.appendChild(
+    deliverableDropdown.getContainerTag()
+  );
 }
 
 function getReportSamples(
