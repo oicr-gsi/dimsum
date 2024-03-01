@@ -227,6 +227,10 @@ export class TableBuilder<ParentType, ChildType> {
     }
   }
 
+  public clear() {
+    this.container.innerHTML = "";
+  }
+
   /**
    * Activates the table
    *
