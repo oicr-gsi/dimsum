@@ -31,7 +31,8 @@ public class MockCase {
           makeCase6(), makeCase7(), makeCase8(), makeCase9(), makeCase10(), makeCase11(),
           makeCase12(), makeCase13(), makeCase14(), makeCase15(), makeCase16(), makeCase17(),
           makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22(), makeCase23(),
-          makeCase24(), makeCase25(), makeCase26(), makeCase27(), makeCase28());
+          makeCase24(), makeCase25(), makeCase26(), makeCase27(), makeCase28(), makeCase29(),
+          makeCase30(), makeCase31());
 
   private static Case makeCase0() {
     final int caseNumber = 0;
@@ -290,8 +291,11 @@ public class MockCase {
   }
 
   private static Case makeCase23() {
+    // Case is stopped
     final int caseNumber = 23;
     Case kase = makeCase("PRO23_001", "Single Test", "PRO23", "REQ23", caseNumber);
+    when(kase.isStopped()).thenReturn(true);
+    when(kase.getRequisition().isStopped()).thenReturn(true);
     addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
     return kase;
   }
@@ -357,6 +361,43 @@ public class MockCase {
     return kase;
   }
 
+  private static Case makeCase29() {
+    final int caseNumber = 29;
+    // Case is pending release approval - data release, and pending release - clinical report
+    Case kase = makeCase("PRO29_0001", "Single Test", "PRO29", "REQ29", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    CaseDeliverable deliverable =
+        addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
+    markAnalysisReview(deliverable, true);
+    markReleaseApproval(deliverable, true);
+    return kase;
+  }
+
+  private static Case makeCase30() {
+    final int caseNumber = 30;
+    // Case is pending release approval - data release, and pending analysis review - clinical
+    // report
+    Case kase = makeCase("PRO30_0001", "Single Test", "PRO30", "REQ30", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    markAnalysisReview(kase.getDeliverables().get(0), true);
+    addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
+    return kase;
+  }
+
+  private static Case makeCase31() {
+    final int caseNumber = 31;
+    // Case is completed release - clinical report, but pending analysis review - data release
+    Case kase = makeCase("PRO31_0001", "Single Test", "PRO31", "REQ31", caseNumber);
+    addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
+    CaseDeliverable deliverable =
+        addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
+    markAnalysisReview(deliverable, true);
+    markReleaseApproval(deliverable, true);
+    markRelease(deliverable.getReleases().get(0), true);
+    return kase;
+  }
+
   private static Case makeCase(String donorName, String assayName, String projectName,
       String requisitionName, int caseNumber) {
     Case kase = mock(Case.class);
@@ -408,7 +449,6 @@ public class MockCase {
   private static Requisition addRequisition(Case kase, int caseNumber, String name) {
     Requisition requisition = mock(Requisition.class);
     when(requisition.getId()).thenReturn(Long.valueOf(caseNumber));
-    when(requisition.isStopped()).thenReturn(caseNumber == 23);
     when(requisition.isPaused()).thenReturn(caseNumber == 24);
     when(requisition.getName()).thenReturn(name);
     when(kase.getRequisition()).thenReturn(requisition);
