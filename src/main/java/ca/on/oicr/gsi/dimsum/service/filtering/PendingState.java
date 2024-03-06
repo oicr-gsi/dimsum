@@ -258,11 +258,12 @@ public enum PendingState {
 
     @Override
     public boolean qualifyCase(Case kase) {
-      return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase))
-          && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase);
+      return (kase.isStopped() && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase))
+          || RELEASE_APPROVAL_DATA_RELEASE.qualifyCase(kase)
+          || RELEASE_APPROVAL_CLINICAL_REPORT.qualifyCase(kase);
     }
   },
-  RELEASE_APPROVAL_DATA_RELEASE("Release Approval - Data Release", true) {
+  RELEASE_APPROVAL_DATA_RELEASE("Release Approval - Data Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
       return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.qualifyCase(kase))
@@ -270,7 +271,7 @@ public enum PendingState {
           && !CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.qualifyCase(kase);
     }
   },
-  RELEASE_APPROVAL_CLINICAL_REPORT("Release Approval - Clinical Report", true) {
+  RELEASE_APPROVAL_CLINICAL_REPORT("Release Approval - Clinical Report", false) {
     @Override
     public boolean qualifyCase(Case kase) {
       return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.qualifyCase(kase))
@@ -281,8 +282,7 @@ public enum PendingState {
   RELEASE("Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
-          && !CompletedGate.RELEASE.qualifyCase(kase);
+      return RELEASE_DATA_RELEASE.qualifyCase(kase) || RELEASE_CLINICAL_REPORT.qualifyCase(kase);
     }
   },
   RELEASE_DATA_RELEASE("Release - Data Release", false) {
