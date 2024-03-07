@@ -90,6 +90,9 @@ export interface Sample extends Qcable {
   puc19Clusters?: number;
   latestActivityDate: string;
   sequencingLane: string;
+  relativeCpgInRegions?: number;
+  methylationBeta?: number;
+  peReads?: number;
 }
 
 interface MisoRunLibraryMetric {
@@ -1179,6 +1182,12 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.puc19Methylation);
     case "pUC19 Clusters":
       return nullIfUndefined(sample.puc19Clusters);
+    case "Relative CpG Frequency in Regions":
+      return nullIfUndefined(sample.relativeCpgInRegions);
+    case "Methylation Beta":
+      return nullIfUndefined(sample.methylationBeta);
+    case "PE Reads":
+      return nullIfUndefined(sample.peReads);
   }
   if (/^Concentration/.test(metricName)) {
     return nullIfUndefined(sample.concentration);
