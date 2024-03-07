@@ -7,6 +7,14 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.27.1] - 2024-03-07
+
+### Fixed
+
+* The 'Pending: Release Approval' and 'Pending: Release' filters (without a deliverable type specified) were not including all of the appropriate cases
+* The "Pending: Release Approval - Data Release" and "Pending: Release Approval - Clinical Report" filters were not including stopped cases
+
+
 ## [1.27.0] - 2024-03-01
 
 ### Added
