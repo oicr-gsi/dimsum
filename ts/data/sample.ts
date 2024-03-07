@@ -1182,7 +1182,7 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.puc19Methylation);
     case "pUC19 Clusters":
       return nullIfUndefined(sample.puc19Clusters);
-    case "Relative CpG Frequency in Regions":
+    case "Relative CpG Frequency in Regions vs Reference":
       return nullIfUndefined(sample.relativeCpgInRegions);
     case "Methylation Beta":
       return nullIfUndefined(sample.methylationBeta);
