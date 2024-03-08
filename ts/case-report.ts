@@ -444,7 +444,10 @@ function displaySignOff(
     if (!qcUser) {
       throw new Error("QC user expected if qc date is set");
     }
-    addBoldText(fragment, qcReason || (qcPassed ? "Passed" : "Failed"));
+    addBoldText(
+      fragment,
+      qcReason || (qcPassed ? qcStatuses.passed.label : qcStatuses.failed.label)
+    );
     addTextDiv(qcUser, fragment);
     addTextDiv(qcDate, fragment);
     if (qcNote) {

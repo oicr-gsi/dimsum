@@ -63,14 +63,14 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     priority: 5,
   },
   passed: {
-    label: "Passed",
+    label: "Approved",
     icon: "check",
     qcComplete: true,
     cellStatus: null,
     priority: 7,
   },
   passedDifferentAssay: {
-    label: "Passed with different assay",
+    label: "Approved with different assay",
     icon: "circle-check",
     qcComplete: true,
     cellStatus: null,
