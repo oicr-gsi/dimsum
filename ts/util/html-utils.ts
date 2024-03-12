@@ -222,3 +222,22 @@ export function addActionButton(
   button.onclick = handler;
   container.appendChild(button);
 }
+
+export function getRequiredElementById(id: string): HTMLElement {
+  const element = document.getElementById(id);
+  if (!element) {
+    throw Error(`Required element ${id} not found`);
+  }
+  return element;
+}
+
+export function getRequiredDataAttribute(
+  element: HTMLElement,
+  attribute: string
+) {
+  const value = element.getAttribute(attribute);
+  if (!value) {
+    throw new Error(`Missing attribute: ${attribute}`);
+  }
+  return value;
+}

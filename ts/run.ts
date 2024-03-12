@@ -4,21 +4,31 @@ import {
   getLibraryQualificationsDefinition,
   Sample,
 } from "./data/sample";
-import { makeCopyButton, makeIcon, shadeElement } from "./util/html-utils";
+import {
+  addLink,
+  addTextDiv,
+  getRequiredDataAttribute,
+  getRequiredElementById,
+  makeCopyButton,
+  makeIcon,
+  shadeElement,
+} from "./util/html-utils";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { urls } from "./util/urls";
+import { Tooltip } from "./component/tooltip";
 
-const misoRunLink = document.getElementById("misoRunLink");
-if (!misoRunLink) {
-  throw new Error("MISO run link element missing");
-}
-const runName = misoRunLink.getAttribute("data-run-name");
-if (!runName) {
-  throw new Error("Missing run name data attribute");
-}
+const misoRunLink = getRequiredElementById("misoRunLink");
+const runName = getRequiredDataAttribute(misoRunLink, "data-run-name");
 const copyButton = makeCopyButton(runName);
 misoRunLink.parentNode?.insertBefore(copyButton, misoRunLink);
 misoRunLink.setAttribute("href", urls.miso.run(runName));
+
+const dashiRunLink = getRequiredElementById("dashiRunLink");
+const libraryDesignsString = dashiRunLink.getAttribute("data-library-designs");
+const libraryDesigns = libraryDesignsString
+  ? libraryDesignsString.split(",")
+  : [];
+makeDashiRunLinksTooltip(dashiRunLink, runName, libraryDesigns);
 
 function makeTable(
   containerId: string,
@@ -30,10 +40,7 @@ function makeTable(
   }
 }
 
-const runQcCell = document.getElementById("runStatus");
-if (!runQcCell) {
-  throw new Error("Run QC cell missing");
-}
+const runQcCell = getRequiredElementById("runStatus");
 const statusString = runQcCell.getAttribute("data-run-status");
 const status = getQcStatus(statusString);
 const icon = makeIcon(status.icon);
@@ -56,3 +63,59 @@ makeTable(
     false
   )
 );
+
+function makeDashiRunLinksTooltip(
+  element: HTMLElement,
+  runName: string,
+  libraryDesigns: string[]
+) {
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(element, (fragment) => {
+    let linksAdded = false;
+    if (libraryDesigns.includes("TS") || libraryDesigns.includes("EX")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane Targeted Sequencing",
+        urls.dashi.run.singleLaneTar(runName)
+      );
+    }
+    if (libraryDesigns.includes("WT")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane RNA-seq",
+        urls.dashi.run.singleLaneRna(runName)
+      );
+    }
+    if (
+      libraryDesigns.includes("WG") ||
+      libraryDesigns.includes("SW") ||
+      libraryDesigns.includes("PG")
+    ) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane WGS",
+        urls.dashi.run.singleLaneWgs(runName)
+      );
+    }
+    if (libraryDesigns.includes("CM")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane cfMeDIP",
+        urls.dashi.run.singleLaneCfMeDip(runName)
+      );
+    }
+    if (!linksAdded) {
+      addTextDiv("No Dashi-compatible libraries", fragment);
+    }
+  });
+}
+
+function addLinkDiv(container: Node, text: string, url: string) {
+  const div = document.createElement("div");
+  addLink(div, text, url, true);
+  container.appendChild(div);
+}

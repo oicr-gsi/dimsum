@@ -15,6 +15,8 @@
       <a th:if="${titleLink != null}" th:href="${titleLink}" target="_blank" rel="noopener noreferrer">
         <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
       </a>
+      <img id="dashiProjectLink" th:data-project-name="${detailValue}" th:data-library-designs="${libraryDesigns}"
+        src="/img/dashi_logo.svg" class="w-6" alt="View in Dashi">
     </div>
 
     <div id="projectSummaryDateControls" class="flex gap-2 items-center">
