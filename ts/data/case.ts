@@ -671,11 +671,7 @@ function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
       sortType: "text",
       addParentContents(kase, fragment) {
         const assay = siteConfig.assaysById[kase.assayId];
-        const assayDiv = makeNameDiv(
-          assay.name,
-          urls.miso.assay(kase.assayId),
-          urls.dimsum.case(kase.id)
-        );
+        const assayDiv = makeNameDiv(assay.name, urls.miso.assay(kase.assayId));
 
         fragment.appendChild(assayDiv);
 
@@ -705,6 +701,9 @@ function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
             urls.dimsum.requisition(requisition.id),
             requisition.name
           )
+        );
+        fragment.appendChild(
+          makeNameDiv("Case Details", undefined, urls.dimsum.case(kase.id))
         );
       },
     },
