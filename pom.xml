@@ -138,7 +138,7 @@
     <dependency>
       <groupId>ca.on.oicr.gsi.cardea</groupId>
       <artifactId>cardea-data</artifactId>
-      <version>1.8.0</version>
+      <version>1.9.0</version>
     </dependency>
   </dependencies>
 
