@@ -1,14 +1,17 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @Controller
@@ -28,6 +31,13 @@ public class RunController {
     model.put("title", String.format("%s Run Details", runName));
     model.put("run", runAndLibraries.getRun());
     model.put("runStatus", runStatus);
+    model.put("libraryDesigns",
+        Stream
+            .concat(runAndLibraries.getLibraryQualifications().stream(),
+                runAndLibraries.getFullDepthSequencings().stream())
+            .map(Sample::getLibraryDesignCode)
+            .distinct()
+            .collect(Collectors.joining(",")));
     model.put("showLibraryQualifications", !runAndLibraries.getLibraryQualifications().isEmpty());
     model.put("showFullDepthSequencings", !runAndLibraries.getFullDepthSequencings().isEmpty());
     return "run";

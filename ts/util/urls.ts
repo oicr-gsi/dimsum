@@ -81,8 +81,32 @@ export const urls = {
     assay: (assayId: number) => makeMisoUrl("assay", assayId),
   },
   dashi: {
-    singleLaneTar: (runName: string) => makeDashiSingleLaneUrl("tar", runName),
-    singleLaneWgs: (runName: string) => makeDashiSingleLaneUrl("wgs", runName),
+    project: {
+      callReadyRna: (project: string) =>
+        makeDashiProjectUrl("call-ready-rna", project),
+      callReadyTar: (project: string) =>
+        makeDashiProjectUrl("call-ready-tar", project),
+      callReadyWgs: (project: string) =>
+        makeDashiProjectUrl("call-ready-wgs", project),
+      singleLaneCfMeDip: (project: string) =>
+        makeDashiProjectUrl("single-lane-cfmedip", project),
+      singleLaneRna: (project: string) =>
+        makeDashiProjectUrl("single-lane-rna", project),
+      singleLaneTar: (project: string) =>
+        makeDashiProjectUrl("single-lane-tar", project),
+      singleLaneWgs: (project: string) =>
+        makeDashiProjectUrl("single-lane-wgs", project),
+    },
+    run: {
+      singleLaneCfMeDip: (runName: string) =>
+        makeDashiRunUrl("single-lane-cfmedip", runName),
+      singleLaneRna: (runName: string) =>
+        makeDashiRunUrl("single-lane-rna", runName),
+      singleLaneTar: (runName: string) =>
+        makeDashiRunUrl("single-lane-tar", runName),
+      singleLaneWgs: (runName: string) =>
+        makeDashiRunUrl("single-lane-wgs", runName),
+    },
   },
   jira: {
     issue: (key: string) => `${siteConfig.jiraUrl}/browse/${key}`,
@@ -93,20 +117,11 @@ function makeMisoUrl(type: string, id: number | string) {
   return `${misoBaseUrl}/${type}/${id}`;
 }
 
-function makeDashiSingleLaneUrl(designCode: string, runName: string) {
-  switch (designCode) {
-    case "WG":
-      return makeDashiRunUrl("single-lane-wgs", runName);
-    case "WT":
-      return makeDashiRunUrl("single-lane-ran", runName);
-    case "TS":
-      return makeDashiRunUrl("single-lane-tar", runName);
-    default:
-      return siteConfig.dashiUrl;
-  }
+function makeDashiProjectUrl(report: string, project: string) {
+  return `${siteConfig.dashiUrl}/${report}?project=${project}`;
 }
 
-export function makeDashiRunUrl(report: string, runName: string) {
+function makeDashiRunUrl(report: string, runName: string) {
   return `${siteConfig.dashiUrl}/${report}?run=${runName}`;
 }
 

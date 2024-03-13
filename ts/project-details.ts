@@ -23,6 +23,13 @@ import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { Dropdown, BasicDropdownOption } from "./component/dropdown";
+import {
+  addLink,
+  addTextDiv,
+  getRequiredDataAttribute,
+  getRequiredElementById,
+} from "./util/html-utils";
+import { Tooltip } from "./component/tooltip";
 
 const tableContainerId = "tableContainer";
 const tableContainer = getRequiredElementById(tableContainerId); // use same table container across all tables
@@ -33,13 +40,14 @@ const beforeDatePicker = getRequiredElementById(
 const afterDateKey = "AFTER_DATE";
 const beforeDateKey = "BEFORE_DATE";
 
-function getRequiredElementById(id: string): HTMLElement {
-  const element = document.getElementById(id);
-  if (!element) {
-    throw Error(`Required element ${id} not found`);
-  }
-  return element;
-}
+// Add Dashi links
+const dashiLink = getRequiredElementById("dashiProjectLink");
+const projectName = getRequiredDataAttribute(dashiLink, "data-project-name");
+const libraryDesignsString = dashiLink.getAttribute("data-library-designs");
+const libraryDesigns = libraryDesignsString
+  ? libraryDesignsString.split(",")
+  : [];
+makeDashiProjectLinksTooltip(dashiLink, projectName, libraryDesigns);
 
 // creating dropdown for pre-defined date range filter
 const today = new Date();
@@ -217,4 +225,88 @@ function dateToString(date: Date) {
     "-" +
     ("0" + date.getDate()).slice(-2)
   );
+}
+
+function makeDashiProjectLinksTooltip(
+  element: HTMLElement,
+  projectName: string,
+  libraryDesigns: string[]
+) {
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(element, (fragment) => {
+    let linksAdded = false;
+    if (libraryDesigns.includes("TS") || libraryDesigns.includes("EX")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Call Ready Targeted Sequencing",
+        urls.dashi.project.callReadyTar(projectName)
+      );
+    }
+    if (libraryDesigns.includes("WT")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Call Ready RNA-seq",
+        urls.dashi.project.callReadyRna(projectName)
+      );
+    }
+    if (
+      libraryDesigns.includes("WG") ||
+      libraryDesigns.includes("SW") ||
+      libraryDesigns.includes("PG")
+    ) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Call Ready WGS",
+        urls.dashi.project.callReadyWgs(projectName)
+      );
+    }
+    if (libraryDesigns.includes("TS") || libraryDesigns.includes("EX")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane Targeted Sequencing",
+        urls.dashi.project.singleLaneTar(projectName)
+      );
+    }
+    if (libraryDesigns.includes("WT")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane RNA-seq",
+        urls.dashi.project.singleLaneRna(projectName)
+      );
+    }
+    if (
+      libraryDesigns.includes("WG") ||
+      libraryDesigns.includes("SW") ||
+      libraryDesigns.includes("PG")
+    ) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane WGS",
+        urls.dashi.project.singleLaneWgs(projectName)
+      );
+    }
+    if (libraryDesigns.includes("CM")) {
+      linksAdded = true;
+      addLinkDiv(
+        fragment,
+        "Single-Lane cfMeDIP",
+        urls.dashi.project.singleLaneCfMeDip(projectName)
+      );
+    }
+    if (!linksAdded) {
+      addTextDiv("No Dashi-compatible libraries", fragment);
+    }
+  });
+}
+
+function addLinkDiv(container: Node, text: string, url: string) {
+  const div = document.createElement("div");
+  addLink(div, text, url, true);
+  container.appendChild(div);
 }
