@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.28.0] - 2024-03-14
+
+### Added
+
+* Dashi icon linking to relevant reports at the top of the Run Details and Project Details pages
+* New metrics for cfMeDIPs assays
+
+### Changed
+
+* The "Passed" QC status will now be displayed as "Approved"
+* Moved the Case Details link from the assay name to a clearer "Case Details" text node
+
+
 ## [1.27.1] - 2024-03-07
 
 ### Fixed
