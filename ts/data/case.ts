@@ -36,7 +36,7 @@ import {
   showFormDialog,
   TextField,
 } from "../component/dialog";
-import { post } from "../util/requests";
+import { post, postDownload } from "../util/requests";
 
 export interface Project {
   name: string;
@@ -189,6 +189,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   },
   staticActions: [legendAction],
   bulkActions: [
+    {
+      title: "Download",
+      handler: showDownloadDialog,
+    },
     {
       title: "Sign Off",
       handler: showSignoffDialog,
@@ -1705,4 +1709,33 @@ function hasDeliverable(kase: Case, deliverable: string) {
   return kase.deliverables
     .flatMap((deliverableType) => deliverableType.releases)
     .some((release) => release.deliverable === deliverable);
+}
+
+const REPORT_FULL_DEPTH_SUMMARY = "full-depth-summary";
+
+function showDownloadDialog(items: Case[]) {
+  const reportOptions = new Map<string, string>([
+    ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
+  ]);
+  const reportSelect = new DropdownField(
+    "Report",
+    reportOptions,
+    "report",
+    true
+  );
+  showFormDialog("Download", [reportSelect], (result) => {
+    switch (result.report) {
+      case REPORT_FULL_DEPTH_SUMMARY:
+        downloadFullDepthSummary(items);
+        break;
+      default:
+        throw new Error(`Invalid report: ${result.report}`);
+    }
+  });
+}
+
+function downloadFullDepthSummary(items: Case[]) {
+  postDownload(urls.rest.downloads.reports(REPORT_FULL_DEPTH_SUMMARY), {
+    caseIds: items.map((kase) => kase.id).join(", "),
+  });
 }
