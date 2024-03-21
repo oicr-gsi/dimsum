@@ -12,20 +12,12 @@ import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.shared.CaseSampleRowData;
 
-public class FullDepthSummary extends Report {
+public class DareInputSheet extends Report {
 
   private static final ReportSection<CaseSampleRowData> mainSection =
       new TableReportSection<CaseSampleRowData>("Full-Depth Sequencing", Arrays.asList(
-          Column.forString("Case ID", x -> x.getCase().getId()),
-          Column.forString("Project", x -> x.getSample().getProject()),
-          Column.forString("Donor", x -> x.getCase().getDonor().getName()),
-          Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),
-          Column.forString("Requisition", x -> x.getCase().getRequisition().getName()),
-          Column.forString("Assay", x -> x.getCase().getAssayName()),
-          Column.forString("Run", x -> x.getSample().getRun().getName()),
-          Column.forString("Lane", x -> x.getSample().getSequencingLane()),
           Column.forString("Library", x -> x.getSample().getName()),
-          Column.forString("Group ID", x -> x.getSample().getGroupId()))) {
+          Column.forString("Run", x -> x.getSample().getRun().getName()))) {
 
         @Override
         public List<CaseSampleRowData> getData(CaseService caseService,
@@ -39,10 +31,10 @@ public class FullDepthSummary extends Report {
 
       };
 
-  public static final FullDepthSummary INSTANCE = new FullDepthSummary();
+  public static final DareInputSheet INSTANCE = new DareInputSheet();
 
-  private FullDepthSummary() {
-    super("Full-Depth Summary", mainSection);
+  private DareInputSheet() {
+    super("Dare Input Sheet", mainSection);
   }
 
 }

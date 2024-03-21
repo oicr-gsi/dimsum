@@ -1714,10 +1714,12 @@ function hasDeliverable(kase: Case, deliverable: string) {
 }
 
 const REPORT_FULL_DEPTH_SUMMARY = "full-depth-summary";
+const REPORT_DARE_INPUT_SHEET = "dare-input-sheet";
 
 function showDownloadDialog(items: Case[]) {
   const reportOptions = new Map<string, string>([
     ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
+    ["DARE Input Sheet", REPORT_DARE_INPUT_SHEET],
   ]);
   const reportSelect = new DropdownField(
     "Report",
@@ -1728,16 +1730,16 @@ function showDownloadDialog(items: Case[]) {
   showFormDialog("Download", [reportSelect], (result) => {
     switch (result.report) {
       case REPORT_FULL_DEPTH_SUMMARY:
-        downloadFullDepthSummary(items);
-        break;
+      case REPORT_DARE_INPUT_SHEET:
+        downloadCaseReport(result.report, items);
       default:
         throw new Error(`Invalid report: ${result.report}`);
     }
   });
 }
 
-function downloadFullDepthSummary(items: Case[]) {
-  postDownload(urls.rest.downloads.reports(REPORT_FULL_DEPTH_SUMMARY), {
+function downloadCaseReport(report: string, items: Case[]) {
+  postDownload(urls.rest.downloads.reports(report), {
     caseIds: items.map((kase) => kase.id).join(", "),
   });
 }

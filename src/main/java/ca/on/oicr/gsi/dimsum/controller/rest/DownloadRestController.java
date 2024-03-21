@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
+import ca.on.oicr.gsi.dimsum.util.reporting.reports.DareInputSheet;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
 
@@ -54,6 +55,8 @@ public class DownloadRestController {
         return TglTrackingReport.INSTANCE;
       case "full-depth-summary":
         return FullDepthSummary.INSTANCE;
+      case "dare-input-sheet":
+        return DareInputSheet.INSTANCE;
       default:
         throw new BadRequestException("Invalid report name");
     }
