@@ -1719,25 +1719,70 @@ function showDownloadDialog(items: Case[]) {
     ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
     ["DARE Input Sheet", REPORT_DARE_INPUT_SHEET],
   ]);
+  const formatOptions = new Map<string, any>([
+    [
+      "Excel",
+      {
+        format: "excel",
+      },
+    ],
+    [
+      "CSV with headings",
+      {
+        format: "csv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "CSV, no headings",
+      {
+        format: "csv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "TSV with headings",
+      {
+        format: "tsv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "TSV, no headings",
+      {
+        format: "tsv",
+        includeHeadings: false,
+      },
+    ],
+  ]);
   const reportSelect = new DropdownField(
     "Report",
     reportOptions,
     "report",
     true
   );
-  showFormDialog("Download", [reportSelect], (result) => {
+  const formatSelect = new DropdownField(
+    "Format",
+    formatOptions,
+    "formatOptions",
+    true,
+    undefined,
+    "Excel"
+  );
+  showFormDialog("Download", [reportSelect, formatSelect], (result) => {
     switch (result.report) {
       case REPORT_FULL_DEPTH_SUMMARY:
       case REPORT_DARE_INPUT_SHEET:
-        downloadCaseReport(result.report, items);
+        downloadCaseReport(result.report, result.formatOptions, items);
+        break;
       default:
         throw new Error(`Invalid report: ${result.report}`);
     }
   });
 }
 
-function downloadCaseReport(report: string, items: Case[]) {
-  postDownload(urls.rest.downloads.reports(report), {
-    caseIds: items.map((kase) => kase.id).join(", "),
-  });
+function downloadCaseReport(report: string, formatOptions: any, items: Case[]) {
+  const params = Object.assign({}, formatOptions);
+  params.caseIds = items.map((kase) => kase.id).join(", ");
+  postDownload(urls.rest.downloads.reports(report), params);
 }
