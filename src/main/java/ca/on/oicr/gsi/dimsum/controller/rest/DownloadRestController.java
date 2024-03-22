@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
+import ca.on.oicr.gsi.dimsum.util.reporting.reports.CaseReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
 
 @RestController
@@ -51,6 +52,8 @@ public class DownloadRestController {
     switch (reportName) {
       case "tgl-tracking-sheet":
         return TglTrackingReport.INSTANCE;
+      case "case-report":
+        return CaseReport.INSTANCE;
       default:
         throw new BadRequestException("Invalid report name");
     }
