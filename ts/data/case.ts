@@ -1617,6 +1617,7 @@ function showSignoffDialog(items: Case[]) {
           : undefined
       ),
     ],
+    "Next",
     (result1) => {
       const formFields: FormField<any>[] = [
         new DropdownField(
@@ -1676,6 +1677,7 @@ function showSignoffDialog(items: Case[]) {
       showFormDialog(
         `${qcStepLabel} QC - ${deliverableTypeLabel}`,
         formFields,
+        "Submit",
         (result2) => {
           const data = {
             caseIdentifiers: items.map((item) => item.id),
