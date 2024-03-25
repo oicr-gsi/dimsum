@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -714,11 +715,13 @@ public class CaseService {
 
   private void removeExpiredCachedSignoffs() {
     ZonedDateTime cutoff = caseData.getTimestamp().minus(CACHE_OVERLAP_MINUTES, ChronoUnit.MINUTES);
-    for (String caseId : cachedSignoffsByCaseId.keySet()) {
+    Iterator<String> iterator = cachedSignoffsByCaseId.keySet().iterator();
+    while (iterator.hasNext()) {
+      String caseId = iterator.next();
       List<NabuSavedSignoff> signoffs = cachedSignoffsByCaseId.get(caseId);
       signoffs.removeIf(signoff -> signoff.getCreated().isBefore(cutoff));
       if (signoffs.isEmpty()) {
-        cachedSignoffsByCaseId.remove(caseId);
+        iterator.remove();
       }
     }
   }
