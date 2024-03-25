@@ -21,6 +21,7 @@ import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
 import { AssayTargets, Metric, MetricSubcategory } from "./assay";
+import { postDownload } from "../util/requests";
 import {
   anyFail,
   getMetricNames,
@@ -187,7 +188,25 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     }
     return null;
   },
-  staticActions: [legendAction],
+  staticActions: [
+    legendAction,
+    {
+      title: "TAT Report",
+      handler: () => {
+        const currentFilters: { [key: string]: any } = {};
+        for (const filter of caseFilters) {
+          const value = getFilterValue(filter.key);
+          if (value !== undefined && value !== null) {
+            currentFilters[filter.key] = value;
+          }
+        }
+        postDownload(
+          urls.rest.downloads.reports("case-report"),
+          currentFilters
+        );
+      },
+    },
+  ],
   bulkActions: [
     {
       title: "Sign Off",
@@ -1705,4 +1724,8 @@ function hasDeliverable(kase: Case, deliverable: string) {
   return kase.deliverables
     .flatMap((deliverableType) => deliverableType.releases)
     .some((release) => release.deliverable === deliverable);
+}
+function getFilterValue(key: string) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(key);
 }
