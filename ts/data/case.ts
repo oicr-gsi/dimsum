@@ -1771,16 +1771,21 @@ function showDownloadDialog(items: Case[]) {
     undefined,
     "Excel"
   );
-  showFormDialog("Download", [reportSelect, formatSelect], (result) => {
-    switch (result.report) {
-      case REPORT_FULL_DEPTH_SUMMARY:
-      case REPORT_DARE_INPUT_SHEET:
-        downloadCaseReport(result.report, result.formatOptions, items);
-        break;
-      default:
-        throw new Error(`Invalid report: ${result.report}`);
+  showFormDialog(
+    "Download Case Data",
+    [reportSelect, formatSelect],
+    "Download",
+    (result) => {
+      switch (result.report) {
+        case REPORT_FULL_DEPTH_SUMMARY:
+        case REPORT_DARE_INPUT_SHEET:
+          downloadCaseReport(result.report, result.formatOptions, items);
+          break;
+        default:
+          throw new Error(`Invalid report: ${result.report}`);
+      }
     }
-  });
+  );
 }
 
 function downloadCaseReport(report: string, formatOptions: any, items: Case[]) {
