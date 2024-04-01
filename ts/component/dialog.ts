@@ -232,6 +232,7 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
 export function showFormDialog(
   title: string,
   fields: FormField<any>[],
+  submitLabel: string,
   callback: (result: any) => void
 ) {
   showDialog(
@@ -253,7 +254,7 @@ export function showFormDialog(
     },
     [
       {
-        title: "Submit",
+        title: submitLabel,
         handler(resolve, reject) {
           const result: any = {};
           let success = true;

@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 public abstract class ReportSection<T> {
@@ -41,6 +42,29 @@ public abstract class ReportSection<T> {
       }
     }
 
+    @Override
+    public void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
+        boolean includeHeaders) {
+      List<Column<T>> columns = getColumns();
+      if (includeHeaders) {
+        for (int i = 0; i < columns.size(); i++) {
+          if (i > 0) {
+            sb.append(delimiter);
+          }
+          sb.append(columns.get(i).getTitle());
+        }
+      }
+      for (T object : objects) {
+        for (int i = 0; i < columns.size(); i++) {
+          if (i > 0) {
+            sb.append(delimiter);
+          }
+          sb.append(columns.get(i).getDelimitedColumnString(delimiter, object));
+        }
+        sb.append("\r\n");
+      }
+    }
+
   }
 
   private final String title;
@@ -67,6 +91,15 @@ public abstract class ReportSection<T> {
   }
 
   protected abstract void writeExcelSheet(XSSFSheet worksheet, List<T> objects);
+
+  public void createDelimitedText(StringBuilder sb, CaseService caseService,
+      String delimiter, boolean includeHeadings, Map<String, String> parameters) {
+    List<T> objects = getData(caseService, parameters);
+    writeDelimitedText(sb, objects, delimiter, includeHeadings);
+  }
+
+  protected abstract void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
+      boolean includeHeaders);
 
   /**
    * Fetches data from the CaseService based on parameters provided

@@ -7,6 +7,26 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.29.0] - 2024-03-28
+
+### Added
+
+* Format option for case downloads, allowing CSV and TSV formats in addition to Excel
+* Full-Depth Summary Download from the Cases table
+* DARE Input Sheet Download from the Cases table
+
+### Changed
+
+* Button text in first "Case QC" dialog from "Submit" to "Next" to clarify that there will be another step
+
+
+## [1.28.1] - 2024-03-25
+
+### Fixed
+
+* Error when attempting to record sign offs
+
+
 ## [1.28.0] - 2024-03-14
 
 ### Added

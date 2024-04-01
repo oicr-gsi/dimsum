@@ -21,7 +21,6 @@ import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
 import { AssayTargets, Metric, MetricSubcategory } from "./assay";
-import { postDownload } from "../util/requests";
 import {
   anyFail,
   getMetricNames,
@@ -37,7 +36,7 @@ import {
   showFormDialog,
   TextField,
 } from "../component/dialog";
-import { post } from "../util/requests";
+import { post, postDownload } from "../util/requests";
 
 export interface Project {
   name: string;
@@ -188,26 +187,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     }
     return null;
   },
-  staticActions: [
-    legendAction,
-    {
-      title: "TAT Report",
-      handler: () => {
-        const currentFilters: { [key: string]: any } = {};
-        for (const filter of caseFilters) {
-          const value = getFilterValue(filter.key);
-          if (value !== undefined && value !== null) {
-            currentFilters[filter.key] = value;
-          }
-        }
-        postDownload(
-          urls.rest.downloads.reports("case-report"),
-          currentFilters
-        );
-      },
-    },
-  ],
+  staticActions: [legendAction],
   bulkActions: [
+    {
+      title: "Download",
+      handler: showDownloadDialog,
+    },
     {
       title: "Sign Off",
       handler: showSignoffDialog,
@@ -1636,6 +1621,7 @@ function showSignoffDialog(items: Case[]) {
           : undefined
       ),
     ],
+    "Next",
     (result1) => {
       const formFields: FormField<any>[] = [
         new DropdownField(
@@ -1695,6 +1681,7 @@ function showSignoffDialog(items: Case[]) {
       showFormDialog(
         `${qcStepLabel} QC - ${deliverableTypeLabel}`,
         formFields,
+        "Submit",
         (result2) => {
           const data = {
             caseIdentifiers: items.map((item) => item.id),
@@ -1725,7 +1712,84 @@ function hasDeliverable(kase: Case, deliverable: string) {
     .flatMap((deliverableType) => deliverableType.releases)
     .some((release) => release.deliverable === deliverable);
 }
-function getFilterValue(key: string) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(key);
+
+const REPORT_FULL_DEPTH_SUMMARY = "full-depth-summary";
+const REPORT_DARE_INPUT_SHEET = "dare-input-sheet";
+
+function showDownloadDialog(items: Case[]) {
+  const reportOptions = new Map<string, string>([
+    ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
+    ["DARE Input Sheet", REPORT_DARE_INPUT_SHEET],
+  ]);
+  const formatOptions = new Map<string, any>([
+    [
+      "Excel",
+      {
+        format: "excel",
+      },
+    ],
+    [
+      "CSV with headings",
+      {
+        format: "csv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "CSV, no headings",
+      {
+        format: "csv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "TSV with headings",
+      {
+        format: "tsv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "TSV, no headings",
+      {
+        format: "tsv",
+        includeHeadings: false,
+      },
+    ],
+  ]);
+  const reportSelect = new DropdownField(
+    "Report",
+    reportOptions,
+    "report",
+    true
+  );
+  const formatSelect = new DropdownField(
+    "Format",
+    formatOptions,
+    "formatOptions",
+    true,
+    undefined,
+    "Excel"
+  );
+  showFormDialog(
+    "Download Case Data",
+    [reportSelect, formatSelect],
+    "Download",
+    (result) => {
+      switch (result.report) {
+        case REPORT_FULL_DEPTH_SUMMARY:
+        case REPORT_DARE_INPUT_SHEET:
+          downloadCaseReport(result.report, result.formatOptions, items);
+          break;
+        default:
+          throw new Error(`Invalid report: ${result.report}`);
+      }
+    }
+  );
+}
+
+function downloadCaseReport(report: string, formatOptions: any, items: Case[]) {
+  const params = Object.assign({}, formatOptions);
+  params.caseIds = items.map((kase) => kase.id).join(", ");
+  postDownload(urls.rest.downloads.reports(report), params);
 }

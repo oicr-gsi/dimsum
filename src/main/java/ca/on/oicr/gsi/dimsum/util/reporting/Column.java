@@ -15,6 +15,19 @@ public abstract class Column<T> {
         cell.setCellValue(value);
       }
 
+      @Override
+      public String getDelimitedColumnString(String delimiter, T object) {
+        String value = getter.apply(object);
+        if (value == null || value.isBlank()) {
+          return "";
+        }
+        // Quote string with double quotes if necessary; escape double quotes with double quotes
+        if (value.contains(delimiter) || value.contains("\"") || value.contains("'")) {
+          return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+      }
+
     };
   }
 
@@ -29,19 +42,12 @@ public abstract class Column<T> {
         }
       }
 
-    };
-  }
-
-  public static <T> Column<T> forInteger(String title, Function<T, Integer> getter) {
-    return new Column<T>(title) {
-
       @Override
-      public void writeExcelCell(Cell cell, T object) {
-        Integer value = getter.apply(object);
-        if (value != null) {
-          cell.setCellValue(value.doubleValue());
-        }
+      public String getDelimitedColumnString(String delimiter, T object) {
+        BigDecimal value = getter.apply(object);
+        return value.toPlainString();
       }
+
     };
   }
 
@@ -56,5 +62,7 @@ public abstract class Column<T> {
   }
 
   public abstract void writeExcelCell(Cell cell, T object);
+
+  public abstract String getDelimitedColumnString(String delimiter, T object);
 
 }
