@@ -187,7 +187,24 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     }
     return null;
   },
-  staticActions: [legendAction],
+  staticActions: [
+    legendAction,
+    {
+      title: "TAT Report",
+      handler: (filters: { key: string; value: string }[]) => {
+        const currentFilters: { [key: string]: any } = {};
+        for (const filter of filters) {
+          if (filter.value !== undefined && filter.value !== null) {
+            currentFilters[filter.key] = filter.value;
+          }
+        }
+        postDownload(
+          urls.rest.downloads.reports("case-tat-report"),
+          currentFilters
+        );
+      },
+    },
+  ],
   bulkActions: [
     {
       title: "Download",

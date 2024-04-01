@@ -53,7 +53,7 @@ export interface FilterDefinition {
 
 export interface StaticAction {
   title: string;
-  handler: () => void;
+  handler: (filters: { key: string; value: string }[]) => void;
 }
 
 export interface BulkAction<ParentType> {
@@ -316,7 +316,9 @@ export class TableBuilder<ParentType, ChildType> {
     }
     if (this.definition.staticActions) {
       this.definition.staticActions.forEach((action) => {
-        addActionButton(container, action.title, action.handler);
+        addActionButton(container, action.title, () =>
+          action.handler(this.acceptedFilters)
+        );
       });
     }
   }
