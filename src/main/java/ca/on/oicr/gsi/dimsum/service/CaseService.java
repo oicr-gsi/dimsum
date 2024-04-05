@@ -64,6 +64,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 @Service
 public class CaseService {
+
   // overlap to maintain signoffs that may have been completed during data refresh
   private static final int CACHE_OVERLAP_MINUTES = 10;
 
@@ -134,21 +135,6 @@ public class CaseService {
 
   public Stream<Case> getCaseStream(Collection<CaseFilter> filters) {
     return filterCases(cacheUpdatedCases, filters);
-  }
-
-  public Stream<Case> getFilteredCases(Map<String, String> parameters) {
-    List<CaseFilter> filters = convertParametersToFilters(parameters);
-    return getCaseStream(filters);
-  }
-
-  private List<CaseFilter> convertParametersToFilters(Map<String, String> parameters) {
-    List<CaseFilter> filters = new ArrayList<>();
-    parameters.forEach((key, value) -> {
-      CaseFilterKey filterKey = CaseFilterKey.valueOf(key.toUpperCase());
-      CaseFilter filter = new CaseFilter(filterKey, value);
-      filters.add(filter);
-    });
-    return filters;
   }
 
   public Map<Long, Assay> getAssaysById() {
