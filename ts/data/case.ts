@@ -131,6 +131,10 @@ export interface CaseDeliverable {
   releaseApprovalQcDate?: string;
   releaseApprovalQcNote?: string;
   releases: CaseRelease[];
+  analysisReviewDaysSpent: number;
+  releaseApprovalDaysSpent: number;
+  releaseDaysSpent: number;
+  deliverableDaysSpent: number;
 }
 
 export interface AnalysisQcGroup {
