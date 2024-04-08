@@ -136,4 +136,24 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
     return cachedReleases != null ? cachedReleases : baseDeliverable.getReleases();
   }
 
+  @Override
+  public int getAnalysisReviewDaysSpent() {
+    return baseDeliverable.getAnalysisReviewDaysSpent();
+  }
+
+  @Override
+  public int getDeliverableDaysSpent() {
+    return baseDeliverable.getDeliverableDaysSpent();
+  }
+
+  @Override
+  public int getReleaseApprovalDaysSpent() {
+    return baseDeliverable.getReleaseApprovalDaysSpent();
+  }
+
+  @Override
+  public int getReleaseDaysSpent() {
+    return baseDeliverable.getReleaseDaysSpent();
+  }
+
 }
