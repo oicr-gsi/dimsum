@@ -5,9 +5,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
@@ -28,8 +27,8 @@ public abstract class Report {
     return title;
   }
 
-  public static ReportFormat getFormat(Map<String, String> parameters) {
-    String format = parameters.get(PARAM_FORMAT);
+  public static ReportFormat getFormat(JsonNode parameters) {
+    String format = parameters.has(PARAM_FORMAT) ? parameters.get(PARAM_FORMAT).asText() : null;
     if (format == null) {
       return ReportFormat.EXCEL;
     }
@@ -45,7 +44,7 @@ public abstract class Report {
     }
   }
 
-  public byte[] writeFile(CaseService caseService, Map<String, String> parameters)
+  public byte[] writeFile(CaseService caseService, JsonNode parameters)
       throws IOException {
     ReportFormat format = getFormat(parameters);
 
@@ -61,7 +60,7 @@ public abstract class Report {
     }
   }
 
-  private byte[] writeExcelFile(CaseService caseService, Map<String, String> parameters)
+  private byte[] writeExcelFile(CaseService caseService, JsonNode parameters)
       throws IOException {
     XSSFWorkbook workbook = new XSSFWorkbook();
     for (ReportSection<?> section : sections) {
@@ -74,9 +73,10 @@ public abstract class Report {
   }
 
   private byte[] writeDelimitedFile(CaseService caseService, String delimiter,
-      Map<String, String> parameters) {
+      JsonNode parameters) {
     StringBuilder sb = new StringBuilder();
-    boolean includeHeadings = Objects.equals("true", parameters.get(PARAM_HEADINGS));
+    boolean includeHeadings =
+        parameters.has(PARAM_HEADINGS) && "true".equals(parameters.get(PARAM_HEADINGS).asText());
     // This does not support multiple sections
     sections.get(0).createDelimitedText(sb, caseService, delimiter, includeHeadings, parameters);
     return sb.toString().getBytes();

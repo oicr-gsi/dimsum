@@ -2,7 +2,6 @@ package ca.on.oicr.gsi.dimsum.util.reporting;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -10,6 +9,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
@@ -84,7 +84,7 @@ public abstract class ReportSection<T> {
   }
 
   public void createExcelSheet(XSSFWorkbook workbook, CaseService caseService,
-      Map<String, String> parameters) {
+      JsonNode parameters) {
     List<T> objects = getData(caseService, parameters);
     XSSFSheet worksheet = workbook.createSheet(getTitle());
     writeExcelSheet(worksheet, objects);
@@ -93,7 +93,7 @@ public abstract class ReportSection<T> {
   protected abstract void writeExcelSheet(XSSFSheet worksheet, List<T> objects);
 
   public void createDelimitedText(StringBuilder sb, CaseService caseService,
-      String delimiter, boolean includeHeadings, Map<String, String> parameters) {
+      String delimiter, boolean includeHeadings, JsonNode parameters) {
     List<T> objects = getData(caseService, parameters);
     writeDelimitedText(sb, objects, delimiter, includeHeadings);
   }
@@ -110,10 +110,11 @@ public abstract class ReportSection<T> {
    * 
    * @throws BadRequestException if there are invalid parameters
    */
-  public abstract List<T> getData(CaseService caseService, Map<String, String> parameters);
+  public abstract List<T> getData(CaseService caseService, JsonNode parameters);
 
-  protected static Set<String> getParameterStringSet(Map<String, String> parameters, String name) {
-    String value = parameters.get(name);
+  protected static Set<String> getParameterStringSet(JsonNode parameters, String name) {
+    JsonNode valueNode = parameters.get(name);
+    String value = (valueNode != null) ? valueNode.asText() : null;
     if (value == null || value.isEmpty()) {
       return null;
     }

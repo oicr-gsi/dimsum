@@ -191,14 +191,22 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     legendAction,
     {
       title: "TAT Report",
-      handler: (filters: { key: string; value: string }[]) => {
+      handler: (
+        filters: { key: string; value: string }[],
+        baseFilter: { key: string; value: string } | undefined
+      ) => {
         const currentFilters: { [key: string]: string[] } = {};
+
+        if (baseFilter !== undefined) {
+          currentFilters[baseFilter.key] = baseFilter.value.split(",");
+        }
+
         for (const filter of filters) {
           if (filter.value !== undefined && filter.value !== null) {
             if (!currentFilters[filter.key]) {
               currentFilters[filter.key] = [];
             }
-            currentFilters[filter.key].push(filter.value);
+            currentFilters[filter.key].push(...filter.value.split(","));
           }
         }
         const joinedFilters: { [key: string]: string } = {};

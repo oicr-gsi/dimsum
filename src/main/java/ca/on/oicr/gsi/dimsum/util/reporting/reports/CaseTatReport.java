@@ -5,11 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
@@ -17,6 +15,7 @@ import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
+import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
@@ -59,65 +58,56 @@ public class CaseTatReport extends Report {
               Column.forString("Assay", x -> x.getCase().getAssayName()),
               Column.forString("Start Date",
                   x -> x.getCase().getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
-              Column.forString("Receipt Completed Date",
-                  x -> Optional
-                      .ofNullable(findLatestCompletionDate(x.getCase().getReceipts()))
-                      .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse("")),
+              Column.forString("Receipt Completed",
+                  x -> findLatestCompletionDate(x.getCase().getReceipts())),
               Column.forInteger("Receipt Days", x -> x.getCase().getReceiptDaysSpent()),
               Column.forString("Test", x -> x.getTest().getName()),
               Column.forString("Supplemental Only",
                   x -> isSupplementalOnly(x.getTest(), x.getCase().getRequisition()) ? "Yes"
                       : "No"),
-              Column.forString("Extraction Completed Date",
-                  x -> Optional
-                      .ofNullable(findLatestCompletionDate(x.getTest().getExtractions()))
-                      .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse("")),
+              Column.forString("Extraction Completed",
+                  x -> findLatestCompletionDate(x.getTest().getExtractions())),
               Column.forInteger("Extraction Days", x -> x.getTest().getExtractionDaysSpent()),
-              Column.forString("Library Prep Completed Date",
-                  x -> Optional
-                      .ofNullable(findLatestCompletionDate(x.getTest().getLibraryPreparations()))
-                      .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse("")),
+              Column.forString("Library Prep Completed",
+                  x -> findLatestCompletionDate(x.getTest().getLibraryPreparations())),
               Column.forInteger("Library Prep. Days",
                   x -> x.getTest().getLibraryPreparationDaysSpent()),
-              Column.forString("Library Qual Completed Date",
-                  x -> Optional
-                      .ofNullable(findLatestCompletionDate(x.getTest().getLibraryQualifications()))
-                      .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse("")),
+              Column.forString("Library Qual Completed",
+                  x -> findLatestCompletionDate(x.getTest().getLibraryQualifications())),
               Column.forInteger("Library Qual. Days",
                   x -> x.getTest().getLibraryQualificationDaysSpent()),
-              Column.forString("Full Depth Completed Date",
-                  x -> Optional
-                      .ofNullable(findLatestCompletionDate(x.getTest().getFullDepthSequencings()))
-                      .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse("")),
+              Column.forString("Full-Depth Completed",
+                  x -> findLatestCompletionDate(x.getTest().getFullDepthSequencings())),
               Column.forInteger("Full-Depth Days",
                   x -> x.getTest().getFullDepthSequencingDaysSpent()),
-              Column.forString("Analysis Review Completed", x -> {
-                List<LocalDate> dates = x.getCase().getDeliverables().stream()
-                    .map(CaseDeliverable::getAnalysisReviewQcDate).collect(Collectors.toList());
-                if (dates.contains(null)) {
-                  return null;
-                }
-                return dates.stream().max(LocalDate::compareTo)
-                    .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(null);
-              }),
+              Column.forString("Analysis Review Completed",
+                  x -> getMaxDateFromDeliverables(x.getCase(),
+                      CaseDeliverable::getAnalysisReviewQcDate)),
               Column.forInteger("Analysis Review Days",
                   x -> x.getCase().getAnalysisReviewDaysSpent()),
-              Column.forString("Release Approval Completed", x -> {
+              Column.forString("Release Approval Completed",
+                  x -> getMaxDateFromDeliverables(x.getCase(),
+                      CaseDeliverable::getReleaseApprovalQcDate)),
+              Column.forString("Release Completed", x -> {
+                if (!x.getCase().isStopped()) {
+                  return getCompletionDate(x.getCase());
+                }
                 List<LocalDate> dates = x.getCase().getDeliverables().stream()
-                    .map(CaseDeliverable::getReleaseApprovalQcDate).collect(Collectors.toList());
+                    .flatMap(deliverable -> deliverable.getReleases().stream())
+                    .map(CaseRelease::getQcDate)
+                    .collect(Collectors.toList());
                 if (dates.contains(null)) {
                   return null;
                 }
                 return dates.stream().max(LocalDate::compareTo)
                     .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(null);
               }),
-              Column.forInteger("Release Approval Days",
-                  x -> x.getCase().getReleaseApprovalDaysSpent()),
+              Column.forInteger("Release Days", x -> x.getCase().getReleaseDaysSpent()),
               Column.forString("Completion Date", x -> getCompletionDate(x.getCase())),
               Column.forInteger("Total Days", x -> x.getCase().getCaseDaysSpent()))) {
 
         @Override
-        public List<RowData> getData(CaseService caseService, Map<String, String> parameters) {
+        public List<RowData> getData(CaseService caseService, JsonNode parameters) {
           List<CaseFilter> filters = convertParametersToFilters(parameters);
           return caseService.getCaseStream(filters)
               .flatMap(kase -> kase.getTests().stream().map(test -> new RowData(kase, test)))
@@ -139,44 +129,74 @@ public class CaseTatReport extends Report {
         .collect(Collectors.joining(", "));
   }
 
-  private static List<CaseFilter> convertParametersToFilters(Map<String, String> parameters) {
+  private static List<CaseFilter> convertParametersToFilters(JsonNode parameters) {
     List<CaseFilter> filters = new ArrayList<>();
-    parameters.forEach((key, value) -> {
-      CaseFilterKey filterKey = CaseFilterKey.valueOf(key.toUpperCase());
-      CaseFilter filter = new CaseFilter(filterKey, value);
-      filters.add(filter);
+    parameters.fields().forEachRemaining(entry -> {
+      try {
+        CaseFilterKey filterKey = CaseFilterKey.valueOf(entry.getKey().toUpperCase());
+        String[] values = entry.getValue().asText().split(",");
+        for (String value : values) {
+          CaseFilter filter = new CaseFilter(filterKey, value.trim());
+          filters.add(filter);
+        }
+      } catch (IllegalArgumentException e) {
+        throw new BadRequestException(
+            "Invalid filter key: " + entry.getKey() + ". " + e.getMessage());
+      }
     });
     return filters;
   }
 
   private static boolean isSupplementalOnly(Test test, Requisition requisition) {
-    if (test == null || test.getExtractions().isEmpty()) {
+    if (test.getExtractions().isEmpty()
+        || test.getLibraryPreparations().isEmpty()
+        || test.getLibraryQualifications().isEmpty()
+        || test.getFullDepthSequencings().isEmpty()) {
       return false;
     }
     return test.getExtractions().stream()
-        .allMatch(sample -> !sample.getRequisitionId()
-            .equals(requisition.getId()));
+        .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()))
+        && test.getLibraryPreparations().stream()
+            .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()))
+        && test.getLibraryQualifications().stream()
+            .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()))
+        && test.getFullDepthSequencings().stream()
+            .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()));
   }
 
-  private static LocalDate findLatestCompletionDate(List<Sample> samples) {
-    return samples.stream()
-        .filter(SampleUtils::isPassed)
-        .map(sample -> {
-          if (sample.getRun() != null) {
-            LocalDate sampleReviewDate = sample.getDataReviewDate();
-            LocalDate runReviewDate = sample.getRun().getDataReviewDate();
-            if (sampleReviewDate == null || runReviewDate == null) {
-              return null;
-            }
-            return Stream.of(sampleReviewDate, runReviewDate)
-                .max(LocalDate::compareTo)
-                .orElse(null);
-          } else {
-            return sample.getQcDate();
+  private static String findLatestCompletionDate(List<Sample> samples) {
+    LocalDate latestDate = null;
+    for (Sample sample : samples) {
+      if (SampleUtils.isPassed(sample)) {
+        LocalDate dateToCompare = null;
+        if (sample.getRun() != null) {
+          LocalDate sampleReviewDate = sample.getDataReviewDate();
+          LocalDate runReviewDate = sample.getRun().getDataReviewDate();
+          if (sampleReviewDate != null && runReviewDate != null) {
+            dateToCompare =
+                runReviewDate.isAfter(sampleReviewDate) ? runReviewDate : sampleReviewDate;
           }
-        })
-        .max(LocalDate::compareTo)
-        .orElse(null);
+        } else {
+          dateToCompare = sample.getQcDate();
+        }
+        if (dateToCompare != null && (latestDate == null || dateToCompare.isAfter(latestDate))) {
+          latestDate = dateToCompare;
+        }
+      }
+    }
+    return latestDate != null ? latestDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null;
+  }
+
+  private static String getMaxDateFromDeliverables(Case x,
+      Function<CaseDeliverable, LocalDate> dateExtractor) {
+    List<LocalDate> dates = x.getDeliverables().stream()
+        .map(dateExtractor)
+        .collect(Collectors.toList());
+    if (dates.contains(null)) {
+      return null;
+    }
+    return dates.stream().max(LocalDate::compareTo)
+        .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(null);
   }
 
   private static String getCompletionDate(Case x) {
