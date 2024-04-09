@@ -234,14 +234,16 @@ public enum PendingState {
   ANALYSIS_REVIEW("Analysis Review", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
+      return !SampleUtils.isAnalysisReviewSkipped(kase)
+          && CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
           && !CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase);
     }
   },
   ANALYSIS_REVIEW_DATA_RELEASE("Analysis Review - Data Release", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
+      return !SampleUtils.isAnalysisReviewSkipped(kase)
+          && CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
           && CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.isApplicable(kase)
           && !CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.qualifyCase(kase);
     }
@@ -249,7 +251,8 @@ public enum PendingState {
   ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
+      return !SampleUtils.isAnalysisReviewSkipped(kase)
+          && CompletedGate.FULL_DEPTH_SEQUENCING.qualifyCase(kase)
           && CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.isApplicable(kase)
           && !CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.qualifyCase(kase);
     }
@@ -266,17 +269,15 @@ public enum PendingState {
   RELEASE_APPROVAL_DATA_RELEASE("Release Approval - Data Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.qualifyCase(kase))
-          && CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.isApplicable(kase)
-          && !CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.qualifyCase(kase);
+      return Helpers.isPendingReleaseApproval(kase, CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE,
+          CompletedGate.RELEASE_APPROVAL_DATA_RELEASE);
     }
   },
   RELEASE_APPROVAL_CLINICAL_REPORT("Release Approval - Clinical Report", false) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.qualifyCase(kase))
-          && CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.isApplicable(kase)
-          && !CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.qualifyCase(kase);
+      return Helpers.isPendingReleaseApproval(kase, CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT,
+          CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT);
     }
   },
   RELEASE("Release", false) {
@@ -394,6 +395,14 @@ public enum PendingState {
 
     public static boolean hasPendingDataReview(List<Sample> samples) {
       return samples.stream().anyMatch(pendingDataReview);
+    }
+
+    public static boolean isPendingReleaseApproval(Case kase, CompletedGate previousGate,
+        CompletedGate gate) {
+      if (!kase.isStopped() && !previousGate.qualifyCase(kase)) {
+        return false;
+      }
+      return gate.isApplicable(kase) && !gate.qualifyCase(kase);
     }
   }
 

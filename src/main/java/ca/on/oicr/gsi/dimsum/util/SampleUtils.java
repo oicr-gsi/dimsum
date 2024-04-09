@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum.util;
 
 import java.util.function.Predicate;
+import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class SampleUtils {
@@ -43,5 +44,9 @@ public class SampleUtils {
 
   public static boolean isTopUpRequired(Sample sample) {
     return TOP_UP_REASON.equals(sample.getQcReason());
+  }
+
+  public static boolean isAnalysisReviewSkipped(Case kase) {
+    return kase.getProjects().stream().allMatch(project -> project.isAnalysisReviewSkipped());
   }
 }

@@ -41,6 +41,7 @@ import { post, postDownload } from "../util/requests";
 export interface Project {
   name: string;
   pipeline: string;
+  analysisReviewSkipped: boolean;
 }
 
 export interface Donor {
@@ -526,10 +527,16 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     makeDeliverableTypePhaseColumn(
       "Release Approval",
       false,
-      (kase, deliverableType) =>
-        kase.deliverables
+      (kase, deliverableType) => {
+        if (kase.projects.every((project) => project.analysisReviewSkipped)) {
+          return kase.tests.every((test) =>
+            samplePhaseComplete(test.fullDepthSequencings)
+          );
+        }
+        return kase.deliverables
           .filter((x) => x.deliverableType == deliverableType)
-          .some((x) => x.analysisReviewQcPassed),
+          .some((x) => x.analysisReviewQcPassed);
+      },
       (targets) => targets.releaseApprovalDays,
       (deliverable) => deliverable.releaseApprovalQcPassed
     ),
@@ -736,7 +743,7 @@ function makeLatestActivityColumn<ChildType>(): ColumnDefinition<
 
 function makeDeliverableTypePhaseColumn(
   title: string,
-  stoppable: boolean,
+  analysisReview: boolean,
   isPreviousComplete: (kase: Case, deliverableType: DeliverableType) => boolean,
   getTarget: (targets: AssayTargets) => number | null,
   getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined
@@ -752,15 +759,20 @@ function makeDeliverableTypePhaseColumn(
       const anyQcSet = kase.deliverables.some(
         (deliverable) => getQcPassed(deliverable) != null
       );
-      if (stoppable && kase.requisition.stopped && !anyQcSet) {
-        addNaText(fragment);
-        return;
+      if (analysisReview && !anyQcSet) {
+        if (
+          kase.requisition.stopped ||
+          kase.projects.every((project) => project.analysisReviewSkipped)
+        ) {
+          addNaText(fragment);
+          return;
+        }
       }
       const anyPreviousComplete = kase.deliverables.some((x) =>
         isPreviousComplete(kase, x.deliverableType)
       );
       if (
-        (!stoppable && kase.requisition.stopped) ||
+        (!analysisReview && kase.requisition.stopped) ||
         anyPreviousComplete ||
         anyQcSet
       ) {
@@ -771,7 +783,8 @@ function makeDeliverableTypePhaseColumn(
       );
       const targets = getTargets(kase);
       if (
-        ((!stoppable && kase.requisition.stopped) || anyPreviousComplete) &&
+        ((!analysisReview && kase.requisition.stopped) ||
+          anyPreviousComplete) &&
         !allQcPassed
       ) {
         addTurnAroundTimeInfo(kase.caseDaysSpent, getTarget(targets), fragment);
@@ -781,7 +794,7 @@ function makeDeliverableTypePhaseColumn(
       return getDeliverableTypePhaseHighlight(
         kase,
         (deliverable) => getQcPassed(deliverable),
-        stoppable
+        analysisReview
       );
     },
   };
@@ -1184,7 +1197,7 @@ export function getSamplePhaseHighlight(
 function getDeliverableTypePhaseHighlight(
   kase: Case,
   getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
-  stoppable: boolean
+  analysisReview: boolean
 ) {
   if (!kase.deliverables.length) {
     return "error";
@@ -1194,7 +1207,11 @@ function getDeliverableTypePhaseHighlight(
     kase.deliverables.every((deliverable) => getQcPassed(deliverable))
   ) {
     return null;
-  } else if (stoppable && kase.requisition.stopped) {
+  } else if (
+    analysisReview &&
+    (kase.requisition.stopped ||
+      kase.projects.every((project) => project.analysisReviewSkipped))
+  ) {
     if (
       kase.deliverables.some((deliverable) => getQcPassed(deliverable) != null)
     ) {
