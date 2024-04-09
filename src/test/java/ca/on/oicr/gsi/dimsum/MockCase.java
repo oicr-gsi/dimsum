@@ -32,7 +32,7 @@ public class MockCase {
           makeCase12(), makeCase13(), makeCase14(), makeCase15(), makeCase16(), makeCase17(),
           makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22(), makeCase23(),
           makeCase24(), makeCase25(), makeCase26(), makeCase27(), makeCase28(), makeCase29(),
-          makeCase30(), makeCase31());
+          makeCase30(), makeCase31(), makeCase32(), makeCase33());
 
   private static Case makeCase0() {
     final int caseNumber = 0;
@@ -395,6 +395,28 @@ public class MockCase {
     markAnalysisReview(deliverable, true);
     markReleaseApproval(deliverable, true);
     markRelease(deliverable.getReleases().get(0), true);
+    return kase;
+  }
+
+  private static Case makeCase32() {
+    // Analysis review skipped, but case is not there yet anyway
+    final int caseNumber = 32;
+    Case kase = makeCase("PRO32_0001", "Single Test", "PRO32", "REQ32", caseNumber);
+    addTest(kase, caseNumber, 1, "test", "WG", false, false, false, false);
+    addDeliverable(kase, DeliverableType.DATA_RELEASE, "FastQ");
+    Project project = kase.getProjects().iterator().next();
+    when(project.isAnalysisReviewSkipped()).thenReturn(true);
+    return kase;
+  }
+
+  private static Case makeCase33() {
+    // Full-depth completed, analysis review skipped
+    final int caseNumber = 33;
+    Case kase = makeCase("PRO33_0001", "Single Test", "PRO33", "REQ33", caseNumber);
+    addTest(kase, caseNumber, 1, "test", "WG", true, true, true, true);
+    addDeliverable(kase, DeliverableType.DATA_RELEASE, "FastQ");
+    Project project = kase.getProjects().iterator().next();
+    when(project.isAnalysisReviewSkipped()).thenReturn(true);
     return kase;
   }
 

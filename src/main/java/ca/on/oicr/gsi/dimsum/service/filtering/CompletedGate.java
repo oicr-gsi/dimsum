@@ -104,21 +104,33 @@ public enum CompletedGate {
   ANALYSIS_REVIEW("Analysis Review", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, null, CaseDeliverable::getAnalysisReviewQcPassed);
+      if (SampleUtils.isAnalysisReviewSkipped(kase)) {
+        return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
+      } else {
+        return qualifyCaseForDeliverableType(kase, null, CaseDeliverable::getAnalysisReviewQcPassed);
+      }
     }
   },
   ANALYSIS_REVIEW_DATA_RELEASE("Analysis Review - Data Release", true, DeliverableType.DATA_RELEASE) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
-          CaseDeliverable::getAnalysisReviewQcPassed);
+      if (SampleUtils.isAnalysisReviewSkipped(kase)) {
+        return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
+      } else {
+        return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
+            CaseDeliverable::getAnalysisReviewQcPassed);
+      }
     }
   },
   ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true, DeliverableType.CLINICAL_REPORT) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
-          CaseDeliverable::getAnalysisReviewQcPassed);
+      if (SampleUtils.isAnalysisReviewSkipped(kase)) {
+        return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
+      } else {
+        return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
+            CaseDeliverable::getAnalysisReviewQcPassed);
+      }
     }
   },
   RELEASE_APPROVAL("Release Approval", false) {
