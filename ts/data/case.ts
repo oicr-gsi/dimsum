@@ -1099,21 +1099,30 @@ export function handleNaSamplePhase(
 export function samplePhaseComplete(samples: Sample[]) {
   // consider incomplete if any are pending QC or data review
   // pending statuses besides "Top-up Required" are still considered pending QC
-  if (
-    samples.some(
-      (sample) =>
-        (sample.qcPassed === null &&
-          sample.qcReason !== qcStatuses.topUp.label) ||
-        (sample.run && !sample.dataReviewDate)
-    )
-  ) {
-    return false;
-  } else {
-    // consider complete if at least one is passed QC, and data review if applicable
-    return samples.some(
-      (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
-    );
+  for (let sample of samples) {
+    const run = sample.run;
+    if (run) {
+      if (run.qcPassed === false && run.dataReviewDate) {
+        // Run failed; consider QC complete even if run-library isn't QCed
+        continue;
+      } else if (!sample.dataReviewDate || !run.dataReviewDate) {
+        // pending QC or data review
+        return false;
+      }
+    } else {
+      if (
+        sample.qcPassed === null &&
+        sample.qcReason !== qcStatuses.topUp.label
+      ) {
+        // pending QC
+        return false;
+      }
+    }
   }
+  // consider complete if at least one is passed QC, and data review if applicable
+  return samples.some(
+    (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
+  );
 }
 
 function deliverableTypePhaseComplete(
