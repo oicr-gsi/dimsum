@@ -195,16 +195,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         filters: { key: string; value: string }[],
         baseFilter: { key: string; value: string } | undefined
       ) => {
-        const joinedFiltersObj: { [key: string]: any } = {};
+        const joinedFilters = [...filters];
         if (baseFilter !== undefined) {
-          joinedFiltersObj[baseFilter.key] = baseFilter.value;
+          joinedFilters.push(baseFilter);
         }
-        filters.forEach((filter) => {
-          joinedFiltersObj[filter.key] = filter.value;
-        });
         postDownload(
           urls.rest.downloads.reports("case-tat-report"),
-          joinedFiltersObj
+          joinedFilters
         );
       },
     },

@@ -134,11 +134,15 @@ public class CaseTatReport extends Report {
   private static List<CaseFilter> convertParametersToFilters(JsonNode parameters) {
     DataQuery dataQuery = new DataQuery();
     List<KeyValuePair> kvpFilters = new ArrayList<>();
-    parameters.fields().forEachRemaining(entry -> {
-      String key = entry.getKey();
-      String value = entry.getValue().asText();
-      kvpFilters.add(new KeyValuePair(key, value));
-    });
+
+    if (parameters.isArray()) {
+      for (JsonNode parameter : parameters) {
+        String key = parameter.get("key").asText();
+        String value = parameter.get("value").asText();
+        kvpFilters.add(new KeyValuePair(key, value));
+      }
+    }
+
     dataQuery.setFilters(kvpFilters);
     List<CaseFilter> caseFilters = MvcUtils.parseCaseFilters(dataQuery);
     return caseFilters;
