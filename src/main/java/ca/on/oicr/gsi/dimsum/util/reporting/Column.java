@@ -51,6 +51,25 @@ public abstract class Column<T> {
     };
   }
 
+  public static <T> Column<T> forInteger(String title, Function<T, Integer> getter) {
+    return new Column<T>(title) {
+
+      @Override
+      public void writeExcelCell(Cell cell, T object) {
+        Integer value = getter.apply(object);
+        if (value != null) {
+          cell.setCellValue(value.doubleValue());
+        }
+      }
+
+      @Override
+      public String getDelimitedColumnString(String delimiter, T object) {
+        Integer value = getter.apply(object);
+        return value != null ? value.toString() : "";
+      }
+    };
+  }
+
   private final String title;
 
   public Column(String title) {

@@ -3,7 +3,6 @@ package ca.on.oicr.gsi.dimsum.controller.rest;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -13,10 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportFormat;
+import ca.on.oicr.gsi.dimsum.util.reporting.reports.CaseTatReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.DareInputSheet;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
@@ -30,7 +31,7 @@ public class DownloadRestController {
 
   @PostMapping("/reports/{reportName}")
   public HttpEntity<byte[]> generateReport(@PathVariable String reportName,
-      @RequestBody Map<String, String> parameters, HttpServletResponse response)
+      @RequestBody JsonNode parameters, HttpServletResponse response)
       throws IOException {
 
     ReportFormat format = Report.getFormat(parameters);
@@ -55,6 +56,8 @@ public class DownloadRestController {
         return FullDepthSummary.INSTANCE;
       case "dare-input-sheet":
         return DareInputSheet.INSTANCE;
+      case "case-tat-report":
+        return CaseTatReport.INSTANCE;
       default:
         throw new BadRequestException("Invalid report name");
     }

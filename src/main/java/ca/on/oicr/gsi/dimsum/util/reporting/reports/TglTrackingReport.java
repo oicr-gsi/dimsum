@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Metric;
@@ -97,7 +98,7 @@ public class TglTrackingReport extends Report {
 
         @Override
         public List<RowData> getData(CaseService caseService,
-            Map<String, String> parameters) {
+            JsonNode parameters) {
           Set<String> projectNames = getParameterStringSet(parameters, "projects");
           List<CaseFilter> filters = null;
           if (projectNames != null) {
