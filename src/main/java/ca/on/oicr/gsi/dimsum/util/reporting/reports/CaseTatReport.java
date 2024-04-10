@@ -90,6 +90,8 @@ public class CaseTatReport extends Report {
               Column.forString("Release Approval Completed",
                   x -> getMaxDateFromDeliverables(x.getCase(),
                       CaseDeliverable::getReleaseApprovalQcDate)),
+              Column.forInteger("Release Approval Days",
+                  x -> x.getCase().getReleaseApprovalDaysSpent()),
               Column.forString("Release Completed", x -> {
                 if (!x.getCase().isStopped()) {
                   return getCompletionDate(x.getCase());
