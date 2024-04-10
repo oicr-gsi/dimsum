@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,10 +16,11 @@ import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
-import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
+import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
+import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
+import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.util.SampleUtils;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
@@ -130,38 +132,33 @@ public class CaseTatReport extends Report {
   }
 
   private static List<CaseFilter> convertParametersToFilters(JsonNode parameters) {
-    List<CaseFilter> filters = new ArrayList<>();
+    DataQuery dataQuery = new DataQuery();
+    List<KeyValuePair> kvpFilters = new ArrayList<>();
     parameters.fields().forEachRemaining(entry -> {
-      try {
-        CaseFilterKey filterKey = CaseFilterKey.valueOf(entry.getKey().toUpperCase());
-        String[] values = entry.getValue().asText().split(",");
-        for (String value : values) {
-          CaseFilter filter = new CaseFilter(filterKey, value.trim());
-          filters.add(filter);
-        }
-      } catch (IllegalArgumentException e) {
-        throw new BadRequestException(
-            "Invalid filter key: " + entry.getKey() + ". " + e.getMessage());
-      }
+      String key = entry.getKey();
+      String value = entry.getValue().asText();
+      kvpFilters.add(new KeyValuePair(key, value));
     });
-    return filters;
+    dataQuery.setFilters(kvpFilters);
+    List<CaseFilter> caseFilters = MvcUtils.parseCaseFilters(dataQuery);
+    return caseFilters;
   }
 
   private static boolean isSupplementalOnly(Test test, Requisition requisition) {
     if (test.getExtractions().isEmpty()
-        || test.getLibraryPreparations().isEmpty()
-        || test.getLibraryQualifications().isEmpty()
-        || test.getFullDepthSequencings().isEmpty()) {
+        && test.getLibraryPreparations().isEmpty()
+        && test.getLibraryQualifications().isEmpty()
+        && test.getFullDepthSequencings().isEmpty()) {
       return false;
     }
     return test.getExtractions().stream()
-        .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()))
+        .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()))
         && test.getLibraryPreparations().stream()
-            .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()))
+            .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()))
         && test.getLibraryQualifications().stream()
-            .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()))
+            .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()))
         && test.getFullDepthSequencings().stream()
-            .allMatch(sample -> !sample.getRequisitionId().equals(requisition.getId()));
+            .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()));
   }
 
   private static String findLatestCompletionDate(List<Sample> samples) {

@@ -195,27 +195,16 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         filters: { key: string; value: string }[],
         baseFilter: { key: string; value: string } | undefined
       ) => {
-        const currentFilters: { [key: string]: string[] } = {};
-
+        const joinedFiltersObj: { [key: string]: any } = {};
         if (baseFilter !== undefined) {
-          currentFilters[baseFilter.key] = baseFilter.value.split(",");
+          joinedFiltersObj[baseFilter.key] = baseFilter.value;
         }
-
-        for (const filter of filters) {
-          if (filter.value !== undefined && filter.value !== null) {
-            if (!currentFilters[filter.key]) {
-              currentFilters[filter.key] = [];
-            }
-            currentFilters[filter.key].push(...filter.value.split(","));
-          }
-        }
-        const joinedFilters: { [key: string]: string } = {};
-        for (const key in currentFilters) {
-          joinedFilters[key] = currentFilters[key].join(",");
-        }
+        filters.forEach((filter) => {
+          joinedFiltersObj[filter.key] = filter.value;
+        });
         postDownload(
           urls.rest.downloads.reports("case-tat-report"),
-          Object.keys(joinedFilters).length > 0 ? joinedFilters : {}
+          joinedFiltersObj
         );
       },
     },

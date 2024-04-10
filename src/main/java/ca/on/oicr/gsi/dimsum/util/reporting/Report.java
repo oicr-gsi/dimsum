@@ -76,7 +76,7 @@ public abstract class Report {
       JsonNode parameters) {
     StringBuilder sb = new StringBuilder();
     boolean includeHeadings =
-        parameters.has(PARAM_HEADINGS) && "true".equals(parameters.get(PARAM_HEADINGS).asText());
+        parameters.has(PARAM_HEADINGS) && parameters.get(PARAM_HEADINGS).asBoolean();
     // This does not support multiple sections
     sections.get(0).createDelimitedText(sb, caseService, delimiter, includeHeadings, parameters);
     return sb.toString().getBytes();
