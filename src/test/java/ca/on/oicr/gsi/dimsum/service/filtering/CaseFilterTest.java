@@ -1,6 +1,8 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,28 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testProjectSampleFilter() {
+    List<Sample> samples = new ArrayList<>();
+    samples.add(makeSample("PRO1", "WG"));
+    samples.add(makeSample("PRO2", "WG"));
+
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PROJECT, "PRO1");
+    List<Sample> filtered = samples.stream()
+        .filter(filter.samplePredicate(null))
+        .toList();
+
+    assertEquals(1, filtered.size());
+    assertEquals("PRO1", filtered.get(0).getProject());
+  }
+
+  private static Sample makeSample(String project, String designCode) {
+    Sample sample = mock(Sample.class);
+    when(sample.getProject()).thenReturn(project);
+    when(sample.getLibraryDesignCode()).thenReturn(designCode);
+    return sample;
+  }
+
+  @org.junit.jupiter.api.Test
   public void testRequisitionFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.REQUISITION, "REQ02");
     testFilterCases(filter, Arrays.asList(1, 3));
@@ -56,6 +80,21 @@ public class CaseFilterTest {
   public void testLibraryDesignTestFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.LIBRARY_DESIGN, "WT");
     testFilterTests(filter, Arrays.asList(makeTestGroupId(0, 3), makeTestGroupId(1, 3)));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testLibraryDesignSampleFilter() {
+    List<Sample> samples = new ArrayList<>();
+    samples.add(makeSample("PRO1", "WG"));
+    samples.add(makeSample("PRO1", "WT"));
+
+    CaseFilter filter = new CaseFilter(CaseFilterKey.LIBRARY_DESIGN, "WT");
+    List<Sample> filtered = samples.stream()
+        .filter(filter.samplePredicate(null))
+        .toList();
+
+    assertEquals(1, filtered.size());
+    assertEquals("WT", filtered.get(0).getLibraryDesignCode());
   }
 
   @org.junit.jupiter.api.Test

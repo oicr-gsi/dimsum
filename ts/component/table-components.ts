@@ -10,7 +10,21 @@ export const latestActivitySort: Sort = {
   type: "date",
 };
 
-export var caseFilters: FilterDefinition[] = [
+const projectFilter: FilterDefinition = {
+  title: "Project",
+  key: "PROJECT",
+  type: "text",
+  autocompleteUrl: urls.rest.autocomplete.projectNames,
+};
+
+const libraryDesignFilter: FilterDefinition = {
+  title: "Library Design",
+  key: "LIBRARY_DESIGN",
+  type: "dropdown",
+  values: siteConfig.libraryDesigns,
+};
+
+export const caseFilters: FilterDefinition[] = [
   {
     title: "Assay",
     key: "ASSAY",
@@ -47,12 +61,7 @@ export var caseFilters: FilterDefinition[] = [
     type: "dropdown",
     values: siteConfig.pipelines,
   },
-  {
-    title: "Project",
-    key: "PROJECT",
-    type: "text",
-    autocompleteUrl: urls.rest.autocomplete.projectNames,
-  },
+  projectFilter,
   {
     title: "Requisition",
     key: "REQUISITION",
@@ -77,10 +86,10 @@ export var caseFilters: FilterDefinition[] = [
     type: "dropdown",
     values: yesNoOptions,
   },
-  {
-    title: "Library Design",
-    key: "LIBRARY_DESIGN",
-    type: "dropdown",
-    values: siteConfig.libraryDesigns,
-  },
+  libraryDesignFilter,
+];
+
+export const runLibraryFilters: FilterDefinition[] = [
+  projectFilter,
+  libraryDesignFilter,
 ];

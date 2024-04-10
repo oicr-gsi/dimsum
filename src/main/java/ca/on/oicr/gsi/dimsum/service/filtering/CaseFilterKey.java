@@ -37,7 +37,12 @@ public enum CaseFilterKey {
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),
   PROJECT(string -> kase -> kase.getProjects().stream()
-      .anyMatch(project -> project.getName().equalsIgnoreCase(string))),
+      .anyMatch(project -> project.getName().equalsIgnoreCase(string))) {
+    @Override
+    public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
+      return string -> sample -> sample.getProject().equalsIgnoreCase(string);
+    }
+  },
   REQUISITION(string -> kase -> kase.getRequisition().getName().toLowerCase().startsWith(string.toLowerCase())),
   REQUISITION_ID(string -> kase -> kase.getRequisition().getId() == Long.parseLong(string)),
   TEST(string -> {
@@ -82,9 +87,14 @@ public enum CaseFilterKey {
 },
   LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> test.getLibraryDesignCode().equals(string));
   }) {
-      @Override 
-      public Function<String, Predicate<Test>> testPredicate() {
-        return string -> test -> Objects.equals(test.getLibraryDesignCode(), string);
+    @Override 
+    public Function<String, Predicate<Test>> testPredicate() {
+      return string -> test -> Objects.equals(test.getLibraryDesignCode(), string);
+    }
+
+    @Override
+    public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
+      return string -> sample -> Objects.equals(sample.getLibraryDesignCode(), string);
     }
   };
   // @formatter:on
