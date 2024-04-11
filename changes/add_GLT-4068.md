@@ -1,1 +1,0 @@
-Case TAT report generated from the Cases list and uses the same filters that are applied to the list

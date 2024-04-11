@@ -7,6 +7,22 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.30.0] - 2024-04-11
+
+### Added
+
+* Case TAT report generated from the Cases list and uses the same filters that are applied to the list
+
+### Changed
+
+* Analysis review will be marked 'N/A' for cases where none of the deliverables require analysis review
+
+### Fixed
+
+* Library qualification and full-depth sequencing would be highlighted as incomplete if an item had
+  failed run QC with run-library QC left incomplete. These should be considered completed (failed)
+
+
 ## [1.29.0] - 2024-03-28
 
 ### Added
