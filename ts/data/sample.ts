@@ -30,7 +30,11 @@ import {
   nullIfUndefined,
 } from "../util/metrics";
 import { showErrorDialog } from "../component/dialog";
-import { caseFilters, latestActivitySort } from "../component/table-components";
+import {
+  caseFilters,
+  latestActivitySort,
+  runLibraryFilters,
+} from "../component/table-components";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
@@ -308,7 +312,7 @@ export function getLibraryQualificationsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
-    filters: includeSequencingAttributes ? caseFilters : undefined,
+    filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
     staticActions: [legendAction],
     bulkActions: [
       {
@@ -342,7 +346,7 @@ export function getFullDepthSequencingsDefinition(
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
-    filters: includeSequencingAttributes ? caseFilters : undefined,
+    filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
     staticActions: [legendAction],
     bulkActions: [
       {

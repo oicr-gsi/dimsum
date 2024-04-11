@@ -369,8 +369,6 @@ public class CaseService {
       data.setItems(Arrays.asList(completed));
     }
 
-
-
     data.setFilteredCount(data.getItems().size());
     data.setTotalCount(data.getItems().size());
     return data;
@@ -548,27 +546,38 @@ public class CaseService {
   }
 
   public TableData<Sample> getLibraryQualificationsForRun(String runName, int pageSize,
-      int pageNumber, SampleSort sort, boolean descending) {
-    return getRunLibraries(runName, pageSize, pageNumber, sort, descending,
-        RunAndLibraries::getLibraryQualifications);
+      int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters) {
+    return getRunLibraries(runName, pageSize, pageNumber, sort, descending, filters,
+        RunAndLibraries::getLibraryQualifications, MetricCategory.LIBRARY_QUALIFICATION);
   }
 
   public TableData<Sample> getFullDepthSequencingsForRun(String runName, int pageSize,
-      int pageNumber, SampleSort sort, boolean descending) {
-    return getRunLibraries(runName, pageSize, pageNumber, sort, descending,
-        RunAndLibraries::getFullDepthSequencings);
+      int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters) {
+    return getRunLibraries(runName, pageSize, pageNumber, sort, descending, filters,
+        RunAndLibraries::getFullDepthSequencings, MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
   private TableData<Sample> getRunLibraries(String runName, int pageSize,
-      int pageNumber, SampleSort sort, boolean descending,
-      Function<RunAndLibraries, Set<Sample>> getSamples) {
+      int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters,
+      Function<RunAndLibraries, Set<Sample>> getSamples, MetricCategory requestCategory) {
     RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
     Set<Sample> samples = runAndLibraries == null ? Collections.emptySet()
         : getSamples.apply(runAndLibraries);
+    Stream<Sample> stream = samples.stream();
+
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Sample>> filterMap =
+          buildFilterMap(filters, filter -> filter.samplePredicate(requestCategory));
+      for (Predicate<Sample> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    List<Sample> filteredSamples = stream.toList();
+
     TableData<Sample> data = new TableData<>();
     data.setTotalCount(samples.size());
-    data.setFilteredCount(samples.size());
-    data.setItems(samples.stream()
+    data.setFilteredCount(filteredSamples.size());
+    data.setItems(filteredSamples.stream()
         .sorted(descending ? sort.comparator().reversed() : sort.comparator())
         .skip(pageSize * (pageNumber - 1))
         .limit(pageSize)
