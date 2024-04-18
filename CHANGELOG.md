@@ -7,6 +7,14 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.31.0] - 2024-04-18
+
+### Added
+
+* Project and library design filters for Library Qualification and Full-Depth Sequencing tables on the
+  Run Details page
+
+
 ## [1.30.0] - 2024-04-11
 
 ### Added
