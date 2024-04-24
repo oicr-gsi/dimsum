@@ -189,7 +189,29 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       type: "number",
     },
   ],
-  filters: caseFilters,
+  filters: [
+    ...caseFilters,
+    {
+      title: "Started After",
+      key: "STARTED_AFTER",
+      type: "text",
+    },
+    {
+      title: "Started Before",
+      key: "STARTED_BEFORE",
+      type: "text",
+    },
+    {
+      title: "Completed After",
+      key: "COMPLETED_AFTER",
+      type: "text",
+    },
+    {
+      title: "Completed Before",
+      key: "COMPLETED_BEFORE",
+      type: "text",
+    },
+  ],
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => {
     if (kase.requisition.stopped || kase.requisition.paused) {

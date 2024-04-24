@@ -13,6 +13,7 @@ import { post } from "../util/requests";
 import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
+import { replaceUrlParams, updateUrlParams } from "../util/urls";
 
 type SortType = "number" | "text" | "date" | "custom";
 type FilterType = "text" | "dropdown";
@@ -221,6 +222,13 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private updateAcceptedFilter(key: string, value: string, add: boolean) {
+    if (this.isDateFilterKey(key)) {
+      const baseKey = key.split("_")[0];
+      this.acceptedFilters = this.acceptedFilters.filter(
+        (filter) => !filter.key.startsWith(baseKey)
+      );
+    }
+
     if (add) {
       this.addAcceptedFilter(key, value);
     } else {
@@ -228,6 +236,10 @@ export class TableBuilder<ParentType, ChildType> {
         (filter) => filter.key !== key || filter.value !== value
       );
     }
+  }
+
+  private isDateFilterKey(key: string): boolean {
+    return key.startsWith("STARTED_") || key.startsWith("COMPLETED_");
   }
 
   public clear() {
@@ -251,6 +263,7 @@ export class TableBuilder<ParentType, ChildType> {
     if (!this.definition.disablePageControls) {
       this.addSortControls(topControlsContainer);
       this.addFilterControls(topControlsContainer);
+      this.addDateFilterControls(topControlsContainer);
     }
     if (this.definition.bulkActions || this.definition.staticActions) {
       this.addActionButtons(topControlsContainer);
@@ -435,21 +448,29 @@ export class TableBuilder<ParentType, ChildType> {
     filterContainer.appendChild(filterIcon);
 
     // add pre-table build filters
-    for (var filter of this.acceptedFilters) {
-      filterContainer.appendChild(filter.element);
-    }
+    this.acceptedFilters
+      .filter((filter) => !this.isDateFilterKey(filter.key))
+      .forEach((filter) => {
+        filterContainer.appendChild(filter.element);
+      });
 
     let filterOptions: DropdownOption[] = [];
     this.definition.filters.forEach((filter) => {
-      switch (filter.type) {
-        case "dropdown":
-          filterOptions.push(this.makeDropdownFilter(filter, filterContainer));
-          break;
-        case "text":
-          filterOptions.push(this.makeTextInputFilter(filter, filterContainer));
-          break;
-        default:
-          throw new Error(`Unhandled filter type: ${filter.type}`);
+      if (!this.isDateFilterKey(filter.key)) {
+        switch (filter.type) {
+          case "dropdown":
+            filterOptions.push(
+              this.makeDropdownFilter(filter, filterContainer)
+            );
+            break;
+          case "text":
+            filterOptions.push(
+              this.makeTextInputFilter(filter, filterContainer)
+            );
+            break;
+          default:
+            throw new Error(`Unhandled filter type: ${filter.type}`);
+        }
       }
     });
 
@@ -558,6 +579,84 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
     });
+  }
+
+  private addDateFilterControls(container: HTMLElement) {
+    const dateDirections = ["Started", "Completed"];
+
+    dateDirections.forEach((direction) => {
+      const dateDiv = document.createElement("div");
+      dateDiv.className =
+        "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1";
+      const dateLabel = document.createElement("label");
+      dateLabel.htmlFor = `${direction.toLowerCase()}Date`;
+      dateLabel.textContent = `${direction}:`;
+      dateDiv.appendChild(dateLabel);
+      // dropdown for selecting 'before' or 'after'
+      const dateSelect = this.makeDateSelect(direction);
+      // input for selecting the date
+      const dateInput = this.makeDateInput(direction);
+      const logSelectedValues = () => {
+        const selectedDirection = direction.toUpperCase();
+        const selectedType = dateSelect.value.toUpperCase();
+        const selectedDate = dateInput.value;
+        // cleared if no date is selected
+        if (!selectedDate) {
+          const key = `${selectedDirection}_${selectedType}`;
+          const searchParams = new URLSearchParams(window.location.search);
+          if (searchParams.has(key)) {
+            searchParams.delete(key);
+            history.replaceState(null, "", "?" + searchParams.toString());
+            this.applyFilter(key, "", false);
+            this.reload(true);
+          }
+          return;
+        }
+        // resolve conflicting date input
+        const conflictingType = selectedType === "BEFORE" ? "AFTER" : "BEFORE";
+        const conflictingKey = `${selectedDirection}_${conflictingType}`;
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has(conflictingKey)) {
+          searchParams.delete(conflictingKey);
+          history.replaceState(null, "", "?" + searchParams.toString());
+        }
+        const key = `${selectedDirection}_${selectedType}`;
+        replaceUrlParams(key, selectedDate);
+        this.applyFilter(key, selectedDate, true);
+      };
+
+      dateSelect.addEventListener("change", logSelectedValues);
+      dateInput.addEventListener("change", logSelectedValues);
+      dateInput.addEventListener("input", logSelectedValues);
+
+      dateDiv.appendChild(dateSelect);
+      dateDiv.appendChild(dateInput);
+      container.appendChild(dateDiv);
+    });
+  }
+
+  private makeDateSelect(direction: string): HTMLSelectElement {
+    const dateSelect = document.createElement("select");
+    dateSelect.id = `${direction.toLowerCase()}Date`;
+    dateSelect.className =
+      "text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1";
+    // options for 'before' or 'after'
+    const dateTypes = ["before", "after"];
+    dateTypes.forEach((type) => {
+      const option = document.createElement("option");
+      option.value = type.replace(" ", "").toLowerCase();
+      option.textContent = type;
+      dateSelect.appendChild(option);
+    });
+
+    return dateSelect;
+  }
+
+  private makeDateInput(direction: string): HTMLInputElement {
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    dateInput.id = `${direction.toLowerCase()}DateInput`;
+    return dateInput;
   }
 
   private addPagingControls(container: HTMLElement) {
