@@ -1,14 +1,8 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,13 +20,13 @@ import org.mockito.MockitoAnnotations;
 import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.dimsum.data.IssueState;
 import ca.on.oicr.gsi.cardea.data.Metric;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.data.IssueState;
 
 public class NotificationManagerTest {
 
@@ -377,7 +371,7 @@ public class NotificationManagerTest {
 
   private Sample makeSample(boolean metricAvailable, boolean qcDone, boolean dataReviewDone) {
     Sample sample = mock(Sample.class);
-    when(sample.getAssayId()).thenReturn(ASSAY_ID);
+    when(sample.getAssayIds()).thenReturn(Collections.singleton(ASSAY_ID));
     when(sample.getMeanInsertSize()).thenReturn(metricAvailable ? BigDecimal.TEN : null);
     when(sample.getQcDate()).thenReturn(qcDone ? arbitraryTimestamp : null);
     when(sample.getDataReviewDate()).thenReturn(dataReviewDone ? arbitraryTimestamp : null);

@@ -904,9 +904,7 @@ function generateAnalysisReviewMetricColumns(
   if (!cases) {
     return [];
   }
-  const assayIds = cases
-    .map((kase) => kase.requisition.assayId || 0)
-    .filter((assayId) => assayId > 0);
+  const assayIds = cases.map((kase) => kase.assayId);
   const metricNames = getMetricNames("ANALYSIS_REVIEW", assayIds);
   return metricNames.map((metricName) => {
     return {
@@ -924,7 +922,7 @@ function generateAnalysisReviewMetricColumns(
           kase.qcGroups.forEach((qcGroup) => {
             const metrics = getMatchingAnalysisReviewMetrics(
               metricName,
-              kase.requisition,
+              kase,
               qcGroup
             );
             if (metrics && metrics.length) {
@@ -984,7 +982,7 @@ function generateAnalysisReviewMetricColumns(
           const qcGroup = kase.qcGroups[i];
           const metrics = getMatchingAnalysisReviewMetrics(
             metricName,
-            kase.requisition,
+            kase,
             qcGroup
           );
           if (!metrics || !metrics.length) {
@@ -1006,15 +1004,10 @@ function generateAnalysisReviewMetricColumns(
 
 function getMatchingAnalysisReviewMetrics(
   metricName: string,
-  requisition: Requisition,
+  kase: Case,
   qcGroup: AnalysisQcGroup
 ): Metric[] | null {
-  if (!requisition.assayId) {
-    return null;
-  }
-  return siteConfig.assaysById[requisition.assayId].metricCategories[
-    "ANALYSIS_REVIEW"
-  ]
+  return siteConfig.assaysById[kase.assayId].metricCategories["ANALYSIS_REVIEW"]
     .filter((subcategory) => subcategoryApplies(subcategory, qcGroup))
     .flatMap((subcategory) => subcategory.metrics)
     .filter(
@@ -1282,7 +1275,7 @@ export function addSampleIcons(
 ) {
   samples.forEach((sample, i) => {
     let status = getQcStatus(sample);
-    if (status === qcStatuses.passed && sample.assayId !== assayId) {
+    if (status === qcStatuses.passed && !sample.assayIds?.includes(assayId)) {
       status = qcStatuses.passedDifferentAssay;
     }
     const icon = makeIcon(status.icon);
@@ -1369,10 +1362,10 @@ export function makeSampleTooltip(sample: Sample) {
         sample.requisitionName
       );
     }
-    if (sample.assayId) {
-      const assay = siteConfig.assaysById[sample.assayId];
-      addTooltipRow(bottomContainer, "Assay", assay.name);
-    }
+    sample.assayIds?.forEach((assayId, index) => {
+      const assay = siteConfig.assaysById[assayId];
+      addTooltipRow(bottomContainer, index === 0 ? "Assay" : "", assay.name);
+    });
     fragment.appendChild(topContainer);
     fragment.appendChild(bottomContainer);
   };
@@ -1661,18 +1654,14 @@ function getTargets(kase: Case) {
 
 export function getAnalysisMetricCellHighlight(
   qcGroup: AnalysisQcGroup,
-  requisition: Requisition,
+  kase: Case,
   metricName: string
 ): CellStatus | null {
   if (metricName === "Trimming; Minimum base quality Q") {
     return null;
   }
   let anyApplicable = false;
-  const metrics = getMatchingAnalysisReviewMetrics(
-    metricName,
-    requisition,
-    qcGroup
-  );
+  const metrics = getMatchingAnalysisReviewMetrics(metricName, kase, qcGroup);
   if (!metrics || !metrics.length) {
     return null;
   }

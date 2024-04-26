@@ -1,7 +1,7 @@
 export interface Requisition {
   id: number;
   name: string;
-  assayId?: number;
+  assayIds?: number[];
   stopped: boolean;
   paused: boolean;
   stopReason?: string;
