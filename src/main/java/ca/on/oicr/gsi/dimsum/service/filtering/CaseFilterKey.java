@@ -4,6 +4,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
@@ -34,6 +36,20 @@ public enum CaseFilterKey {
       return string -> getState(string).samplePredicate(requestCategory);
     }
   },
+  PENDING_RELEASE_DELIVERABLE(string -> kase -> {
+    for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
+      if (!Boolean.TRUE.equals(caseDeliverable.getReleaseApprovalQcPassed())) {
+        // No releases pending for this deliverable type
+        continue;
+      }
+      for (CaseRelease release : caseDeliverable.getReleases()) {
+        if (Objects.equals(string, release.getDeliverable())) {
+          return !Boolean.TRUE.equals(release.getQcPassed());
+        }
+      }
+    }
+    return false;
+  }),
   PIPELINE(string -> kase -> kase.getProjects().stream()
       .anyMatch(project -> project.getPipeline().equals(string))),
   PROJECT(string -> kase -> kase.getProjects().stream()

@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
@@ -689,9 +690,15 @@ public class CaseService {
         .map(Project::getPipeline)
         .collect(Collectors.toSet()));
     frontEndConfig.setAssaysById(caseData.getAssaysById());
-    frontEndConfig
-        .setLibraryDesigns(cacheUpdatedCases.stream().flatMap(kase -> kase.getTests().stream())
-            .map(Test::getLibraryDesignCode).collect(Collectors.toSet()));
+    frontEndConfig.setLibraryDesigns(cacheUpdatedCases.stream()
+        .flatMap(kase -> kase.getTests().stream())
+        .map(Test::getLibraryDesignCode)
+        .collect(Collectors.toSet()));
+    frontEndConfig.setDeliverables(caseData.getCases().stream()
+        .flatMap(kase -> kase.getDeliverables().stream())
+        .flatMap(deliverable -> deliverable.getReleases().stream())
+        .map(CaseRelease::getDeliverable)
+        .collect(Collectors.toSet()));
   }
 
   public void cacheSignoffs(Collection<NabuSavedSignoff> signoffs) {

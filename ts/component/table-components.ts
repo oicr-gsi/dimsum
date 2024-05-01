@@ -44,6 +44,12 @@ export const caseFilters: FilterDefinition[] = [
     values: siteConfig.pendingStates,
   },
   {
+    title: "Pending Release",
+    key: "PENDING_RELEASE_DELIVERABLE",
+    type: "dropdown",
+    values: siteConfig.deliverables,
+  },
+  {
     title: "Completed",
     key: "COMPLETED",
     type: "dropdown",
