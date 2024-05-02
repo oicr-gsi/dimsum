@@ -13,10 +13,10 @@ import { post } from "../util/requests";
 import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
-import { replaceUrlParams, updateUrlParams } from "../util/urls";
+import { DateInput } from "./date-input";
 
 type SortType = "number" | "text" | "date" | "custom";
-type FilterType = "text" | "dropdown";
+type FilterType = "text" | "dropdown" | "date";
 
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
@@ -47,7 +47,7 @@ export interface Sort extends SortDefinition {
 export interface FilterDefinition {
   title: string; // user friendly label
   key: string; // internal use
-  type: FilterType; // either text or dropdown
+  type: FilterType; // either text or dropdown or date
   values?: string[]; // required for dropdown filters
   autocompleteUrl?: string; // required for text filters w/autocomplete
 }
@@ -263,7 +263,6 @@ export class TableBuilder<ParentType, ChildType> {
     if (!this.definition.disablePageControls) {
       this.addSortControls(topControlsContainer);
       this.addFilterControls(topControlsContainer);
-      this.addDateFilterControls(topControlsContainer);
     }
     if (this.definition.bulkActions || this.definition.staticActions) {
       this.addActionButtons(topControlsContainer);
@@ -435,7 +434,12 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
-    filterContainer.classList.add("flex-auto", "items-center", "space-x-2");
+    filterContainer.classList.add(
+      "flex",
+      "flex-auto",
+      "items-center",
+      "space-x-2"
+    );
     container.appendChild(filterContainer);
     if (!this.definition.filters) {
       // no filters for this table
@@ -448,24 +452,30 @@ export class TableBuilder<ParentType, ChildType> {
     filterContainer.appendChild(filterIcon);
 
     // add pre-table build filters
-    this.acceptedFilters
-      .filter((filter) => !this.isDateFilterKey(filter.key))
-      .forEach((filter) => {
-        filterContainer.appendChild(filter.element);
-      });
+    this.acceptedFilters.forEach((filter) => {
+      filterContainer.appendChild(filter.element);
+    });
 
     let filterOptions: DropdownOption[] = [];
+    let addedDateFilters: string[] = [];
     this.definition.filters.forEach((filter) => {
-      if (!this.isDateFilterKey(filter.key)) {
+      if (filter.key && this.isDateFilterKey(filter.key)) {
+        const parts = filter.key.split("_");
+        const type = parts[0];
+        if (!addedDateFilters.includes(type)) {
+          this.makeDateFilter(type, filterContainer);
+          addedDateFilters.push(type);
+        }
+      } else {
         switch (filter.type) {
-          case "dropdown":
-            filterOptions.push(
-              this.makeDropdownFilter(filter, filterContainer)
-            );
-            break;
           case "text":
             filterOptions.push(
               this.makeTextInputFilter(filter, filterContainer)
+            );
+            break;
+          case "dropdown":
+            filterOptions.push(
+              this.makeDropdownFilter(filter, filterContainer)
             );
             break;
           default:
@@ -473,14 +483,36 @@ export class TableBuilder<ParentType, ChildType> {
         }
       }
     });
+    if (filterOptions.length > 0) {
+      const addFilterDropdown = new Dropdown(
+        filterOptions,
+        false,
+        undefined,
+        "+ filter"
+      );
+      filterContainer.appendChild(addFilterDropdown.getContainerTag());
+    }
+  }
 
-    const addFilterDropdown = new Dropdown(
-      filterOptions,
-      false,
-      undefined,
-      "+ filter"
+  private makeDateFilter(type: string, filterContainer: HTMLElement) {
+    const dateFilterControl = new DateInput(
+      `${type}`,
+      (key, value, shouldReload = true) => {
+        if (value) {
+          this.applyFilter(key, value, true);
+        } else {
+          this.applyFilter(key, value, false);
+        }
+        if (shouldReload) {
+          this.reload(true);
+        }
+      }
     );
-    filterContainer.appendChild(addFilterDropdown.getContainerTag());
+    dateFilterControl.container.addEventListener("change", () =>
+      this.reload(true)
+    );
+    dateFilterControl.container.classList.add("flex-shrink-0");
+    filterContainer.appendChild(dateFilterControl.container);
   }
 
   private makeDropdownFilter(
@@ -579,84 +611,6 @@ export class TableBuilder<ParentType, ChildType> {
         filterContainer.lastChild
       );
     });
-  }
-
-  private addDateFilterControls(container: HTMLElement) {
-    const dateDirections = ["Started", "Completed"];
-
-    dateDirections.forEach((direction) => {
-      const dateDiv = document.createElement("div");
-      dateDiv.className =
-        "font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1";
-      const dateLabel = document.createElement("label");
-      dateLabel.htmlFor = `${direction.toLowerCase()}Date`;
-      dateLabel.textContent = `${direction}:`;
-      dateDiv.appendChild(dateLabel);
-      // dropdown for selecting 'before' or 'after'
-      const dateSelect = this.makeDateSelect(direction);
-      // input for selecting the date
-      const dateInput = this.makeDateInput(direction);
-      const logSelectedValues = () => {
-        const selectedDirection = direction.toUpperCase();
-        const selectedType = dateSelect.value.toUpperCase();
-        const selectedDate = dateInput.value;
-        // cleared if no date is selected
-        if (!selectedDate) {
-          const key = `${selectedDirection}_${selectedType}`;
-          const searchParams = new URLSearchParams(window.location.search);
-          if (searchParams.has(key)) {
-            searchParams.delete(key);
-            history.replaceState(null, "", "?" + searchParams.toString());
-            this.applyFilter(key, "", false);
-            this.reload(true);
-          }
-          return;
-        }
-        // resolve conflicting date input
-        const conflictingType = selectedType === "BEFORE" ? "AFTER" : "BEFORE";
-        const conflictingKey = `${selectedDirection}_${conflictingType}`;
-        const searchParams = new URLSearchParams(window.location.search);
-        if (searchParams.has(conflictingKey)) {
-          searchParams.delete(conflictingKey);
-          history.replaceState(null, "", "?" + searchParams.toString());
-        }
-        const key = `${selectedDirection}_${selectedType}`;
-        replaceUrlParams(key, selectedDate);
-        this.applyFilter(key, selectedDate, true);
-      };
-
-      dateSelect.addEventListener("change", logSelectedValues);
-      dateInput.addEventListener("change", logSelectedValues);
-      dateInput.addEventListener("input", logSelectedValues);
-
-      dateDiv.appendChild(dateSelect);
-      dateDiv.appendChild(dateInput);
-      container.appendChild(dateDiv);
-    });
-  }
-
-  private makeDateSelect(direction: string): HTMLSelectElement {
-    const dateSelect = document.createElement("select");
-    dateSelect.id = `${direction.toLowerCase()}Date`;
-    dateSelect.className =
-      "text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1";
-    // options for 'before' or 'after'
-    const dateTypes = ["before", "after"];
-    dateTypes.forEach((type) => {
-      const option = document.createElement("option");
-      option.value = type.replace(" ", "").toLowerCase();
-      option.textContent = type;
-      dateSelect.appendChild(option);
-    });
-
-    return dateSelect;
-  }
-
-  private makeDateInput(direction: string): HTMLInputElement {
-    const dateInput = document.createElement("input");
-    dateInput.type = "date";
-    dateInput.id = `${direction.toLowerCase()}DateInput`;
-    return dateInput;
   }
 
   private addPagingControls(container: HTMLElement) {

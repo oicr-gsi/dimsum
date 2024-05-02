@@ -319,7 +319,7 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), true);
     markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
     addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
     return kase;
   }
@@ -331,7 +331,7 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), true);
     markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
     CaseDeliverable deliverable =
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
     markAnalysisReview(deliverable, true);
@@ -345,7 +345,7 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), true);
     markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
     CaseDeliverable deliverable =
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
     markAnalysisReview(deliverable, true);
@@ -360,7 +360,7 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), true);
     markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
     return kase;
   }
 
@@ -398,7 +398,7 @@ public class MockCase {
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
     markAnalysisReview(deliverable, true);
     markReleaseApproval(deliverable, true);
-    markRelease(deliverable.getReleases().get(0), true);
+    markRelease(deliverable.getReleases().get(0), true, null);
     return kase;
   }
 
@@ -453,6 +453,9 @@ public class MockCase {
   private static Case makeCase(String donorName, String assayName, String projectName,
       String requisitionName, int caseNumber, LocalDate startDate,
       LocalDate completionDate) {
+    if (startDate == null) {
+      startDate = LocalDate.now();
+    }
     Case kase = mock(Case.class);
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(donorName);
@@ -546,10 +549,14 @@ public class MockCase {
     when(deliverable.getReleaseApprovalQcDate()).thenReturn(LocalDate.now());
   }
 
-  private static void markRelease(CaseRelease release, Boolean qcPassed) {
+  private static void markRelease(CaseRelease release, Boolean qcPassed, LocalDate qcDate) {
     when(release.getQcPassed()).thenReturn(qcPassed);
     when(release.getQcUser()).thenReturn("User");
-    when(release.getQcDate()).thenReturn(LocalDate.now());
+    if (qcDate != null) {
+      when(release.getQcDate()).thenReturn(qcDate);
+    } else {
+      when(release.getQcDate()).thenReturn(LocalDate.now());
+    }
   }
 
   private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,

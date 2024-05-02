@@ -167,9 +167,6 @@ public enum CaseFilterKey {
   }
 
   private static LocalDate getCompletionDate(Case x) {
-    if (x.isStopped()) {
-      return null;
-    }
     List<CaseDeliverable> deliverables = x.getDeliverables();
     if (deliverables.isEmpty()) {
       return null;

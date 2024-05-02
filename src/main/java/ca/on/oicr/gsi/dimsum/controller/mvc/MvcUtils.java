@@ -19,10 +19,6 @@ public class MvcUtils {
 
   private static final String BEFORE_DATE_KEY = "BEFORE_DATE";
   private static final String AFTER_DATE_KEY = "AFTER_DATE";
-  private static final String STARTED_BEFORE_KEY = "STARTED_BEFORE";
-  private static final String STARTED_AFTER_KEY = "STARTED_AFTER";
-  private static final String COMPLETED_BEFORE_KEY = "COMPLETED_BEFORE";
-  private static final String COMPLETED_AFTER_KEY = "COMPLETED_AFTER";
 
   public static void validateDataQuery(DataQuery query) {
     if (query.getPageNumber() < 1) {
@@ -130,22 +126,6 @@ public class MvcUtils {
         .map(KeyValuePair::getValue)
         .findFirst().orElse(null);
     return value == null ? null : LocalDate.parse(value);
-  }
-
-  public static LocalDate parseStartedBeforeDate(DataQuery query) {
-    return parseCaseDateFilterValue(query, STARTED_BEFORE_KEY);
-  }
-
-  public static LocalDate parseStartedAfterDate(DataQuery query) {
-    return parseCaseDateFilterValue(query, STARTED_AFTER_KEY);
-  }
-
-  public static LocalDate parseCompletedBeforeDate(DataQuery query) {
-    return parseCaseDateFilterValue(query, COMPLETED_BEFORE_KEY);
-  }
-
-  public static LocalDate parseCompletedAfterDate(DataQuery query) {
-    return parseCaseDateFilterValue(query, COMPLETED_AFTER_KEY);
   }
 
   public static LocalDate parseAfterDate(DataQuery query) {
