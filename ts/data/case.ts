@@ -196,19 +196,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     legendAction,
     {
       title: "TAT Report",
-      handler: (
-        filters: { key: string; value: string }[],
-        baseFilter: { key: string; value: string } | undefined
-      ) => {
-        const joinedFilters = [...filters];
-        if (baseFilter !== undefined) {
-          joinedFilters.push(baseFilter);
-        }
-        postDownload(
-          urls.rest.downloads.reports("case-tat-report"),
-          joinedFilters
-        );
-      },
+      handler: showTatReportDialog,
     },
   ],
   bulkActions: [
@@ -1840,4 +1828,18 @@ function downloadCaseReport(report: string, formatOptions: any, items: Case[]) {
   const params = Object.assign({}, formatOptions);
   params.caseIds = items.map((kase) => kase.id).join(", ");
   postDownload(urls.rest.downloads.reports(report), params);
+}
+
+function showTatReportDialog(
+  filters: { key: string; value: string }[],
+  baseFilter: { key: string; value: string } | undefined
+) {
+  const joinedFilters = [...filters];
+  if (baseFilter !== undefined) {
+    joinedFilters.push(baseFilter);
+  }
+  const params = {
+    filters: joinedFilters,
+  };
+  postDownload(urls.rest.downloads.reports("case-tat-report"), params);
 }

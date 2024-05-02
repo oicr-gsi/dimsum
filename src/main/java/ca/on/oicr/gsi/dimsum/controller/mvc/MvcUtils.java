@@ -72,15 +72,18 @@ public class MvcUtils {
       return null;
     }
     return queryFilters.stream().map(MvcUtils::parseCaseFilter).toList();
-
   }
 
   private static CaseFilter parseCaseFilter(KeyValuePair pair) {
+    return parseCaseFilter(pair.getKey(), pair.getValue());
+  }
+
+  public static CaseFilter parseCaseFilter(String key, String value) {
     try {
-      CaseFilterKey key = CaseFilterKey.valueOf(pair.getKey());
-      return new CaseFilter(key, pair.getValue());
+      CaseFilterKey filterKey = CaseFilterKey.valueOf(key);
+      return new CaseFilter(filterKey, value);
     } catch (IllegalArgumentException e) {
-      throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
+      throw new BadRequestException(String.format("Invalid filter key: %s", key));
     }
   }
 
