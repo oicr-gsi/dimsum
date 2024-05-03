@@ -143,14 +143,13 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   return {
     title: "Name",
     addParentContents(sample, fragment) {
+      const name =
+        sample.name +
+        (!includeRun && sample.sequencingLane
+          ? " (L" + sample.sequencingLane + ")"
+          : "");
       fragment.appendChild(
-        makeNameDiv(
-          sample.name +
-            (!includeRun && sample.sequencingLane
-              ? " (L" + sample.sequencingLane + ")"
-              : ""),
-          urls.miso.sample(sample.id)
-        )
+        makeNameDiv(name, urls.miso.sample(sample.id), undefined, sample.name)
       );
       if (includeRun && sample.run) {
         const runName = sample.run.name;
