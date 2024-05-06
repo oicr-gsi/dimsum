@@ -12,13 +12,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
+import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
-import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
-import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.util.SampleUtils;
@@ -29,93 +28,114 @@ import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
 
 public class CaseTatReport extends Report {
 
-  private static class RowData {
-
-    private final Case kase;
-    private final Test test;
-
-    public RowData(Case kase, Test test) {
-      this.kase = kase;
-      this.test = test;
-    }
-
-    public Case getCase() {
-      return kase;
-    }
-
-    public Test getTest() {
-      return test;
-    }
+  private static record RowData(Case kase, Test test, CaseDeliverable clinical,
+      CaseDeliverable dataRelease) {
   }
 
   private static final ReportSection<RowData> caseSection =
-      new TableReportSection<>("Case Report",
+      new TableReportSection<>("Case TAT",
           Arrays.asList(
-              Column.forString("Case ID", x -> x.getCase().getId()),
+              Column.forString("Case ID", x -> x.kase().getId()),
               Column.forString("Projects",
-                  x -> getSortedProjectNameOrPipeline(x.getCase(), Project::getName)),
+                  x -> getSortedProjectNameOrPipeline(x.kase(), Project::getName)),
               Column.forString("Pipeline",
-                  x -> getSortedProjectNameOrPipeline(x.getCase(), Project::getPipeline)),
-              Column.forString("Requisition", x -> x.getCase().getRequisition().getName()),
-              Column.forString("Assay", x -> x.getCase().getAssayName()),
+                  x -> getSortedProjectNameOrPipeline(x.kase(), Project::getPipeline)),
+              Column.forString("Requisition", x -> x.kase().getRequisition().getName()),
+              Column.forString("Assay", x -> x.kase().getAssayName()),
               Column.forString("Start Date",
-                  x -> x.getCase().getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
+                  x -> x.kase().getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
               Column.forString("Receipt Completed",
-                  x -> findLatestCompletionDate(x.getCase().getReceipts())),
-              Column.forInteger("Receipt Days", x -> x.getCase().getReceiptDaysSpent()),
-              Column.forString("Test", x -> x.getTest().getName()),
+                  x -> findLatestCompletionDate(x.kase().getReceipts())),
+              Column.forInteger("Receipt Days", x -> x.kase().getReceiptDaysSpent()),
+              Column.forString("Test", x -> x.test().getName()),
               Column.forString("Supplemental Only",
-                  x -> isSupplementalOnly(x.getTest(), x.getCase().getRequisition()) ? "Yes"
+                  x -> isSupplementalOnly(x.test(), x.kase().getRequisition()) ? "Yes"
                       : "No"),
               Column.forString("Extraction Completed",
-                  x -> findLatestCompletionDate(x.getTest().getExtractions())),
-              Column.forInteger("Extraction Days", x -> x.getTest().getExtractionDaysSpent()),
+                  x -> findLatestCompletionDate(x.test().getExtractions())),
+              Column.forInteger("Extraction Days", x -> x.test().getExtractionDaysSpent()),
               Column.forString("Library Prep Completed",
-                  x -> findLatestCompletionDate(x.getTest().getLibraryPreparations())),
+                  x -> findLatestCompletionDate(x.test().getLibraryPreparations())),
               Column.forInteger("Library Prep. Days",
-                  x -> x.getTest().getLibraryPreparationDaysSpent()),
+                  x -> x.test().getLibraryPreparationDaysSpent()),
               Column.forString("Library Qual Completed",
-                  x -> findLatestCompletionDate(x.getTest().getLibraryQualifications())),
+                  x -> findLatestCompletionDate(x.test().getLibraryQualifications())),
               Column.forInteger("Library Qual. Days",
-                  x -> x.getTest().getLibraryQualificationDaysSpent()),
+                  x -> x.test().getLibraryQualificationDaysSpent()),
               Column.forString("Full-Depth Completed",
-                  x -> findLatestCompletionDate(x.getTest().getFullDepthSequencings())),
+                  x -> findLatestCompletionDate(x.test().getFullDepthSequencings())),
               Column.forInteger("Full-Depth Days",
-                  x -> x.getTest().getFullDepthSequencingDaysSpent()),
-              Column.forString("Analysis Review Completed",
-                  x -> getMaxDateFromDeliverables(x.getCase(),
+                  x -> x.test().getFullDepthSequencingDaysSpent()),
+              // Clinical Report columns
+              Column.forString("Clinical Report (CR)",
+                  x -> hasDeliverableType(x, DeliverableType.CLINICAL_REPORT)),
+              Column.forString("CR Analysis Review Completed",
+                  x -> getAnalysisReviewCompletedDate(x.clinical())),
+              Column.forInteger("CR Analysis Review Days",
+                  x -> x.clinical() == null ? null : x.clinical().getAnalysisReviewDaysSpent()),
+              Column.forString("CR Release Approval Completed",
+                  x -> getReleaseApprovalCompletedDate(x.clinical())),
+              Column.forInteger("CR Release Approval Days",
+                  x -> x.clinical() == null ? null : x.clinical().getReleaseApprovalDaysSpent()),
+              Column.forString("CR Release Completed", x -> getCompletionDate(x.clinical())),
+              Column.forInteger("CR Release Days",
+                  x -> x.clinical() == null ? null : x.clinical().getReleaseDaysSpent()),
+              Column.forInteger("CR Total Days",
+                  x -> x.clinical() == null ? null : x.clinical().getDeliverableDaysSpent()),
+              // Data Release columns
+              Column.forString("Data Release (DR)",
+                  x -> hasDeliverableType(x, DeliverableType.DATA_RELEASE)),
+              Column.forString("DR Analysis Review Completed",
+                  x -> getAnalysisReviewCompletedDate(x.dataRelease())),
+              Column.forInteger("DR Analysis Review Days",
+                  x -> x.dataRelease() == null ? null
+                      : x.dataRelease().getAnalysisReviewDaysSpent()),
+              Column.forString("DR Release Approval Completed",
+                  x -> getReleaseApprovalCompletedDate(x.dataRelease())),
+              Column.forInteger("DR Release Approval Days",
+                  x -> x.dataRelease() == null ? null
+                      : x.dataRelease().getReleaseApprovalDaysSpent()),
+              Column.forString("DR Release Completed", x -> getCompletionDate(x.dataRelease())),
+              Column.forInteger("DR Release Days",
+                  x -> x.dataRelease() == null ? null : x.dataRelease().getReleaseDaysSpent()),
+              Column.forInteger("DR Total Days",
+                  x -> x.dataRelease() == null ? null : x.dataRelease().getDeliverableDaysSpent()),
+              // Combined (case-level) columns
+              Column.forString("ALL Analysis Review Completed",
+                  x -> getGateCompletedDate(x, CaseDeliverable::getAnalysisReviewQcPassed,
                       CaseDeliverable::getAnalysisReviewQcDate)),
-              Column.forInteger("Analysis Review Days",
-                  x -> x.getCase().getAnalysisReviewDaysSpent()),
-              Column.forString("Release Approval Completed",
-                  x -> getMaxDateFromDeliverables(x.getCase(),
+              Column.forInteger("ALL Analysis Review Days",
+                  x -> x.kase().getAnalysisReviewDaysSpent()),
+              Column.forString("ALL Release Approval Completed",
+                  x -> getGateCompletedDate(x, CaseDeliverable::getReleaseApprovalQcPassed,
                       CaseDeliverable::getReleaseApprovalQcDate)),
-              Column.forInteger("Release Approval Days",
-                  x -> x.getCase().getReleaseApprovalDaysSpent()),
-              Column.forString("Release Completed", x -> {
-                if (!x.getCase().isStopped()) {
-                  return getCompletionDate(x.getCase());
-                }
-                List<LocalDate> dates = x.getCase().getDeliverables().stream()
-                    .flatMap(deliverable -> deliverable.getReleases().stream())
-                    .map(CaseRelease::getQcDate)
-                    .collect(Collectors.toList());
-                if (dates.contains(null)) {
-                  return null;
-                }
-                return dates.stream().max(LocalDate::compareTo)
-                    .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(null);
-              }),
-              Column.forInteger("Release Days", x -> x.getCase().getReleaseDaysSpent()),
-              Column.forString("Completion Date", x -> getCompletionDate(x.getCase())),
-              Column.forInteger("Total Days", x -> x.getCase().getCaseDaysSpent()))) {
+              Column.forInteger("ALL Release Approval Days",
+                  x -> x.kase().getReleaseApprovalDaysSpent()),
+              Column.forString("ALL Release Completed", CaseTatReport::getCompletionDate),
+              Column.forInteger("ALL Release Days", x -> x.kase().getReleaseDaysSpent()),
+              Column.forInteger("ALL Total Days", x -> x.kase().getCaseDaysSpent()),
+              Column.forString("Stopped", x -> x.kase().isStopped() ? "YES" : "no"))) {
 
         @Override
         public List<RowData> getData(CaseService caseService, JsonNode parameters) {
           List<CaseFilter> filters = convertParametersToFilters(parameters);
           return caseService.getCaseStream(filters)
-              .flatMap(kase -> kase.getTests().stream().map(test -> new RowData(kase, test)))
+              .flatMap(kase -> kase.getTests().stream().map(test -> {
+                CaseDeliverable clinical =
+                    getDeliverableType(kase, DeliverableType.CLINICAL_REPORT);
+                CaseDeliverable dataRelease =
+                    getDeliverableType(kase, DeliverableType.DATA_RELEASE);
+                return new RowData(kase, test, clinical, dataRelease);
+              }))
               .collect(Collectors.toList());
+        }
+
+        private static CaseDeliverable getDeliverableType(Case kase,
+            DeliverableType deliverableType) {
+          return kase.getDeliverables().stream()
+              .filter(x -> x.getDeliverableType() == deliverableType)
+              .findFirst()
+              .orElse(null);
         }
       };
 
@@ -134,19 +154,15 @@ public class CaseTatReport extends Report {
   }
 
   private static List<CaseFilter> convertParametersToFilters(JsonNode parameters) {
-    DataQuery dataQuery = new DataQuery();
-    List<KeyValuePair> kvpFilters = new ArrayList<>();
-
-    if (parameters.isArray()) {
-      for (JsonNode parameter : parameters) {
-        String key = parameter.get("key").asText();
-        String value = parameter.get("value").asText();
-        kvpFilters.add(new KeyValuePair(key, value));
+    List<CaseFilter> caseFilters = new ArrayList<>();
+    JsonNode filtersParam = parameters.get("filters");
+    if (filtersParam.isArray()) {
+      for (JsonNode filterParam : filtersParam) {
+        String key = filterParam.get("key").asText();
+        String value = filterParam.get("value").asText();
+        caseFilters.add(MvcUtils.parseCaseFilter(key, value));
       }
     }
-
-    dataQuery.setFilters(kvpFilters);
-    List<CaseFilter> caseFilters = MvcUtils.parseCaseFilters(dataQuery);
     return caseFilters;
   }
 
@@ -190,27 +206,50 @@ public class CaseTatReport extends Report {
     return latestDate != null ? latestDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null;
   }
 
-  private static String getMaxDateFromDeliverables(Case x,
+  private static String getGateCompletedDate(RowData rowData,
+      Function<CaseDeliverable, Boolean> statusExtractor,
       Function<CaseDeliverable, LocalDate> dateExtractor) {
-    List<LocalDate> dates = x.getDeliverables().stream()
-        .map(dateExtractor)
-        .collect(Collectors.toList());
-    if (dates.contains(null)) {
+    if (rowData.kase().getDeliverables().stream()
+        .anyMatch(deliverable -> !Boolean.TRUE.equals(statusExtractor.apply(deliverable)))) {
       return null;
     }
-    return dates.stream().max(LocalDate::compareTo)
-        .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE)).orElse(null);
+    return formatDate(rowData.kase().getDeliverables().stream()
+        .map(dateExtractor)
+        .max(LocalDate::compareTo)
+        .orElse(null));
   }
 
-  private static String getCompletionDate(Case x) {
-    if (x.isStopped()) {
-      return "STOPPED";
-    }
-    List<CaseDeliverable> deliverables = x.getDeliverables();
-    if (deliverables.isEmpty()) {
+  private static String getAnalysisReviewCompletedDate(CaseDeliverable deliverable) {
+    if (deliverable == null || !Boolean.TRUE.equals(deliverable.getAnalysisReviewQcPassed())) {
       return null;
     }
-    List<CaseRelease> releases = deliverables.stream()
+    return formatDate(deliverable.getAnalysisReviewQcDate());
+  }
+
+  private static String getReleaseApprovalCompletedDate(CaseDeliverable deliverable) {
+    if (deliverable == null || !Boolean.TRUE.equals(deliverable.getReleaseApprovalQcPassed())) {
+      return null;
+    }
+    return formatDate(deliverable.getReleaseApprovalQcDate());
+  }
+
+  private static String getCompletionDate(CaseDeliverable deliverable) {
+    if (deliverable == null || deliverable.getReleases().stream()
+        .anyMatch(release -> !Boolean.TRUE.equals(release.getQcPassed()))) {
+      return null;
+    }
+
+    return formatDate(deliverable.getReleases().stream()
+        .map(CaseRelease::getQcDate)
+        .max(LocalDate::compareTo)
+        .orElse(null));
+  }
+
+  private static String getCompletionDate(RowData x) {
+    if (x.kase.getDeliverables().isEmpty()) {
+      return null;
+    }
+    List<CaseRelease> releases = x.kase().getDeliverables().stream()
         .flatMap(deliverable -> deliverable.getReleases().stream())
         .collect(Collectors.toList());
     if (releases.isEmpty()) {
@@ -220,10 +259,18 @@ public class CaseTatReport extends Report {
         .anyMatch(release -> release.getQcPassed() == null || !release.getQcPassed())) {
       return null;
     }
-    LocalDate latestQcDate = releases.stream()
+    return formatDate(releases.stream()
         .map(CaseRelease::getQcDate)
         .max(LocalDate::compareTo)
-        .orElse(null);
-    return latestQcDate != null ? latestQcDate.toString() : null;
+        .orElse(null));
+  }
+
+  private static String hasDeliverableType(RowData rowData, DeliverableType deliverableType) {
+    return rowData.kase().getDeliverables().stream().anyMatch(
+        deliverable -> deliverable.getDeliverableType() == deliverableType) ? "YES" : "no";
+  }
+
+  private static String formatDate(LocalDate date) {
+    return date == null ? null : date.format(DateTimeFormatter.ISO_LOCAL_DATE);
   }
 }
