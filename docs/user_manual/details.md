@@ -3,13 +3,13 @@
 Projects, donors, requisitions, cases, and runs each have their own Details page. The Details page
 includes more information about the selected item, all of its cases and QC gates, and the metrics
 for each associated item. Clicking on the name of a project, donor, requisition, or run takes you to
-the corresponding details page. Clicking on an assay name in the cases table links to the Case
-Details page.
+the corresponding details page. Clicking the "Case Details" link in the cases table links to the
+Case Details page.
 
 ### Metrics
 
 Columns containing QC metrics provide tool tips detailing the exact required threshold. Hover over
-the recorded number to see its requirements. The cell will be shaded red if the requirement is not
+the recorded number to see its requirements. The cell will be shaded red if a requirement is not
 met, and yellow if the value is unavailable.
 
 ![Metric cell](../images/metric_cell.png)
@@ -31,6 +31,21 @@ The Details page includes tables detailing the following:
 Navigate through each of the tables using the tabbed bar at the top of the page.
 
 ![Detail page tabs](../images/detail_tabs.png)
+
+## 3. Project Details Page
+
+In addition to the usual Detail page tables, the Project Details page features a table at the top
+showing summary counts of the tests that are pending work, pending QC, and completed each QC step.
+
+![Project Details page](../images/project_details.png)
+
+Any filters applied to the below tables will also affect the summary table. Clicking any of the
+counts will apply a related filter to both tables. For example, clicking the count of tests that are
+completed full-depth sequencing will filter to show only the items that are completed full-depth
+sequencing.
+
+There are additional controls above the summary table which allow you to filter by a date range to
+show counts of the work that was completed within the selected period.
 
 ## 2. Run Details Page
 

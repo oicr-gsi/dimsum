@@ -14,10 +14,13 @@ involved in a case, including which are still pending sign-off. Metrics for each
 within Dimsum so that QC decisions can be made quickly. Notifications are sent for runs and
 run-libraries requiring sign-off.
 
-### 2. Project Tracking (not yet completed)
+### 2. Project Tracking
 
-Dimsum holds [Project Detail](user_manual/details.md) pages which aid in determining the overall
-status of a project.
+The [Projects](user_manual/projects.md) list page shows a high level summary of each project's
+progress, and allows generating project-level reports.
+
+The [Project Detail](user_manual/details.md) pages aid in further determining the status of a
+project, checking its progress, and examining its cases.
 
 ### 3. Task Tracking (not yet completed)
 
