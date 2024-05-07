@@ -7,6 +7,24 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.32.0] - 2024-05-07
+
+### Added
+
+* FAQ section in User Manual
+* QC status, user, and notes in tooltips for QC item and QC status tooltips
+* Pending Release filter to find cases pending release for a specific deliverable
+* Separate columns for clinical report, data release, and all deliverables combined on the Case TAT Report
+* More project tracking details in User Manual
+* Copy Name button for sample/library names
+
+### Fixed
+
+* Analysis review QC notes were missing from the Case QC Report
+* Some columns on the Case TAT Report showed a completion date whether the step was passed (completed)
+  or failed (not completed)
+
+
 ## [1.31.0] - 2024-04-18
 
 ### Added
