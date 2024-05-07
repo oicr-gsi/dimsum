@@ -15,7 +15,7 @@ import {
 import { Tooltip } from "../component/tooltip";
 import { urls } from "../util/urls";
 import { Metric, MetricCategory, MetricSubcategory } from "./assay";
-import { Donor, Qcable, Run } from "./case";
+import { addStatusTooltipText, Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
   anyFail,
@@ -129,7 +129,16 @@ function makeQcStatusColumn(
     addParentContents(sample, fragment) {
       const status = getStatus(sample);
       const icon = makeIcon(status.icon);
-      icon.title = status.label;
+      const tooltipInstance = Tooltip.getInstance();
+      tooltipInstance.addTarget(icon, (tooltip) => {
+        addStatusTooltipText(
+          tooltip,
+          status,
+          sample.qcReason,
+          sample.qcUser,
+          sample.qcNote
+        );
+      });
       fragment.appendChild(icon);
     },
     getCellHighlight(sample) {

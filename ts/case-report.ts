@@ -391,7 +391,8 @@ const analysisReviewMetricsDefinition: TableDefinition<
           deliverable.analysisReviewQcPassed,
           undefined,
           deliverable.analysisReviewQcUser,
-          deliverable.analysisReviewQcDate
+          deliverable.analysisReviewQcDate,
+          deliverable.analysisReviewQcNote
         );
       },
       getCellHighlight(object) {

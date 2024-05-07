@@ -15,8 +15,13 @@ import {
 } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
-import { getQcStatus, Sample } from "./sample";
-import { qcStatuses } from "./qc-status";
+import {
+  getQcStatus,
+  getRunQcStatus,
+  getSampleQcStatus,
+  Sample,
+} from "./sample";
+import { QcStatus, qcStatuses } from "./qc-status";
 import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
@@ -528,7 +533,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           samplePhaseComplete(test.fullDepthSequencings)
         ),
       (targets) => targets.analysisReviewDays,
-      (deliverable) => deliverable.analysisReviewQcPassed
+      (deliverable) => deliverable.analysisReviewQcPassed,
+      (deliverable) => deliverable.analysisReviewQcUser,
+      (deliverable) => deliverable.analysisReviewQcNote
     ),
     makeDeliverableTypePhaseColumn(
       "Release Approval",
@@ -544,7 +551,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           .some((x) => x.analysisReviewQcPassed);
       },
       (targets) => targets.releaseApprovalDays,
-      (deliverable) => deliverable.releaseApprovalQcPassed
+      (deliverable) => deliverable.releaseApprovalQcPassed,
+      (deliverable) => deliverable.releaseApprovalQcUser,
+      (deliverable) => deliverable.releaseApprovalQcNote
     ),
     {
       title: "Release",
@@ -594,7 +603,9 @@ export const analysisReviewDefinition: TableDefinition<Case, void> = {
   generateColumns: (data?: Case[]) => [
     makeDeliverableTypeQcStatusColumn(
       "QC Status",
-      (deliverable) => deliverable.analysisReviewQcPassed
+      (deliverable) => deliverable.analysisReviewQcPassed,
+      (deliverable) => deliverable.analysisReviewQcUser,
+      (deliverable) => deliverable.analysisReviewQcNote
     ),
     ...makeBaseColumns(),
     ...generateAnalysisReviewMetricColumns(data),
@@ -610,7 +621,9 @@ export const releaseApprovalDefinition: TableDefinition<Case, void> = {
   generateColumns: () => [
     makeDeliverableTypeQcStatusColumn(
       "QC Status",
-      (deliverable) => deliverable.releaseApprovalQcPassed
+      (deliverable) => deliverable.releaseApprovalQcPassed,
+      (deliverable) => deliverable.releaseApprovalQcUser,
+      (deliverable) => deliverable.releaseApprovalQcNote
     ),
     ...makeBaseColumns(),
     makeLatestActivityColumn(),
@@ -752,7 +765,9 @@ function makeDeliverableTypePhaseColumn(
   analysisReview: boolean,
   isPreviousComplete: (kase: Case, deliverableType: DeliverableType) => boolean,
   getTarget: (targets: AssayTargets) => number | null,
-  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined
+  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
+  getQcUser: (deliverable: CaseDeliverable) => string | undefined,
+  getQcNote: (deliverable: CaseDeliverable) => string | undefined
 ): ColumnDefinition<Case, Test> {
   return {
     title: title,
@@ -782,7 +797,14 @@ function makeDeliverableTypePhaseColumn(
         anyPreviousComplete ||
         anyQcSet
       ) {
-        addDeliverableTypeIcons(kase, getQcPassed, fragment, tooltipInstance);
+        addDeliverableTypeIcons(
+          kase,
+          getQcPassed,
+          getQcUser,
+          getQcNote,
+          fragment,
+          tooltipInstance
+        );
       }
       const allQcPassed = kase.deliverables.every((deliverable) =>
         getQcPassed(deliverable)
@@ -808,7 +830,9 @@ function makeDeliverableTypePhaseColumn(
 
 function makeDeliverableTypeQcStatusColumn<ChildType>(
   title: string,
-  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined
+  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
+  getQcUser: (deliverable: CaseDeliverable) => string | undefined,
+  getQcNote: (deliverable: CaseDeliverable) => string | undefined
 ): ColumnDefinition<Case, ChildType> {
   return {
     title: title,
@@ -820,7 +844,9 @@ function makeDeliverableTypeQcStatusColumn<ChildType>(
       }
       addDeliverableTypeIcons(
         kase,
-        (deliverable) => deliverable.analysisReviewQcPassed,
+        getQcPassed,
+        getQcUser,
+        getQcNote,
         fragment,
         tooltipInstance
       );
@@ -1288,13 +1314,31 @@ export function makeSampleTooltip(sample: Sample) {
           sample.run.name
         )
       );
+      const runStatus = getRunQcStatus(sample.run);
+      addStatusTooltipText(
+        topContainer,
+        runStatus,
+        sample.run.qcReason,
+        sample.run.qcUser,
+        sample.run.qcNote,
+        "Run status"
+      );
     }
     // sample name links
     const sampleNameContainer = makeNameDiv(
       sample.name,
       urls.miso.sample(sample.id)
     );
+    sampleNameContainer.classList.add("font-bold");
     topContainer.appendChild(sampleNameContainer);
+    const sampleStatus = getSampleQcStatus(sample);
+    addStatusTooltipText(
+      topContainer,
+      sampleStatus,
+      sample.qcReason,
+      sample.qcUser,
+      sample.qcNote
+    );
 
     // project links
     addTooltipRow(
@@ -1334,6 +1378,30 @@ export function makeSampleTooltip(sample: Sample) {
   };
 }
 
+export function addStatusTooltipText(
+  tooltip: Node,
+  status: QcStatus,
+  qcReason?: string,
+  qcUser?: string,
+  qcNote?: string,
+  alternateLabel?: string
+) {
+  if (status === qcStatuses.dataReview) {
+    // prioritize pending data review over QC reason
+    tooltip.appendChild(makeTextDiv("Status: " + status.label));
+  } else {
+    let statusText =
+      (alternateLabel || "Status") + ": " + (qcReason || status.label);
+    if (qcUser) {
+      statusText += ` (${qcUser})`;
+    }
+    tooltip.appendChild(makeTextDiv(statusText));
+  }
+  if (qcNote) {
+    tooltip.appendChild(makeTextDiv("Note: " + qcNote));
+  }
+}
+
 function addTooltipRow(
   container: HTMLElement, // must be a two column grid
   label: string,
@@ -1360,17 +1428,23 @@ function addTooltipRow(
 function addDeliverableTypeIcons(
   kase: Case,
   getStatus: (deliverable: CaseDeliverable) => boolean | undefined,
+  getQcUser: (deliverable: CaseDeliverable) => string | undefined,
+  getQcNote: (deliverable: CaseDeliverable) => string | undefined,
   fragment: DocumentFragment,
   tooltipInstance: Tooltip
 ) {
   kase.deliverables.forEach((deliverable, i) => {
     const status = getDeliverableQcStatus(getStatus(deliverable));
     const icon = makeIcon(status.icon);
+    const user = getQcUser(deliverable);
+    const note = getQcNote(deliverable);
     tooltipInstance.addTarget(icon, (tooltip) => {
-      tooltip.appendChild(
-        makeTextDiv(deliverableTypeLabels[deliverable.deliverableType])
+      const deliverableTypeLabel = makeTextDiv(
+        deliverableTypeLabels[deliverable.deliverableType]
       );
-      tooltip.appendChild(makeTextDiv("Status: " + status.label));
+      deliverableTypeLabel.classList.add("font-bold");
+      tooltip.appendChild(deliverableTypeLabel);
+      addStatusTooltipText(tooltip, status, undefined, user, note);
     });
     fragment.appendChild(icon);
     if (i < kase.deliverables.length - 1) {
@@ -1394,8 +1468,16 @@ function addReleaseIcons(
         if (release.deliverable !== deliverableLabel) {
           deliverableLabel += " - " + release.deliverable;
         }
-        tooltip.appendChild(makeTextDiv(deliverableLabel));
-        tooltip.appendChild(makeTextDiv("Status: " + status.label));
+        const releaseLabel = makeTextDiv(deliverableLabel);
+        releaseLabel.classList.add("font-bold");
+        tooltip.appendChild(releaseLabel);
+        addStatusTooltipText(
+          tooltip,
+          status,
+          undefined,
+          release.qcUser,
+          release.qcNote
+        );
       });
       fragment.appendChild(icon);
       if (j < deliverable.releases.length - 1) {
