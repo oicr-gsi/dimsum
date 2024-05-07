@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 
-import ca.on.oicr.gsi.cardea.data.Assay;
 /**
  * This class contains configuration needed on the front-end and is served as a JavaScript file by
  * SiteConfigController. Some values are updated by CaseService when new data is loaded
@@ -35,6 +35,7 @@ public class FrontEndConfig {
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
   private Set<String> libraryDesigns;
+  private Set<String> deliverables;
 
   public String getMisoUrl() {
     return misoUrl;
@@ -79,4 +80,13 @@ public class FrontEndConfig {
   public Set<String> getLibraryDesigns() {
     return libraryDesigns;
   }
+
+  public Set<String> getDeliverables() {
+    return deliverables;
+  }
+
+  public void setDeliverables(Set<String> deliverables) {
+    this.deliverables = deliverables;
+  }
+
 }

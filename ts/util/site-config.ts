@@ -9,6 +9,7 @@ interface SiteConfig {
   assaysById: Record<number, Assay>;
   completedGates: string[];
   libraryDesigns: string[];
+  deliverables: string[];
 }
 
 export const siteConfig = (window as any).siteConfig as SiteConfig;
