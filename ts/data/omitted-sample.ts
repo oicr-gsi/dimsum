@@ -10,7 +10,7 @@ interface OmittedSample {
   name: string;
   requisitionId?: number;
   requisitionName?: string;
-  assayId?: number;
+  assayIds?: number[];
   project: string;
   donor: Donor;
   createdDate: string;
@@ -94,11 +94,13 @@ export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
                 urls.miso.requisition(sample.requisitionId)
               )
             );
-            if (sample.assayId) {
-              const assay = siteConfig.assaysById[sample.assayId];
-              const assayDiv = document.createElement("div");
-              assayDiv.innerText = assay.name;
-              fragment.appendChild(assayDiv);
+            if (sample.assayIds) {
+              sample.assayIds.forEach((assayId) => {
+                const assay = siteConfig.assaysById[assayId];
+                const assayDiv = document.createElement("div");
+                assayDiv.innerText = assay.name;
+                fragment.appendChild(assayDiv);
+              });
             }
           }
         },

@@ -18,12 +18,12 @@ import { Metric, MetricCategory, MetricSubcategory } from "./assay";
 import { addStatusTooltipText, Donor, Qcable, Run } from "./case";
 import { QcStatus, qcStatuses } from "./qc-status";
 import {
+  addMetricRequirementText,
   anyFail,
   formatMetricValue,
   getDivisor,
   getDivisorUnit,
   getMetricNames,
-  getMetricRequirementText,
   makeMetricDisplay,
   makeNotFoundIcon,
   makeStatusIcon,
@@ -59,7 +59,7 @@ export interface Sample extends Qcable {
   name: string;
   requisitionId?: number;
   requisitionName?: string;
-  assayId?: number;
+  assayIds?: number[];
   tissueOrigin: string;
   tissueType: string;
   tissueMaterial?: string;
@@ -389,7 +389,7 @@ function qcInMiso(items: Sample[], category: MetricCategory) {
     return;
   }
   const missingAssay = items
-    .filter((x) => !x.assayId)
+    .filter((x) => !x.assayIds?.length)
     .map((x) => x.name)
     .filter(unique);
   if (missingAssay.length) {
@@ -442,13 +442,13 @@ function generateMetricData(
 ): MisoRunLibrary[] {
   const data: MisoRunLibrary[] = [];
   samples.forEach((sample) => {
-    if (!sample.assayId) {
+    if (!sample.assayIds?.length) {
       throw new Error(`Sample ${sample.id} has no assay`);
     }
     if (!sample.run) {
       throw new Error(`Sample ${sample.id} has no run`);
     }
-    const metricNames = getMetricNames(category, [sample.assayId]).filter(
+    const metricNames = getMetricNames(category, sample.assayIds).filter(
       (x) => RUN_METRIC_LABELS.indexOf(x) === -1
     );
     data.push({
@@ -522,8 +522,8 @@ function generateMetricColumns(
     return [];
   }
   const assayIds: number[] = samples
-    .map((sample) => sample.assayId || 0)
-    .filter((assayId) => assayId > 0);
+    .flatMap((sample) => sample.assayIds || [])
+    .filter(unique);
   const metricNames = getMetricNames(category, assayIds);
   return metricNames
     .filter((metricName) =>
@@ -822,9 +822,7 @@ function addClustersPfContents(
   if (addTooltip && perRunMetrics.length) {
     // whether originally or not, these metrics are per run
     const addContents = (fragment: DocumentFragment) => {
-      perRunMetrics.forEach((metric) =>
-        addMetricRequirementText(metric, fragment)
-      );
+      addMetricRequirementText(perRunMetrics, fragment);
     };
     tooltip.addTarget(runDiv, addContents);
   }
@@ -833,9 +831,7 @@ function addClustersPfContents(
     const contentWrapper = document.createElement("div");
     const addContents = (fragment: DocumentFragment) => {
       // these metrics are per lane
-      perLaneMetrics.forEach((metric) =>
-        addMetricRequirementText(metric, fragment)
-      );
+      addMetricRequirementText(perLaneMetrics, fragment);
     };
 
     sample.run!.lanes.forEach((lane) => {
@@ -858,12 +854,6 @@ function addClustersPfContents(
   } else {
     fragment.appendChild(runDiv);
   }
-}
-
-function addMetricRequirementText(metric: Metric, container: Node) {
-  const metricDiv = document.createElement("div");
-  metricDiv.innerText = "Required: " + getMetricRequirementText(metric);
-  container.appendChild(metricDiv);
 }
 
 function getClustersPfHighlight(
@@ -969,7 +959,7 @@ function addPhixContents(
 
   const tooltip = Tooltip.getInstance();
   const addContents = (fragment: DocumentFragment) => {
-    metrics.forEach((metric) => addMetricRequirementText(metric, fragment));
+    addMetricRequirementText(metrics, fragment);
   };
 
   const multipleLanes = sample.run.lanes.length > 1;
@@ -1046,14 +1036,12 @@ function getMatchingMetrics(
   category: MetricCategory,
   sample: Sample
 ): Metric[] | null {
-  if (!sample.assayId) {
+  if (!sample.assayIds?.length) {
     return null;
   }
-  const assay = siteConfig.assaysById[sample.assayId];
-  if (!assay.metricCategories[category]) {
-    return [];
-  }
-  return assay.metricCategories[category]
+  return sample.assayIds
+    .map((assayId) => siteConfig.assaysById[assayId])
+    .flatMap((assay) => assay.metricCategories[category] || [])
     .filter((subcategory) => subcategoryApplies(subcategory, sample))
     .flatMap((subcategory) => subcategory.metrics)
     .filter(

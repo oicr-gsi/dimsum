@@ -115,11 +115,7 @@ export function makeMetricDisplay(
       if (tooltipAdditionalContents) {
         fragment.appendChild(tooltipAdditionalContents);
       }
-      metrics.forEach((metric) => {
-        const div = document.createElement("div");
-        div.innerText = "Required: " + getMetricRequirementText(metric);
-        fragment.appendChild(div);
-      });
+      addMetricRequirementText(metrics, fragment);
     };
     const tooltip = Tooltip.getInstance();
     tooltip.addTarget(div, addContents);
@@ -200,6 +196,28 @@ function formatThreshold(value?: number) {
   } else {
     return formatDecimal(value);
   }
+}
+
+export function addMetricRequirementText(metrics: Metric[], container: Node) {
+  const metricDiv = document.createElement("div");
+  const requirements: Set<string> = new Set();
+  metrics.forEach((metric) =>
+    requirements.add(getMetricRequirementText(metric))
+  );
+  if (requirements.size === 1) {
+    metricDiv.innerText = "Required: " + requirements.values().next().value;
+  } else {
+    const requirementsText = document.createElement("span");
+    requirementsText.innerText = "Requirements:";
+    const requirementsList = document.createElement("ul");
+    requirements.forEach((requirement) => {
+      const requirementListItem = document.createElement("li");
+      requirementListItem.innerText = requirement;
+      requirementsList.appendChild(requirementListItem);
+    });
+    metricDiv.append(requirementsText, requirementsList);
+  }
+  container.appendChild(metricDiv);
 }
 
 export function getMetricRequirementText(metric: Metric) {

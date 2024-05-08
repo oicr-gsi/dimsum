@@ -312,36 +312,38 @@ public class NotificationManager {
       throw new IllegalArgumentException(
           String.format("Unexpected metric category: %s", metricCategory));
     }
-    if (sample.getAssayId() == null) {
+    if (sample.getAssayIds() == null || sample.getAssayIds().isEmpty()) {
       // no assay means no metrics, so all are available
       return true;
     }
-    Assay assay = assaysById.get(sample.getAssayId());
-    List<MetricSubcategory> subcategories = assay.getMetricCategories().get(metricCategory);
-    if (subcategories == null) {
-      // no metrics defined, so all are available
-      return true;
-    }
-    for (MetricSubcategory subcategory : subcategories) {
-      if (subcategory.getLibraryDesignCode() != null
-          && !subcategory.getLibraryDesignCode().equals(sample.getLibraryDesignCode())) {
-        continue;
+    for (Long assayId : sample.getAssayIds()) {
+      Assay assay = assaysById.get(assayId);
+      List<MetricSubcategory> subcategories = assay.getMetricCategories().get(metricCategory);
+      if (subcategories == null) {
+        // no metrics defined, so all are available
+        return true;
       }
-      for (Metric metric : subcategory.getMetrics()) {
-        if (filter(metric.getNucleicAcidType(), sample.getNucleicAcidType())
-            || filter(metric.getTissueMaterial(), sample.getTissueMaterial())
-            || filter(metric.getTissueOrigin(), sample.getTissueOrigin())
-            || (!metric.isNegateTissueType()
-                && filter(metric.getTissueType(), sample.getTissueType()))
-            || (metric.isNegateTissueType() && metric.getTissueType() != null
-                && metric.getTissueType().equals(sample.getTissueType()))
-            || filter(metric.getContainerModel(), run.getContainerModel())
-            || filter(metric.getReadLength(), run.getReadLength())
-            || filter(metric.getReadLength2(), run.getReadLength2())) {
+      for (MetricSubcategory subcategory : subcategories) {
+        if (subcategory.getLibraryDesignCode() != null
+            && !subcategory.getLibraryDesignCode().equals(sample.getLibraryDesignCode())) {
           continue;
         }
-        if (metricValueMissing(sample, metric)) {
-          return false;
+        for (Metric metric : subcategory.getMetrics()) {
+          if (filter(metric.getNucleicAcidType(), sample.getNucleicAcidType())
+              || filter(metric.getTissueMaterial(), sample.getTissueMaterial())
+              || filter(metric.getTissueOrigin(), sample.getTissueOrigin())
+              || (!metric.isNegateTissueType()
+                  && filter(metric.getTissueType(), sample.getTissueType()))
+              || (metric.isNegateTissueType() && metric.getTissueType() != null
+                  && metric.getTissueType().equals(sample.getTissueType()))
+              || filter(metric.getContainerModel(), run.getContainerModel())
+              || filter(metric.getReadLength(), run.getReadLength())
+              || filter(metric.getReadLength2(), run.getReadLength2())) {
+            continue;
+          }
+          if (metricValueMissing(sample, metric)) {
+            return false;
+          }
         }
       }
     }
