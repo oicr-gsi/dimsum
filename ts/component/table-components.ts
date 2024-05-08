@@ -96,22 +96,22 @@ export const caseFilters: FilterDefinition[] = [
   {
     title: "Started After",
     key: "STARTED_AFTER",
-    type: "text",
+    type: "date",
   },
   {
     title: "Started Before",
     key: "STARTED_BEFORE",
-    type: "text",
+    type: "date",
   },
   {
     title: "Completed After",
     key: "COMPLETED_AFTER",
-    type: "text",
+    type: "date",
   },
   {
     title: "Completed Before",
     key: "COMPLETED_BEFORE",
-    type: "text",
+    type: "date",
   },
 ];
 

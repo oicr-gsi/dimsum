@@ -222,13 +222,6 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private updateAcceptedFilter(key: string, value: string, add: boolean) {
-    if (this.isDateFilterKey(key)) {
-      const baseKey = key.split("_")[0];
-      this.acceptedFilters = this.acceptedFilters.filter(
-        (filter) => !filter.key.startsWith(baseKey)
-      );
-    }
-
     if (add) {
       this.addAcceptedFilter(key, value);
     } else {
@@ -236,10 +229,6 @@ export class TableBuilder<ParentType, ChildType> {
         (filter) => filter.key !== key || filter.value !== value
       );
     }
-  }
-
-  private isDateFilterKey(key: string): boolean {
-    return key.startsWith("STARTED_") || key.startsWith("COMPLETED_");
   }
 
   public clear() {
@@ -434,12 +423,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addFilterControls(container: HTMLElement) {
     const filterContainer = document.createElement("div");
-    filterContainer.classList.add(
-      "flex",
-      "flex-auto",
-      "items-center",
-      "space-x-2"
-    );
+    filterContainer.classList.add("flex-auto", "items-center", "space-x-2");
     container.appendChild(filterContainer);
     if (!this.definition.filters) {
       // no filters for this table
@@ -452,67 +436,71 @@ export class TableBuilder<ParentType, ChildType> {
     filterContainer.appendChild(filterIcon);
 
     // add pre-table build filters
-    this.acceptedFilters.forEach((filter) => {
+    for (var filter of this.acceptedFilters) {
       filterContainer.appendChild(filter.element);
-    });
+    }
 
     let filterOptions: DropdownOption[] = [];
-    let addedDateFilters: string[] = [];
     this.definition.filters.forEach((filter) => {
-      if (filter.key && this.isDateFilterKey(filter.key)) {
-        const parts = filter.key.split("_");
-        const type = parts[0];
-        if (!addedDateFilters.includes(type)) {
-          this.makeDateFilter(type, filterContainer);
-          addedDateFilters.push(type);
-        }
-      } else {
-        switch (filter.type) {
-          case "text":
-            filterOptions.push(
-              this.makeTextInputFilter(filter, filterContainer)
-            );
-            break;
-          case "dropdown":
-            filterOptions.push(
-              this.makeDropdownFilter(filter, filterContainer)
-            );
-            break;
-          default:
-            throw new Error(`Unhandled filter type: ${filter.type}`);
-        }
+      switch (filter.type) {
+        case "dropdown":
+          filterOptions.push(this.makeDropdownFilter(filter, filterContainer));
+          break;
+        case "text":
+          filterOptions.push(this.makeTextInputFilter(filter, filterContainer));
+          break;
+        case "date":
+          filterOptions.push(this.makeDateInputFilter(filter, filterContainer));
+          break;
+        default:
+          throw new Error(`Unhandled filter type: ${filter.type}`);
       }
     });
-    if (filterOptions.length > 0) {
-      const addFilterDropdown = new Dropdown(
-        filterOptions,
-        false,
-        undefined,
-        "+ filter"
-      );
-      filterContainer.appendChild(addFilterDropdown.getContainerTag());
-    }
+
+    const addFilterDropdown = new Dropdown(
+      filterOptions,
+      false,
+      undefined,
+      "+ filter"
+    );
+    filterContainer.appendChild(addFilterDropdown.getContainerTag());
   }
 
-  private makeDateFilter(type: string, filterContainer: HTMLElement) {
-    const dateFilterControl = new DateInput(
-      `${type}`,
-      (key, value, shouldReload = true) => {
+  private makeDateInputFilter(
+    filter: FilterDefinition,
+    filterContainer: HTMLElement
+  ): DropdownOption {
+    return new BasicDropdownOption(filter.title, () => {
+      const dateInput = new DateInput(filter.title, (value: string) => {
         if (value) {
-          this.applyFilter(key, value, true);
-        } else {
-          this.applyFilter(key, value, false);
+          const onRemove = () => {
+            if (this.onFilterChange)
+              this.onFilterChange(filter.key, value, false);
+            this.reload(true);
+          };
+          const filterLabel = new AcceptedFilter(
+            filter.title,
+            filter.key,
+            value,
+            onRemove
+          );
+          filterContainer.insertBefore(
+            filterLabel.element,
+            filterContainer.lastChild
+          );
+          this.acceptedFilters.push(filterLabel);
+          // update params
+          if (this.onFilterChange) {
+            this.onFilterChange(filter.key, value, true);
+          }
+          this.reload(true); // apply new filter
         }
-        if (shouldReload) {
-          this.reload(true);
-        }
-      }
-    );
-    dateFilterControl.container.addEventListener("change", () =>
-      this.reload(true)
-    );
-    dateFilterControl.container.classList.add("flex-shrink-0");
-    filterContainer.appendChild(dateFilterControl.container);
+      });
+      filterContainer.insertBefore(
+        dateInput.getElement(),
+        filterContainer.lastChild
+      );
+    });
   }
 
   private makeDropdownFilter(
