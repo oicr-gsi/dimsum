@@ -120,14 +120,6 @@ public class MvcUtils {
     }
   }
 
-  public static LocalDate parseCaseDateFilterValue(DataQuery query, String key) {
-    String value = query.getFilters().stream()
-        .filter(x -> key.equals(x.getKey()))
-        .map(KeyValuePair::getValue)
-        .findFirst().orElse(null);
-    return value == null ? null : LocalDate.parse(value);
-  }
-
   public static LocalDate parseAfterDate(DataQuery query) {
     return parseDateFilterValue(query, AFTER_DATE_KEY);
   }

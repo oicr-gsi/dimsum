@@ -20,7 +20,7 @@ import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
-import ca.on.oicr.gsi.dimsum.util.SampleUtils;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
@@ -111,7 +111,10 @@ public class CaseTatReport extends Report {
                       CaseDeliverable::getReleaseApprovalQcDate)),
               Column.forInteger("ALL Release Approval Days",
                   x -> x.kase().getReleaseApprovalDaysSpent()),
-              Column.forString("ALL Release Completed", CaseTatReport::getCompletionDate),
+              Column.forString("ALL Release Completed", caseTatReport -> {
+                LocalDate completionDate = DataUtils.getCompletionDate(caseTatReport.kase);
+                return completionDate != null ? completionDate.toString() : null;
+              }),
               Column.forInteger("ALL Release Days", x -> x.kase().getReleaseDaysSpent()),
               Column.forInteger("ALL Total Days", x -> x.kase().getCaseDaysSpent()),
               Column.forString("Stopped", x -> x.kase().isStopped() ? "YES" : "no"))) {
@@ -186,7 +189,7 @@ public class CaseTatReport extends Report {
   private static String findLatestCompletionDate(List<Sample> samples) {
     LocalDate latestDate = null;
     for (Sample sample : samples) {
-      if (SampleUtils.isPassed(sample)) {
+      if (DataUtils.isPassed(sample)) {
         LocalDate dateToCompare = null;
         if (sample.getRun() != null) {
           LocalDate sampleReviewDate = sample.getDataReviewDate();
@@ -240,26 +243,6 @@ public class CaseTatReport extends Report {
     }
 
     return formatDate(deliverable.getReleases().stream()
-        .map(CaseRelease::getQcDate)
-        .max(LocalDate::compareTo)
-        .orElse(null));
-  }
-
-  private static String getCompletionDate(RowData x) {
-    if (x.kase.getDeliverables().isEmpty()) {
-      return null;
-    }
-    List<CaseRelease> releases = x.kase().getDeliverables().stream()
-        .flatMap(deliverable -> deliverable.getReleases().stream())
-        .collect(Collectors.toList());
-    if (releases.isEmpty()) {
-      return null;
-    }
-    if (releases.stream()
-        .anyMatch(release -> release.getQcPassed() == null || !release.getQcPassed())) {
-      return null;
-    }
-    return formatDate(releases.stream()
         .map(CaseRelease::getQcDate)
         .max(LocalDate::compareTo)
         .orElse(null));

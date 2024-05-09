@@ -1,11 +1,9 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
@@ -13,6 +11,7 @@ import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum CaseFilterKey {
 
@@ -119,12 +118,12 @@ public enum CaseFilterKey {
   STARTED_BEFORE(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isBefore(LocalDate.parse(string))),
   STARTED_AFTER(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isAfter(LocalDate.parse(string))),
   COMPLETED_BEFORE(string -> kase -> {
-      LocalDate completionDate = getCompletionDate(kase);
-      return completionDate != null && completionDate.isBefore(LocalDate.parse(string));
+    LocalDate completionDate = DataUtils.getCompletionDate(kase);
+    return completionDate != null && completionDate.isBefore(LocalDate.parse(string));
   }),
   COMPLETED_AFTER(string -> kase -> {
-      LocalDate completionDate = getCompletionDate(kase);
-      return completionDate != null && completionDate.isAfter(LocalDate.parse(string));
+    LocalDate completionDate = DataUtils.getCompletionDate(kase);
+    return completionDate != null && completionDate.isAfter(LocalDate.parse(string));
   });
   // @formatter:on
 
@@ -164,26 +163,5 @@ public enum CaseFilterKey {
       throw new IllegalArgumentException(String.format("Invalid gate: %s", label));
     }
     return gate;
-  }
-
-  private static LocalDate getCompletionDate(Case x) {
-    List<CaseDeliverable> deliverables = x.getDeliverables();
-    if (deliverables.isEmpty()) {
-      return null;
-    }
-    List<CaseRelease> releases = deliverables.stream()
-        .flatMap(deliverable -> deliverable.getReleases().stream())
-        .collect(Collectors.toList());
-    if (releases.isEmpty()) {
-      return null;
-    }
-    if (releases.stream()
-        .anyMatch(release -> release.getQcPassed() == null || !release.getQcPassed())) {
-      return null;
-    }
-    return releases.stream()
-        .map(CaseRelease::getQcDate)
-        .max(LocalDate::compareTo)
-        .orElse(null);
   }
 }

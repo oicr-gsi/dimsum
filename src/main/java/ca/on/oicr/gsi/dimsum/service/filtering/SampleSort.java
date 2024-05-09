@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Sample;
-import ca.on.oicr.gsi.dimsum.util.SampleUtils;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum SampleSort {
 
@@ -40,13 +40,13 @@ public enum SampleSort {
   }
 
   protected static int getSampleQcStatus(Sample sample) {
-    if (SampleUtils.isPendingQc(sample)) {
+    if (DataUtils.isPendingQc(sample)) {
       return 1;
-    } else if (SampleUtils.isPendingDataReview(sample)) {
+    } else if (DataUtils.isPendingDataReview(sample)) {
       return 2;
-    } else if (SampleUtils.isTopUpRequired(sample)) {
+    } else if (DataUtils.isTopUpRequired(sample)) {
       return 3;
-    } else if (SampleUtils.isPassed(sample)) {
+    } else if (DataUtils.isPassed(sample)) {
       return 4;
     } else {
       return 5;
