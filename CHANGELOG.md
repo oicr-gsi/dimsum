@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.33.0] - 2024-05-09
+
+### Added
+
+* Support for requisitions with multiple assays. A sample that is used for multiple assays may now
+  show multiple requirements for the same metric
+
+### Changed
+
+* The format of case IDs has changed. When requesting a case page using an old case ID, an attempt is
+  made to determine the updated case ID and redirect you to the intended page
+
+
 ## [1.32.0] - 2024-05-07
 
 ### Added
