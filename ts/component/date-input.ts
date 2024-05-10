@@ -14,7 +14,7 @@ export class DateInput {
     this.dateInput.onchange = () => {
       if (this.dateInput.value) {
         onChange(this.dateInput.value);
-        this.container.remove(); // remove the date input after selection
+        this.destroy(); // destroy the date input after selection
       }
     };
 
