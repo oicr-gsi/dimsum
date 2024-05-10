@@ -13,9 +13,10 @@ import { post } from "../util/requests";
 import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
+import { DateInput } from "./date-input";
 
 type SortType = "number" | "text" | "date" | "custom";
-type FilterType = "text" | "dropdown";
+type FilterType = "text" | "dropdown" | "date";
 
 export interface ColumnDefinition<ParentType, ChildType> {
   title: string;
@@ -46,7 +47,7 @@ export interface Sort extends SortDefinition {
 export interface FilterDefinition {
   title: string; // user friendly label
   key: string; // internal use
-  type: FilterType; // either text or dropdown
+  type: FilterType; // either text or dropdown or date
   values?: string[]; // required for dropdown filters
   autocompleteUrl?: string; // required for text filters w/autocomplete
 }
@@ -448,6 +449,9 @@ export class TableBuilder<ParentType, ChildType> {
         case "text":
           filterOptions.push(this.makeTextInputFilter(filter, filterContainer));
           break;
+        case "date":
+          filterOptions.push(this.makeDateInputFilter(filter, filterContainer));
+          break;
         default:
           throw new Error(`Unhandled filter type: ${filter.type}`);
       }
@@ -460,6 +464,43 @@ export class TableBuilder<ParentType, ChildType> {
       "+ filter"
     );
     filterContainer.appendChild(addFilterDropdown.getContainerTag());
+  }
+
+  private makeDateInputFilter(
+    filter: FilterDefinition,
+    filterContainer: HTMLElement
+  ): DropdownOption {
+    return new BasicDropdownOption(filter.title, () => {
+      const dateInput = new DateInput(filter.title, (value: string) => {
+        if (value) {
+          const onRemove = () => {
+            if (this.onFilterChange)
+              this.onFilterChange(filter.key, value, false);
+            this.reload(true);
+          };
+          const filterLabel = new AcceptedFilter(
+            filter.title,
+            filter.key,
+            value,
+            onRemove
+          );
+          filterContainer.insertBefore(
+            filterLabel.element,
+            filterContainer.lastChild
+          );
+          this.acceptedFilters.push(filterLabel);
+          // update params
+          if (this.onFilterChange) {
+            this.onFilterChange(filter.key, value, true);
+          }
+          this.reload(true); // apply new filter
+        }
+      });
+      filterContainer.insertBefore(
+        dateInput.getElement(),
+        filterContainer.lastChild
+      );
+    });
   }
 
   private makeDropdownFilter(

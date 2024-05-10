@@ -93,6 +93,26 @@ export const caseFilters: FilterDefinition[] = [
     values: yesNoOptions,
   },
   libraryDesignFilter,
+  {
+    title: "Started After",
+    key: "STARTED_AFTER",
+    type: "date",
+  },
+  {
+    title: "Started Before",
+    key: "STARTED_BEFORE",
+    type: "date",
+  },
+  {
+    title: "Completed After",
+    key: "COMPLETED_AFTER",
+    type: "date",
+  },
+  {
+    title: "Completed Before",
+    key: "COMPLETED_BEFORE",
+    type: "date",
+  },
 ];
 
 export const runLibraryFilters: FilterDefinition[] = [

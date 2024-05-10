@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -10,6 +11,7 @@ import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum CaseFilterKey {
 
@@ -112,7 +114,17 @@ public enum CaseFilterKey {
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
       return string -> sample -> Objects.equals(sample.getLibraryDesignCode(), string);
     }
-  };
+  },
+  STARTED_BEFORE(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isBefore(LocalDate.parse(string))),
+  STARTED_AFTER(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isAfter(LocalDate.parse(string))),
+  COMPLETED_BEFORE(string -> kase -> {
+    LocalDate completionDate = DataUtils.getCompletionDate(kase);
+    return completionDate != null && completionDate.isBefore(LocalDate.parse(string));
+  }),
+  COMPLETED_AFTER(string -> kase -> {
+    LocalDate completionDate = DataUtils.getCompletionDate(kase);
+    return completionDate != null && completionDate.isAfter(LocalDate.parse(string));
+  });
   // @formatter:on
 
   private final Function<String, Predicate<Case>> create;
@@ -152,5 +164,4 @@ public enum CaseFilterKey {
     }
     return gate;
   }
-
 }

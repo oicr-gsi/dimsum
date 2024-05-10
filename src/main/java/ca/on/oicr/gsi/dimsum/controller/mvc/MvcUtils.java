@@ -20,7 +20,6 @@ public class MvcUtils {
   private static final String BEFORE_DATE_KEY = "BEFORE_DATE";
   private static final String AFTER_DATE_KEY = "AFTER_DATE";
 
-
   public static void validateDataQuery(DataQuery query) {
     if (query.getPageNumber() < 1) {
       throw new BadRequestException(

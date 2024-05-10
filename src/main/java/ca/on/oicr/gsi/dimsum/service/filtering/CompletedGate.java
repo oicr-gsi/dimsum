@@ -13,7 +13,7 @@ import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
-import ca.on.oicr.gsi.dimsum.util.SampleUtils;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum CompletedGate {
   // @formatter:off
@@ -31,7 +31,7 @@ public enum CompletedGate {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.RECEIPT) {
-        return SampleUtils.isPassed(sample);
+        return DataUtils.isPassed(sample);
       } else {
         return true;
       }
@@ -46,7 +46,7 @@ public enum CompletedGate {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.EXTRACTION) {
-        return SampleUtils.isPassed(sample);
+        return DataUtils.isPassed(sample);
       } else {
         return true;
       }
@@ -63,7 +63,7 @@ public enum CompletedGate {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_PREP) {
-        return SampleUtils.isPassed(sample);
+        return DataUtils.isPassed(sample);
       } else {
         return true;
       }
@@ -80,7 +80,7 @@ public enum CompletedGate {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.LIBRARY_QUALIFICATION) {
-        return SampleUtils.isPassed(sample);
+        return DataUtils.isPassed(sample);
       } else {
         return true;
       }
@@ -95,7 +95,7 @@ public enum CompletedGate {
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.FULL_DEPTH_SEQUENCING) {
-        return SampleUtils.isPassed(sample);
+        return DataUtils.isPassed(sample);
       } else {
         return true;
       }
@@ -104,7 +104,7 @@ public enum CompletedGate {
   ANALYSIS_REVIEW("Analysis Review", true) {
     @Override
     public boolean qualifyCase(Case kase) {
-      if (SampleUtils.isAnalysisReviewSkipped(kase)) {
+      if (DataUtils.isAnalysisReviewSkipped(kase)) {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
       } else {
         return qualifyCaseForDeliverableType(kase, null, CaseDeliverable::getAnalysisReviewQcPassed);
@@ -114,7 +114,7 @@ public enum CompletedGate {
   ANALYSIS_REVIEW_DATA_RELEASE("Analysis Review - Data Release", true, DeliverableType.DATA_RELEASE) {
     @Override
     public boolean qualifyCase(Case kase) {
-      if (SampleUtils.isAnalysisReviewSkipped(kase)) {
+      if (DataUtils.isAnalysisReviewSkipped(kase)) {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
       } else {
         return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
@@ -125,7 +125,7 @@ public enum CompletedGate {
   ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true, DeliverableType.CLINICAL_REPORT) {
     @Override
     public boolean qualifyCase(Case kase) {
-      if (SampleUtils.isAnalysisReviewSkipped(kase)) {
+      if (DataUtils.isAnalysisReviewSkipped(kase)) {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
       } else {
         return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
@@ -269,15 +269,15 @@ public enum CompletedGate {
   }
 
   private static class Helpers {
-    private static Predicate<Sample> pendingQc = SampleUtils::isPendingQc;
+    private static Predicate<Sample> pendingQc = DataUtils::isPendingQc;
 
     public static boolean isReceiptCompleted(Case kase) {
-      return kase.getReceipts().stream().anyMatch(SampleUtils::isPassed)
+      return kase.getReceipts().stream().anyMatch(DataUtils::isPassed)
           && kase.getReceipts().stream().noneMatch(pendingQc);
     }
 
     public static boolean isCompleted(List<Sample> samples) {
-      return samples.stream().anyMatch(SampleUtils::isPassed);
+      return samples.stream().anyMatch(DataUtils::isPassed);
     }
 
   }

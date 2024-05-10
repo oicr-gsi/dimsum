@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
-import ca.on.oicr.gsi.dimsum.util.SampleUtils;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public class SampleSortTest {
 
@@ -101,7 +101,7 @@ public class SampleSortTest {
         when(sample.getQcPassed()).thenReturn(null);
         when(sample.getDataReviewPassed()).thenReturn(true);
         when(sample.getQcUser()).thenReturn("user2");
-        when(sample.getQcReason()).thenReturn(SampleUtils.TOP_UP_REASON);
+        when(sample.getQcReason()).thenReturn(DataUtils.TOP_UP_REASON);
         Run run = mock(Run.class);
         when(run.getQcPassed()).thenReturn(true);
         when(run.getDataReviewPassed()).thenReturn(true);
@@ -157,7 +157,7 @@ public class SampleSortTest {
         when(sample.getQcPassed()).thenReturn(null);
         when(sample.getDataReviewPassed()).thenReturn(true);
         when(sample.getQcUser()).thenReturn("user2");
-        when(sample.getQcReason()).thenReturn(SampleUtils.TOP_UP_REASON);
+        when(sample.getQcReason()).thenReturn(DataUtils.TOP_UP_REASON);
         Run run = mock(Run.class);
         when(run.getQcPassed()).thenReturn(true);
         when(run.getDataReviewPassed()).thenReturn(true);

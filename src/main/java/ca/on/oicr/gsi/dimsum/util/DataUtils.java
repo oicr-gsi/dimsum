@@ -1,17 +1,22 @@
 package ca.on.oicr.gsi.dimsum.util;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
-public class SampleUtils {
+public class DataUtils {
   public static final String TOP_UP_REASON = "Top-up Required";
 
-  public static Predicate<Sample> pendingQc = SampleUtils::isPendingQc;
-  public static Predicate<Sample> pendingDataReview = SampleUtils::isPendingDataReview;
+  public static Predicate<Sample> pendingQc = DataUtils::isPendingQc;
+  public static Predicate<Sample> pendingDataReview = DataUtils::isPendingDataReview;
   public static Predicate<Sample> pendingQcOrDataReview =
       sample -> isPendingQc(sample) || isPendingDataReview(sample);
-  public static Predicate<Sample> passed = SampleUtils::isPassed;
+  public static Predicate<Sample> passed = DataUtils::isPassed;
   public static Predicate<Sample> possiblyCompleted =
       sample -> isPassed(sample) || isPendingQc(sample) || isPendingDataReview(sample);
 
@@ -48,5 +53,26 @@ public class SampleUtils {
 
   public static boolean isAnalysisReviewSkipped(Case kase) {
     return kase.getProjects().stream().allMatch(project -> project.isAnalysisReviewSkipped());
+  }
+
+  public static LocalDate getCompletionDate(Case kase) {
+    List<CaseDeliverable> deliverables = kase.getDeliverables();
+    if (deliverables.isEmpty()) {
+      return null;
+    }
+
+    List<CaseRelease> releases = deliverables.stream()
+        .flatMap(deliverable -> deliverable.getReleases().stream())
+        .collect(Collectors.toList());
+
+    if (releases.isEmpty() || releases.stream()
+        .anyMatch(release -> release.getQcPassed() == null || !release.getQcPassed())) {
+      return null;
+    }
+
+    return releases.stream()
+        .map(CaseRelease::getQcDate)
+        .max(LocalDate::compareTo)
+        .orElse(null);
   }
 }
