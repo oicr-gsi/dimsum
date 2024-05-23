@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.34.0] - 2024-05-23
+
+### Added
+
+* case start and end date filters
+
+
 ## [1.33.0] - 2024-05-09
 
 ### Added
