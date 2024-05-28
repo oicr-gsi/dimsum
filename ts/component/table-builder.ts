@@ -138,6 +138,8 @@ export class TableBuilder<ParentType, ChildType> {
   allItems: ParentType[] = [];
   selectedItems: Set<ParentType> = new Set<ParentType>();
   selectAllCheckbox?: HTMLInputElement;
+  topSelectionCountElement?: HTMLElement;
+  bottomSelectionCountElement?: HTMLElement;
   onFilterChange?: (key: string, value: string, add: boolean) => void;
   lastClickedRowIndex: number | null = null;
   private isShiftKeyPressed: boolean = false;
@@ -253,6 +255,8 @@ export class TableBuilder<ParentType, ChildType> {
       this.addSortControls(topControlsContainer);
       this.addFilterControls(topControlsContainer);
     }
+    this.topSelectionCountElement = document.createElement("span");
+    this.addSelectionCount(topControlsContainer, this.topSelectionCountElement);
     if (this.definition.bulkActions || this.definition.staticActions) {
       this.addActionButtons(topControlsContainer);
     }
@@ -286,6 +290,11 @@ export class TableBuilder<ParentType, ChildType> {
     this.container.appendChild(tableContainer);
 
     const bottomControlsContainer = document.createElement("div");
+    this.bottomSelectionCountElement = document.createElement("span");
+    this.addSelectionCount(
+      bottomControlsContainer,
+      this.bottomSelectionCountElement
+    );
     if (this.definition.bulkActions || this.definition.staticActions) {
       bottomControlsContainer.className =
         "flex justify-end mt-4 items-top space-x-2";
@@ -304,6 +313,13 @@ export class TableBuilder<ParentType, ChildType> {
       this.reload();
     }
     return this;
+  }
+
+  private addSelectionCount(container: HTMLElement, countElement: HTMLElement) {
+    countElement.className =
+      "selection-count font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
+    countElement.style.display = "none";
+    container.appendChild(countElement);
   }
 
   private addActionButtons(container: HTMLElement) {
@@ -668,6 +684,7 @@ export class TableBuilder<ParentType, ChildType> {
     this.addTableBody(table, data);
     this.allItems = data || [];
     this.selectedItems = new Set<ParentType>();
+    this.updateSelectionCount();
   }
 
   private addTableHead(table: HTMLTableElement) {
@@ -714,6 +731,7 @@ export class TableBuilder<ParentType, ChildType> {
       rowSelects,
       (rowSelect) => (rowSelect.checked = select)
     );
+    this.updateSelectionCount();
   }
 
   private addTableBody(table: HTMLTableElement, data?: ParentType[]) {
@@ -931,6 +949,7 @@ export class TableBuilder<ParentType, ChildType> {
         }
       }
       this.lastClickedRowIndex = currentRowIndex;
+      this.updateSelectionCount();
     };
 
     if (children.length > 1) {
@@ -961,6 +980,23 @@ export class TableBuilder<ParentType, ChildType> {
           this.selectedItems.delete(item);
         }
       }
+    }
+    this.updateSelectionCount();
+  }
+
+  private updateSelectionCount() {
+    const count = this.selectedItems.size;
+    const itemText = count === 1 ? "item" : "items";
+
+    if (this.topSelectionCountElement) {
+      this.topSelectionCountElement.textContent = `Selected ${count} ${itemText}`;
+      this.topSelectionCountElement.style.display =
+        count > 0 ? "inline" : "none";
+    }
+    if (this.bottomSelectionCountElement) {
+      this.bottomSelectionCountElement.textContent = `Selected ${count} ${itemText}`;
+      this.bottomSelectionCountElement.style.display =
+        count > 0 ? "inline" : "none";
     }
   }
 
