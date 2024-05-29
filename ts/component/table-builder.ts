@@ -317,7 +317,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private addSelectionCount(container: HTMLElement, countElement: HTMLElement) {
     countElement.className =
-      "selection-count font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md cursor-default inline-block";
+      "selection-count font-inter font-medium text-12 text-black py-1";
     countElement.style.display = "none";
     container.appendChild(countElement);
   }
