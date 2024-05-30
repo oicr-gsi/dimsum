@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.35.0] - 2024-05-30
+
+### Added
+
+* Display a count of the selected items in a table
+
+
 ## [1.34.0] - 2024-05-23
 
 ### Added
