@@ -7,11 +7,11 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
-import ca.on.oicr.gsi.cardea.data.Case;
-import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
@@ -32,22 +32,33 @@ public class RequisitionController {
     }
     List<Case> cases =
         caseService.getCases(new CaseFilter(CaseFilterKey.REQUISITION_ID, requisitionId));
+    return setupDetailsPage(cases, requisitionId, model);
+  }
+
+  @GetMapping("/by-name/{name}")
+  public String getRequisitionDetailsByName(@PathVariable String name, ModelMap model) {
+    List<Case> cases =
+        caseService.getCases(new CaseFilter(CaseFilterKey.REQUISITION, name));
+    return setupDetailsPage(cases, name, model);
+  }
+
+  private String setupDetailsPage(List<Case> cases, String identifier, ModelMap model) {
     if (cases.isEmpty()) {
       throw new NotFoundException(
-          String.format("No data found for requisition: %s", requisitionId));
+          String.format("No data found for requisition: %s", identifier));
     }
     Requisition requisition = cases.get(0).getRequisition();
 
     model.put("title", String.format("%s Requisition Details", requisition.getName()));
-    model.put("titleLink", makeMisoRequisitionUrl(requisitionId));
+    model.put("titleLink", makeMisoRequisitionUrl(requisition.getId()));
     model.put("detailType", CaseFilterKey.REQUISITION_ID.name());
-    model.put("detailValue", requisitionId);
+    model.put("detailValue", requisition.getId());
     model.put("detailName", requisition.getName());
     return "detail";
   }
 
-  private String makeMisoRequisitionUrl(String requisitionId) {
-    return String.format("%s/miso/requisition/%s", frontEndConfig.getMisoUrl(), requisitionId);
+  private String makeMisoRequisitionUrl(long requisitionId) {
+    return String.format("%s/miso/requisition/%d", frontEndConfig.getMisoUrl(), requisitionId);
   }
 
 }
