@@ -7,6 +7,15 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.36.0] - 2024-06-06
+
+### Added
+
+* Columns for days spent on loading, sequencing, and QC for library qualification and full-depth
+  sequencing in the Case TAT Report
+* Ability to link to requisitions by name: `/requisitions/by-name/<name>`
+
+
 ## [1.35.0] - 2024-05-30
 
 ### Added
