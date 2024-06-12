@@ -100,11 +100,31 @@ public enum PendingState {
       }
     }
   },
+  EXTRACTION_TRANSFER("Extraction Transfer", true) {
+    @Override
+    public boolean qualifyTest(Test test) {
+      return test.getExtractions().stream()
+          .noneMatch(sample -> DataUtils.isPassed(sample) && sample.getTransferDate() != null)
+          && test.getExtractions().stream()
+              .anyMatch(sample -> DataUtils.isPassed(sample) && sample.getTransferDate() == null);
+    }
+
+    @Override
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+      if (requestCategory == MetricCategory.EXTRACTION) {
+        // Without the test, we don't know if another extraction was already transferred,
+        // so assume we need to transfer all
+        return DataUtils.isPassed(sample) && sample.getTransferDate() == null;
+      } else {
+        return true;
+      }
+    }
+  },
   LIBRARY_PREPARATION("Library Preparation", true) {
     @Override
     public boolean qualifyTest(Test test) {
       return !test.isLibraryPreparationSkipped()
-          && Helpers.hasPendingWork(test.getLibraryPreparations(), test.getExtractions());
+          && Helpers.hasPendingWork(test.getLibraryPreparations(), test.getExtractions(), true);
     }
 
     @Override
@@ -137,7 +157,8 @@ public enum PendingState {
     @Override
     public boolean qualifyTest(Test test) {
       return !test.isLibraryQualificationSkipped()
-          && Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations());
+          && Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations(),
+              false);
     }
 
     @Override
@@ -185,7 +206,8 @@ public enum PendingState {
   FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true) {
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications());
+      return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications(),
+          false);
     }
 
     @Override
@@ -383,9 +405,11 @@ public enum PendingState {
       return gate.stream().noneMatch(possiblyCompleted);
     }
 
-    public static boolean hasPendingWork(List<Sample> gate, List<Sample> previousGate) {
+    public static boolean hasPendingWork(List<Sample> gate, List<Sample> previousGate,
+        boolean previousRequiresTransfer) {
       return gate.stream().noneMatch(possiblyCompleted)
-          && previousGate.stream().anyMatch(DataUtils::isPassed)
+          && previousGate.stream().anyMatch(sample -> DataUtils.isPassed(sample)
+              && (!previousRequiresTransfer || sample.getTransferDate() != null))
           && previousGate.stream().noneMatch(pendingQcOrDataReview);
     }
 

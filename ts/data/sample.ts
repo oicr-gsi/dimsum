@@ -77,6 +77,7 @@ export interface Sample extends Qcable {
   concentrationUnits?: string;
   run?: Run;
   donor: Donor;
+  transferDate: string;
   meanInsertSize?: number;
   medianInsertSize?: number;
   clustersPerSample?: number;

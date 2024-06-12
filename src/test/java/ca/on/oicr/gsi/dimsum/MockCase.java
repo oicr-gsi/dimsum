@@ -33,7 +33,7 @@ public class MockCase {
           makeCase12(), makeCase13(), makeCase14(), makeCase15(), makeCase16(), makeCase17(),
           makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22(), makeCase23(),
           makeCase24(), makeCase25(), makeCase26(), makeCase27(), makeCase28(), makeCase29(),
-          makeCase30(), makeCase31(), makeCase32(), makeCase33(), makeCase34());
+          makeCase30(), makeCase31(), makeCase32(), makeCase33(), makeCase34(), makeCase35());
 
   private static Case makeCase0() {
     final int caseNumber = 0;
@@ -450,6 +450,17 @@ public class MockCase {
     return kase;
   }
 
+  private static Case makeCase35() {
+    final int caseNumber = 35;
+    Case kase = makeCase("PRO35_0001", "Single Test", "PRO35", "REQ35", caseNumber, null, null);
+    // Test 1 is pending extraction transfer
+    ca.on.oicr.gsi.cardea.data.Test test1 =
+        addTest(kase, caseNumber, 1, "Test", "WG", false, false, false, false);
+    String sampleId = makeSampleId(caseNumber, 1, MetricCategory.EXTRACTION, 1);
+    addSample(test1.getExtractions(), sampleId, true, "Good");
+    return kase;
+  }
+
   private static Case makeCase(String donorName, String assayName, String projectName,
       String requisitionName, int caseNumber, LocalDate startDate,
       LocalDate completionDate) {
@@ -581,7 +592,8 @@ public class MockCase {
         addTest(kase, caseNumber, testNumber, name, libraryDesignCode);
     if (extractionComplete) {
       String extractionId = makeSampleId(caseNumber, testNumber, MetricCategory.EXTRACTION, 1);
-      addSample(test.getExtractions(), extractionId, true, "Good");
+      Sample extraction = addSample(test.getExtractions(), extractionId, true, "Good");
+      when(extraction.getTransferDate()).thenReturn(LocalDate.now());
       if (libraryPrepComplete) {
         String libraryId = makeSampleId(caseNumber, testNumber, MetricCategory.LIBRARY_PREP, 1);
         addSample(test.getLibraryPreparations(), libraryId, true, "Good");

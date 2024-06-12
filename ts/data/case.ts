@@ -279,7 +279,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "Receipt/Inspection",
       addParentContents(kase, fragment) {
         addSampleIcons(kase.assayId, kase.receipts, fragment);
-        if (samplePhasePendingWorkOrQc(kase.receipts)) {
+        if (samplePhasePendingWorkQcOrTransfer(kase.receipts)) {
           if (
             samplePhasePendingWork(kase.receipts) &&
             !kase.requisition.paused
@@ -330,9 +330,9 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(kase.assayId, test.extractions, fragment);
+        addSampleIcons(kase.assayId, test.extractions, fragment, true);
         if (samplePhaseComplete(kase.receipts)) {
-          if (samplePhasePendingWorkOrQc(test.extractions)) {
+          if (samplePhasePendingWorkQcOrTransfer(test.extractions, true)) {
             if (
               samplePhasePendingWork(test.extractions) &&
               !kase.requisition.paused
@@ -358,7 +358,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         if (!test.extractions.length && test.extractionSkipped) {
           return "na";
         }
-        return getSamplePhaseHighlight(kase.requisition, test.extractions);
+        return getSamplePhaseHighlight(
+          kase.requisition,
+          test.extractions,
+          true
+        );
       },
     },
     {
@@ -382,8 +386,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return;
         }
         addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
-        if (test.extractionSkipped || samplePhaseComplete(test.extractions)) {
-          if (samplePhasePendingWorkOrQc(test.libraryPreparations)) {
+        if (
+          test.extractionSkipped ||
+          samplePhaseComplete(test.extractions, true)
+        ) {
+          if (samplePhasePendingWorkQcOrTransfer(test.libraryPreparations)) {
             if (
               samplePhasePendingWork(test.libraryPreparations) &&
               !kase.requisition.paused
@@ -443,7 +450,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           test.libraryPreparationSkipped ||
           samplePhaseComplete(test.libraryPreparations)
         ) {
-          if (samplePhasePendingWorkOrQc(test.libraryQualifications)) {
+          if (samplePhasePendingWorkQcOrTransfer(test.libraryQualifications)) {
             if (
               samplePhasePendingWork(test.libraryQualifications) &&
               !kase.requisition.paused
@@ -496,7 +503,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           test.libraryQualificationSkipped ||
           samplePhaseComplete(test.libraryQualifications)
         ) {
-          if (samplePhasePendingWorkOrQc(test.fullDepthSequencings)) {
+          if (samplePhasePendingWorkQcOrTransfer(test.fullDepthSequencings)) {
             if (
               samplePhasePendingWork(test.fullDepthSequencings) &&
               !kase.requisition.paused
@@ -1138,7 +1145,10 @@ export function handleNaSamplePhase(
   return false;
 }
 
-export function samplePhaseComplete(samples: Sample[]) {
+export function samplePhaseComplete(
+  samples: Sample[],
+  requiresTransfer: boolean = false
+) {
   // consider incomplete if any are pending QC or data review
   // pending statuses besides "Top-up Required" are still considered pending QC
   for (let sample of samples) {
@@ -1161,9 +1171,13 @@ export function samplePhaseComplete(samples: Sample[]) {
       }
     }
   }
-  // consider complete if at least one is passed QC, and data review if applicable
+  // consider complete if at least one is passed QC, data review if applicable,
+  // and has been transferred if applicable
   return samples.some(
-    (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
+    (sample) =>
+      sample.qcPassed &&
+      (!sample.run || sample.dataReviewPassed) &&
+      (!requiresTransfer || sample.transferDate)
   );
 }
 
@@ -1196,7 +1210,10 @@ export function samplePhasePendingWork(samples: Sample[]) {
   );
 }
 
-function samplePhasePendingWorkOrQc(samples: Sample[]) {
+function samplePhasePendingWorkQcOrTransfer(
+  samples: Sample[],
+  requiresTransfer: boolean = false
+) {
   // pending if there are no samples
   if (!samples.length) {
     return true;
@@ -1209,17 +1226,22 @@ function samplePhasePendingWorkOrQc(samples: Sample[]) {
   ) {
     return true;
   }
-  // pending if there are no samples with passed QC and data review (if applicable)
+  // pending if there are no samples with passed QC, data review if applicable,
+  // and transfer if applicable
   return !samples.some(
-    (sample) => sample.qcPassed && (!sample.run || sample.dataReviewPassed)
+    (sample) =>
+      sample.qcPassed &&
+      (!sample.run || sample.dataReviewPassed) &&
+      (!requiresTransfer || sample.transferDate)
   );
 }
 
 export function getSamplePhaseHighlight(
   requisition: Requisition,
-  samples: Sample[]
+  samples: Sample[],
+  requiresTransfer: boolean = false
 ) {
-  if (samplePhaseComplete(samples) || requisition.paused) {
+  if (samplePhaseComplete(samples, requiresTransfer) || requisition.paused) {
     return null;
   } else if (requisition.stopped) {
     return samples.length ? null : "na";
@@ -1271,12 +1293,22 @@ export function addConstructionIcon(phase: string, fragment: DocumentFragment) {
 export function addSampleIcons(
   assayId: number,
   samples: Sample[],
-  fragment: DocumentFragment
+  fragment: DocumentFragment,
+  transferRequired: boolean = false
 ) {
+  const phaseComplete = samplePhaseComplete(samples, transferRequired);
   samples.forEach((sample, i) => {
     let status = getQcStatus(sample);
     if (status === qcStatuses.passed && !sample.assayIds?.includes(assayId)) {
       status = qcStatuses.passedDifferentAssay;
+    }
+    if (
+      transferRequired &&
+      !phaseComplete &&
+      [qcStatuses.passed, qcStatuses.passedDifferentAssay].includes(status) &&
+      !sample.transferDate
+    ) {
+      status = qcStatuses.transfer;
     }
     const icon = makeIcon(status.icon);
     const tooltipInstance = Tooltip.getInstance();
