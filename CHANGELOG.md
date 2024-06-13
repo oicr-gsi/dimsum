@@ -7,6 +7,15 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.37.0] - 2024-06-13
+
+### Added
+
+* Pending extraction transfer case filter
+* Requirement for extraction sample (or aliquot) transfer to complete extraction step. A new icon is
+  used to indicate samples pending transfer
+
+
 ## [1.36.0] - 2024-06-06
 
 ### Added
