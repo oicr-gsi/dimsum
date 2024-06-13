@@ -5,6 +5,7 @@ enum qcStatusKeyEnum {
   "sequencing",
   "analysis",
   "qc",
+  "transfer",
   "dataReview",
   "passed",
   "passedDifferentAssay",
@@ -54,6 +55,13 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: false,
     cellStatus: "warning",
     priority: 4,
+  },
+  transfer: {
+    label: "Pending transfer",
+    icon: "right-left",
+    qcComplete: true,
+    cellStatus: "warning",
+    priority: 0,
   },
   dataReview: {
     label: "Pending data review",

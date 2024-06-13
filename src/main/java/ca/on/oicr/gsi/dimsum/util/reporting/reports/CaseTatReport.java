@@ -45,21 +45,24 @@ public class CaseTatReport extends Report {
               Column.forString("Start Date",
                   x -> x.kase().getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
               Column.forString("Receipt Completed",
-                  x -> findLatestCompletionDate(x.kase().getReceipts())),
+                  x -> findLatestCompletionDate(x.kase().getReceipts(), false)),
               Column.forInteger("Receipt Days", x -> x.kase().getReceiptDaysSpent()),
               Column.forString("Test", x -> x.test().getName()),
               Column.forString("Supplemental Only",
                   x -> isSupplementalOnly(x.test(), x.kase().getRequisition()) ? "Yes"
                       : "No"),
-              Column.forString("Extraction Completed",
-                  x -> findLatestCompletionDate(x.test().getExtractions())),
-              Column.forInteger("Extraction Days", x -> x.test().getExtractionDaysSpent()),
+              Column.forString("Extraction (EX) Completed",
+                  x -> findLatestCompletionDate(x.test().getExtractions(), true)),
+              Column.forInteger("EX Days", x -> x.test().getExtractionDaysSpent()),
+              Column.forInteger("EX Prep. Days", x -> x.test().getExtractionPreparationDaysSpent()),
+              Column.forInteger("EX QC Days", x -> x.test().getExtractionQcDaysSpent()),
+              Column.forInteger("EX Transfer Days", x -> x.test().getExtractionTransferDaysSpent()),
               Column.forString("Library Prep. Completed",
-                  x -> findLatestCompletionDate(x.test().getLibraryPreparations())),
+                  x -> findLatestCompletionDate(x.test().getLibraryPreparations(), false)),
               Column.forInteger("Library Prep. Days",
                   x -> x.test().getLibraryPreparationDaysSpent()),
               Column.forString("Library Qual. (LQ) Completed",
-                  x -> findLatestCompletionDate(x.test().getLibraryQualifications())),
+                  x -> findLatestCompletionDate(x.test().getLibraryQualifications(), false)),
               Column.forInteger("LQ Loading Days",
                   x -> x.test().getLibraryQualificationLoadingDaysSpent()),
               Column.forInteger("LQ Sequencing Days",
@@ -69,7 +72,7 @@ public class CaseTatReport extends Report {
               Column.forInteger("LQ Total Days",
                   x -> x.test().getLibraryQualificationDaysSpent()),
               Column.forString("Full-Depth (FD) Completed",
-                  x -> findLatestCompletionDate(x.test().getFullDepthSequencings())),
+                  x -> findLatestCompletionDate(x.test().getFullDepthSequencings(), false)),
               Column.forInteger("FD Loading Days",
                   x -> x.test().getFullDepthSequencingLoadingDaysSpent()),
               Column.forInteger("FD Sequencing Days",
@@ -198,24 +201,27 @@ public class CaseTatReport extends Report {
             .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()));
   }
 
-  private static String findLatestCompletionDate(List<Sample> samples) {
+  private static String findLatestCompletionDate(List<Sample> samples, boolean requiresTransfer) {
     LocalDate latestDate = null;
     for (Sample sample : samples) {
-      if (DataUtils.isPassed(sample)) {
-        LocalDate dateToCompare = null;
-        if (sample.getRun() != null) {
-          LocalDate sampleReviewDate = sample.getDataReviewDate();
-          LocalDate runReviewDate = sample.getRun().getDataReviewDate();
-          if (sampleReviewDate != null && runReviewDate != null) {
-            dateToCompare =
-                runReviewDate.isAfter(sampleReviewDate) ? runReviewDate : sampleReviewDate;
-          }
-        } else {
-          dateToCompare = sample.getQcDate();
+      if (!DataUtils.isPassed(sample) || (requiresTransfer && sample.getTransferDate() == null)) {
+        continue;
+      }
+      LocalDate dateToCompare = null;
+      if (requiresTransfer) {
+        dateToCompare = sample.getTransferDate();
+      } else if (sample.getRun() != null) {
+        LocalDate sampleReviewDate = sample.getDataReviewDate();
+        LocalDate runReviewDate = sample.getRun().getDataReviewDate();
+        if (sampleReviewDate != null && runReviewDate != null) {
+          dateToCompare =
+              runReviewDate.isAfter(sampleReviewDate) ? runReviewDate : sampleReviewDate;
         }
-        if (dateToCompare != null && (latestDate == null || dateToCompare.isAfter(latestDate))) {
-          latestDate = dateToCompare;
-        }
+      } else {
+        dateToCompare = sample.getQcDate();
+      }
+      if (dateToCompare != null && (latestDate == null || dateToCompare.isAfter(latestDate))) {
+        latestDate = dateToCompare;
       }
     }
     return latestDate != null ? latestDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null;

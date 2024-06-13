@@ -40,7 +40,8 @@ public enum CompletedGate {
   EXTRACTION("Extraction", true) {
     @Override
     public boolean qualifyTest(Test test) {
-      return test.isExtractionSkipped() || Helpers.isCompleted(test.getExtractions());
+      return test.isExtractionSkipped() || test.getExtractions().stream().anyMatch(sample ->
+          DataUtils.isPassed(sample) && sample.getTransferDate() != null);
     }
 
     @Override
@@ -50,7 +51,6 @@ public enum CompletedGate {
       } else {
         return true;
       }
-
     }
   },
   LIBRARY_PREPARATION("Library Preparation", true) {

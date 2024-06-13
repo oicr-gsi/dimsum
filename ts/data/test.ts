@@ -175,7 +175,8 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         addSampleIcons(
           testTableView.assayId,
           testTableView.test.extractions,
-          fragment
+          fragment,
+          true
         );
         if (
           samplePhaseComplete(testTableView.receipts) &&
@@ -197,7 +198,8 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         }
         return getSamplePhaseHighlight(
           testTableView.requisition,
-          testTableView.test.extractions
+          testTableView.test.extractions,
+          true
         );
       },
     },
@@ -226,7 +228,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           fragment
         );
         if (
-          samplePhaseComplete(testTableView.test.extractions) &&
+          samplePhaseComplete(testTableView.test.extractions, true) &&
           samplePhasePendingWork(testTableView.test.libraryPreparations)
         ) {
           if (testTableView.test.libraryPreparations.length) {
