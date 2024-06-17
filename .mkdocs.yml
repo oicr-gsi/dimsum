@@ -24,6 +24,7 @@ nav:
       - Runs Page: user_manual/runs.md
       - Omissions Page: user_manual/omissions.md
       - Projects Page: user_manual/projects.md
+      - Reports: user_manual/reports.md
       - FAQ: user_manual/faq.md
   - Guides:
       - Complete Run Sign-Offs: user_manual/guides/sign_off_run.md

@@ -4,6 +4,9 @@ This is the main dashboard users are presented with. All cases are presented in 
 [Cases](cases.md) for details about how cases are constructed. Navigate back to this page
 by clicking on the Dimsum logo on the top left of all pages.
 
+By default, the table is sorted by urgency. Overdue cases are considered most urgent, followed by
+those behind schedule, and then cases with the least time remaining.
+
 ![QC Dashboard](../images/qc_dashboard.png)
 
 ## Cases Table Columns
@@ -51,6 +54,17 @@ the tumour sample(s) involved in the case. For ongoing cases, the turn-around ti
 days from the start date until the current date. For completed cases, the turn-around time is the
 number of days from the start date until the Release sign-off.
 
+If the case's assay has turn-around time (TAT) targets defined, this column also displays the number
+of days remaining for the case, and warnings if the case isn't meeting the targets.
+
+* If the case TAT target has passed, "OVERDUE" is displayed and the cell is shaded red. Hovering
+  over the text will open a pop-up indicating the case target
+* If one or more QC steps have passed their TAT targets, "BEHIND SCHEDULE" is displayed and the cell
+  is shaded yellow. Hovering over the text will open a pop-up indicating which gate is behind
+  schedule and its target
+
+![TAT Targets](../images/tat_targets.png)
+
 ### Test
 
 Each assay includes one or more tests. Tests must be repeated for each group ID present. See
@@ -73,9 +87,13 @@ The following are QC step columns, and their associated items:
 
 Each QC step cell includes icons representing the QC status of each item relevant to that step. A
 checkmark represents an item that has passed QC, while an 'X' represents a QC failure. Click the
-Legend button at the bottom of the table for a full list of statuses and their icons. A single
-passing item is required for the step to be considered complete. Hover over an icon to view a
+Legend button at the top or bottom of the table for a full list of statuses and their icons. A
+single passing item is required for the step to be considered complete. Hover over an icon to view a
 tooltip containing item details and relevant links.
+
+If the case's assay has turn-around time (TAT) targets defined, these columns also display the
+number of days remaining for the step, and an "OVERDUE" warning if the step has exceeded its target.
+Hovering over this text will open a pop-up indicating the step's TAT target.
 
 A QC step cell is shaded yellow if the step has not been completed.
 
