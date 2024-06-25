@@ -724,14 +724,7 @@ function setupPrint(kase: Case) {
       }
       // update title temporarily to set default filename for printing to PDF
       const pageTitle = document.title;
-      const tumourReceipts = kase.receipts.filter(
-        (sample) => sample.tissueType !== "R"
-      );
-      if (tumourReceipts && tumourReceipts[0].groupId) {
-        document.title = `${tumourReceipts[0].groupId}_qc`;
-      } else {
-        document.title = `${kase.requisition.name}_qc`;
-      }
+      document.title = `${kase.requisition.name}_qc`;
       window.print();
       document.title = pageTitle;
     };
