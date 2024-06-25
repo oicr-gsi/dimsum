@@ -42,9 +42,9 @@ Tumour WT. One attribute of a test is whether it is "repeatable"
 
 If true:
 
-- The test must be completed once for each sample grouping received
 - A case will be created for each case grouping received
-- The test will be repeated within the case for each sample grouping
+- The test must be completed at least once per case
+- The test may be repeated within the case for each sample grouping, but this is not required
 - Typical for tumour tests
 
 If false:
