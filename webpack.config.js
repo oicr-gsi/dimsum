@@ -14,6 +14,7 @@ module.exports = {
     projectList: "./ts/project-list.ts",
     caseReport: "./ts/case-report.ts",
     error: "./ts/error.ts",
+    tatTrend: "./ts/tat-trend.ts",
   },
   module: {
     rules: [
