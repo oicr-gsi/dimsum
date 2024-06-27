@@ -67,6 +67,30 @@ export function postDownload(url: string, body: any) {
   });
 }
 
+export function postDownloadNewWindow(
+  url: string,
+  body: any,
+  targetWindow: Window
+) {
+  doPost(url, body, {
+    Accept: "application/octet-stream",
+  }).then((response) => {
+    response.blob().then((blob) => {
+      const excelContent = URL.createObjectURL(blob);
+      if (targetWindow) {
+        targetWindow.postMessage(
+          { type: "excelData", content: excelContent },
+          "*"
+        );
+      } else {
+        alert(
+          "Failed to open the target window. Please allow popups for this site."
+        );
+      }
+    });
+  });
+}
+
 export function get(url: string, params?: Record<string, string>) {
   let headers: any = {
     "Content-Type": "application/json",
