@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.38.0] - 2024-06-27
+
+### Added
+
+* Details of turn-around time features to user manual
+
+### Changed
+
+* The Case QC Report's default filename when printing to PDF will always use the requisition name and
+  never the group ID
+
+
 ## [1.37.0] - 2024-06-13
 
 ### Added
