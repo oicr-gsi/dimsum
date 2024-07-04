@@ -21,6 +21,8 @@ import {
   addMetricRequirementText,
   anyFail,
   formatMetricValue,
+  getBooleanMetricHighlight,
+  getBooleanMetricValueIcon,
   getDivisor,
   getDivisorUnit,
   getMetricNames,
@@ -570,13 +572,7 @@ export function getSampleMetricCellHighlight(
       return getPhixHighlight(sample, metrics);
   }
   if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
-    if (sample.qcPassed) {
-      return null;
-    } else if (sample.qcPassed === false) {
-      return "error";
-    } else {
-      return "warning";
-    }
+    return getBooleanMetricHighlight(sample.qcPassed);
   }
   if (
     /^Adaptor Contamination/.test(metricName) ||
@@ -655,14 +651,7 @@ export function addMetricValueContents(
   }
 
   if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
-    // pass/fail based on QC status
-    if (sample.qcPassed) {
-      fragment.append(makeStatusIcon("check", "Passed"));
-    } else if (sample.qcPassed === false) {
-      fragment.append(makeStatusIcon("xmark", "Failed"));
-    } else {
-      fragment.append(makeStatusIcon("magnifying-glass", "Pending QC"));
-    }
+    fragment.append(getBooleanMetricValueIcon(sample.qcPassed));
     return;
   }
   if (

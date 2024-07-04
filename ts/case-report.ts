@@ -9,7 +9,6 @@ import {
   Qcable,
   analysisMetricApplies,
   getAnalysisMetricCellHighlight,
-  getAnalysisMetricValue,
   getDeliverableQcStatus,
   makeAnalysisMetricDisplay,
   subcategoryApplies as analysisSubcategoryApplies,
@@ -28,7 +27,10 @@ import {
   subcategoryApplies as sampleSubcategoryApplies,
 } from "./data/sample";
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
-import { getMetricRequirementText } from "./util/metrics";
+import {
+  getBooleanMetricValueIcon,
+  getMetricRequirementText,
+} from "./util/metrics";
 import { get } from "./util/requests";
 import { siteConfig } from "./util/site-config";
 import { urls } from "./util/urls";
@@ -363,23 +365,22 @@ const analysisReviewMetricsDefinition: TableDefinition<
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
-        if (object.name === "Trimming; Minimum base quality Q") {
-          fragment.appendChild(
-            document.createTextNode("Standard pipeline removes reads below Q30")
-          );
-        } else {
-          const value = getAnalysisMetricValue(object.name, parent.qcGroup);
-          fragment.appendChild(
-            makeAnalysisMetricDisplay([object], parent.qcGroup, false)
-          );
-        }
+        fragment.appendChild(
+          makeAnalysisMetricDisplay(
+            [object],
+            parent.qcGroup,
+            [parent.deliverable.analysisReviewQcPassed],
+            false
+          )
+        );
       },
       getCellHighlight(object, metric) {
         if (metric) {
           return getAnalysisMetricCellHighlight(
             object.qcGroup,
             object.kase,
-            metric.name
+            metric,
+            object.deliverable.analysisReviewQcPassed
           );
         } else {
           return "na";

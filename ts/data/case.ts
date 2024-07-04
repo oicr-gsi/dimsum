@@ -28,6 +28,8 @@ import { caseFilters, latestActivitySort } from "../component/table-components";
 import { AssayTargets, Metric, MetricSubcategory } from "./assay";
 import {
   anyFail,
+  getBooleanMetricHighlight,
+  getBooleanMetricValueIcon,
   getMetricNames,
   makeMetricDisplay,
   makeNotFoundIcon,
@@ -966,10 +968,16 @@ function generateAnalysisReviewMetricColumns(
                 addTextDiv(`Group ID: ${qcGroup.groupId}`, detailsFragment);
               }
             }
+            const qcStatuses = !kase.deliverables
+              ? []
+              : kase.deliverables.map(
+                  (deliverable) => deliverable.analysisReviewQcPassed
+                );
             fragment.appendChild(
               makeAnalysisMetricDisplay(
                 metricsPerGroup[i],
                 qcGroup,
+                qcStatuses,
                 true,
                 prefix,
                 detailsFragment
@@ -994,6 +1002,22 @@ function generateAnalysisReviewMetricColumns(
           );
           if (!metrics || !metrics.length) {
             continue;
+          }
+          if (metrics[0].thresholdType === "BOOLEAN") {
+            // Not specific to QC groups
+            if (!kase.deliverables) {
+              return "warning";
+            } else if (
+              kase.deliverables.every((x) => x.analysisReviewQcPassed)
+            ) {
+              return null;
+            } else if (
+              kase.deliverables.some((x) => x.analysisReviewQcPassed === false)
+            ) {
+              return "error";
+            } else {
+              return "warning";
+            }
           }
           anyApplicable = true;
           const value = getAnalysisMetricValue(metricName, qcGroup);
@@ -1079,12 +1103,25 @@ function makeQcGroupLabel(qcGroup: AnalysisQcGroup) {
 export function makeAnalysisMetricDisplay(
   metrics: Metric[],
   qcGroup: AnalysisQcGroup,
+  deliverableTypeQcStatuses: (boolean | undefined)[],
   addTooltip: boolean,
   prefix?: string,
   tooltipAdditionalContents?: Node
 ): Node {
   if (metrics[0].name === "Trimming; Minimum base quality Q") {
     return document.createTextNode("Standard pipeline removes reads below Q30");
+  } else if (metrics[0].thresholdType === "BOOLEAN") {
+    const div = document.createElement("div");
+    div.className = "flex space-x-1 items-center";
+    if (prefix) {
+      const label = document.createElement("span");
+      label.innerText = prefix;
+      div.appendChild(label);
+    }
+    deliverableTypeQcStatuses.forEach((qcStatus) =>
+      div.appendChild(getBooleanMetricValueIcon(qcStatus))
+    );
+    return div;
   }
   const div = document.createElement("div");
   const value = getAnalysisMetricValue(metrics[0].name, qcGroup);
@@ -1687,18 +1724,21 @@ function getTargets(kase: Case) {
 export function getAnalysisMetricCellHighlight(
   qcGroup: AnalysisQcGroup,
   kase: Case,
-  metricName: string
+  metric: Metric,
+  qcPassed: boolean | undefined
 ): CellStatus | null {
-  if (metricName === "Trimming; Minimum base quality Q") {
+  if (metric.name === "Trimming; Minimum base quality Q") {
     return null;
+  } else if (metric.thresholdType === "BOOLEAN") {
+    return getBooleanMetricHighlight(qcPassed);
   }
   let anyApplicable = false;
-  const metrics = getMatchingAnalysisReviewMetrics(metricName, kase, qcGroup);
+  const metrics = getMatchingAnalysisReviewMetrics(metric.name, kase, qcGroup);
   if (!metrics || !metrics.length) {
     return null;
   }
   anyApplicable = true;
-  const value = getAnalysisMetricValue(metricName, qcGroup);
+  const value = getAnalysisMetricValue(metric.name, qcGroup);
   if (value === null) {
     return "warning";
   } else if (anyFail(value, metrics)) {
