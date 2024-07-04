@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.38.1] - 2024-07-04
+
+### Fixed
+
+* Display of Analysis Review pass/fail metrics
+
+
 ## [1.38.0] - 2024-06-27
 
 ### Added
