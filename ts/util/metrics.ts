@@ -323,3 +323,24 @@ function countDecimalPlaces(num?: number) {
   const i = string.indexOf(".");
   return string.length - i - 1;
 }
+
+export function getBooleanMetricValueIcon(qcPassed: boolean | undefined) {
+  // pass/fail based on QC status
+  if (qcPassed) {
+    return makeStatusIcon("check", "Passed");
+  } else if (qcPassed === false) {
+    return makeStatusIcon("xmark", "Failed");
+  } else {
+    return makeStatusIcon("magnifying-glass", "Pending QC");
+  }
+}
+
+export function getBooleanMetricHighlight(qcPassed: boolean | undefined) {
+  if (qcPassed) {
+    return null;
+  } else if (qcPassed === false) {
+    return "error";
+  } else {
+    return "warning";
+  }
+}
