@@ -67,28 +67,28 @@ export function postDownload(url: string, body: any) {
   });
 }
 
-export function postDownloadNewWindow(
-  url: string,
-  body: any,
-  targetWindow: Window
-) {
+export function postNewWindow(url: string, body: any, targetWindow: Window) {
   doPost(url, body, {
-    Accept: "application/octet-stream",
-  }).then((response) => {
-    response.blob().then((blob) => {
-      const excelContent = URL.createObjectURL(blob);
+    Accept: "application/json",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to fetch report");
+      }
+      return response.json(); // parse JSON response directly
+    })
+    .then((jsonData) => {
       if (targetWindow) {
-        targetWindow.postMessage(
-          { type: "excelData", content: excelContent },
-          "*"
-        );
+        targetWindow.postMessage({ type: "jsonData", content: jsonData }, "*");
       } else {
         alert(
           "Failed to open the target window. Please allow popups for this site."
         );
       }
+    })
+    .catch(() => {
+      throw new Error("Network error");
     });
-  });
 }
 
 export function get(url: string, params?: Record<string, string>) {

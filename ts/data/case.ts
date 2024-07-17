@@ -43,7 +43,7 @@ import {
   showFormDialog,
   TextField,
 } from "../component/dialog";
-import { post, postDownload, postDownloadNewWindow } from "../util/requests";
+import { post, postDownload, postNewWindow } from "../util/requests";
 
 export interface Project {
   name: string;
@@ -2004,21 +2004,5 @@ function showTatTrendPage(
     urlParams.append(filter.key, filter.value);
   });
   const targetUrl = `/tat-trend?${urlParams.toString()}`;
-  const newWindow = window.open(targetUrl, "_blank");
-
-  if (newWindow) {
-    newWindow.addEventListener(
-      "load",
-      () => {
-        postDownloadNewWindow(
-          urls.rest.downloads.reports("case-tat-report"),
-          { filters: joinedFilters, format: "excel" },
-          newWindow
-        );
-      },
-      { once: true }
-    );
-  } else {
-    alert("Failed to open a new window. Please allow popups for this site.");
-  }
+  window.open(targetUrl, "_blank");
 }

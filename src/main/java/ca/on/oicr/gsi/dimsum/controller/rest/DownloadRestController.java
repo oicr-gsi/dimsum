@@ -48,6 +48,12 @@ public class DownloadRestController {
     return new HttpEntity<byte[]>(bytes, headers);
   }
 
+  @PostMapping("/reports/{reportName}/data")
+  public String getReportData(@PathVariable String reportName, @RequestBody JsonNode parameters) {
+    Report report = getReport(reportName);
+    return report.getData(caseService, parameters);
+  }
+
   private static Report getReport(String reportName) {
     switch (reportName) {
       case "tgl-tracking-sheet":

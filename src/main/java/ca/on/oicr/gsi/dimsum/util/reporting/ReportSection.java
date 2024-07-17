@@ -65,6 +65,45 @@ public abstract class ReportSection<T> {
       }
     }
 
+    @Override
+    public String createJson(List<T> objects) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("[");
+      for (int i = 0; i < objects.size(); i++) {
+        T object = objects.get(i);
+        sb.append(convertObjectToJson(object));
+        if (i < objects.size() - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append("]");
+      return sb.toString();
+    }
+
+    private String convertObjectToJson(T object) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("{");
+
+      List<Column<T>> columns = getColumns();
+      for (int i = 0; i < columns.size(); i++) {
+        Column<T> column = columns.get(i);
+        sb.append("\"").append(column.getTitle()).append("\":");
+        String value = column.getDelimitedColumnString(",", object);
+        if (value == null) {
+          sb.append("null");
+        } else {
+          value = value.replaceAll("^\"|\"$", "").replaceAll("\\\\\"", "\"");
+          value = value.replace("\"", "\\\"");
+          sb.append("\"").append(value).append("\"");
+        }
+        if (i < columns.size() - 1) {
+          sb.append(",");
+        }
+      }
+
+      sb.append("}");
+      return sb.toString();
+    }
   }
 
   private final String title;
@@ -101,6 +140,8 @@ public abstract class ReportSection<T> {
   protected abstract void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
       boolean includeHeaders);
 
+  public abstract String createJson(List<T> objects);
+
   /**
    * Fetches data from the CaseService based on parameters provided
    * 
@@ -120,5 +161,4 @@ public abstract class ReportSection<T> {
     }
     return Stream.of(value.split("\\s*,\\s*")).collect(Collectors.toSet());
   }
-
 }

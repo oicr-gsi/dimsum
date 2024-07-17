@@ -1,8 +1,7 @@
-import * as XLSX from "xlsx";
 import Plotly from "plotly.js-dist-min";
-import { postDownloadNewWindow } from "./util/requests";
+import { postNewWindow } from "./util/requests";
 
-let jsonData: any[] = []; // Declare jsonData at the top
+let jsonData: any[] = [];
 
 function generateColor(index: number): string {
   const colors = [
@@ -22,7 +21,7 @@ function generateColor(index: number): string {
 
 interface AssayGroups {
   [assay: string]: {
-    [gate: string]: { x: any[]; y: number[]; text: string[] };
+    [gate: string]: { x: any[]; y: number[]; text: string[]; n: number };
   };
 }
 
@@ -34,64 +33,45 @@ function getCompletedDateAndDays(
   let completedDate: Date | null = null;
   let days: number | null = null;
 
-  const isCommonGate = ["Start Date", "Receipt"].includes(gate);
-
-  switch (gate) {
-    case "Extraction":
-      completedDate = row["Extraction (EX) Completed"]
-        ? new Date(row["Extraction (EX) Completed"])
+  if (gate === "Extraction") {
+    completedDate = row["Extraction (EX) Completed"]
+      ? new Date(row["Extraction (EX) Completed"])
+      : null;
+    days = row["EX Days"] ?? 0;
+  } else if (gate === "Library Prep") {
+    completedDate = row["Library Prep. Completed"]
+      ? new Date(row["Library Prep. Completed"])
+      : null;
+    days = row["Library Prep. Days"] ?? 0;
+  } else if (gate === "Library Qual") {
+    completedDate = row["Library Qual. (LQ) Completed"]
+      ? new Date(row["Library Qual. (LQ) Completed"])
+      : null;
+    days = row["LQ Total Days"] ?? 0;
+  } else if (gate === "Full-Depth") {
+    completedDate = row["Full-Depth (FD) Completed"]
+      ? new Date(row["Full-Depth (FD) Completed"])
+      : null;
+    days = row["FD Total Days"] ?? 0;
+  } else if (gate === "All Completed") {
+    if (selectedDataType === "AL") {
+      completedDate = row["ALL Release Completed"]
+        ? new Date(row["ALL Release Completed"])
         : null;
-      days = row["EX Days"];
-      break;
-    case "Library Prep":
-      completedDate = row["Library Prep. Completed"]
-        ? new Date(row["Library Prep. Completed"])
+      days = row["ALL Total Days"] ?? 0;
+    } else {
+      completedDate = row[`${selectedDataType} Release Completed`]
+        ? new Date(row[`${selectedDataType} Release Completed`])
         : null;
-      days = row["Library Prep. Days"];
-      break;
-    case "Library Qual":
-      completedDate = row["Library Qual. (LQ) Completed"]
-        ? new Date(row["Library Qual. (LQ) Completed"])
-        : null;
-      days = row["LQ Total Days"];
-      break;
-    case "Full-Depth":
-      completedDate = row["Full-Depth (FD) Completed"]
-        ? new Date(row["Full-Depth (FD) Completed"])
-        : null;
-      days = row["FD Total Days"];
-      break;
-    case "All Completed":
-      const completedDates = [
-        row["CR Analysis Review Completed"],
-        row["CR Release Approval Completed"],
-        row["CR Release Completed"],
-        row["DR Analysis Review Completed"],
-        row["DR Release Approval Completed"],
-        row["DR Release Completed"],
-      ]
-        .map((date) => (date ? new Date(date) : null))
-        .filter((date) => date !== null);
-      completedDate = completedDates.length
-        ? new Date(Math.max(...completedDates.map((date) => date!.getTime())))
-        : null;
-      days =
-        selectedDataType === "CR" ? row["CR Total Days"] : row["DR Total Days"];
-      break;
-    default:
-      completedDate = isCommonGate
-        ? row[`${gate} Completed`]
-          ? new Date(row[`${gate} Completed`])
-          : null
-        : row[`${selectedDataType} ${gate} Completed`]
-        ? new Date(row[`${selectedDataType} ${gate} Completed`])
-        : row[`${gate} Completed`]
-        ? new Date(row[`${gate} Completed`])
-        : null;
-      days = isCommonGate
-        ? row[`${gate} Days`]
-        : row[`${selectedDataType} ${gate} Days`] || row[`${gate} Days`];
-      break;
+      days = row[`${selectedDataType} Total Days`] ?? 0;
+    }
+  } else {
+    completedDate = row[`${selectedDataType} ${gate} Completed`]
+      ? new Date(row[`${selectedDataType} ${gate} Completed`])
+      : row[`${gate} Completed`]
+      ? new Date(row[`${gate} Completed`])
+      : null;
+    days = row[`${selectedDataType} ${gate} Days`] ?? row[`${gate} Days`] ?? 0;
   }
 
   return { completedDate, days };
@@ -99,19 +79,31 @@ function getCompletedDateAndDays(
 
 function getGroupKey(date: Date, selectedGrouping: string): string {
   const year = date.getFullYear();
-  const quarter = Math.floor(date.getMonth() / 3 + 1);
+  const month = date.getMonth() + 1;
+  let fiscalYear = year;
+  let fiscalQuarter: number;
 
+  if (month >= 4) {
+    fiscalYear = year + 1; // next fiscal year
+    fiscalQuarter = Math.floor((month - 4) / 3) + 1;
+  } else {
+    fiscalYear = year; // current fiscal year
+    fiscalQuarter = Math.floor((month + 12 - 4) / 3) + 1;
+  }
+  const fiscalYearString = `FY${fiscalYear - 1}/${String(fiscalYear).slice(
+    -2
+  )}`;
   switch (selectedGrouping) {
     case "week":
       return getWeek(date);
     case "month":
-      return `${year}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      return `${fiscalYearString} - ${String(month).padStart(2, "0")}`;
     case "fiscalQuarter":
-      return `${year} Q${quarter}`;
+      return `${fiscalYearString} Q${fiscalQuarter}`;
     case "fiscalYear":
-      return year.toString();
+      return fiscalYearString;
     default:
-      return `${year} Q${quarter}`;
+      throw new Error(`Unsupported grouping type: ${selectedGrouping}`);
   }
 }
 
@@ -119,52 +111,48 @@ function groupData(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDataType: string
+  selectedDataType: string,
+  includeIncomplete: boolean = false
 ): AssayGroups {
   const assayGroups: AssayGroups = {};
 
   jsonData.forEach((row: any) => {
     const assay = row["Assay"];
-    const totalDays = row[`${selectedDataType} Total Days`];
     const caseId = row["Case ID"];
-    const releaseCompletedDate = row[`${selectedDataType} Release Completed`];
+    const caseCompletedDate =
+      row[`${selectedDataType} Release Completed`] ??
+      row["ALL Release Completed"];
+    const totalDays =
+      row[`${selectedDataType} Total Days`] ?? row["ALL Total Days"];
 
+    // skip if case completion date is missing and includeIncomplete is false
+    if (!caseCompletedDate && !includeIncomplete) {
+      return;
+    }
     if (assay && totalDays != null && caseId != null) {
       if (!assayGroups[assay]) {
         assayGroups[assay] = {};
       }
-
       selectedGates.forEach((gate) => {
         const { completedDate, days } = getCompletedDateAndDays(
           row,
           gate,
           selectedDataType
         );
-
-        if ((completedDate && days != null) || gate === "All Completed") {
-          const date = new Date(
-            gate === "All Completed"
-              ? releaseCompletedDate || new Date()
-              : completedDate
-          );
-          const groupKey = getGroupKey(date, selectedGrouping);
-
-          if (!assayGroups[assay][gate]) {
-            assayGroups[assay][gate] = { x: [], y: [], text: [] };
-          }
-
-          assayGroups[assay][gate].x.push(groupKey);
-          assayGroups[assay][gate].y.push(
-            gate === "All Completed" ? totalDays : days
-          );
-          assayGroups[assay][gate].text.push(
-            `${caseId} (${gate === "All Completed" ? "All Completed" : gate})`
-          );
+        const date = new Date(caseCompletedDate || completedDate || new Date());
+        const groupKey = getGroupKey(date, selectedGrouping);
+        if (!assayGroups[assay][gate]) {
+          assayGroups[assay][gate] = { x: [], y: [], text: [], n: 0 };
         }
+        assayGroups[assay][gate].x.push(groupKey);
+        assayGroups[assay][gate].y.push(days ?? totalDays);
+        assayGroups[assay][gate].text.push(
+          `${caseId} (${gate === "All Completed" ? "All Completed" : gate})`
+        );
+        assayGroups[assay][gate].n += 1;
       });
     }
   });
-
   return assayGroups;
 }
 
@@ -174,6 +162,13 @@ function getWeek(date: Date): string {
     ((date.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7
   );
   return `${date.getFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
+function getColorByGate(): boolean {
+  const toggleAnnotations = document.getElementById(
+    "toggleAnnotations"
+  ) as HTMLInputElement;
+  return toggleAnnotations ? toggleAnnotations.checked : false;
 }
 
 function plotData(
@@ -195,11 +190,16 @@ function plotData(
       selectedGates,
       selectedDataType
     );
-
     const plotData: Partial<Plotly.PlotData>[] = [];
     const assayColors: { [assay: string]: string } = {};
+    const gateColors: { [gate: string]: string } = {};
     let colorIndex = 0;
-
+    const colorByGate = getColorByGate();
+    if (colorByGate) {
+      selectedGates.forEach((gate, index) => {
+        gateColors[gate] = generateColor(index);
+      });
+    }
     Object.keys(assayGroups).forEach((assay) => {
       if (!assayColors[assay]) {
         assayColors[assay] = generateColor(colorIndex++);
@@ -212,17 +212,21 @@ function plotData(
             type: "box",
             name: `${assay}`,
             text: assayGroups[assay][gate].text,
+            hoverinfo: "text+y",
+            hovertemplate: `
+              %{text}<br>
+              Days: %{y}<br>
+              N: %{customdata}
+            `,
+            customdata: Array(assayGroups[assay][gate].x.length).fill(
+              assayGroups[assay][gate].n
+            ),
             boxpoints: "all",
             jitter: 0.3,
             pointpos: 0,
-            hoverinfo: "text+y",
-            hovertemplate: `
-            %{text}<br>
-            Days: %{y}
-            `,
             marker: {
               size: 6,
-              color: assayColors[assay],
+              color: colorByGate ? gateColors[gate] : assayColors[assay],
             },
             boxmean: true,
             legendgroup: assay,
@@ -275,38 +279,28 @@ function plotData(
 }
 
 window.addEventListener("message", (event) => {
-  if (event.data.type === "excelData") {
+  if (event.data.type === "jsonData") {
     const trendReportContainer = document.getElementById(
       "trendReportContainer"
     );
     if (trendReportContainer) {
-      fetch(event.data.content)
-        .then((response) => response.arrayBuffer())
-        .then((data) => {
-          const workbook = XLSX.read(data, { type: "array" });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          jsonData = XLSX.utils.sheet_to_json(firstSheet); // Update jsonData
-
-          plotData("fiscalQuarter", jsonData, getSelectedGates(), "CR");
-        });
+      jsonData = event.data.content; // update jsonData when new data is received
+      plotData(
+        getSelectedGrouping(),
+        jsonData,
+        getSelectedGates(),
+        getSelectedDataType()
+      );
     }
   }
 });
 
-function parseUrlParams() {
+function parseUrlParams(): { key: string; value: string }[] {
   const params: { key: string; value: string }[] = [];
-  window.location.search
-    .substr(1)
-    .split("&")
-    .forEach((item) => {
-      const [key, value] = item.split("=");
-      if (key && value) {
-        params.push({
-          key: decodeURIComponent(key),
-          value: decodeURIComponent(value).replace(/\+/g, " "),
-        });
-      }
-    });
+  const searchParams = new URLSearchParams(window.location.search);
+  searchParams.forEach((value, key) => {
+    params.push({ key, value });
+  });
   return params;
 }
 
@@ -336,30 +330,51 @@ function getSelectedDataType(): string {
 document.addEventListener("DOMContentLoaded", () => {
   const params = parseUrlParams();
   const requestData = { filters: params.length > 0 ? params : [] };
-  postDownloadNewWindow(
-    "/rest/downloads/reports/case-tat-report",
+  postNewWindow(
+    "/rest/downloads/reports/case-tat-report/data",
     requestData,
     window
   );
 
-  const updatePlot = () =>
-    plotData(
-      getSelectedGrouping(),
-      jsonData,
-      getSelectedGates(),
-      getSelectedDataType()
-    );
+  const updatePlot = (grouping: string) =>
+    plotData(grouping, jsonData, getSelectedGates(), getSelectedDataType());
 
-  document.getElementById("weekButton")?.addEventListener("click", updatePlot);
-  document.getElementById("monthButton")?.addEventListener("click", updatePlot);
-  document
-    .getElementById("quarterButton")
-    ?.addEventListener("click", updatePlot);
-  document.getElementById("yearButton")?.addEventListener("click", updatePlot);
+  const weekButton = document.getElementById("weekButton");
+  const monthButton = document.getElementById("monthButton");
+  const quarterButton = document.getElementById("quarterButton");
+  const yearButton = document.getElementById("yearButton");
+
+  weekButton?.addEventListener("click", () => {
+    updatePlot("week");
+  });
+
+  monthButton?.addEventListener("click", () => {
+    updatePlot("month");
+  });
+
+  quarterButton?.addEventListener("click", () => {
+    updatePlot("fiscalQuarter");
+  });
+
+  yearButton?.addEventListener("click", () => {
+    updatePlot("fiscalYear");
+  });
+
   document
     .getElementById("dataSelection")
-    ?.addEventListener("change", updatePlot);
+    ?.addEventListener("change", () => updatePlot(getSelectedGrouping()));
   document
     .getElementById("gatesCheckboxes")
-    ?.addEventListener("change", updatePlot);
+    ?.addEventListener("change", () => updatePlot(getSelectedGrouping()));
+  document
+    .getElementById("toggleAnnotations")
+    ?.addEventListener("change", () => updatePlot(getSelectedGrouping()));
+
+  // initial plot generation
+  plotData(
+    getSelectedGrouping(),
+    jsonData,
+    getSelectedGates(),
+    getSelectedDataType()
+  );
 });

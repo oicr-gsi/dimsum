@@ -82,4 +82,9 @@ public abstract class Report {
     return sb.toString().getBytes();
   }
 
+  public <T> String getData(CaseService caseService, JsonNode parameters) {
+    ReportSection<T> section = (ReportSection<T>) sections.get(0);
+    List<T> objects = section.getData(caseService, parameters);
+    return section.createJson(objects);
+  }
 }
