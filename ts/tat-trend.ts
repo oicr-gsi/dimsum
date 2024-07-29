@@ -2,19 +2,27 @@ import Plotly from "plotly.js-dist-min";
 import { postNewWindow } from "./util/requests";
 
 let jsonData: any[] = [];
+const uirevision = "true"; // Variable to maintain revision state
+
+const GATE = {
+  EX_COMPLETED: "Extraction (EX) Completed",
+  LP_COMPLETED: "Library Prep. Completed",
+  LQ_COMPLETED: "Library Qual. (LQ) Completed",
+  FD_COMPLETED: "Full-Depth (FD) Completed",
+  ALL_COMPLETED: "ALL Release Completed",
+  TOTAL_DAYS: "Total Days",
+};
 
 function generateColor(index: number): string {
   const colors = [
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-    "#9467bd",
-    "#8c564b",
-    "#e377c2",
-    "#7f7f7f",
-    "#bcbd22",
-    "#17becf",
+    "#4477AA",
+    "#66CCEE",
+    "#228833",
+    "#CCBB44",
+    "#EE6677",
+    "#AA3377",
+    "#BBBBBB",
+    "#000000",
   ];
   return colors[index % colors.length];
 }
@@ -34,29 +42,29 @@ function getCompletedDateAndDays(
   let days: number | null = null;
 
   if (gate === "Extraction") {
-    completedDate = row["Extraction (EX) Completed"]
-      ? new Date(row["Extraction (EX) Completed"])
+    completedDate = row[GATE.EX_COMPLETED]
+      ? new Date(row[GATE.EX_COMPLETED])
       : null;
     days = row["EX Days"] ?? 0;
   } else if (gate === "Library Prep") {
-    completedDate = row["Library Prep. Completed"]
-      ? new Date(row["Library Prep. Completed"])
+    completedDate = row[GATE.LP_COMPLETED]
+      ? new Date(row[GATE.LP_COMPLETED])
       : null;
     days = row["Library Prep. Days"] ?? 0;
   } else if (gate === "Library Qual") {
-    completedDate = row["Library Qual. (LQ) Completed"]
-      ? new Date(row["Library Qual. (LQ) Completed"])
+    completedDate = row[GATE.LQ_COMPLETED]
+      ? new Date(row[GATE.LQ_COMPLETED])
       : null;
     days = row["LQ Total Days"] ?? 0;
   } else if (gate === "Full-Depth") {
-    completedDate = row["Full-Depth (FD) Completed"]
-      ? new Date(row["Full-Depth (FD) Completed"])
+    completedDate = row[GATE.FD_COMPLETED]
+      ? new Date(row[GATE.FD_COMPLETED])
       : null;
     days = row["FD Total Days"] ?? 0;
   } else if (gate === "All Completed") {
     if (selectedDataType === "AL") {
-      completedDate = row["ALL Release Completed"]
-        ? new Date(row["ALL Release Completed"])
+      completedDate = row[GATE.ALL_COMPLETED]
+        ? new Date(row[GATE.ALL_COMPLETED])
         : null;
       days = row["ALL Total Days"] ?? 0;
     } else {
@@ -77,7 +85,7 @@ function getCompletedDateAndDays(
   return { completedDate, days };
 }
 
-function getGroupKey(date: Date, selectedGrouping: string): string {
+function getGroup(date: Date, selectedGrouping: string): string {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   let fiscalYear = year;
@@ -120,8 +128,7 @@ function groupData(
     const assay = row["Assay"];
     const caseId = row["Case ID"];
     const caseCompletedDate =
-      row[`${selectedDataType} Release Completed`] ??
-      row["ALL Release Completed"];
+      row[`${selectedDataType} Release Completed`] ?? row[GATE.ALL_COMPLETED];
     const totalDays =
       row[`${selectedDataType} Total Days`] ?? row["ALL Total Days"];
 
@@ -139,12 +146,15 @@ function groupData(
           gate,
           selectedDataType
         );
-        const date = new Date(caseCompletedDate || completedDate || new Date());
-        const groupKey = getGroupKey(date, selectedGrouping);
+        if (!completedDate) {
+          return;
+        }
+        const date = new Date(caseCompletedDate || completedDate);
+        const group = getGroup(date, selectedGrouping);
         if (!assayGroups[assay][gate]) {
           assayGroups[assay][gate] = { x: [], y: [], text: [], n: 0 };
         }
-        assayGroups[assay][gate].x.push(groupKey);
+        assayGroups[assay][gate].x.push(group);
         assayGroups[assay][gate].y.push(days ?? totalDays);
         assayGroups[assay][gate].text.push(
           `${caseId} (${gate === "All Completed" ? "All Completed" : gate})`
@@ -165,13 +175,106 @@ function getWeek(date: Date): string {
 }
 
 function getColorByGate(): boolean {
-  const toggleAnnotations = document.getElementById(
-    "toggleAnnotations"
+  const toggleColors = document.getElementById(
+    "toggleColors"
   ) as HTMLInputElement;
-  return toggleAnnotations ? toggleAnnotations.checked : false;
+  return toggleColors ? toggleColors.checked : false;
 }
 
 function plotData(
+  jsonData: any[],
+  selectedGrouping: string,
+  selectedGates: string[],
+  selectedDataType: string
+): { newPlot: Partial<Plotly.PlotData>[]; layout: Partial<Plotly.Layout> } {
+  const assayGroups = groupData(
+    jsonData,
+    selectedGrouping,
+    selectedGates,
+    selectedDataType
+  );
+  const newPlot: Partial<Plotly.PlotData>[] = [];
+  const assayColors: { [assay: string]: string } = {};
+  const gateColors: { [gate: string]: string } = {};
+  let colorIndex = 0;
+  const colorByGate = getColorByGate();
+  if (colorByGate) {
+    selectedGates.forEach((gate, index) => {
+      gateColors[gate] = generateColor(index);
+    });
+  }
+  Object.keys(assayGroups).forEach((assay) => {
+    if (!assayColors[assay]) {
+      assayColors[assay] = generateColor(colorIndex++);
+    }
+    selectedGates.forEach((gate) => {
+      if (assayGroups[assay][gate]) {
+        newPlot.push({
+          x: assayGroups[assay][gate].x,
+          y: assayGroups[assay][gate].y,
+          type: "box",
+          name: `${assay}`,
+          text: assayGroups[assay][gate].text,
+          hoverinfo: "text+y",
+          hovertemplate: `
+            %{text}<br>
+            Days: %{y}<br>
+            N: %{customdata}
+          `,
+          customdata: Array(assayGroups[assay][gate].x.length).fill(
+            assayGroups[assay][gate].n
+          ),
+          boxpoints: "all",
+          jitter: 0.3,
+          pointpos: 0,
+          marker: {
+            size: 6,
+            color: colorByGate ? gateColors[gate] : assayColors[assay],
+          },
+          boxmean: true,
+          legendgroup: assay,
+          showlegend: !newPlot.some((d) => d.legendgroup === assay),
+        } as unknown as Partial<Plotly.PlotData>);
+      }
+    });
+  });
+
+  const layout: Partial<Plotly.Layout> = {
+    xaxis: {
+      title:
+        selectedGrouping === "week"
+          ? "Week"
+          : selectedGrouping === "month"
+          ? "Month"
+          : selectedGrouping === "fiscalQuarter"
+          ? "Fiscal Quarter"
+          : "Fiscal Year",
+      tickformat:
+        selectedGrouping === "week"
+          ? "%Y-W%U"
+          : selectedGrouping === "month"
+          ? "%Y-%m"
+          : selectedGrouping === "fiscalQuarter"
+          ? "%Y Q%q"
+          : "%Y",
+      categoryorder: "category ascending",
+    },
+    yaxis: {
+      title: "Days",
+      zeroline: false,
+      range: [0, undefined],
+    },
+    boxmode: "group",
+    autosize: true,
+    uirevision,
+    width: window.innerWidth - 50,
+    height: window.innerHeight - 250,
+  };
+
+  return { newPlot, layout };
+}
+
+function newPlot(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
@@ -184,90 +287,14 @@ function plotData(
     if (plotContainer) {
       plotContainer.textContent = "";
     }
-    const assayGroups = groupData(
+
+    const { newPlot, layout } = plotData(
       jsonData,
       selectedGrouping,
       selectedGates,
       selectedDataType
     );
-    const plotData: Partial<Plotly.PlotData>[] = [];
-    const assayColors: { [assay: string]: string } = {};
-    const gateColors: { [gate: string]: string } = {};
-    let colorIndex = 0;
-    const colorByGate = getColorByGate();
-    if (colorByGate) {
-      selectedGates.forEach((gate, index) => {
-        gateColors[gate] = generateColor(index);
-      });
-    }
-    Object.keys(assayGroups).forEach((assay) => {
-      if (!assayColors[assay]) {
-        assayColors[assay] = generateColor(colorIndex++);
-      }
-      selectedGates.forEach((gate) => {
-        if (assayGroups[assay][gate]) {
-          plotData.push({
-            x: assayGroups[assay][gate].x,
-            y: assayGroups[assay][gate].y,
-            type: "box",
-            name: `${assay}`,
-            text: assayGroups[assay][gate].text,
-            hoverinfo: "text+y",
-            hovertemplate: `
-              %{text}<br>
-              Days: %{y}<br>
-              N: %{customdata}
-            `,
-            customdata: Array(assayGroups[assay][gate].x.length).fill(
-              assayGroups[assay][gate].n
-            ),
-            boxpoints: "all",
-            jitter: 0.3,
-            pointpos: 0,
-            marker: {
-              size: 6,
-              color: colorByGate ? gateColors[gate] : assayColors[assay],
-            },
-            boxmean: true,
-            legendgroup: assay,
-            showlegend: !plotData.some((d) => d.legendgroup === assay),
-          } as unknown as Partial<Plotly.PlotData>);
-        }
-      });
-    });
-
-    const layout: Partial<Plotly.Layout> = {
-      xaxis: {
-        title:
-          selectedGrouping === "week"
-            ? "Week"
-            : selectedGrouping === "month"
-            ? "Month"
-            : selectedGrouping === "fiscalQuarter"
-            ? "Fiscal Quarter"
-            : "Fiscal Year",
-        tickformat:
-          selectedGrouping === "week"
-            ? "%Y-W%U"
-            : selectedGrouping === "month"
-            ? "%Y-%m"
-            : selectedGrouping === "fiscalQuarter"
-            ? "%Y Q%q"
-            : "%Y",
-        categoryorder: "category ascending",
-      },
-      yaxis: {
-        title: "Days",
-        zeroline: false,
-        range: [0, undefined],
-      },
-      boxmode: "group",
-      autosize: true,
-      width: window.innerWidth - 50,
-      height: window.innerHeight - 250,
-    };
-
-    Plotly.newPlot("plotContainer", plotData, layout);
+    Plotly.newPlot("plotContainer", newPlot, layout);
 
     window.addEventListener("resize", () => {
       Plotly.relayout("plotContainer", {
@@ -278,6 +305,27 @@ function plotData(
   }
 }
 
+function updatePlot(
+  selectedGrouping: string,
+  jsonData: any[],
+  selectedGates: string[],
+  selectedDataType: string
+) {
+  const trendReportContainer = document.getElementById("trendReportContainer");
+
+  if (trendReportContainer) {
+    const plotContainer = document.getElementById("plotContainer");
+
+    const { newPlot, layout } = plotData(
+      jsonData,
+      selectedGrouping,
+      selectedGates,
+      selectedDataType
+    );
+    Plotly.react("plotContainer", newPlot, layout);
+  }
+}
+
 window.addEventListener("message", (event) => {
   if (event.data.type === "jsonData") {
     const trendReportContainer = document.getElementById(
@@ -285,7 +333,7 @@ window.addEventListener("message", (event) => {
     );
     if (trendReportContainer) {
       jsonData = event.data.content; // update jsonData when new data is received
-      plotData(
+      newPlot(
         getSelectedGrouping(),
         jsonData,
         getSelectedGates(),
@@ -312,7 +360,7 @@ function getSelectedGates(): string[] {
 }
 
 function getSelectedGrouping(): string {
-  const selectedButton = document.querySelector(
+  const selectedButton = document.querySelector<HTMLButtonElement>(
     "#groupingButtons button.active"
   );
   return selectedButton
@@ -336,42 +384,51 @@ document.addEventListener("DOMContentLoaded", () => {
     window
   );
 
-  const updatePlot = (grouping: string) =>
-    plotData(grouping, jsonData, getSelectedGates(), getSelectedDataType());
+  const handlePlotUpdate = () => {
+    const selectedGates = getSelectedGates();
+    const selectedDataType = getSelectedDataType();
+    updatePlot(
+      getSelectedGrouping(),
+      jsonData,
+      selectedGates,
+      selectedDataType
+    );
+  };
+
+  const handleNewPlot = (event: Event) => {
+    const buttons = document.querySelectorAll("#groupingButtons button");
+    buttons.forEach((button) => button.classList.remove("active"));
+    (event.currentTarget as HTMLButtonElement).classList.add("active");
+
+    const selectedGrouping = (event.currentTarget as HTMLButtonElement).dataset
+      .grouping;
+    const selectedGates = getSelectedGates();
+    const selectedDataType = getSelectedDataType();
+    newPlot(selectedGrouping!, jsonData, selectedGates, selectedDataType);
+  };
 
   const weekButton = document.getElementById("weekButton");
   const monthButton = document.getElementById("monthButton");
   const quarterButton = document.getElementById("quarterButton");
   const yearButton = document.getElementById("yearButton");
 
-  weekButton?.addEventListener("click", () => {
-    updatePlot("week");
-  });
-
-  monthButton?.addEventListener("click", () => {
-    updatePlot("month");
-  });
-
-  quarterButton?.addEventListener("click", () => {
-    updatePlot("fiscalQuarter");
-  });
-
-  yearButton?.addEventListener("click", () => {
-    updatePlot("fiscalYear");
-  });
+  weekButton?.addEventListener("click", handleNewPlot);
+  monthButton?.addEventListener("click", handleNewPlot);
+  quarterButton?.addEventListener("click", handleNewPlot);
+  yearButton?.addEventListener("click", handleNewPlot);
 
   document
     .getElementById("dataSelection")
-    ?.addEventListener("change", () => updatePlot(getSelectedGrouping()));
+    ?.addEventListener("change", handlePlotUpdate);
   document
     .getElementById("gatesCheckboxes")
-    ?.addEventListener("change", () => updatePlot(getSelectedGrouping()));
+    ?.addEventListener("change", handlePlotUpdate);
   document
-    .getElementById("toggleAnnotations")
-    ?.addEventListener("change", () => updatePlot(getSelectedGrouping()));
+    .getElementById("toggleColors")
+    ?.addEventListener("change", handlePlotUpdate);
 
   // initial plot generation
-  plotData(
+  newPlot(
     getSelectedGrouping(),
     jsonData,
     getSelectedGates(),

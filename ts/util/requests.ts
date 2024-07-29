@@ -73,7 +73,7 @@ export function postNewWindow(url: string, body: any, targetWindow: Window) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Failed to fetch report");
+        throw new Error("Failed to fetch data: " + response.statusText);
       }
       return response.json(); // parse JSON response directly
     })
@@ -86,8 +86,12 @@ export function postNewWindow(url: string, body: any, targetWindow: Window) {
         );
       }
     })
-    .catch(() => {
-      throw new Error("Network error");
+    .catch((error) => {
+      if (error.message.includes("Failed to fetch data")) {
+        alert(error.message);
+      } else {
+        alert("Unknown Error: " + error.message);
+      }
     });
 }
 

@@ -3,7 +3,6 @@ package ca.on.oicr.gsi.dimsum.controller.rest;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
@@ -29,10 +29,12 @@ public class DownloadRestController {
   @Autowired
   private CaseService caseService;
 
+  @Autowired
+  private ObjectMapper objectMapper; // Autowire ObjectMapper
+
   @PostMapping("/reports/{reportName}")
   public HttpEntity<byte[]> generateReport(@PathVariable String reportName,
-      @RequestBody JsonNode parameters, HttpServletResponse response)
-      throws IOException {
+      @RequestBody JsonNode parameters) throws IOException {
 
     ReportFormat format = Report.getFormat(parameters);
     Report report = getReport(reportName);
@@ -40,18 +42,17 @@ public class DownloadRestController {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(format.getMediaType());
-    response.setHeader("Content-Disposition",
-        "attachment; filename="
-            + String.format("%s-%s.%s", reportName, DateTimeFormatter.ISO_LOCAL_DATE.format(
-                ZonedDateTime.now()), format.getExtension()));
+    headers.set("Content-Disposition",
+        "attachment; filename=" + String.format("%s-%s.%s", reportName,
+            DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now()), format.getExtension()));
 
-    return new HttpEntity<byte[]>(bytes, headers);
+    return new HttpEntity<>(bytes, headers);
   }
 
   @PostMapping("/reports/{reportName}/data")
-  public String getReportData(@PathVariable String reportName, @RequestBody JsonNode parameters) {
+  public JsonNode getReportData(@PathVariable String reportName, @RequestBody JsonNode parameters) {
     Report report = getReport(reportName);
-    return report.getData(caseService, parameters);
+    return report.getData(caseService, parameters, objectMapper); // Return JSON directly
   }
 
   private static Report getReport(String reportName) {
@@ -68,5 +69,4 @@ public class DownloadRestController {
         throw new BadRequestException("Invalid report name");
     }
   }
-
 }
