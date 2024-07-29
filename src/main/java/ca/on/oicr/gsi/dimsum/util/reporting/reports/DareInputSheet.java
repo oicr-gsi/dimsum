@@ -6,6 +6,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
@@ -26,9 +27,11 @@ public class DareInputSheet extends Report {
           if (caseIds == null) {
             throw new BadRequestException("caseIds parameter missing");
           }
-          return CaseSampleRowData.listByCaseIds(caseService, caseIds);
+          return CaseSampleRowData.listByCaseIds(caseService, caseIds)
+              .stream()
+              .filter(x -> !DataUtils.isFailed(x.getSample()))
+              .toList();
         }
-
       };
 
   public static final DareInputSheet INSTANCE = new DareInputSheet();

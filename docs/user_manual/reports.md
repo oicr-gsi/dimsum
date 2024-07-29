@@ -24,11 +24,11 @@ downloaded.
 
 ## DARE Input Sheet
 
-This report lists the library and run names of all full-depth sequencing for the selected cases. It
-is used for input into DARE. The report is generated from any table of cases, including the main QC
-dashboard, and the Cases table on various detail pages. To generate the report, select the cases you
-are interested in, and click the "Download" button. In the dialog that opens, choose this report.
-The report will be downloaded.
+This report lists the library and run names of all full-depth sequencing for the selected cases.
+Failed run-libraries are excluded. The report is used for input into DARE. The report is generated
+from any table of cases, including the main QC dashboard, and the Cases table on various detail
+pages. To generate the report, select the cases you are interested in, and click the "Download"
+button. In the dialog that opens, choose this report. The report will be downloaded.
 
 ## Case TAT Report
 
