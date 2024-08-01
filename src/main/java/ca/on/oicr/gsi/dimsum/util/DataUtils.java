@@ -31,8 +31,21 @@ public class DataUtils {
         && isTrue(sample.getRun().getQcPassed()) && isTrue(sample.getRun().getDataReviewPassed());
   }
 
+  public static boolean isFailed(Sample sample) {
+    if (sample.getRun() != null && sample.getDataReviewDate() == null) {
+      // Data review pass/fail are considered the same in the case of failed QC, but data review
+      // must be completed to confirm the failure
+      return false;
+    }
+    return isFalse(sample.getQcPassed());
+  }
+
   private static boolean isTrue(Boolean value) {
     return Boolean.TRUE.equals(value);
+  }
+
+  private static boolean isFalse(Boolean value) {
+    return Boolean.FALSE.equals(value);
   }
 
   public static boolean isPendingQc(Sample sample) {
