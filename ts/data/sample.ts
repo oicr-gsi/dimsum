@@ -72,6 +72,7 @@ export interface Sample extends Qcable {
   nucleicAcidType?: string;
   librarySize?: number;
   libraryDesignCode?: string;
+  dv200?: number;
   targetedSequencing?: string;
   createdDate: string;
   volume?: number;
@@ -1125,6 +1126,8 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
         nullOrUndefined(sample.concentration)
         ? null
         : sample.volume * sample.concentration;
+    case "DV200":
+      return nullIfUndefined(sample.dv200);
     case "Mean Insert Size":
       return nullIfUndefined(sample.meanInsertSize);
     case "Median Insert Size":
