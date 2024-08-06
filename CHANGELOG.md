@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.39.0] - 2024-08-06
+
+### Changed
+
+* Added note to Omissions page help that closed projects and pipeline "Sample Tracking only" are not
+  included
+* Failed run-libraries will now be excluded from the downloadable DARE Input Sheets
+
+### Fixed
+
+* DV200 library metric values were not being displayed
+
+
 ## [1.38.1] - 2024-07-04
 
 ### Fixed
