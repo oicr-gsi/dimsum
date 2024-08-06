@@ -23,9 +23,18 @@ export class TextInput {
     textInputClickout.classList.toggle("hidden");
 
     const submitTextInput = () => {
-      if (this.textField.value) {
-        onClose(this);
+      const inputValues = this.textField.value
+        .split(";")
+        .map((val) => val.trim())
+        .filter((val) => val.length > 0);
+
+      if (inputValues.length > 0) {
+        inputValues.forEach((value) => {
+          this.textField.value = value;
+          onClose(this);
+        });
         document.removeEventListener("keydown", handleEsc);
+        this.textField.value = ""; // reset field after all values are processed
       } else {
         this.textField.focus();
       }
@@ -35,6 +44,24 @@ export class TextInput {
     this.textField.addEventListener("keypress", (event) => {
       if (event.key === "Enter") {
         submitTextInput();
+      }
+    });
+
+    // add paste event listener for reformatting
+    this.textField.addEventListener("paste", (event: ClipboardEvent) => {
+      event.preventDefault();
+      const clipboardData = event.clipboardData;
+      if (clipboardData) {
+        const pastedData = clipboardData.getData("text");
+        const formattedData = this.formatPastedData(pastedData);
+        const currentValue = this.textField.value;
+        const cursorPosition = this.textField.selectionStart || 0;
+        const newValue =
+          currentValue.slice(0, cursorPosition) +
+          formattedData +
+          currentValue.slice(cursorPosition);
+        this.textField.value = newValue;
+        this.styleValidity();
       }
     });
 
@@ -116,6 +143,14 @@ export class TextInput {
       opt.innerHTML = `${element}&#8291;`;
       this.datalist.appendChild(opt);
     });
+  }
+
+  private formatPastedData(data: string): string {
+    return data
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join("; ");
   }
 
   public getContainerTag() {
