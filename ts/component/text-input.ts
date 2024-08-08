@@ -15,6 +15,7 @@ export class TextInput {
     this.datalist = document.createElement("datalist");
     this.textField.setAttribute("list", title);
     this.textField.setAttribute("autocomplete", "off");
+    this.textField.setAttribute("placeholder", "item 1; item 2...");
     this.datalist.id = title;
     const label = document.createElement("span");
     label.innerHTML = `${title}:`;
