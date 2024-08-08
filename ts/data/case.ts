@@ -43,7 +43,7 @@ import {
   showFormDialog,
   TextField,
 } from "../component/dialog";
-import { post, postDownload, postNewWindow } from "../util/requests";
+import { post, postDownload } from "../util/requests";
 
 export interface Project {
   name: string;

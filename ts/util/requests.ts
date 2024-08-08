@@ -67,34 +67,6 @@ export function postDownload(url: string, body: any) {
   });
 }
 
-export function postNewWindow(url: string, body: any, targetWindow: Window) {
-  doPost(url, body, {
-    Accept: "application/json",
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to fetch data: " + response.statusText);
-      }
-      return response.json(); // parse JSON response directly
-    })
-    .then((jsonData) => {
-      if (targetWindow) {
-        targetWindow.postMessage({ type: "jsonData", content: jsonData }, "*");
-      } else {
-        alert(
-          "Failed to open the target window. Please allow popups for this site."
-        );
-      }
-    })
-    .catch((error) => {
-      if (error.message.includes("Failed to fetch data")) {
-        alert(error.message);
-      } else {
-        alert("Unknown Error: " + error.message);
-      }
-    });
-}
-
 export function get(url: string, params?: Record<string, string>) {
   let headers: any = {
     "Content-Type": "application/json",
