@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
@@ -82,4 +83,10 @@ public abstract class Report {
     return sb.toString().getBytes();
   }
 
+  public <T> JsonNode getData(CaseService caseService, JsonNode parameters,
+      ObjectMapper objectMapper) {
+    ReportSection<T> section = (ReportSection<T>) sections.get(0);
+    List<T> objects = section.getData(caseService, parameters);
+    return section.createJson(objects, objectMapper);
+  }
 }

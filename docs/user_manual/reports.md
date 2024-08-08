@@ -40,4 +40,4 @@ cases you are interested in, and click the "TAT Report" button. The report will 
 
 ## TAT Trend Report
 
-(TODO)
+The TAT Trend Report provides a box plot visualization of turn-around time trends for selected cases. It includes gates for clinical report and data release turn-around times, with options to group data by time range or QC gate. To generate the report, select cases from any case table, such as the main QC dashboard, and click the "TAT Trend" button. The report will open in a new window.

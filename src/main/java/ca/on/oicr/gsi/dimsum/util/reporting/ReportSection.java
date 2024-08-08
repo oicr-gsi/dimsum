@@ -10,6 +10,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
@@ -65,6 +68,20 @@ public abstract class ReportSection<T> {
       }
     }
 
+    @Override
+    public JsonNode createJson(List<T> objects, ObjectMapper objectMapper) {
+      ArrayNode arrayNode = objectMapper.createArrayNode();
+      for (T object : objects) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        List<Column<T>> columns = getColumns();
+        for (Column<T> column : columns) {
+          String value = column.getDelimitedColumnString(",", object).replaceAll("\"", "");
+          objectNode.put(column.getTitle(), value);
+        }
+        arrayNode.add(objectNode);
+      }
+      return arrayNode;
+    }
   }
 
   private final String title;
@@ -101,6 +118,8 @@ public abstract class ReportSection<T> {
   protected abstract void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
       boolean includeHeaders);
 
+  public abstract JsonNode createJson(List<T> objects, ObjectMapper objectMapper);
+
   /**
    * Fetches data from the CaseService based on parameters provided
    * 
@@ -120,5 +139,4 @@ public abstract class ReportSection<T> {
     }
     return Stream.of(value.split("\\s*,\\s*")).collect(Collectors.toSet());
   }
-
 }

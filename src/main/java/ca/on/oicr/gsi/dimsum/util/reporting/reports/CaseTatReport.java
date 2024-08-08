@@ -32,6 +32,7 @@ public class CaseTatReport extends Report {
       CaseDeliverable dataRelease) {
   }
 
+  // the TAT Trend Report depends on the column names defined here
   private static final ReportSection<RowData> caseSection =
       new TableReportSection<>("Case TAT",
           Arrays.asList(
