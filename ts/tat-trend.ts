@@ -13,10 +13,13 @@ const COLUMN_NAMES = {
   LQ_DAYS: "LQ Total Days",
   FD_DAYS: "FD Total Days",
   ALL_DAYS: "ALL Total Days",
+  RC_COMPLETED: "Receipt Completed",
   EX_COMPLETED: "Extraction (EX) Completed",
   LP_COMPLETED: "Library Prep. Completed",
   LQ_COMPLETED: "Library Qual. (LQ) Completed",
   FD_COMPLETED: "Full-Depth (FD) Completed",
+  CR_COMPLETED: "CR Release Completed",
+  DR_COMPLETED: "DR Release Completed",
   ALL_COMPLETED: "ALL Release Completed",
 };
 
@@ -52,14 +55,6 @@ interface AssayGroups {
   };
 }
 
-function constructColumnName(
-  dataType: string,
-  gate: string,
-  suffix: string
-): string {
-  return `${dataType} ${gate} ${suffix}`.trim();
-}
-
 function getCompletedDateAndDays(
   row: any,
   gate: string,
@@ -71,6 +66,10 @@ function getCompletedDateAndDays(
   const dataTypePrefix = DATA_PREFIX_MAPPING[selectedDataType];
 
   switch (gate) {
+    case "Receipt":
+      completedDate = row[COLUMN_NAMES.RC_COMPLETED]
+        ? new Date(row[COLUMN_NAMES.RC_COMPLETED])
+        : null;
     case "Extraction":
       completedDate = row[COLUMN_NAMES.EX_COMPLETED]
         ? new Date(row[COLUMN_NAMES.EX_COMPLETED])
@@ -96,10 +95,13 @@ function getCompletedDateAndDays(
       days = row[COLUMN_NAMES.FD_DAYS] ?? 0;
       break;
     case "Full Case":
-      completedDate = row[`${dataTypePrefix} Release Completed`]
-        ? new Date(row[`${dataTypePrefix} Release Completed`])
+      const completedKey =
+        `${dataTypePrefix}_COMPLETED` as keyof typeof COLUMN_NAMES;
+      const daysKey = `${dataTypePrefix}_DAYS` as keyof typeof COLUMN_NAMES;
+      completedDate = row[COLUMN_NAMES[completedKey]]
+        ? new Date(row[COLUMN_NAMES[completedKey]])
         : null;
-      days = row[`${dataTypePrefix} Total Days`] ?? 0;
+      days = row[COLUMN_NAMES[daysKey]] ?? 0;
       break;
     default:
       completedDate = row[`${dataTypePrefix} ${gate} Completed`]
@@ -152,9 +154,9 @@ function groupData(
   jsonData.forEach((row: any) => {
     const assay = row[COLUMN_NAMES.ASSAY];
     const caseId = row[COLUMN_NAMES.CASE_ID];
-    const caseCompletedDate =
-      row[constructColumnName(selectedDataType, "Release", "Completed")] ??
-      row[COLUMN_NAMES.ALL_COMPLETED];
+    const completedKey =
+      `${DATA_PREFIX_MAPPING[selectedDataType]}_COMPLETED` as keyof typeof COLUMN_NAMES;
+    const caseCompletedDate = row[COLUMN_NAMES[completedKey]];
 
     // skip if case completed date is missing
     if (!caseCompletedDate) {
@@ -277,7 +279,7 @@ function plotData(
           : selectedGrouping === "month"
           ? "%Y-%m"
           : selectedGrouping === "fiscalQuarter"
-          ? "%Y Q%q" // Ensure this matches fiscal quarter determination
+          ? "%Y Q%q"
           : "%Y",
       categoryorder: "category ascending",
     },
@@ -335,18 +337,6 @@ function updatePlot(
   );
   Plotly.react("plotContainer", newPlot, layout);
 }
-
-window.addEventListener("message", (event) => {
-  if (event.data.type === "jsonData") {
-    jsonData = event.data.content; // update jsonData when new data is received
-    newPlot(
-      getSelectedGrouping(),
-      jsonData,
-      getSelectedGates(),
-      getSelectedDataType()
-    );
-  }
-});
 
 function parseUrlParams(): { key: string; value: string }[] {
   const params: { key: string; value: string }[] = [];
