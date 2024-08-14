@@ -5,6 +5,7 @@ import { getRequiredElementById } from "./util/html-utils";
 let jsonData: any[] = [];
 const uirevision = "true";
 
+// constants for column names in the Case TAT Report
 const COLUMN_NAMES = {
   ASSAY: "Assay",
   CASE_ID: "Case ID",
@@ -22,6 +23,16 @@ const COLUMN_NAMES = {
   DR_COMPLETED: "DR Release Completed",
   ALL_COMPLETED: "ALL Release Completed",
 };
+
+// function to construct completion date column name
+function getCompletionColumnName(dataType: string, gate: string): string {
+  return `${DATA_PREFIX_MAPPING[dataType]} ${gate} Completed`.trim();
+}
+
+// function to construct days column name
+function getDaysColumnName(dataType: string, gate: string): string {
+  return `${DATA_PREFIX_MAPPING[dataType]} ${gate} Days`.trim();
+}
 
 const DATA_SELECTION = {
   CLINICAL_REPORT: "ClinicalReport",
@@ -63,8 +74,6 @@ function getCompletedDateAndDays(
   let completedDate: Date | null = null;
   let days: number = 0;
 
-  const dataTypePrefix = DATA_PREFIX_MAPPING[selectedDataType];
-
   switch (gate) {
     case "Receipt":
       completedDate = row[COLUMN_NAMES.RC_COMPLETED]
@@ -95,19 +104,16 @@ function getCompletedDateAndDays(
       days = row[COLUMN_NAMES.FD_DAYS] ?? 0;
       break;
     case "Full Case":
-      const completedKey =
-        `${dataTypePrefix}_COMPLETED` as keyof typeof COLUMN_NAMES;
-      const daysKey = `${dataTypePrefix}_DAYS` as keyof typeof COLUMN_NAMES;
-      completedDate = row[COLUMN_NAMES[completedKey]]
-        ? new Date(row[COLUMN_NAMES[completedKey]])
+      completedDate = row[getCompletionColumnName(selectedDataType, "Release")]
+        ? new Date(row[getCompletionColumnName(selectedDataType, "Release")])
         : null;
-      days = row[COLUMN_NAMES[daysKey]] ?? 0;
+      days = row[getDaysColumnName(selectedDataType, "Total")] ?? 0;
       break;
     default:
-      completedDate = row[`${dataTypePrefix} ${gate} Completed`]
-        ? new Date(row[`${dataTypePrefix} ${gate} Completed`])
+      completedDate = row[getCompletionColumnName(selectedDataType, gate)]
+        ? new Date(row[getCompletionColumnName(selectedDataType, gate)])
         : null;
-      days = row[`${dataTypePrefix} ${gate} Days`] ?? 0;
+      days = row[getDaysColumnName(selectedDataType, gate)] ?? 0;
   }
 
   return { completedDate, days };
