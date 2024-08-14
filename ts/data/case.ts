@@ -205,6 +205,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       title: "TAT Report",
       handler: showTatReportDialog,
     },
+    {
+      title: "TAT Trend",
+      handler: showTatTrendPage,
+    },
   ],
   bulkActions: [
     {
@@ -1985,4 +1989,20 @@ function showTatReportDialog(
     filters: joinedFilters,
   };
   postDownload(urls.rest.downloads.reports("case-tat-report"), params);
+}
+
+function showTatTrendPage(
+  filters: { key: string; value: string }[],
+  baseFilter: { key: string; value: string } | undefined
+) {
+  const joinedFilters = [...filters];
+  if (baseFilter !== undefined) {
+    joinedFilters.push(baseFilter);
+  }
+  const urlParams = new URLSearchParams();
+  joinedFilters.forEach((filter) => {
+    urlParams.append(filter.key, filter.value);
+  });
+  const targetUrl = `/tat-trend?${urlParams.toString()}`;
+  window.open(targetUrl, "_blank");
 }

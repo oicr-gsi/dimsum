@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>TAT Trend Report</title>
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <h1 class="text-green-200 font-sarabun font-light text-32">TAT Trend Report</h1>
+    <div id="trendReportContainer">
+      <div id="controlsContainer">
+        <div id="groupingButtons" style="display: flex; gap: 10px; margin-top: 10px;">
+          <button id="weekButton" data-grouping="week"
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Week</button>
+          <button id="monthButton" data-grouping="month"
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Month</button>
+          <button id="quarterButton" data-grouping="fiscalQuarter"
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Fiscal
+            Quarter</button>
+          <button id="yearButton" data-grouping="fiscalYear"
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Fiscal
+            Year</button>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+            <label class="font-inter font-medium text-12">
+              <input type="checkbox" id="toggleColors"> Color by Gate
+            </label>
+            <select id="dataSelection"
+              class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">
+              <option value="ClinicalReport">Clinical Report (CR)</option>
+              <option value="DataRelease">Data Release (DR)</option>
+              <option value="All">All</option>
+            </select>
+          </div>
+        </div>
+        <div id="gatesCheckboxes" style="display: flex; gap: 10px; margin-top: 10px;">
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Receipt" checked> Receipt</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Extraction" checked>
+            Extraction</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Library Prep" checked> Library
+            Prep.</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Library Qual" checked> Library
+            Qual.</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Full-Depth" checked>
+            Full-Depth</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Analysis Review" checked> Analysis
+            Review</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Release Approval" checked> Release
+            Approval</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Release" checked> Release</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Full Case" checked> All
+            Completed</label>
+        </div>
+      </div>
+      <div id="plotContainer"></div>
+    </div>
+    <script src="/js/tatTrend.js"></script>
+  </div>
+</body>
+
+</html>
