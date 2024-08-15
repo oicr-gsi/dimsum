@@ -16,7 +16,7 @@ import {
   deliverableTypeLabels,
 } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
-import { makeTextDiv } from "./util/html-utils";
+import { makeTextDiv, styleText } from "./util/html-utils";
 import {
   addMetricValueContents,
   getFirstReviewStatus,
@@ -27,10 +27,7 @@ import {
   subcategoryApplies as sampleSubcategoryApplies,
 } from "./data/sample";
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
-import {
-  getBooleanMetricValueIcon,
-  getMetricRequirementText,
-} from "./util/metrics";
+import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
 import { siteConfig } from "./util/site-config";
 import { urls } from "./util/urls";
@@ -42,6 +39,7 @@ interface ReportSample {
   metricCategory: MetricCategory;
   metricSubcategory: MetricSubcategory;
   caseAssayId: number;
+  caseStopped: boolean;
 }
 
 interface ReportAnalysisReview {
@@ -50,6 +48,7 @@ interface ReportAnalysisReview {
   deliverable: CaseDeliverable;
   metricCategory: MetricCategory;
   metricSubcategory: MetricSubcategory;
+  caseStopped: boolean;
 }
 
 const attributes: AttributeDefinition<Case>[] = [
@@ -59,6 +58,21 @@ const attributes: AttributeDefinition<Case>[] = [
       fragment.appendChild(
         makeNameDiv(object.id, undefined, urls.dimsum.case(object.id))
       );
+      if (object.requisition.stopped) {
+        const stopDiv = document.createElement("div");
+        const stopText = document.createElement("span");
+        stopText.innerText = "CASE STOPPED";
+        styleText(stopText, "error");
+        stopDiv.appendChild(stopText);
+
+        if (object.requisition.stopReason) {
+          const reasonText = document.createElement("span");
+          reasonText.innerText = ` (${object.requisition.stopReason})`;
+          stopDiv.appendChild(reasonText);
+        }
+
+        fragment.appendChild(stopDiv);
+      }
     },
   },
   {
@@ -230,14 +244,20 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        displayQcSignOff(fragment, getRunOrSampleLevel(object));
+        displayQcSignOff(
+          fragment,
+          getRunOrSampleLevel(object),
+          object.caseStopped
+        );
         addAssayMismatchText(fragment, object);
       },
       getCellHighlight(object) {
         const qcable = getRunOrSampleLevel(object);
-        const reviewStatus = getFirstReviewStatus(qcable).cellStatus;
-        if (reviewStatus) {
-          return reviewStatus;
+        const reviewStatus = getFirstReviewStatus(qcable);
+        if (reviewStatus === qcStatuses.qc && object.caseStopped) {
+          return "na";
+        } else if (reviewStatus.cellStatus) {
+          return reviewStatus.cellStatus;
         } else if (!object.sample.assayIds?.includes(object.caseAssayId)) {
           return "warning";
         }
@@ -248,7 +268,11 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       title: "QC Stage Sign-Off",
       addParentContents(object, fragment) {
         if (object.sample.run) {
-          displayDataReviewSignOff(fragment, getRunOrSampleLevel(object));
+          displayDataReviewSignOff(
+            fragment,
+            getRunOrSampleLevel(object),
+            object.caseStopped
+          );
           addAssayMismatchText(fragment, object);
         } else {
           addText(fragment, "No second review required");
@@ -261,7 +285,11 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
         if (object.sample.run) {
           const qcable = getRunOrSampleLevel(object);
           if (!qcable.dataReviewDate) {
-            return qcStatuses.dataReview.cellStatus;
+            if (object.caseStopped) {
+              return "na";
+            } else {
+              return qcStatuses.dataReview.cellStatus;
+            }
           } else if (qcable.dataReviewPassed) {
             return assayStatus;
           } else {
@@ -393,6 +421,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
         const deliverable = object.deliverable;
         displaySignOff(
           fragment,
+          object.caseStopped,
           deliverable.analysisReviewQcPassed,
           undefined,
           deliverable.analysisReviewQcUser,
@@ -401,8 +430,14 @@ const analysisReviewMetricsDefinition: TableDefinition<
         );
       },
       getCellHighlight(object) {
-        return getDeliverableQcStatus(object.deliverable.analysisReviewQcPassed)
-          .cellStatus;
+        const status = getDeliverableQcStatus(
+          object.deliverable.analysisReviewQcPassed
+        );
+        if (status === qcStatuses.qc && object.caseStopped) {
+          return "na";
+        } else {
+          return status.cellStatus;
+        }
       },
     },
     {
@@ -417,9 +452,14 @@ const analysisReviewMetricsDefinition: TableDefinition<
   ],
 };
 
-function displayQcSignOff(fragment: DocumentFragment, qcable: Qcable) {
+function displayQcSignOff(
+  fragment: DocumentFragment,
+  qcable: Qcable,
+  caseStopped: boolean
+) {
   displaySignOff(
     fragment,
+    caseStopped,
     qcable.qcPassed,
     qcable.qcReason,
     qcable.qcUser,
@@ -428,9 +468,14 @@ function displayQcSignOff(fragment: DocumentFragment, qcable: Qcable) {
   );
 }
 
-function displayDataReviewSignOff(fragment: DocumentFragment, qcable: Qcable) {
+function displayDataReviewSignOff(
+  fragment: DocumentFragment,
+  qcable: Qcable,
+  caseStopped: boolean
+) {
   displaySignOff(
     fragment,
+    caseStopped,
     qcable.dataReviewPassed,
     undefined,
     qcable.dataReviewUser,
@@ -440,6 +485,7 @@ function displayDataReviewSignOff(fragment: DocumentFragment, qcable: Qcable) {
 
 function displaySignOff(
   fragment: DocumentFragment,
+  caseStopped: boolean,
   qcPassed?: boolean,
   qcReason?: string,
   qcUser?: string,
@@ -461,6 +507,8 @@ function displaySignOff(
       noteDiv.classList.add("mt-1em");
       fragment.appendChild(noteDiv);
     }
+  } else if (caseStopped) {
+    fragment.appendChild(document.createTextNode("N/A (case stopped)"));
   } else {
     addPendingText(fragment);
   }
@@ -617,6 +665,7 @@ function getReportSamples(
               metrics: [],
             },
             caseAssayId: kase.assayId,
+            caseStopped: kase.requisition.stopped,
           },
         ];
       }
@@ -628,6 +677,7 @@ function getReportSamples(
             metricCategory: category,
             metricSubcategory: subcategory,
             caseAssayId: kase.assayId,
+            caseStopped: kase.requisition.stopped,
           };
         });
     })
@@ -689,6 +739,7 @@ function getReportAnalysisReviews(kase: Case) {
             deliverable: deliverable,
             metricCategory: "ANALYSIS_REVIEW",
             metricSubcategory: subcategory,
+            caseStopped: kase.requisition.stopped,
           };
         });
       });
