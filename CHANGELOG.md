@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.40.0] - 2024-08-15
+
+### Added
+
+* TAT trend report generated from the Cases list in Dimsum using the same filters
+* Support for entering a list of values for text filters
+
+### Changed
+
+* The Case QC Report now displays "CASE STOPPED" along with the stop reason if the case is stopped,
+  and correctly shows incomplete sign-offs as "N/A (case stopped)"
+
+
 ## [1.39.0] - 2024-08-06
 
 ### Changed
