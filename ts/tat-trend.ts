@@ -1,6 +1,7 @@
 import Plotly from "plotly.js-dist-min";
 import { post } from "./util/requests";
 import { getRequiredElementById } from "./util/html-utils";
+import { toggleLegend } from "./component/legend";
 
 let jsonData: any[] = [];
 const uirevision = "true";
@@ -344,6 +345,31 @@ function updatePlot(
   Plotly.react("plotContainer", newPlot, layout);
 }
 
+function updatePlotWithLegend(
+  selectedGrouping: string,
+  jsonData: any[],
+  selectedGates: string[],
+  selectedDataType: string
+) {
+  updatePlot(selectedGrouping, jsonData, selectedGates, selectedDataType);
+  const legendButton = document.getElementById("legendButton");
+  if (getColorByGate()) {
+    // show the Legend button
+    if (legendButton) {
+      legendButton.style.display = "inline-block";
+    }
+  } else {
+    // hide the Legend button and close the legend if it’s open
+    if (legendButton) {
+      legendButton.style.display = "none";
+    }
+    const legendElement = document.getElementById("legend-container");
+    if (legendElement) {
+      legendElement.remove(); // hide the legend if 'color by gate' is deselected
+    }
+  }
+}
+
 function parseUrlParams(): { key: string; value: string }[] {
   const params: { key: string; value: string }[] = [];
   const searchParams = new URLSearchParams(window.location.search);
@@ -397,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const handlePlotUpdate = () => {
     const selectedGates = getSelectedGates();
     const selectedDataType = getSelectedDataType();
-    updatePlot(
+    updatePlotWithLegend(
       getSelectedGrouping(),
       jsonData,
       selectedGates,
@@ -439,4 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "change",
     handlePlotUpdate
   );
+
+  const legendButton = getRequiredElementById("legendButton");
+  legendButton.addEventListener("click", () => toggleLegend("gate"));
 });

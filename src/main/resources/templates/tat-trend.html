@@ -25,6 +25,9 @@
             Year</button>
           <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
             <label class="font-inter font-medium text-12">
+              <button id="legendButton" style="display:none;"
+                class="noprint bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1"
+                onclick="toggleLegend()">Legend</button>
               <input type="checkbox" id="toggleColors"> Color by Gate
             </label>
             <select id="dataSelection"
@@ -50,8 +53,8 @@
           <label class="font-inter font-medium text-12"><input type="checkbox" value="Release Approval" checked> Release
             Approval</label>
           <label class="font-inter font-medium text-12"><input type="checkbox" value="Release" checked> Release</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Full Case" checked> All
-            Completed</label>
+          <label class="font-inter font-medium text-12"><input type="checkbox" value="Full Case" checked> Full
+            Case</label>
         </div>
       </div>
       <div id="plotContainer"></div>

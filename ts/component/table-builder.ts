@@ -1056,5 +1056,5 @@ function getElement<Type>(element?: Type) {
 
 export const legendAction: StaticAction = {
   title: "Legend",
-  handler: toggleLegend,
+  handler: () => toggleLegend("qc"),
 };
