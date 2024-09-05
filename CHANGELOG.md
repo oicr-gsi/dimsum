@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.40.1] - 2024-09-05
+
+### Fixed
+
+* Security patches
+
+
 ## [1.40.0] - 2024-08-15
 
 ### Added
