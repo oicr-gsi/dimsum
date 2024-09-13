@@ -1,6 +1,6 @@
 import { qcStatuses } from "../data/qc-status";
 import { makeIcon } from "../util/html-utils";
-import { GATE_COLOR_MAPPING, getColorForGate } from "../tat-trend";
+import { GATE_COLOR_MAPPING, getColorForGate } from "../util/color-mapping";
 
 const legendId = "legend-container";
 

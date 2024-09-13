@@ -2,6 +2,7 @@ import Plotly from "plotly.js-dist-min";
 import { post } from "./util/requests";
 import { getRequiredElementById } from "./util/html-utils";
 import { toggleLegend } from "./component/legend";
+import { getColorForGate } from "./util/color-mapping";
 
 let jsonData: any[] = [];
 const uirevision = "true";
@@ -46,22 +47,6 @@ const DATA_PREFIX_MAPPING: { [key: string]: string } = {
   [DATA_SELECTION.DATA_RELEASE]: "DR",
   [DATA_SELECTION.ALL]: "ALL",
 };
-
-export const GATE_COLOR_MAPPING: { [gate: string]: string } = {
-  "Receipt": "#4477AA",
-  "Extraction": "#66CCEE",
-  "Library Prep": "#228833",
-  "Library Qual": "#CCBB44",
-  "Full-Depth": "#EE6677",
-  "Analysis Review": "#44AA99",
-  "Release Approval": "#AA3377",
-  "Release": "#BBBBBB",
-  "Full Case": "#000000",
-};
-
-export function getColorForGate(gate: string): string {
-  return GATE_COLOR_MAPPING[gate] || "#DDDDDD";
-}
 
 function generateColor(index: number): string {
   const colors = [
@@ -416,9 +401,7 @@ function getSelectedDataType(): string {
   return dataSelection.value;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const plotContainer = document.getElementById("plotContainer");
-  if (!plotContainer) return;
+window.addEventListener("load", () => {
   const params = parseUrlParams();
   const requestData = { filters: params.length > 0 ? params : [] };
 
