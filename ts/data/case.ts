@@ -1261,8 +1261,8 @@ function samplePhasePendingWorkQcOrTransfer(
   }
   // pending if any sample needs QC or data review
   if (
-    samples.some(
-      (sample) => !sample.qcDate || (sample.run && !sample.dataReviewDate)
+    samples.some((sample) =>
+      [qcStatuses.qc, qcStatuses.dataReview].includes(getQcStatus(sample))
     )
   ) {
     return true;
