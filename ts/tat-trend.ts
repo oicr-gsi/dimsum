@@ -1,6 +1,8 @@
 import Plotly from "plotly.js-dist-min";
 import { post } from "./util/requests";
 import { getRequiredElementById } from "./util/html-utils";
+import { toggleLegend } from "./component/legend";
+import { getColorForGate } from "./util/color-mapping";
 
 let jsonData: any[] = [];
 const uirevision = "true";
@@ -259,7 +261,7 @@ function plotData(
           pointpos: 0,
           marker: {
             size: 6,
-            color: colorByGate ? gateColors[gate] : assayColors[assay],
+            color: colorByGate ? getColorForGate(gate) : assayColors[assay],
           },
           boxmean: true,
           legendgroup: assay,
@@ -344,6 +346,31 @@ function updatePlot(
   Plotly.react("plotContainer", newPlot, layout);
 }
 
+function updatePlotWithLegend(
+  selectedGrouping: string,
+  jsonData: any[],
+  selectedGates: string[],
+  selectedDataType: string
+) {
+  updatePlot(selectedGrouping, jsonData, selectedGates, selectedDataType);
+  const legendButton = document.getElementById("legendButton");
+  if (getColorByGate()) {
+    // show the Legend button
+    if (legendButton) {
+      legendButton.classList.remove("hidden");
+    }
+  } else {
+    // hide the Legend button and close the legend if it's open
+    if (legendButton) {
+      legendButton.classList.add("hidden");
+    }
+    const legendElement = document.getElementById("legend-container");
+    if (legendElement) {
+      legendElement.remove(); // hide the legend if 'color by gate' is deselected
+    }
+  }
+}
+
 function parseUrlParams(): { key: string; value: string }[] {
   const params: { key: string; value: string }[] = [];
   const searchParams = new URLSearchParams(window.location.search);
@@ -364,9 +391,7 @@ function getSelectedGrouping(): string {
   const selectedButton = document.querySelector<HTMLButtonElement>(
     "#groupingButtons button.active"
   );
-  return selectedButton
-    ? selectedButton.id.replace("Button", "")
-    : "fiscalQuarter";
+  return selectedButton ? selectedButton.dataset.grouping! : "fiscalQuarter";
 }
 
 function getSelectedDataType(): string {
@@ -376,7 +401,7 @@ function getSelectedDataType(): string {
   return dataSelection.value;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
   const params = parseUrlParams();
   const requestData = { filters: params.length > 0 ? params : [] };
 
@@ -395,10 +420,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   const handlePlotUpdate = () => {
+    const selectedGrouping = getSelectedGrouping();
     const selectedGates = getSelectedGates();
     const selectedDataType = getSelectedDataType();
-    updatePlot(
-      getSelectedGrouping(),
+    updatePlotWithLegend(
+      selectedGrouping,
       jsonData,
       selectedGates,
       selectedDataType
@@ -410,33 +436,17 @@ document.addEventListener("DOMContentLoaded", () => {
     buttons.forEach((button) => button.classList.remove("active"));
     (event.currentTarget as HTMLButtonElement).classList.add("active");
 
-    const selectedGrouping = (event.currentTarget as HTMLButtonElement).dataset
-      .grouping;
-    const selectedGates = getSelectedGates();
-    const selectedDataType = getSelectedDataType();
-    newPlot(selectedGrouping!, jsonData, selectedGates, selectedDataType);
+    handlePlotUpdate();
   };
 
-  const weekButton = getRequiredElementById("weekButton");
-  const monthButton = getRequiredElementById("monthButton");
-  const quarterButton = getRequiredElementById("quarterButton");
-  const yearButton = getRequiredElementById("yearButton");
+  ["weekButton", "monthButton", "quarterButton", "yearButton"].forEach((id) => {
+    getRequiredElementById(id).addEventListener("click", handleNewPlot);
+  });
 
-  weekButton.addEventListener("click", handleNewPlot);
-  monthButton.addEventListener("click", handleNewPlot);
-  quarterButton.addEventListener("click", handleNewPlot);
-  yearButton.addEventListener("click", handleNewPlot);
+  ["dataSelection", "gatesCheckboxes", "toggleColors"].forEach((id) => {
+    getRequiredElementById(id).addEventListener("change", handlePlotUpdate);
+  });
 
-  getRequiredElementById("dataSelection").addEventListener(
-    "change",
-    handlePlotUpdate
-  );
-  getRequiredElementById("gatesCheckboxes").addEventListener(
-    "change",
-    handlePlotUpdate
-  );
-  getRequiredElementById("toggleColors").addEventListener(
-    "change",
-    handlePlotUpdate
-  );
+  const legendButton = getRequiredElementById("legendButton");
+  legendButton.addEventListener("click", () => toggleLegend("gate"));
 });

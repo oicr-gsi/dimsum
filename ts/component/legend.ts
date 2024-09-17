@@ -1,10 +1,12 @@
 import { qcStatuses } from "../data/qc-status";
 import { makeIcon } from "../util/html-utils";
+import { GATE_COLOR_MAPPING, getColorForGate } from "../util/color-mapping";
 
 const legendId = "legend-container";
+
 class Legend {
   private container: HTMLElement;
-  constructor() {
+  constructor(type: "qc" | "gate" = "qc") {
     // outer container
     this.container = document.createElement("div");
     this.container.className =
@@ -38,10 +40,20 @@ class Legend {
     // grid of legend labels
     const body = document.createElement("div");
     body.className = "m-4 grid grid-rows-5 grid-flow-col gap-2";
-    for (const qcStatus of Object.values(qcStatuses)) {
-      body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label));
+    // populate legend based on type
+    if (type === "qc") {
+      for (const qcStatus of Object.values(qcStatuses)) {
+        body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label));
+      }
+      body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
+    } else if (type === "gate") {
+      for (const gate of Object.keys(GATE_COLOR_MAPPING)) {
+        const color = getColorForGate(gate);
+        body.appendChild(makeLegendEntryColor(color, gate));
+      }
+    } else {
+      throw new Error(`Unsupported legend type: ${type}`);
     }
-    body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
 
     this.container.append(header);
     this.container.append(body);
@@ -152,10 +164,10 @@ class Legend {
   }
 }
 
-export function toggleLegend() {
+export function toggleLegend(type: "qc" | "gate" = "qc") {
   const legendWindow = document.getElementById(legendId);
   if (!legendWindow) {
-    const legendContainer = new Legend();
+    const legendContainer = new Legend(type);
     document.body.appendChild(legendContainer.getTag());
   } else {
     legendWindow.remove();
@@ -171,6 +183,23 @@ function makeLegendEntry(iconName: string, text: string) {
   const label = document.createElement("span");
   label.innerHTML = text;
   labelContainer.appendChild(icon);
+  labelContainer.appendChild(label);
+  return labelContainer;
+}
+
+function makeLegendEntryColor(color: string, text: string) {
+  const labelContainer = document.createElement("div");
+  labelContainer.className =
+    "flex items-center space-x-2 bg-grey-100 rounded-md font-inter font-medium p-2 text-12";
+  // create the color box
+  const colorBox = document.createElement("div");
+  colorBox.className = "w-3 h-3 inline-block border-2";
+  colorBox.style.backgroundColor = `${color}B3`;
+  colorBox.style.borderColor = color;
+  const label = document.createElement("span");
+  label.innerHTML = text;
+  // append the color box and label to the container
+  labelContainer.appendChild(colorBox);
   labelContainer.appendChild(label);
   return labelContainer;
 }

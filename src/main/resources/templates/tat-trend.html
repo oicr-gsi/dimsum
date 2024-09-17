@@ -11,49 +11,49 @@
   <div layout:fragment="content">
     <h1 class="text-green-200 font-sarabun font-light text-32">TAT Trend Report</h1>
     <div id="trendReportContainer">
-      <div id="controlsContainer">
-        <div id="groupingButtons" style="display: flex; gap: 10px; margin-top: 10px;">
+      <div id="controlsContainer" class="flex items-center justify-between gap-2 mt-2">
+        <div id="groupingButtons" class="flex gap-2">
           <button id="weekButton" data-grouping="week"
-            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Week</button>
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">Week</button>
           <button id="monthButton" data-grouping="month"
-            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Month</button>
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">Month</button>
           <button id="quarterButton" data-grouping="fiscalQuarter"
-            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Fiscal
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">Fiscal
             Quarter</button>
           <button id="yearButton" data-grouping="fiscalYear"
-            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">Fiscal
+            class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">Fiscal
             Year</button>
-          <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
-            <label class="font-inter font-medium text-12">
-              <input type="checkbox" id="toggleColors"> Color by Gate
-            </label>
-            <select id="dataSelection"
-              class="font-inter font-medium text-12 text-black bg-grey-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1 flex space-x-2 items-center">
-              <option value="ClinicalReport">Clinical Report (CR)</option>
-              <option value="DataRelease">Data Release (DR)</option>
-              <option value="All">All</option>
-            </select>
-          </div>
         </div>
-        <div id="gatesCheckboxes" style="display: flex; gap: 10px; margin-top: 10px;">
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Receipt" checked> Receipt</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Extraction" checked>
-            Extraction</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Library Prep" checked> Library
-            Prep.</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Library Qual" checked> Library
-            Qual.</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Full-Depth" checked>
-            Full-Depth</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Analysis Review" checked> Analysis
-            Review</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Release Approval" checked> Release
-            Approval</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Release" checked> Release</label>
-          <label class="font-inter font-medium text-12"><input type="checkbox" value="Full Case" checked> All
-            Completed</label>
+        <div class="flex items-center gap-2">
+          <button id="legendButton"
+            class="noprint bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1 hidden">Legend</button>
+          <label class="font-inter font-medium text-12 flex items-center gap-1">
+            <input type="checkbox" id="toggleColors"> Colour by Gate
+          </label>
+          <select id="dataSelection"
+            class="font-inter font-medium text-12 text-black bg-gray-100 px-2 py-1 rounded-md hover:ring-2 ring-green-200 ring-offset-1">
+            <option value="ClinicalReport">Clinical Report (CR)</option>
+            <option value="DataRelease">Data Release (DR)</option>
+            <option value="All">All</option>
+          </select>
         </div>
       </div>
+      <div id="gatesCheckboxes" class="flex gap-2 mt-2 font-inter font-medium text-12 items-center">
+        <label class="flex items-center gap-1"><input type="checkbox" value="Receipt" checked> Receipt</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Extraction" checked> Extraction</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Library Prep" checked> Library
+          Prep.</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Library Qual" checked> Library
+          Qual.</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Full-Depth" checked> Full-Depth</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Analysis Review" checked> Analysis
+          Review</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Release Approval" checked> Release
+          Approval</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Release" checked> Release</label>
+        <label class="flex items-center gap-1"><input type="checkbox" value="Full Case" checked> Full Case</label>
+      </div>
+
       <div id="plotContainer"></div>
     </div>
     <script src="/js/tatTrend.js"></script>
