@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.41.0] - 2024-09-19
+
+### Added
+
+* TAT Trend report legend for colour by gate
+
+### Fixed
+
+* TAT Trend Report color by gate feature to work correctly with time range grouping
+* 'OVERDUE' being shown for completed sequencing gates if there was a failed run where the run-library
+  did not have its (unnecessary) QC completed
+
+
 ## [1.40.1] - 2024-09-05
 
 ### Fixed
