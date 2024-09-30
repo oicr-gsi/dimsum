@@ -3,7 +3,6 @@ import { toTitleCase } from "./html-utils";
 import { Pair } from "./pair";
 
 const restBaseUrl = "/rest";
-const misoBaseUrl = `${siteConfig.misoUrl}/miso`;
 
 export const urls = {
   dimsum: {
@@ -77,7 +76,7 @@ export const urls = {
     run: (runName: string) => makeMisoUrl("run/alias", runName),
     requisition: (requisitionId: number) =>
       makeMisoUrl("requisition", requisitionId),
-    qcRunLibraries: `${misoBaseUrl}/runlibraries/metrics`,
+    qcRunLibraries: `${siteConfig.misoUrl}/runlibraries/metrics`,
     assay: (assayId: number) => makeMisoUrl("assay", assayId),
   },
   dashi: {
@@ -114,7 +113,7 @@ export const urls = {
 };
 
 function makeMisoUrl(type: string, id: number | string) {
-  return `${misoBaseUrl}/${type}/${id}`;
+  return `${siteConfig.misoUrl}/${type}/${id}`;
 }
 
 function makeDashiProjectUrl(report: string, project: string) {
