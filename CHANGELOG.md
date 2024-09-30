@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.42.0] - 2024-09-30
+
+### Changed
+
+* Links to MISO have been updated
+
+
 ## [1.41.0] - 2024-09-19
 
 ### Added
