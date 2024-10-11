@@ -36,6 +36,8 @@
             <option value="DataRelease">Data Release (DR)</option>
             <option value="All">All</option>
           </select>
+          <button id="metricsButton"
+            class="noprint bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1">Metrics</button>
         </div>
       </div>
       <div id="gatesCheckboxes" class="flex gap-2 mt-2 font-inter font-medium text-12 items-center">
@@ -55,6 +57,12 @@
       </div>
 
       <div id="plotContainer"></div>
+      <div class="flex justify-end mt-4">
+        <button id="metricsDownload"
+          class="noprint bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1">Download
+          Metrics</button>
+      </div>
+      <div id="metricContainer"></div>
     </div>
     <script src="/js/tatTrend.js"></script>
   </div>

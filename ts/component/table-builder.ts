@@ -82,6 +82,7 @@ export interface TableDefinition<ParentType, ChildType> {
   // when a parent object has no children, noChildrenWarning is displayed with warning highlight.
   // if noChildrenWarning is not provided, 'N/A' is displayed instead
   noChildrenWarning?: string;
+  parentHeaders?: Array<{ title: string; colspan: number }>;
 }
 
 class AcceptedFilter {
@@ -690,20 +691,43 @@ export class TableBuilder<ParentType, ChildType> {
   private addTableHead(table: HTMLTableElement) {
     this.thead = table.createTHead();
     this.thead.className = "relative";
-    const row = this.thead.insertRow();
-    if (this.definition.bulkActions) {
-      this.addSelectAllHeader(row);
+    if (this.definition.parentHeaders) {
+      // create the first row with parent headers
+      const parentRow = this.thead.insertRow();
+      this.definition.parentHeaders.forEach((parentHeader) => {
+        const th = document.createElement("th");
+        th.textContent = parentHeader.title;
+        th.colSpan = parentHeader.colspan; // set the colspan to cover subcolumns
+        th.className =
+          "p-4 font-semibold bg-grey-300 text-center text-white border-l-1 border-grey-200";
+        parentRow.appendChild(th);
+      });
+      // create the second row for child headers
+      const childRow = this.thead.insertRow();
+      this.columns.forEach((column, i) => {
+        const th = document.createElement("th");
+        th.textContent = column.title; // populate it dynamically based on the provided columns
+        th.className =
+          "p-4 font-semibold bg-grey-200 text-left border-l-1 border-grey-200";
+        childRow.appendChild(th);
+      });
     } else {
-      this.selectAllCheckbox = undefined;
+      // only one row of headers (normal case)
+      const row = this.thead.insertRow();
+      if (this.definition.bulkActions) {
+        this.addSelectAllHeader(row);
+      } else {
+        this.selectAllCheckbox = undefined;
+      }
+      this.columns.forEach((column, i) => {
+        addColumnHeader(
+          row,
+          column.title,
+          i == 0 && !this.definition.bulkActions,
+          column.headingClass
+        );
+      });
     }
-    this.columns.forEach((column, i) => {
-      addColumnHeader(
-        row,
-        column.title,
-        i == 0 && !this.definition.bulkActions,
-        column.headingClass
-      );
-    });
   }
 
   private addSelectAllHeader(thead: HTMLTableRowElement) {
