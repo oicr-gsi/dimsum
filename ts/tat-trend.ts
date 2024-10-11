@@ -1,11 +1,29 @@
 import Plotly from "plotly.js-dist-min";
-import { post } from "./util/requests";
+import { get, post } from "./util/requests";
 import { getRequiredElementById } from "./util/html-utils";
 import { toggleLegend } from "./component/legend";
 import { getColorForGate } from "./util/color-mapping";
+import {
+  TableDefinition,
+  TableBuilder,
+  ColumnDefinition,
+} from "./component/table-builder";
 
 let jsonData: any[] = [];
 const uirevision = "true";
+
+interface AssayMetrics {
+  assay: string;
+  gate: string;
+  group: string;
+  avgDays: { [key: string]: string };
+  medianDays: { [key: string]: string };
+  caseCount: { [key: string]: string | undefined };
+}
+
+interface CaseCounts {
+  [key: string]: number;
+}
 
 // constants for column names in the Case TAT Report
 const COLUMN_NAMES = {
@@ -66,6 +84,10 @@ interface AssayGroups {
   [assay: string]: {
     [gate: string]: { x: any[]; y: number[]; text: string[]; n: number };
   };
+}
+
+interface GroupDays {
+  [group: string]: number[];
 }
 
 function getCompletedDateAndDays(
@@ -213,6 +235,50 @@ function getColorByGate(): boolean {
   return toggleColors.checked;
 }
 
+function getCaseCount(groups: any[]): { [key: string]: number } {
+  const groupCounts: { [key: string]: number } = {};
+  groups.forEach((group) => {
+    if (!groupCounts[group]) {
+      groupCounts[group] = 0;
+    }
+    groupCounts[group] += 1;
+  });
+  return groupCounts;
+}
+
+function calcMedian(arr: number[]): number {
+  const sorted = arr.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function sortTimeRanges(timeRanges: string[]): string[] {
+  return timeRanges.sort((a, b) => {
+    const parseDateValue = (timeRange: string | undefined) => {
+      if (!timeRange) return 0;
+      if (timeRange.includes("Q")) {
+        const [fiscalYear, quarter] = timeRange.match(/\d+/g) ?? [];
+        return parseInt(fiscalYear ?? "0") * 100 + parseInt(quarter ?? "0");
+      }
+      if (timeRange.includes("W")) {
+        const [year, week] = timeRange.split("-W").map(Number);
+        return year * 100 + week;
+      }
+      if (timeRange.includes("-")) {
+        const [year, month] = timeRange.split("-").map(Number);
+        return year * 100 + month;
+      }
+      const yearMatch = timeRange.match(/\d{4}/);
+      return yearMatch ? parseInt(yearMatch[0], 10) * 100 : 0;
+    };
+    const valueA = parseDateValue(a);
+    const valueB = parseDateValue(b);
+    return valueA - valueB;
+  });
+}
+
 function plotData(
   jsonData: any[],
   selectedGrouping: string,
@@ -251,11 +317,7 @@ function plotData(
           hovertemplate: `
             %{text}<br>
             Days: %{y}<br>
-            N: %{customdata}
           `,
-          customdata: Array(assayGroups[assay][gate].x.length).fill(
-            assayGroups[assay][gate].n
-          ),
           boxpoints: "all",
           jitter: 0.3,
           pointpos: 0,
@@ -371,6 +433,174 @@ function updatePlotWithLegend(
   }
 }
 
+function updateMetricsTable(
+  jsonData: any[],
+  selectedGrouping: string,
+  selectedGates: string[],
+  selectedDataType: string
+) {
+  // build the table data and get the time ranges from the metrics
+  const { tableData, timeRanges } = buildTableFromMetrics(
+    jsonData,
+    selectedGrouping,
+    selectedGates,
+    selectedDataType
+  );
+  const sortedTimeRanges = sortTimeRanges(timeRanges);
+  const dynamicColumns = generateDynamicColumns(sortedTimeRanges);
+  const parentHeaders = [
+    { title: "", colspan: 1 },
+    { title: "", colspan: 1 },
+    ...sortedTimeRanges.map((timeRange) => ({
+      title: timeRange,
+      colspan: 3,
+    })),
+  ];
+  const caseTatTableDefinition: TableDefinition<AssayMetrics, void> = {
+    generateColumns: () => dynamicColumns,
+    parentHeaders, // pass parent headers for multi-level header support
+    disablePageControls: true,
+    filters: [],
+    staticActions: [],
+  };
+  // create the table using TableBuilder
+  const metricContainer = getRequiredElementById("metricContainer");
+  metricContainer.textContent = "";
+  const tableBuilder = new TableBuilder(
+    caseTatTableDefinition,
+    "metricContainer"
+  );
+  tableBuilder.build(tableData);
+}
+
+function generateDynamicColumns(
+  timeRanges: string[]
+): ColumnDefinition<AssayMetrics, void>[] {
+  const dynamicColumns: ColumnDefinition<AssayMetrics, void>[] = [];
+  dynamicColumns.push({
+    title: "Assay",
+    sortType: "text",
+    addParentContents(assayMetrics: AssayMetrics, fragment: DocumentFragment) {
+      fragment.appendChild(document.createTextNode(assayMetrics.assay));
+    },
+  });
+  dynamicColumns.push({
+    title: "Gate",
+    sortType: "text",
+    addParentContents(assayMetrics: AssayMetrics, fragment: DocumentFragment) {
+      fragment.appendChild(document.createTextNode(assayMetrics.gate));
+    },
+  });
+  timeRanges.forEach((timeRange) => {
+    dynamicColumns.push({
+      title: `Mean Days`,
+      addParentContents(
+        assayMetrics: AssayMetrics,
+        fragment: DocumentFragment
+      ) {
+        fragment.appendChild(
+          document.createTextNode(assayMetrics.avgDays[timeRange] || "N/A")
+        );
+      },
+    });
+    dynamicColumns.push({
+      title: `Median Days`,
+      addParentContents(
+        assayMetrics: AssayMetrics,
+        fragment: DocumentFragment
+      ) {
+        fragment.appendChild(
+          document.createTextNode(assayMetrics.medianDays[timeRange] || "N/A")
+        );
+      },
+    });
+    dynamicColumns.push({
+      title: `Case Count`,
+      addParentContents(
+        assayMetrics: AssayMetrics,
+        fragment: DocumentFragment
+      ) {
+        fragment.appendChild(
+          document.createTextNode(assayMetrics.caseCount[timeRange] || "N/A")
+        );
+      },
+    });
+  });
+  return dynamicColumns;
+}
+
+function buildTableFromMetrics(
+  jsonData: any[],
+  selectedGrouping: string,
+  selectedGates: string[],
+  selectedDataType: string
+) {
+  const groupedData = groupData(
+    jsonData,
+    selectedGrouping,
+    selectedGates,
+    selectedDataType
+  );
+  const tableData: AssayMetrics[] = [];
+  const timeRanges: string[] = [];
+  const consolidatedData: {
+    [key: string]: { [gate: string]: AssayMetrics };
+  } = {};
+  Object.keys(groupedData).forEach((assay) => {
+    selectedGates.forEach((gate) => {
+      if (groupedData[assay][gate]) {
+        const { x: groups, y: daysArray } = groupedData[assay][gate];
+        const caseCounts: CaseCounts = getCaseCount(groups);
+        const groupDays: GroupDays = {};
+        groups.forEach((group, index) => {
+          const days = Number(daysArray[index]);
+          if (!groupDays[group]) {
+            groupDays[group] = [];
+          }
+          groupDays[group].push(days);
+          if (!timeRanges.includes(group)) {
+            timeRanges.push(group); // collect unique time ranges
+          }
+        });
+        if (!consolidatedData[assay]) {
+          consolidatedData[assay] = {};
+        }
+        if (!consolidatedData[assay][gate]) {
+          consolidatedData[assay][gate] = {
+            assay,
+            gate,
+            group: "",
+            avgDays: {},
+            medianDays: {},
+            caseCount: {},
+          };
+        }
+        Object.keys(caseCounts).forEach((group) => {
+          const totalCases = caseCounts[group];
+          const daysForGroup = groupDays[group];
+          const totalDays = daysForGroup.reduce((a, b) => a + b, 0);
+          const averageDays =
+            totalCases > 0 ? (totalDays / totalCases).toFixed(1) : "0";
+          const medianDays =
+            totalCases > 0 ? calcMedian(daysForGroup).toFixed(1) : "0";
+          // add data to the consolidated structure
+          consolidatedData[assay][gate].avgDays[group] = averageDays;
+          consolidatedData[assay][gate].medianDays[group] = medianDays;
+          consolidatedData[assay][gate].caseCount[group] =
+            totalCases.toString();
+        });
+      }
+    });
+  });
+  // convert consolidated data into tableData format
+  Object.keys(consolidatedData).forEach((assay) => {
+    Object.keys(consolidatedData[assay]).forEach((gate) => {
+      tableData.push(consolidatedData[assay][gate]);
+    });
+  });
+  return { tableData, timeRanges };
+}
+
 function parseUrlParams(): { key: string; value: string }[] {
   const params: { key: string; value: string }[] = [];
   const searchParams = new URLSearchParams(window.location.search);
@@ -414,6 +644,12 @@ window.addEventListener("load", () => {
         getSelectedGates(),
         getSelectedDataType()
       );
+      updateMetricsTable(
+        jsonData,
+        getSelectedGrouping(),
+        getSelectedGates(),
+        getSelectedDataType()
+      );
     })
     .catch((error) => {
       alert("Error fetching data: " + error);
@@ -426,6 +662,12 @@ window.addEventListener("load", () => {
     updatePlotWithLegend(
       selectedGrouping,
       jsonData,
+      selectedGates,
+      selectedDataType
+    );
+    updateMetricsTable(
+      jsonData,
+      selectedGrouping,
       selectedGates,
       selectedDataType
     );
@@ -447,6 +689,65 @@ window.addEventListener("load", () => {
     getRequiredElementById(id).addEventListener("change", handlePlotUpdate);
   });
 
+  const metricsButton = getRequiredElementById("metricsButton");
+  const metricContainer = getRequiredElementById("metricContainer");
+  metricContainer.style.display = "none";
+  metricsButton.addEventListener("click", () => {
+    metricContainer.style.display =
+      metricContainer.style.display === "none" ? "block" : "none";
+  });
   const legendButton = getRequiredElementById("legendButton");
   legendButton.addEventListener("click", () => toggleLegend("gate"));
+
+  function generateCSV(
+    tableData: AssayMetrics[],
+    timeRanges: string[]
+  ): string {
+    const csvRows: string[] = [];
+    const parentHeaders = ["", ""];
+    timeRanges.forEach((timeRange) => {
+      parentHeaders.push(timeRange, "", "");
+    });
+    csvRows.push(parentHeaders.join(","));
+    const subHeaders = ["Assay", "Gate"];
+    timeRanges.forEach(() => {
+      subHeaders.push("Mean Days", "Median Days", "Case Count");
+    });
+    csvRows.push(subHeaders.join(","));
+    tableData.forEach((row) => {
+      const rowData: string[] = [row.assay, row.gate];
+      timeRanges.forEach((timeRange) => {
+        rowData.push(row.avgDays[timeRange] || "N/A");
+        rowData.push(row.medianDays[timeRange] || "N/A");
+        rowData.push(row.caseCount[timeRange] || "N/A");
+      });
+      csvRows.push(rowData.join(","));
+    });
+    return csvRows.join("\n");
+  }
+
+  function downloadCSV(content: string, filename: string) {
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  const metricsDownloadButton = getRequiredElementById("metricsDownload");
+  metricsDownloadButton.addEventListener("click", () => {
+    const { tableData, timeRanges } = buildTableFromMetrics(
+      jsonData,
+      getSelectedGrouping(),
+      getSelectedGates(),
+      getSelectedDataType()
+    );
+    const csvContent = generateCSV(tableData, sortTimeRanges(timeRanges));
+    downloadCSV(csvContent, "metrics.csv");
+  });
 });
