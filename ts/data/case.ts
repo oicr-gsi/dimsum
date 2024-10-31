@@ -1904,6 +1904,26 @@ function showDownloadDialog(items: Case[]) {
     ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
     ["DARE Input Sheet", REPORT_DARE_INPUT_SHEET],
   ]);
+
+  const reportSelect = new DropdownField(
+    "Report",
+    reportOptions,
+    "report",
+    true
+  );
+  showFormDialog("Download Case Data", [reportSelect], "Next", (result) => {
+    switch (result.report) {
+      case REPORT_FULL_DEPTH_SUMMARY:
+      case REPORT_DARE_INPUT_SHEET:
+        showDownloadOptionsDialog(result.report, items);
+        break;
+      default:
+        throw new Error(`Invalid report: ${result.report}`);
+    }
+  });
+}
+
+function showDownloadOptionsDialog(report: string, items: Case[]) {
   const formatOptions = new Map<string, any>([
     [
       "Excel",
@@ -1940,39 +1960,42 @@ function showDownloadDialog(items: Case[]) {
       },
     ],
   ]);
-  const reportSelect = new DropdownField(
-    "Report",
-    reportOptions,
-    "report",
-    true
+  const fields: FormField<any>[] = [];
+  fields.push(
+    new DropdownField(
+      "Format",
+      formatOptions,
+      "formatOptions",
+      true,
+      undefined,
+      "Excel"
+    )
   );
-  const formatSelect = new DropdownField(
-    "Format",
-    formatOptions,
-    "formatOptions",
-    true,
-    undefined,
-    "Excel"
-  );
-  showFormDialog(
-    "Download Case Data",
-    [reportSelect, formatSelect],
-    "Download",
-    (result) => {
-      switch (result.report) {
-        case REPORT_FULL_DEPTH_SUMMARY:
-        case REPORT_DARE_INPUT_SHEET:
-          downloadCaseReport(result.report, result.formatOptions, items);
-          break;
-        default:
-          throw new Error(`Invalid report: ${result.report}`);
-      }
+  if (report === REPORT_DARE_INPUT_SHEET) {
+    fields.push(
+      new DropdownField(
+        "Include Supplemental",
+        new Map<string, boolean>([
+          ["Yes", true],
+          ["No", false],
+        ]),
+        "includeSupplemental",
+        true,
+        undefined,
+        "Yes"
+      )
+    );
+  }
+  showFormDialog("Download Options", fields, "Download", (result) => {
+    const options = result.formatOptions;
+    if (report === REPORT_DARE_INPUT_SHEET) {
+      options.includeSupplemental = result.includeSupplemental;
     }
-  );
+    downloadCaseReport(report, options, items);
+  });
 }
 
-function downloadCaseReport(report: string, formatOptions: any, items: Case[]) {
-  const params = Object.assign({}, formatOptions);
+function downloadCaseReport(report: string, params: any, items: Case[]) {
   params.caseIds = items.map((kase) => kase.id).join(", ");
   postDownload(urls.rest.downloads.reports(report), params);
 }

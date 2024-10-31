@@ -2,6 +2,7 @@ package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
@@ -18,7 +19,8 @@ public class DareInputSheet extends Report {
   private static final ReportSection<CaseSampleRowData> mainSection =
       new TableReportSection<CaseSampleRowData>("Full-Depth Sequencing", Arrays.asList(
           Column.forString("Library", x -> x.getSample().getName()),
-          Column.forString("Run", x -> x.getSample().getRun().getName()))) {
+          Column.forString("Run", x -> x.getSample().getRun().getName()),
+          Column.forString("Lane", x -> x.getSample().getSequencingLane()))) {
 
         @Override
         public List<CaseSampleRowData> getData(CaseService caseService,
@@ -27,9 +29,13 @@ public class DareInputSheet extends Report {
           if (caseIds == null) {
             throw new BadRequestException("caseIds parameter missing");
           }
+          boolean includeSupplemental = parameters.get("includeSupplemental").asBoolean(true);
           return CaseSampleRowData.listByCaseIds(caseService, caseIds)
               .stream()
               .filter(x -> !DataUtils.isFailed(x.getSample()))
+              .filter(x -> includeSupplemental ? true
+                  : Objects.equals(x.getSample().getRequisitionId(),
+                      x.getCase().getRequisition().getId()))
               .toList();
         }
       };
