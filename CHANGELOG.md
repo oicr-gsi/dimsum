@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.43.0] - 2024-10-31
+
+### Changed
+
+* The DARE Input Sheet download now includes an option for whether to include supplemental samples
+* The DARE Input Sheet download now includes a Lane column
+
+### Fixed
+
+* Date inputs submitting before entry is completed. Now requires pressing enter or clicking the submit
+  (checkmark) button to submit, similar to text inputs
+
+
 ## [1.42.0] - 2024-09-30
 
 ### Changed
