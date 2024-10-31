@@ -694,22 +694,29 @@ export class TableBuilder<ParentType, ChildType> {
     if (this.definition.parentHeaders) {
       // create the first row with parent headers
       const parentRow = this.thead.insertRow();
+      if (this.definition.bulkActions) {
+        this.addSelectAllHeader(parentRow);
+      }
       this.definition.parentHeaders.forEach((parentHeader) => {
-        const th = document.createElement("th");
-        th.textContent = parentHeader.title;
-        th.colSpan = parentHeader.colspan; // set the colspan to cover subcolumns
-        th.className =
-          "p-4 font-semibold bg-grey-300 text-center text-white border-l-1 border-grey-200";
-        parentRow.appendChild(th);
+        addColumnHeader(
+          parentRow,
+          parentHeader.title,
+          false,
+          undefined,
+          "bg-grey-300",
+          parentHeader.colspan
+        );
       });
       // create the second row for child headers
       const childRow = this.thead.insertRow();
       this.columns.forEach((column, i) => {
-        const th = document.createElement("th");
-        th.textContent = column.title; // populate it dynamically based on the provided columns
-        th.className =
-          "p-4 font-semibold bg-grey-200 text-left border-l-1 border-grey-200";
-        childRow.appendChild(th);
+        addColumnHeader(
+          childRow,
+          column.title,
+          i === 0 && !this.definition.bulkActions,
+          "text-black",
+          "bg-grey-100"
+        );
       });
     } else {
       // only one row of headers (normal case)
