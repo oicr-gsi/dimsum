@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class DataUtils {
@@ -61,6 +62,10 @@ public class DataUtils {
   }
 
   public static boolean isTopUpRequired(Sample sample) {
+    return TOP_UP_REASON.equals(sample.getQcReason());
+  }
+
+  public static boolean isTopUpRequired(OmittedRunSample sample) {
     return TOP_UP_REASON.equals(sample.getQcReason());
   }
 

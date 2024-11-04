@@ -51,7 +51,12 @@
         text-24 mt-8">Full Depth Sequencings</h2>
     <div th:if="${showFullDepthSequencings}" id="fullDepthSequencingsTableContainer"></div>
 
-    <script src="/js/run.js"></script>
+    <h2 th:if="${showOmitted}" class="text-green-200 font-sarabun font-light font text-24 mt-8">
+      Omissions <i id="omissionsInfo" class="fa-solid fa-circle-question text-black"></i>
+    </h2>
+    <div th:if="${showOmitted}" id="omissionsTableContainer"></div>
+
+    <script src="/js/runDetails.js"></script>
 
   </div>
 </body>

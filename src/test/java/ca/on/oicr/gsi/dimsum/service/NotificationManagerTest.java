@@ -24,9 +24,9 @@ import ca.on.oicr.gsi.cardea.data.Metric;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
 import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 
 public class NotificationManagerTest {
 

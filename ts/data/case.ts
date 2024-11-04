@@ -17,7 +17,7 @@ import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
 import {
   getQcStatus,
-  getRunQcStatus,
+  getQcStatusWithDataReview,
   getSampleQcStatus,
   Sample,
 } from "./sample";
@@ -1380,7 +1380,7 @@ export function makeSampleTooltip(sample: Sample) {
           sample.run.name
         )
       );
-      const runStatus = getRunQcStatus(sample.run);
+      const runStatus = getQcStatusWithDataReview(sample.run);
       addStatusTooltipText(
         topContainer,
         runStatus,

@@ -37,6 +37,7 @@ import {
   latestActivitySort,
   runLibraryFilters,
 } from "../component/table-components";
+import { postNavigate } from "../util/requests";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
@@ -424,20 +425,7 @@ function openQcInMiso(samples: Sample[], category: MetricCategory) {
     report: "Dimsum",
     library_aliquots: generateMetricData(category, samples),
   };
-
-  const form = document.createElement("form");
-  form.style.display = "none";
-  form.action = urls.miso.qcRunLibraries;
-  form.method = "POST";
-  form.target = "_blank";
-  const data = document.createElement("input");
-  data.type = "hidden";
-  data.name = "data";
-  data.value = JSON.stringify(request);
-  form.appendChild(data);
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
+  postNavigate(urls.miso.qcRunLibraries, request, true);
 }
 
 function generateMetricData(
@@ -1193,7 +1181,7 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
 export function getQcStatus(sample: Sample): QcStatus {
   const sampleStatus = getSampleQcStatus(sample);
   if (sample.run) {
-    const runStatus = getRunQcStatus(sample.run);
+    const runStatus = getQcStatusWithDataReview(sample.run);
     return runStatus.priority < sampleStatus.priority
       ? runStatus
       : sampleStatus;
@@ -1216,7 +1204,7 @@ export function getSampleQcStatus(sample: Sample): QcStatus {
   return firstStatus;
 }
 
-export function getRunQcStatus(run: Qcable): QcStatus {
+export function getQcStatusWithDataReview(run: Qcable): QcStatus {
   const firstStatus = getFirstReviewStatus(run);
   if (firstStatus.qcComplete) {
     if (!run.dataReviewDate) {
@@ -1252,7 +1240,7 @@ function nullOrUndefined(value: unknown): value is null | undefined {
   return value === undefined || value === null;
 }
 
-function extractLibraryName(runLibraryId: string): string {
+export function extractLibraryName(runLibraryId: string): string {
   const match = runLibraryId.match("^\\d+_\\d+_(LDI\\d+)$");
   if (!match) {
     throw new Error(`Sample ${runLibraryId} is not a run-library`);
