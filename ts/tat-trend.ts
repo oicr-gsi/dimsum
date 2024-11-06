@@ -11,6 +11,8 @@ import {
 
 let jsonData: any[] = [];
 const uirevision = "true";
+let tableBuilder: TableBuilder<AssayMetrics, void> | null = null;
+const NOT_AVAILABLE = "N/A";
 
 interface AssayMetrics {
   assay: string;
@@ -466,12 +468,12 @@ function updateMetricsTable(
     parentHeaders, // pass parent headers for multi-level header support
     disablePageControls: false,
   };
-  // create the table using TableBuilder
-  const tableBuilder = new TableBuilder(
-    caseTatTableDefinition,
-    "metricContainer"
-  );
-  tableBuilder.clear();
+  // reuse or create a new TableBuilder instance
+  if (tableBuilder) {
+    tableBuilder.clear();
+  } else {
+    tableBuilder = new TableBuilder(caseTatTableDefinition, "metricContainer");
+  }
   tableBuilder.build(tableData);
 }
 
@@ -487,7 +489,7 @@ function generateDynamicColumns(
     },
   });
   dynamicColumns.push({
-    title: "Gate",
+    title: "Step",
     sortType: "text",
     addParentContents(assayMetrics: AssayMetrics, fragment: DocumentFragment) {
       fragment.appendChild(document.createTextNode(assayMetrics.gate));
@@ -503,14 +505,14 @@ function generateDynamicColumns(
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        const value = timeRangeData ? timeRangeData.avgDays : "N/A";
+        const value = timeRangeData ? timeRangeData.avgDays : NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        return timeRangeData && timeRangeData.avgDays !== "N/A" ? null : "na";
+        return timeRangeData && timeRangeData.avgDays ? null : "na";
       },
     });
     dynamicColumns.push({
@@ -522,14 +524,14 @@ function generateDynamicColumns(
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        const value = timeRangeData ? timeRangeData.medianDays : "N/A";
+        const value = timeRangeData ? timeRangeData.medianDays : NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        return timeRangeData && timeRangeData.medianDays !== "N/A"
+        return timeRangeData && timeRangeData.medianDays !== NOT_AVAILABLE
           ? null
           : "na";
       },
@@ -543,14 +545,16 @@ function generateDynamicColumns(
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        const value = timeRangeData ? timeRangeData.caseCount : "N/A";
+        const value = timeRangeData ? timeRangeData.caseCount : NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        return timeRangeData && timeRangeData.caseCount !== "N/A" ? null : "na";
+        return timeRangeData && timeRangeData.caseCount !== NOT_AVAILABLE
+          ? null
+          : "na";
       },
     });
   });
@@ -597,13 +601,22 @@ function buildTableFromMetrics(
           const daysForTimeRange = groupDays[timeRange];
           const totalDays = daysForTimeRange.reduce((a, b) => a + b, 0);
           const averageDays =
-            totalCases > 0 ? (totalDays / totalCases).toFixed(1) : "0";
+            totalCases > 0
+              ? parseFloat((totalDays / totalCases).toFixed(1))
+              : undefined;
           const medianDays =
-            totalCases > 0 ? calcMedian(daysForTimeRange).toFixed(1) : "0";
+            totalCases > 0
+              ? parseFloat(calcMedian(daysForTimeRange).toFixed(1))
+              : undefined;
+
           assayMetrics.timeRanges.push({
             group: timeRange,
-            avgDays: averageDays,
-            medianDays,
+            avgDays:
+              averageDays !== undefined
+                ? averageDays.toString()
+                : NOT_AVAILABLE,
+            medianDays:
+              medianDays !== undefined ? medianDays.toString() : NOT_AVAILABLE,
             caseCount: totalCases.toString(),
           });
         });
