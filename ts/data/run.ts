@@ -1,7 +1,17 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
-import { makeNameDiv } from "../util/html-utils";
+import { Tooltip } from "../component/tooltip";
+import { makeIcon, makeNameDiv } from "../util/html-utils";
+import { postNavigate } from "../util/requests";
 import { urls } from "../util/urls";
-import { Run } from "./case";
+import { addStatusTooltipText, Qcable, Run } from "./case";
+import { extractLibraryName, getQcStatusWithDataReview } from "./sample";
+
+export interface OmittedRunSample extends Qcable {
+  id: string;
+  name: string;
+  runId: number;
+  sequencingLane: number;
+}
 
 export const runDefinition: TableDefinition<Run, void> = {
   queryUrl: urls.rest.runs.list,
@@ -47,3 +57,59 @@ export const runDefinition: TableDefinition<Run, void> = {
     ];
   },
 };
+
+export function getOmissionsDefinition(
+  queryUrl: string
+): TableDefinition<OmittedRunSample, void> {
+  return {
+    queryUrl: queryUrl,
+    defaultSort: {
+      columnTitle: "Name",
+      descending: true,
+      type: "text",
+    },
+    staticActions: [legendAction],
+    generateColumns(data) {
+      return [
+        {
+          title: "QC Status",
+          sortType: "custom",
+          addParentContents(sample, fragment) {
+            const status = getQcStatusWithDataReview(sample);
+            const icon = makeIcon(status.icon);
+            const tooltipInstance = Tooltip.getInstance();
+            tooltipInstance.addTarget(icon, (tooltip) => {
+              addStatusTooltipText(
+                tooltip,
+                status,
+                sample.qcReason,
+                sample.qcUser,
+                sample.qcNote
+              );
+            });
+            fragment.appendChild(icon);
+          },
+          getCellHighlight(sample) {
+            const status = getQcStatusWithDataReview(sample);
+            return status.cellStatus || null;
+          },
+        },
+        {
+          title: "Name",
+          sortType: "text",
+          addParentContents(sample, fragment) {
+            const text = `${sample.name} (L${sample.sequencingLane})`;
+            fragment.appendChild(
+              makeNameDiv(
+                text,
+                urls.miso.sample(sample.id),
+                undefined,
+                sample.name
+              )
+            );
+          },
+        },
+      ];
+    },
+  };
+}

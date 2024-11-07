@@ -9,7 +9,7 @@ module.exports = {
     projectDetails: "./ts/project-details.ts",
     notifications: "./ts/notifications.ts",
     runList: "./ts/run-list.ts",
-    run: "./ts/run.ts",
+    runDetails: "./ts/run-details.ts",
     omissions: "./ts/omissions.ts",
     projectList: "./ts/project-list.ts",
     caseReport: "./ts/case-report.ts",

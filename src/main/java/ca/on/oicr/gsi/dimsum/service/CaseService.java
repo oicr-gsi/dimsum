@@ -28,10 +28,10 @@ import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
@@ -42,11 +42,13 @@ import ca.on.oicr.gsi.dimsum.data.NabuSavedSignoff;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
+import ca.on.oicr.gsi.dimsum.service.filtering.OmittedRunSampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
@@ -556,6 +558,23 @@ public class CaseService {
       int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters) {
     return getRunLibraries(runName, pageSize, pageNumber, sort, descending, filters,
         RunAndLibraries::getFullDepthSequencings, MetricCategory.FULL_DEPTH_SEQUENCING);
+  }
+
+  public TableData<OmittedRunSample> getOmittedSamplesForRun(String runName, int pageSize,
+      int pageNumber, OmittedRunSampleSort sort, boolean descending) {
+    RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
+    Set<OmittedRunSample> samples =
+        runAndLibraries == null ? Collections.emptySet() : runAndLibraries.getOmittedSamples();
+
+    TableData<OmittedRunSample> data = new TableData<>();
+    data.setTotalCount(samples.size());
+    data.setFilteredCount(samples.size());
+    data.setItems(samples.stream()
+        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+        .skip(pageSize * (pageNumber - 1))
+        .limit(pageSize)
+        .toList());
+    return data;
   }
 
   private TableData<Sample> getRunLibraries(String runName, int pageSize,

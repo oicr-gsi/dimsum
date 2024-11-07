@@ -16,6 +16,8 @@ import {
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { urls } from "./util/urls";
 import { Tooltip } from "./component/tooltip";
+import { getOmissionsDefinition } from "./data/run";
+import { showAlertDialog } from "./component/dialog";
 
 const misoRunLink = getRequiredElementById("misoRunLink");
 const runName = getRequiredDataAttribute(misoRunLink, "data-run-name");
@@ -38,6 +40,27 @@ function makeTable(
   if (container) {
     new TableBuilder(definition, containerId).build();
   }
+}
+
+function makeOmissionsTable(runName: string) {
+  const containerId = "omissionsTableContainer";
+  const container = document.getElementById(containerId);
+  if (container) {
+    addOmissionsHelp();
+    const definition = getOmissionsDefinition(
+      urls.rest.runs.omissions(runName)
+    );
+    new TableBuilder(definition, containerId).build();
+  }
+}
+
+function addOmissionsHelp() {
+  document.getElementById("omissionsInfo")?.addEventListener("click", () => {
+    showAlertDialog(
+      "Omissions",
+      "The libraries listed here were included in the run, but are not a part of any case."
+    );
+  });
 }
 
 const runQcCell = getRequiredElementById("runStatus");
@@ -63,6 +86,8 @@ makeTable(
     false
   )
 );
+
+makeOmissionsTable(runName);
 
 function makeDashiRunLinksTooltip(
   element: HTMLElement,

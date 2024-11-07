@@ -2,7 +2,7 @@ import { legendAction, TableDefinition } from "../component/table-builder";
 import { addLink, makeIcon, makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
 import { Run } from "./case";
-import { getRunQcStatus } from "./sample";
+import { getQcStatusWithDataReview } from "./sample";
 import { siteConfig } from "../util/site-config";
 
 interface Notification {
@@ -51,13 +51,13 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
       {
         title: "Run QC",
         addParentContents(notification, fragment) {
-          const status = getRunQcStatus(notification.run);
+          const status = getQcStatusWithDataReview(notification.run);
           const icon = makeIcon(status.icon);
           icon.title = status.label;
           fragment.appendChild(icon);
         },
         getCellHighlight(notification) {
-          const status = getRunQcStatus(notification.run);
+          const status = getQcStatusWithDataReview(notification.run);
           return status.cellStatus || null;
         },
       },

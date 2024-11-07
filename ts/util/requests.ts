@@ -67,6 +67,22 @@ export function postDownload(url: string, body: any) {
   });
 }
 
+export function postNavigate(url: string, data: any, newTab: boolean) {
+  const form = document.createElement("form");
+  form.style.display = "none";
+  form.action = url;
+  form.method = "POST";
+  form.target = "_blank";
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = "data";
+  input.value = JSON.stringify(data);
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
+}
+
 export function get(url: string, params?: Record<string, string>) {
   let headers: any = {
     "Content-Type": "application/json",

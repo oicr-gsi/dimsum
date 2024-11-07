@@ -1,5 +1,4 @@
 import { siteConfig } from "./site-config";
-import { toTitleCase } from "./html-utils";
 import { Pair } from "./pair";
 
 const restBaseUrl = "/rest";
@@ -30,6 +29,8 @@ export const urls = {
         `${restBaseUrl}/runs/${runName}/library-qualifications`,
       fullDepthSequencings: (runName: string) =>
         `${restBaseUrl}/runs/${runName}/full-depth-sequencings`,
+      omissions: (runName: string) =>
+        `${restBaseUrl}/runs/${runName}/omissions`,
       list: `${restBaseUrl}/runs`,
     },
     autocomplete: {

@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @Controller
@@ -40,7 +40,8 @@ public class RunController {
             .collect(Collectors.joining(",")));
     model.put("showLibraryQualifications", !runAndLibraries.getLibraryQualifications().isEmpty());
     model.put("showFullDepthSequencings", !runAndLibraries.getFullDepthSequencings().isEmpty());
-    return "run";
+    model.put("showOmitted", !runAndLibraries.getOmittedSamples().isEmpty());
+    return "run-detail";
   }
 
   private static String getRunStatus(Run run) {

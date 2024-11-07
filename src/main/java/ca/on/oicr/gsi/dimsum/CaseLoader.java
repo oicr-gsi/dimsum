@@ -20,13 +20,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
-import ca.on.oicr.gsi.cardea.data.RunAndLibraries;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -72,7 +73,8 @@ public class CaseLoader {
     ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
-    Map<String, RunAndLibraries> runsByName = sortRuns(cardeaCaseData.getCases());
+    Map<String, RunAndLibraries> runsByName =
+        sortRuns(cardeaCaseData.getCases(), cardeaCaseData.getOmittedRunSamples());
     List<OmittedSample> omittedSamples = cardeaCaseData.getOmittedSamples();
     Set<String> requisitionNames = loadRequisitionNames(cardeaCaseData.getCases());
     Set<String> projectsNames = loadProjectsNames(cardeaCaseData.getCases());
@@ -97,7 +99,7 @@ public class CaseLoader {
    * 
    * @param builder WebClient builder state used to fetch data from Cardea API `/dimsum` endpoint
    */
-  public ca.on.oicr.gsi.cardea.data.CaseData loadCardeaData(WebClient.Builder builder)
+  private ca.on.oicr.gsi.cardea.data.CaseData loadCardeaData(WebClient.Builder builder)
       throws IOException {
     ca.on.oicr.gsi.cardea.data.CaseData data = builder
         .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(LIMIT_FOR_DATA_LOAD))
@@ -145,8 +147,9 @@ public class CaseLoader {
     return runsByName.keySet();
   }
 
-  private Map<String, RunAndLibraries> sortRuns(List<Case> cases) {
-    Map<String, RunAndLibraries.Builder> map = new HashMap<>();
+  private Map<String, RunAndLibraries> sortRuns(List<Case> cases,
+      List<OmittedRunSample> omittedRunSamples) {
+    Map<Long, RunAndLibraries.Builder> map = new HashMap<>();
     for (Case kase : cases) {
       for (Test test : kase.getTests()) {
         for (Sample sample : test.getLibraryQualifications()) {
@@ -159,18 +162,25 @@ public class CaseLoader {
         }
       }
     }
+    for (OmittedRunSample sample : omittedRunSamples) {
+      if (map.containsKey(sample.getRunId())) {
+        map.get(sample.getRunId()).addOmittedSample(sample);
+      } else {
+        log.warn("OmittedRunSample found for missing run ID: {}", sample.getRunId());
+      }
+    }
     return map.values().stream()
         .map(RunAndLibraries.Builder::build)
         .collect(Collectors.toMap(x -> x.getRun().getName(), Function.identity()));
   }
 
-  private void addRunLibrary(Map<String, RunAndLibraries.Builder> map, Sample sample,
+  private void addRunLibrary(Map<Long, RunAndLibraries.Builder> map, Sample sample,
       BiConsumer<RunAndLibraries.Builder, Sample> addSample) {
-    String runName = sample.getRun().getName();
-    if (!map.containsKey(runName)) {
-      map.put(runName, new RunAndLibraries.Builder().run(sample.getRun()));
+    long runId = sample.getRun().getId();
+    if (!map.containsKey(runId)) {
+      map.put(runId, new RunAndLibraries.Builder().run(sample.getRun()));
     }
-    addSample.accept(map.get(runName), sample);
+    addSample.accept(map.get(runId), sample);
   }
 
   @FunctionalInterface
