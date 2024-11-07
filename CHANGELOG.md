@@ -7,6 +7,14 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.44.0] - 2024-11-07
+
+### Added
+
+* Omissions table on the Run Details page, showing libraries that are included in the run but not a
+  part of any case
+
+
 ## [1.43.0] - 2024-10-31
 
 ### Changed
