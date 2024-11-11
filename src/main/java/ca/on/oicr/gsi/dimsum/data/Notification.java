@@ -1,7 +1,10 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,6 +16,7 @@ public class Notification {
 
   private static final String PERIOD = ".";
   private static final String COLON_AND_LINE_BREAK = ":\n";
+  private static final int MAX_LIST_ITEMS = 100;
 
   private final Run run;
   private final Set<Sample> pendingAnalysisSamples;
@@ -128,13 +132,26 @@ public class Notification {
     }
   }
 
-  private String makePunctuationAndList(Set<Sample> samples) {
+  protected static String makePunctuationAndList(Set<Sample> samples) {
     if (samples.isEmpty()) {
       return PERIOD;
     } else {
       StringBuilder sb = new StringBuilder(COLON_AND_LINE_BREAK);
-      for (Sample sample : samples) {
-        sb.append("\n* %s (L%s)".formatted(sample.getName(), sample.getSequencingLane()));
+      if (samples.size() <= MAX_LIST_ITEMS) {
+        for (Sample sample : samples) {
+          sb.append("\n* %s (L%s)".formatted(sample.getName(), sample.getSequencingLane()));
+        }
+      } else {
+        Map<String, Integer> projects = samples.stream()
+            .map(Sample::getProject)
+            .collect(Collectors.toMap(Function.identity(), x -> 1, (x, y) -> x + y));
+        if (projects.size() <= MAX_LIST_ITEMS) {
+          projects.entrySet().forEach((entry) -> sb
+              .append("\n* %d %s libraries".formatted(entry.getValue(), entry.getKey())));
+        } else {
+          Integer libraryCount = projects.values().stream().reduce(0, (x, y) -> x + y);
+          sb.append("\n* %d libraries in %d projects".formatted(libraryCount, projects.size()));
+        }
       }
       return sb.toString();
     }
