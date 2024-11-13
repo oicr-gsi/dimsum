@@ -717,38 +717,21 @@ export class TableBuilder<ParentType, ChildType> {
           parentHeader.colspan
         );
       });
-      // create the second row for child headers
-      const childRow = addHeaderRow(false);
-      if (this.definition.bulkActions) {
-        this.addSelectAllHeader(childRow);
-      }
-      this.columns.forEach((column, i) => {
-        const combinedClass = column.headingClass
-          ? `text-black ${column.headingClass}`
-          : "text-black";
-        addColumnHeader(
-          childRow,
-          column.title,
-          i === 0 && !this.definition.bulkActions,
-          combinedClass,
-          "bg-grey-100"
-        );
-      });
-    } else {
-      // single row of headers
-      const row = addHeaderRow(false);
-      if (this.definition.bulkActions) {
-        this.addSelectAllHeader(row);
-      }
-      this.columns.forEach((column, i) => {
-        addColumnHeader(
-          row,
-          column.title,
-          i === 0 && !this.definition.bulkActions,
-          column.headingClass
-        );
-      });
     }
+    // create child or single row headers
+    const row = addHeaderRow(false);
+    if (this.definition.bulkActions) {
+      this.addSelectAllHeader(row);
+    }
+    this.columns.forEach((column, i) => {
+      const isFirstColumn = i === 0 && !this.definition.bulkActions;
+      const isChildHeader = !!this.definition.parentHeaders;
+      const combinedClass = isChildHeader
+        ? `text-black ${column.headingClass || ""}`.trim()
+        : `text-white ${column.headingClass || ""}`.trim();
+      const bgColor = isChildHeader ? "bg-grey-100" : "bg-grey-300";
+      addColumnHeader(row, column.title, isFirstColumn, combinedClass, bgColor);
+    });
   }
 
   private addSelectAllHeader(thead: HTMLTableRowElement) {
