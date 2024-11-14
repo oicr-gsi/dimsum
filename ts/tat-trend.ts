@@ -504,17 +504,14 @@ function generateDynamicColumns(
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        const value =
-          timeRangeData && timeRangeData.avgDays != null
-            ? timeRangeData.avgDays.toString()
-            : NOT_AVAILABLE;
+        const value = timeRangeData?.avgDays || NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        return timeRangeData && timeRangeData.avgDays != null ? null : "na";
+        return timeRangeData ? null : "na";
       },
     });
     dynamicColumns.push({
@@ -526,17 +523,14 @@ function generateDynamicColumns(
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        const value =
-          timeRangeData && timeRangeData.medianDays != null
-            ? timeRangeData.medianDays.toString()
-            : NOT_AVAILABLE;
+        const value = timeRangeData?.medianDays || NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        return timeRangeData && timeRangeData.medianDays != null ? null : "na";
+        return timeRangeData ? null : "na";
       },
     });
     dynamicColumns.push({
@@ -548,17 +542,14 @@ function generateDynamicColumns(
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        const value =
-          timeRangeData && timeRangeData.caseCount != null
-            ? timeRangeData.caseCount.toString()
-            : NOT_AVAILABLE;
+        const value = timeRangeData?.caseCount || NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
         const timeRangeData = assayMetrics.timeRanges.find(
           (tr) => tr.group === timeRangeLabel
         );
-        return timeRangeData && timeRangeData.caseCount != null ? null : "na";
+        return timeRangeData ? null : "na";
       },
     });
   });
@@ -604,22 +595,14 @@ function buildTableFromMetrics(
           const totalCases = caseCounts[timeRange];
           const daysForTimeRange = groupDays[timeRange];
           const totalDays = daysForTimeRange.reduce((a, b) => a + b, 0);
-          const averageDays =
-            totalCases > 0
-              ? parseFloat((totalDays / totalCases).toFixed(1))
-              : undefined;
-          const medianDays =
-            totalCases > 0
-              ? parseFloat(calcMedian(daysForTimeRange).toFixed(1))
-              : undefined;
+          const averageDays = totalDays / totalCases;
+          const medianDays = calcMedian(daysForTimeRange);
 
           assayMetrics.timeRanges.push({
             group: timeRange,
-            avgDays:
-              averageDays !== undefined ? averageDays.toString() : undefined,
-            medianDays:
-              medianDays !== undefined ? medianDays.toString() : undefined,
-            caseCount: totalCases > 0 ? totalCases.toString() : undefined,
+            avgDays: averageDays.toFixed(1),
+            medianDays: medianDays.toFixed(1),
+            caseCount: totalCases.toString(),
           });
         });
         tableData.push(assayMetrics);
