@@ -258,7 +258,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
           return "na";
         } else if (reviewStatus.cellStatus) {
           return reviewStatus.cellStatus;
-        } else if (!object.sample.assayIds?.includes(object.caseAssayId)) {
+        } else if (!caseAssayAppliesToSample(object)) {
           return "warning";
         }
         return null;
@@ -279,9 +279,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
         }
       },
       getCellHighlight(object) {
-        const assayStatus = object.sample.assayIds?.includes(object.caseAssayId)
-          ? null
-          : "warning";
+        const assayStatus = caseAssayAppliesToSample(object) ? null : "warning";
         if (object.sample.run) {
           const qcable = getRunOrSampleLevel(object);
           if (!qcable.dataReviewDate) {
@@ -330,8 +328,10 @@ function makeWrappingNameDiv(
 }
 
 function addAssayMismatchText(fragment: Node, object: ReportSample) {
-  const assayIds = object.sample.assayIds;
-  if (!assayIds?.includes(object.caseAssayId)) {
+  if (!caseAssayAppliesToSample(object)) {
+    const assayIds = object.sample.assayIds?.filter(
+      (assayId) => assayId !== object.caseAssayId
+    );
     if (assayIds?.length) {
       assayIds.forEach((assayId) => {
         const sampleAssay = siteConfig.assaysById[assayId];
@@ -655,31 +655,43 @@ function getReportSamples(
   // make one record per applicable sample+subcategory combination
   return samples
     .flatMap((sample: Sample): ReportSample[] => {
-      const assay = siteConfig.assaysById[kase.assayId];
-      if (!assay.metricCategories[category]) {
-        return [
-          {
-            sample: sample,
-            metricCategory: category,
-            metricSubcategory: {
-              metrics: [],
-            },
-            caseAssayId: kase.assayId,
-            caseStopped: kase.requisition.stopped,
-          },
-        ];
+      if (sample.assayIds?.length) {
+        if (sample.assayIds.includes(kase.assayId)) {
+          // If one of the sample's assays matches the case assay and it has applicable metrics, use
+          // only that assay
+          const reportSamples = getReportSamplesForAssays(
+            kase,
+            sample,
+            [kase.assayId],
+            category
+          );
+          if (reportSamples.length) {
+            return reportSamples;
+          }
+        }
+        // Otherwise, use all of the sample's assays that have applicable metrics
+        const reportSamples = getReportSamplesForAssays(
+          kase,
+          sample,
+          sample.assayIds,
+          category
+        );
+        if (reportSamples.length) {
+          return reportSamples;
+        }
       }
-      return assay.metricCategories[category]
-        .filter((subcategory) => sampleSubcategoryApplies(subcategory, sample))
-        .map((subcategory) => {
-          return {
-            sample: sample,
-            metricCategory: category,
-            metricSubcategory: subcategory,
-            caseAssayId: kase.assayId,
-            caseStopped: kase.requisition.stopped,
-          };
-        });
+      // Sample doesn't qualify for any subcategory; include it with no metrics
+      return [
+        {
+          sample: sample,
+          metricCategory: category,
+          metricSubcategory: {
+            metrics: [],
+          },
+          caseAssayId: kase.assayId,
+          caseStopped: kase.requisition.stopped,
+        },
+      ];
     })
     .sort((a, b) => {
       // sort by subcategory sortOrder > run name > sample name
@@ -714,7 +726,7 @@ function getReportSamples(
           current.sample.run &&
           previous.sample.run &&
           current.sample.run.id === previous.sample.run.id &&
-          current.metricSubcategory.name === previous.metricSubcategory.name
+          current.metricSubcategory === previous.metricSubcategory
         ) {
           previous.allSamples?.push(current.sample);
           return accumulator;
@@ -723,6 +735,39 @@ function getReportSamples(
       accumulator.push(current);
       return accumulator;
     }, []);
+}
+
+function getReportSamplesForAssays(
+  kase: Case,
+  sample: Sample,
+  assayIds: number[],
+  category: MetricCategory
+) {
+  return assayIds
+    .map((assayId) => siteConfig.assaysById[assayId])
+    .filter((assay) => assay.metricCategories[category])
+    .flatMap((assay) =>
+      assay.metricCategories[category]
+        .filter((subcategory) => sampleSubcategoryApplies(subcategory, sample))
+        .map((subcategory) => {
+          return {
+            sample: sample,
+            metricCategory: category,
+            metricSubcategory: subcategory,
+            caseAssayId: kase.assayId,
+            caseStopped: kase.requisition.stopped,
+          };
+        })
+    );
+}
+
+function caseAssayAppliesToSample(object: ReportSample) {
+  if (!object.sample.assayIds?.includes(object.caseAssayId)) {
+    return false;
+  }
+  return siteConfig.assaysById[object.caseAssayId].metricCategories[
+    object.metricCategory
+  ].some((subcategory) => sampleSubcategoryApplies(subcategory, object.sample));
 }
 
 function getReportAnalysisReviews(kase: Case) {
