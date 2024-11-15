@@ -5,14 +5,19 @@ export function addColumnHeader(
   thead: HTMLTableRowElement,
   header: string,
   firstColumn: boolean,
-  addClass?: string
+  addClass?: string,
+  bgColor: string = "bg-grey-300",
+  colspan?: number
 ) {
   const th = document.createElement("th");
   th.className =
-    "p-4 text-white font-semibold bg-grey-300 text-left align-text-top" +
+    `p-4 text-white font-semibold ${bgColor} text-left align-text-top` +
     (firstColumn ? "" : " border-grey-200 border-l-1");
   if (addClass) {
     th.classList.add(addClass);
+  }
+  if (colspan) {
+    th.colSpan = colspan;
   }
 
   // allow line-wrapping on "/" character

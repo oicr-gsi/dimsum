@@ -82,6 +82,7 @@ export interface TableDefinition<ParentType, ChildType> {
   // when a parent object has no children, noChildrenWarning is displayed with warning highlight.
   // if noChildrenWarning is not provided, 'N/A' is displayed instead
   noChildrenWarning?: string;
+  parentHeaders?: Array<{ title: string; colspan: number }>;
 }
 
 class AcceptedFilter {
@@ -690,19 +691,46 @@ export class TableBuilder<ParentType, ChildType> {
   private addTableHead(table: HTMLTableElement) {
     this.thead = table.createTHead();
     this.thead.className = "relative";
-    const row = this.thead.insertRow();
+    const addHeaderRow = (isParent: boolean) => {
+      if (!this.thead) {
+        throw new Error("Table head (thead) is not defined");
+      }
+      const row = this.thead.insertRow();
+      if (isParent && this.definition.bulkActions) {
+        // add a blank header cell for alignment
+        const th = document.createElement("th");
+        th.className = "p-4 bg-grey-300";
+        row.appendChild(th);
+      }
+      return row;
+    };
+    if (this.definition.parentHeaders) {
+      // create the first row with parent headers
+      const parentRow = addHeaderRow(true);
+      this.definition.parentHeaders.forEach((parentHeader) => {
+        addColumnHeader(
+          parentRow,
+          parentHeader.title,
+          false,
+          undefined,
+          "bg-grey-300",
+          parentHeader.colspan
+        );
+      });
+    }
+    // create child or single row headers
+    const row = addHeaderRow(false);
     if (this.definition.bulkActions) {
       this.addSelectAllHeader(row);
-    } else {
-      this.selectAllCheckbox = undefined;
     }
     this.columns.forEach((column, i) => {
-      addColumnHeader(
-        row,
-        column.title,
-        i == 0 && !this.definition.bulkActions,
-        column.headingClass
-      );
+      const isFirstColumn = i === 0 && !this.definition.bulkActions;
+      const isChildHeader = !!this.definition.parentHeaders;
+      const combinedClass = isChildHeader
+        ? `text-black ${column.headingClass || ""}`.trim()
+        : `text-white ${column.headingClass || ""}`.trim();
+      const bgColor = isChildHeader ? "bg-grey-100" : "bg-grey-300";
+      addColumnHeader(row, column.title, isFirstColumn, combinedClass, bgColor);
     });
   }
 
