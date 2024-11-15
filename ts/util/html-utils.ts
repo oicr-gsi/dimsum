@@ -10,17 +10,13 @@ export function addColumnHeader(
   colspan?: number
 ) {
   const th = document.createElement("th");
-  th.className =
-    `p-4 text-white font-semibold ${bgColor} text-left align-text-top` +
-    (firstColumn ? "" : " border-grey-200 border-l-1");
-  if (addClass) {
-    th.classList.add(addClass);
-  }
-  if (colspan) {
-    th.colSpan = colspan;
-  }
-
   // allow line-wrapping on "/" character
+  th.className = `p-4 text-white font-semibold ${bgColor
+    .trim()
+    .replace(/\s+/g, "-")} text-left align-text-top ${
+    !firstColumn ? "border-grey-200 border-l-1" : ""
+  } ${addClass ? addClass.split(/\s+/).join(" ") : ""}`;
+  if (colspan) th.colSpan = colspan;
   header.split("/").forEach((part, index, arr) => {
     th.appendChild(document.createTextNode(`${index > 0 ? "/" : ""}${part}`));
     if (index < arr.length - 1) {
