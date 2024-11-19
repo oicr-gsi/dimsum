@@ -730,7 +730,13 @@ export class TableBuilder<ParentType, ChildType> {
         ? `text-black ${column.headingClass || ""}`.trim()
         : `text-white ${column.headingClass || ""}`.trim();
       const bgColor = isChildHeader ? "bg-grey-100" : "bg-grey-300";
-      addColumnHeader(row, column.title, isFirstColumn, combinedClass, bgColor);
+      addColumnHeader(
+        row,
+        column.title,
+        isFirstColumn,
+        [combinedClass],
+        bgColor
+      );
     });
   }
 
