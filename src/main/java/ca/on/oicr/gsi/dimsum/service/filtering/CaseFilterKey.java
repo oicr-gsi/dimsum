@@ -115,6 +115,16 @@ public enum CaseFilterKey {
       return string -> sample -> Objects.equals(sample.getLibraryDesignCode(), string);
     }
   },
+  DELIVERABLE(string -> kase -> {
+    for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
+        for (CaseRelease release : caseDeliverable.getReleases()) {
+            if (string.equalsIgnoreCase(release.getDeliverable())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}),
   STARTED_BEFORE(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isBefore(LocalDate.parse(string))),
   STARTED_AFTER(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isAfter(LocalDate.parse(string))),
   COMPLETED_BEFORE(string -> kase -> {
