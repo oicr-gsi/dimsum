@@ -94,6 +94,12 @@ export const caseFilters: FilterDefinition[] = [
   },
   libraryDesignFilter,
   {
+    title: "Deliverable",
+    key: "DELIVERABLE",
+    type: "dropdown",
+    values: siteConfig.deliverables,
+  },
+  {
     title: "Started After",
     key: "STARTED_AFTER",
     type: "date",
