@@ -726,9 +726,10 @@ export class TableBuilder<ParentType, ChildType> {
     this.columns.forEach((column, i) => {
       const isFirstColumn = i === 0 && !this.definition.bulkActions;
       const isChildHeader = !!this.definition.parentHeaders;
-      const combinedClass = isChildHeader
-        ? `text-black ${column.headingClass || ""}`.trim()
-        : `text-white ${column.headingClass || ""}`.trim();
+      const combinedClass = isChildHeader ? ["text-black"] : ["text-white"];
+      if (column.headingClass) {
+        combinedClass.push(column.headingClass);
+      }
       const bgColor = isChildHeader ? "bg-grey-100" : "bg-grey-300";
       addColumnHeader(row, column.title, isFirstColumn, combinedClass, bgColor);
     });
