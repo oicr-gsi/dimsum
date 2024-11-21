@@ -1143,6 +1143,12 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testDeliverableFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.DELIVERABLE, "Clinical Report");
+    testFilterCases(filter, Arrays.asList(25, 26, 27, 29, 30, 31));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testStartedBeforeFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.STARTED_BEFORE, "2024-01-02");
     testFilterCases(filter, Arrays.asList(34));
