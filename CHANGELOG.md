@@ -7,6 +7,26 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.46.0] - 2024-11-21
+
+### Added
+
+* Deliverable filter to find cases for a specific deliverable
+
+### Changed
+
+* The Case QC Report previously showed the case's assay metrics for every item that was included on
+  the report. When an item is from a different requisition that doesn't include the case's assay, the
+  metrics that the item was QCed under will now be shown instead. A warning message is still displayed
+  when this does not match the case's assay
+
+### Fixed
+
+* Items were not displayed on the Case QC Report if they didn't have metrics under the case's assay
+  (mainly affects supplemental samples)
+* Case QC Report sample tables were not being displayed
+
+
 ## [1.45.0] - 2024-11-15
 
 ### Added
