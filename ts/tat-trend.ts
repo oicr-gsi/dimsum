@@ -177,6 +177,33 @@ function getGroup(date: Date, selectedGrouping: string): string {
   }
 }
 
+function selectAllGates(
+  selectAllCheckboxId: string,
+  checkboxesContainerId: string,
+  onUpdate: () => void
+) {
+  const selectAllCheckbox = getRequiredElementById(
+    selectAllCheckboxId
+  ) as HTMLInputElement;
+  const checkboxes = document.querySelectorAll<HTMLInputElement>(
+    `#${checkboxesContainerId} input[type='checkbox']:not(#${selectAllCheckboxId})`
+  );
+  selectAllCheckbox.addEventListener("change", () => {
+    const isChecked = selectAllCheckbox.checked;
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = isChecked;
+    });
+    onUpdate();
+  });
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      const allChecked = Array.from(checkboxes).every((cb) => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+      onUpdate();
+    });
+  });
+}
+
 function groupData(
   jsonData: any[],
   selectedGrouping: string,
@@ -683,6 +710,7 @@ window.addEventListener("load", () => {
       selectedDataType
     );
   };
+  selectAllGates("selectAllGates", "gatesCheckboxes", handlePlotUpdate);
 
   const handleNewPlot = (event: Event) => {
     const buttons = document.querySelectorAll("#groupingButtons button");
