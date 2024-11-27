@@ -31,6 +31,7 @@ import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
@@ -288,7 +289,7 @@ public class CaseLoader {
     // release approval
     if (CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
         && kase.getDeliverables().stream()
-            .anyMatch(x -> Boolean.TRUE.equals(x.getReleaseApprovalQcPassed()))) {
+            .anyMatch(x -> DataUtils.isComplete(x.getReleaseApprovalQcStatus()))) {
       caseSummary.releaseApprovalCompletedCount(testSize);
     }
     if (PendingState.RELEASE_APPROVAL.qualifyCase(kase)) {

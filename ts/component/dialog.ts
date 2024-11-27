@@ -200,11 +200,13 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
   layoutInput(container: Node) {
     const dropdownOptions: DropdownOption[] = [];
     const nullText = this.nullLabel || (this.required ? "SELECT" : "None");
-    dropdownOptions.push(
-      new BasicDropdownOption(nullText, () => {
-        this.selectedValue = null;
-      })
-    );
+    if (!this.required || this.nullLabel || !this.defaultLabel) {
+      dropdownOptions.push(
+        new BasicDropdownOption(nullText, () => {
+          this.selectedValue = null;
+        })
+      );
+    }
     for (let key of this.options.keys()) {
       dropdownOptions.push(
         new BasicDropdownOption(key, () => {

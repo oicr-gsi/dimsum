@@ -9,6 +9,7 @@ public class NabuSignoff {
   };
 
   private Boolean qcPassed;
+  private Boolean release;
   private String username;
   private NabuSignoffStep signoffStepName;
   private DeliverableType deliverableType;
@@ -21,6 +22,14 @@ public class NabuSignoff {
 
   public void setQcPassed(Boolean qcPassed) {
     this.qcPassed = qcPassed;
+  }
+
+  public Boolean getRelease() {
+    return release;
+  }
+
+  public void setRelease(Boolean release) {
+    this.release = release;
   }
 
   public String getUsername() {
