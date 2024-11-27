@@ -177,11 +177,10 @@ function getGroup(date: Date, selectedGrouping: string): string {
   }
 }
 
-function selectAllGates(
-  selectAllCheckboxId: string,
-  checkboxesContainerId: string,
-  onUpdate: () => void
-) {
+function selectAllGates(onUpdate: () => void) {
+  const selectAllCheckboxId = "selectAllGates";
+  const checkboxesContainerId = "gatesCheckboxes";
+
   const selectAllCheckbox = getRequiredElementById(
     selectAllCheckboxId
   ) as HTMLInputElement;
@@ -710,7 +709,7 @@ window.addEventListener("load", () => {
       selectedDataType
     );
   };
-  selectAllGates("selectAllGates", "gatesCheckboxes", handlePlotUpdate);
+  selectAllGates(handlePlotUpdate);
 
   const handleNewPlot = (event: Event) => {
     const buttons = document.querySelectorAll("#groupingButtons button");
