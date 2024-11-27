@@ -324,7 +324,7 @@ function countDecimalPlaces(num?: number) {
   return string.length - i - 1;
 }
 
-export function getBooleanMetricValueIcon(qcPassed: boolean | undefined) {
+export function getBooleanMetricValueIcon(qcPassed: boolean | null) {
   // pass/fail based on QC status
   if (qcPassed) {
     return makeStatusIcon("check", "Passed");
@@ -335,7 +335,7 @@ export function getBooleanMetricValueIcon(qcPassed: boolean | undefined) {
   }
 }
 
-export function getBooleanMetricHighlight(qcPassed: boolean | undefined) {
+export function getBooleanMetricHighlight(qcPassed: boolean | null) {
   if (qcPassed) {
     return null;
   } else if (qcPassed === false) {

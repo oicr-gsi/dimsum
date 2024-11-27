@@ -107,7 +107,8 @@ public enum CompletedGate {
       if (DataUtils.isAnalysisReviewSkipped(kase)) {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
       } else {
-        return qualifyCaseForDeliverableType(kase, null, CaseDeliverable::getAnalysisReviewQcPassed);
+        return qualifyCaseForDeliverableType(kase, null,
+            CompletedGate::analysisReviewComplete);
       }
     }
   },
@@ -118,59 +119,61 @@ public enum CompletedGate {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
       } else {
         return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
-            CaseDeliverable::getAnalysisReviewQcPassed);
+            CompletedGate::analysisReviewComplete);
       }
     }
   },
-  ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true, DeliverableType.CLINICAL_REPORT) {
+  ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true,
+      DeliverableType.CLINICAL_REPORT) {
+
     @Override
     public boolean qualifyCase(Case kase) {
       if (DataUtils.isAnalysisReviewSkipped(kase)) {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
       } else {
         return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
-            CaseDeliverable::getAnalysisReviewQcPassed);
+            CompletedGate::analysisReviewComplete);
       }
     }
   },
   RELEASE_APPROVAL("Release Approval", false) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, null, CaseDeliverable::getReleaseApprovalQcPassed);
+      return qualifyCaseForDeliverableType(kase, null, CompletedGate::releaseApprovalComplete);
     }
   },
   RELEASE_APPROVAL_DATA_RELEASE("Release Approval - Data Release", false, DeliverableType.DATA_RELEASE) {
     @Override
     public boolean qualifyCase(Case kase) {
       return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
-          CaseDeliverable::getReleaseApprovalQcPassed);
+          CompletedGate::releaseApprovalComplete);
     }
   },
   RELEASE_APPROVAL_CLINICAL_REPORT("Release Approval - Clinical Report", false, DeliverableType.CLINICAL_REPORT) {
     @Override
     public boolean qualifyCase(Case kase) {
       return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
-          CaseDeliverable::getReleaseApprovalQcPassed);
+          CompletedGate::releaseApprovalComplete);
     }
   },
   RELEASE("Release", false) {
     @Override
     public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, null, CompletedGate::allReleasesPassed);
+      return qualifyCaseForDeliverableType(kase, null, CompletedGate::allReleasesComplete);
     }
   },
   RELEASE_DATA_RELEASE("Release - Data Release", false, DeliverableType.DATA_RELEASE) {
     @Override
     public boolean qualifyCase(Case kase) {
       return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
-          CompletedGate::allReleasesPassed);
+          CompletedGate::allReleasesComplete);
     }
   },
   RELEASE_CLINICAL_REPORT("Release - Clinical Report", false, DeliverableType.CLINICAL_REPORT) {
     @Override
     public boolean qualifyCase(Case kase) {
       return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
-          CompletedGate::allReleasesPassed);
+          CompletedGate::allReleasesComplete);
     }
   };
 // @formatter:on
@@ -263,9 +266,17 @@ public enum CompletedGate {
     return stream.allMatch(x -> Boolean.TRUE.equals(getQcPassed.apply(x)));
   }
 
-  private static boolean allReleasesPassed(CaseDeliverable deliverable) {
+  private static boolean analysisReviewComplete(CaseDeliverable deliverable) {
+    return DataUtils.isComplete(deliverable.getAnalysisReviewQcStatus());
+  }
+
+  private static boolean releaseApprovalComplete(CaseDeliverable deliverable) {
+    return DataUtils.isComplete(deliverable.getReleaseApprovalQcStatus());
+  }
+
+  private static boolean allReleasesComplete(CaseDeliverable deliverable) {
     return !deliverable.getReleases().isEmpty() && deliverable.getReleases().stream()
-        .allMatch(x -> Boolean.TRUE.equals(x.getQcPassed()));
+        .allMatch(x -> DataUtils.isComplete(x.getQcStatus()));
   }
 
   private static class Helpers {

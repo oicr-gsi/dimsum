@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Donor;
@@ -114,7 +117,7 @@ public class MockCase {
     // Case is pending release approval
     Case kase = makeCase("PRO4_0001", "Single Test", "PRO4", "REQ04", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     return kase;
   }
 
@@ -124,8 +127,8 @@ public class MockCase {
     Case kase = makeCase("PRO5_0001", "Single Test", "PRO5", "REQ04", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     addTest(kase, caseNumber, 2, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
-    markReleaseApproval(kase.getDeliverables().get(0), true);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
     return kase;
   }
 
@@ -317,9 +320,10 @@ public class MockCase {
     // Case is pending analysis review - clinical report
     Case kase = makeCase("PRO25_0001", "Single Test", "PRO25", "REQ25", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
-    markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
+        null);
     addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
     return kase;
   }
@@ -329,12 +333,13 @@ public class MockCase {
     // Case is pending release approval - clinical report
     Case kase = makeCase("PRO26_0001", "Single Test", "PRO26", "REQ26", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
-    markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
+        null);
     CaseDeliverable deliverable =
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
-    markAnalysisReview(deliverable, true);
+    markAnalysisReview(deliverable, AnalysisReviewQcStatus.PASSED);
     return kase;
   }
 
@@ -343,13 +348,14 @@ public class MockCase {
     // Case is pending release - clinical report
     Case kase = makeCase("PRO27_0001", "Single Test", "PRO27", "REQ27", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
-    markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
+        null);
     CaseDeliverable deliverable =
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
-    markAnalysisReview(deliverable, true);
-    markReleaseApproval(deliverable, true);
+    markAnalysisReview(deliverable, AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(deliverable, ReleaseApprovalQcStatus.PASSED_PROCEED);
     return kase;
   }
 
@@ -358,9 +364,10 @@ public class MockCase {
     // Case is completed
     Case kase = makeCase("PRO28_0001", "Single Test", "PRO28", "REQ28", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
-    markReleaseApproval(kase.getDeliverables().get(0), true);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), true, null);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
+        null);
     return kase;
   }
 
@@ -370,11 +377,11 @@ public class MockCase {
     Case kase =
         makeCase("PRO29_0001", "Single Test", "PRO29", "REQ29", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     CaseDeliverable deliverable =
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
-    markAnalysisReview(deliverable, true);
-    markReleaseApproval(deliverable, true);
+    markAnalysisReview(deliverable, AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(deliverable, ReleaseApprovalQcStatus.PASSED_PROCEED);
     return kase;
   }
 
@@ -384,7 +391,7 @@ public class MockCase {
     // report
     Case kase = makeCase("PRO30_0001", "Single Test", "PRO30", "REQ30", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
-    markAnalysisReview(kase.getDeliverables().get(0), true);
+    markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
     return kase;
   }
@@ -396,9 +403,9 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     CaseDeliverable deliverable =
         addDeliverable(kase, DeliverableType.CLINICAL_REPORT, "Clinical Report");
-    markAnalysisReview(deliverable, true);
-    markReleaseApproval(deliverable, true);
-    markRelease(deliverable.getReleases().get(0), true, null);
+    markAnalysisReview(deliverable, AnalysisReviewQcStatus.PASSED);
+    markReleaseApproval(deliverable, ReleaseApprovalQcStatus.PASSED_PROCEED);
+    markRelease(deliverable.getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE, null);
     return kase;
   }
 
@@ -435,10 +442,11 @@ public class MockCase {
     // Mocking the completion logic based on deliverable states
     List<CaseDeliverable> deliverables = new ArrayList<>();
     CaseDeliverable deliverable = mock(CaseDeliverable.class);
-    when(deliverable.getReleaseApprovalQcPassed()).thenReturn(true);
-    when(deliverable.getAnalysisReviewQcPassed()).thenReturn(true);
+    when(deliverable.getReleaseApprovalQcStatus())
+        .thenReturn(ReleaseApprovalQcStatus.PASSED_PROCEED);
+    when(deliverable.getAnalysisReviewQcStatus()).thenReturn(AnalysisReviewQcStatus.PASSED);
     CaseRelease release = mock(CaseRelease.class);
-    when(release.getQcPassed()).thenReturn(true);
+    when(release.getQcStatus()).thenReturn(ReleaseQcStatus.PASSED_RELEASE);
     when(release.getQcDate()).thenReturn(completionDate);
     when(deliverable.getReleases()).thenReturn(Arrays.asList(release));
     deliverables.add(deliverable);
@@ -503,7 +511,7 @@ public class MockCase {
       return null;
     }
     if (releases.stream()
-        .anyMatch(release -> release.getQcPassed() == null || !release.getQcPassed())) {
+        .anyMatch(release -> release.getQcStatus() == null || release.getQcStatus().isPending())) {
       return null;
     }
     return releases.stream()
@@ -548,20 +556,22 @@ public class MockCase {
     return requisition;
   }
 
-  private static void markAnalysisReview(CaseDeliverable deliverable, Boolean qcPassed) {
-    when(deliverable.getAnalysisReviewQcPassed()).thenReturn(qcPassed);
+  private static void markAnalysisReview(CaseDeliverable deliverable,
+      AnalysisReviewQcStatus qcStatus) {
+    when(deliverable.getAnalysisReviewQcStatus()).thenReturn(qcStatus);
     when(deliverable.getAnalysisReviewQcUser()).thenReturn("User");
     when(deliverable.getAnalysisReviewQcDate()).thenReturn(LocalDate.now());
   }
 
-  private static void markReleaseApproval(CaseDeliverable deliverable, Boolean qcPassed) {
-    when(deliverable.getReleaseApprovalQcPassed()).thenReturn(qcPassed);
+  private static void markReleaseApproval(CaseDeliverable deliverable,
+      ReleaseApprovalQcStatus qcStatus) {
+    when(deliverable.getReleaseApprovalQcStatus()).thenReturn(qcStatus);
     when(deliverable.getReleaseApprovalQcUser()).thenReturn("User");
     when(deliverable.getReleaseApprovalQcDate()).thenReturn(LocalDate.now());
   }
 
-  private static void markRelease(CaseRelease release, Boolean qcPassed, LocalDate qcDate) {
-    when(release.getQcPassed()).thenReturn(qcPassed);
+  private static void markRelease(CaseRelease release, ReleaseQcStatus qcStatus, LocalDate qcDate) {
+    when(release.getQcStatus()).thenReturn(qcStatus);
     when(release.getQcUser()).thenReturn("User");
     if (qcDate != null) {
       when(release.getQcDate()).thenReturn(qcDate);

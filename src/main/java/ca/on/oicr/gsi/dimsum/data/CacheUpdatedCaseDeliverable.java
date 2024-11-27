@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.DeliverableType;
 
@@ -68,11 +70,11 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   }
 
   @Override
-  public Boolean getAnalysisReviewQcPassed() {
+  public AnalysisReviewQcStatus getAnalysisReviewQcStatus() {
     if (cachedAnalysisReviewSignoff != null) {
-      return cachedAnalysisReviewSignoff.getQcPassed();
+      return (AnalysisReviewQcStatus) cachedAnalysisReviewSignoff.getQcStatus();
     } else {
-      return baseDeliverable.getAnalysisReviewQcPassed();
+      return baseDeliverable.getAnalysisReviewQcStatus();
     }
   }
 
@@ -114,11 +116,11 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   }
 
   @Override
-  public Boolean getReleaseApprovalQcPassed() {
+  public ReleaseApprovalQcStatus getReleaseApprovalQcStatus() {
     if (cachedReleaseApprovalSignoff != null) {
-      return cachedReleaseApprovalSignoff.getQcPassed();
+      return (ReleaseApprovalQcStatus) cachedReleaseApprovalSignoff.getQcStatus();
     } else {
-      return baseDeliverable.getReleaseApprovalQcPassed();
+      return baseDeliverable.getReleaseApprovalQcStatus();
     }
   }
 

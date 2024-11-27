@@ -87,9 +87,11 @@ The following are QC step columns, and their associated items:
 
 Each QC step cell includes icons representing the QC status of each item relevant to that step. A
 checkmark represents an item that has passed QC, while an 'X' represents a QC failure. Click the
-Legend button at the top or bottom of the table for a full list of statuses and their icons. A
-single passing item is required for the step to be considered complete. Hover over an icon to view a
-tooltip containing item details and relevant links.
+Legend button at the top or bottom of the table for a full list of statuses and their icons.
+Analysis review, release approval, and release are considered complete when all deliverable types
+have been signed off, regardless of the QC status chosen. Other steps require a single passing item
+to be considered complete. Hover over an icon to view a tooltip containing item details and relevant
+links.
 
 If the case's assay has turn-around time (TAT) targets defined, these columns also display the
 number of days remaining for the step, and an "OVERDUE" warning if the step has exceeded its target.

@@ -153,7 +153,7 @@ completed
 
 ## How do I close a case?
 
-* A case is only closed when the release step is marked as passing/approved for each deliverable
+* A case is only closed when the release step QC is completed for each deliverable
 * There can be failures at any step, but it may be possible to continue the case by repeating some
 work
   * E.g. if library preparation fails, maybe another library prep can be attempted
