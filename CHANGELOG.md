@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.47.0] - 2024-12-05
+
+### Added
+
+* Checkbox to select/deselect all QC gates on TAT trend report
+
+
 ## [1.46.0] - 2024-11-21
 
 ### Added
