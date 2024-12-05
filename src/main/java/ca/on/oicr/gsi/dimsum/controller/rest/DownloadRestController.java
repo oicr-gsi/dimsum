@@ -19,6 +19,7 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportFormat;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.CaseTatReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.DareInputSheet;
+import ca.on.oicr.gsi.dimsum.util.reporting.reports.DonorAssayReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
 
@@ -65,6 +66,8 @@ public class DownloadRestController {
         return DareInputSheet.INSTANCE;
       case "case-tat-report":
         return CaseTatReport.INSTANCE;
+      case "donor-assay-report":
+        return DonorAssayReport.INSTANCE;
       default:
         throw new BadRequestException("Invalid report name");
     }
