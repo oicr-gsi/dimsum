@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.47.1] - 2024-12-06
+
+### Fixed
+
+* Items that have an assay but do not have any metrics should not be displayed on the Case QC Report
+
+
 ## [1.47.0] - 2024-12-05
 
 ### Added
