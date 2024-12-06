@@ -679,6 +679,8 @@ function getReportSamples(
         if (reportSamples.length) {
           return reportSamples;
         }
+        // Sample has an assay, but no metrics - don't display
+        return [];
       }
       // Sample doesn't qualify for any subcategory; include it with no metrics
       return [
