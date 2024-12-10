@@ -2,6 +2,7 @@ package ca.on.oicr.gsi.dimsum.controller.rest;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 import java.util.List;
+import java.util.function.BiFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -16,10 +17,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseQc;
+import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.data.NabuBulkSignoff;
+import ca.on.oicr.gsi.dimsum.data.NabuSignoff;
 import ca.on.oicr.gsi.dimsum.data.NabuSignoff.NabuSignoffStep;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.NabuService;
@@ -83,6 +89,19 @@ public class CaseRestController {
     if (data.getSignoffStepName() == null) {
       throw new BadRequestException("QC step not specified");
     }
+    switch (data.getSignoffStepName()) {
+      case ANALYSIS_REVIEW:
+        validateQcStatus(data, AnalysisReviewQcStatus::of);
+        break;
+      case RELEASE_APPROVAL:
+        validateQcStatus(data, ReleaseApprovalQcStatus::of);
+        break;
+      case RELEASE:
+        validateQcStatus(data, ReleaseQcStatus::of);
+        break;
+      default:
+        throw new BadRequestException("QC step invalid or not specified");
+    }
     if (data.getSignoffStepName() == NabuSignoffStep.RELEASE) {
       if (data.getDeliverable() == null) {
         throw new BadRequestException("Release deliverable not specified");
@@ -94,6 +113,16 @@ public class CaseRestController {
     }
     data.setUsername(getUsername());
     nabuService.postSignoff(data);
+  }
+
+  private <T extends CaseQc> void validateQcStatus(NabuSignoff data,
+      BiFunction<Boolean, Boolean, T> of) {
+    try {
+      of.apply(data.getQcPassed(), data.getRelease());
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestException("Invalid QC combination: step=%s; qcPassed=%s; release=%s"
+          .formatted(data.getSignoffStepName(), data.getQcPassed(), data.getRelease()));
+    }
   }
 
   private String getUsername() {

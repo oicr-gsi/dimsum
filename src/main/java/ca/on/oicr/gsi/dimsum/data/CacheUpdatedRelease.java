@@ -2,6 +2,7 @@ package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
 import java.time.LocalDate;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 
 public class CacheUpdatedRelease implements CaseRelease {
@@ -30,8 +31,8 @@ public class CacheUpdatedRelease implements CaseRelease {
   }
 
   @Override
-  public Boolean getQcPassed() {
-    return cachedSignoff.getQcPassed();
+  public ReleaseQcStatus getQcStatus() {
+    return (ReleaseQcStatus) cachedSignoff.getQcStatus();
   }
 
   @Override

@@ -40,13 +40,13 @@ public enum CaseFilterKey {
   },
   PENDING_RELEASE_DELIVERABLE(string -> kase -> {
     for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
-      if (!Boolean.TRUE.equals(caseDeliverable.getReleaseApprovalQcPassed())) {
+      if (!DataUtils.isComplete(caseDeliverable.getReleaseApprovalQcStatus())) {
         // No releases pending for this deliverable type
         continue;
       }
       for (CaseRelease release : caseDeliverable.getReleases()) {
         if (Objects.equals(string, release.getDeliverable())) {
-          return !Boolean.TRUE.equals(release.getQcPassed());
+          return !DataUtils.isComplete(release.getQcStatus());
         }
       }
     }

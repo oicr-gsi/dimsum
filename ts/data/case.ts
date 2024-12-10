@@ -14,7 +14,12 @@ import {
   CellStatus,
 } from "../util/html-utils";
 import { urls } from "../util/urls";
-import { siteConfig } from "../util/site-config";
+import {
+  getAnalysisReviewQcStatus,
+  getReleaseApprovalQcStatus,
+  getReleaseQcStatus,
+  siteConfig,
+} from "../util/site-config";
 import {
   getQcStatus,
   getQcStatusWithDataReview,
@@ -58,14 +63,14 @@ export interface Donor {
 }
 
 export interface Qcable {
-  qcPassed?: boolean;
-  qcReason?: string;
-  qcUser?: string;
-  qcDate?: string;
-  qcNote?: string;
-  dataReviewPassed?: boolean;
-  dataReviewUser?: string;
-  dataReviewDate?: string;
+  qcPassed: boolean | null;
+  qcReason: string | null;
+  qcUser: string | null;
+  qcDate: string | null;
+  qcNote: string | null;
+  dataReviewPassed: boolean | null;
+  dataReviewUser: string | null;
+  dataReviewDate: string | null;
 }
 
 export interface Lane {
@@ -114,10 +119,10 @@ export interface Test {
 
 export interface CaseRelease {
   deliverable: string;
-  qcPassed?: boolean;
-  qcUser?: string;
-  qcDate?: string;
-  qcNote?: string;
+  qcStatus: string | null;
+  qcUser: string | null;
+  qcDate: string | null;
+  qcNote: string | null;
 }
 
 export const deliverableTypes = ["DATA_RELEASE", "CLINICAL_REPORT"] as const;
@@ -128,16 +133,23 @@ export const deliverableTypeLabels: Record<DeliverableType, string> = {
   CLINICAL_REPORT: "Clinical Report",
 };
 
+export interface CaseQc {
+  name: string;
+  label: string;
+  qcPassed: boolean | null;
+  release: boolean | null;
+}
+
 export interface CaseDeliverable {
   deliverableType: DeliverableType;
-  analysisReviewQcPassed?: boolean;
-  analysisReviewQcUser?: string;
-  analysisReviewQcDate?: string;
-  analysisReviewQcNote?: string;
-  releaseApprovalQcPassed?: boolean;
-  releaseApprovalQcUser?: string;
-  releaseApprovalQcDate?: string;
-  releaseApprovalQcNote?: string;
+  analysisReviewQcStatus: string | null;
+  analysisReviewQcUser: string | null;
+  analysisReviewQcDate: string | null;
+  analysisReviewQcNote: string | null;
+  releaseApprovalQcStatus: string | null;
+  releaseApprovalQcUser: string | null;
+  releaseApprovalQcDate: string | null;
+  releaseApprovalQcNote: string | null;
   releases: CaseRelease[];
   analysisReviewDaysSpent: number;
   releaseApprovalDaysSpent: number;
@@ -546,7 +558,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           samplePhaseComplete(test.fullDepthSequencings)
         ),
       (targets) => targets.analysisReviewDays,
-      (deliverable) => deliverable.analysisReviewQcPassed,
+      (deliverable) =>
+        getAnalysisReviewQcStatus(deliverable.analysisReviewQcStatus),
       (deliverable) => deliverable.analysisReviewQcUser,
       (deliverable) => deliverable.analysisReviewQcNote
     ),
@@ -561,10 +574,13 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         }
         return kase.deliverables
           .filter((x) => x.deliverableType == deliverableType)
-          .some((x) => x.analysisReviewQcPassed);
+          .some((x) =>
+            caseQcComplete(getAnalysisReviewQcStatus(x.analysisReviewQcStatus))
+          );
       },
       (targets) => targets.releaseApprovalDays,
-      (deliverable) => deliverable.releaseApprovalQcPassed,
+      (deliverable) =>
+        getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus),
       (deliverable) => deliverable.releaseApprovalQcUser,
       (deliverable) => deliverable.releaseApprovalQcNote
     ),
@@ -576,12 +592,16 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNoDeliverablesIcon(fragment, tooltipInstance);
           return;
         }
-        const anyPreviousComplete = kase.deliverables.some(
-          (deliverable) => deliverable.releaseApprovalQcPassed
+        const anyPreviousComplete = kase.deliverables.some((deliverable) =>
+          caseQcComplete(
+            getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus)
+          )
         );
         const anyQcSet = kase.deliverables
           .flatMap((deliverable) => deliverable.releases)
-          .some((release) => release.qcPassed != null);
+          .some((release) =>
+            caseQcComplete(getReleaseQcStatus(release.qcStatus))
+          );
         if (anyPreviousComplete || anyQcSet) {
           addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
         }
@@ -596,8 +616,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       getCellHighlight(kase) {
         if (!kase.deliverables.length) {
           return "error";
-        }
-        if (kase.requisition.paused || caseComplete(kase)) {
+        } else if (
+          kase.deliverables
+            .flatMap((deliverable) => deliverable.releases)
+            .map((release) => getReleaseQcStatus(release.qcStatus))
+            .some((qcStatus) => caseQcFailed(qcStatus))
+        ) {
+          return "error";
+        } else if (kase.requisition.paused || caseComplete(kase)) {
           return null;
         } else {
           return "warning";
@@ -616,7 +642,8 @@ export const analysisReviewDefinition: TableDefinition<Case, void> = {
   generateColumns: (data?: Case[]) => [
     makeDeliverableTypeQcStatusColumn(
       "QC Status",
-      (deliverable) => deliverable.analysisReviewQcPassed,
+      (deliverable) =>
+        getAnalysisReviewQcStatus(deliverable.analysisReviewQcStatus),
       (deliverable) => deliverable.analysisReviewQcUser,
       (deliverable) => deliverable.analysisReviewQcNote
     ),
@@ -634,7 +661,8 @@ export const releaseApprovalDefinition: TableDefinition<Case, void> = {
   generateColumns: () => [
     makeDeliverableTypeQcStatusColumn(
       "QC Status",
-      (deliverable) => deliverable.releaseApprovalQcPassed,
+      (deliverable) =>
+        getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus),
       (deliverable) => deliverable.releaseApprovalQcUser,
       (deliverable) => deliverable.releaseApprovalQcNote
     ),
@@ -778,9 +806,9 @@ function makeDeliverableTypePhaseColumn(
   analysisReview: boolean,
   isPreviousComplete: (kase: Case, deliverableType: DeliverableType) => boolean,
   getTarget: (targets: AssayTargets) => number | null,
-  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
-  getQcUser: (deliverable: CaseDeliverable) => string | undefined,
-  getQcNote: (deliverable: CaseDeliverable) => string | undefined
+  getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
+  getQcUser: (deliverable: CaseDeliverable) => string | null,
+  getQcNote: (deliverable: CaseDeliverable) => string | null
 ): ColumnDefinition<Case, Test> {
   return {
     title: title,
@@ -790,8 +818,8 @@ function makeDeliverableTypePhaseColumn(
         addNoDeliverablesIcon(fragment, tooltipInstance);
         return;
       }
-      const anyQcSet = kase.deliverables.some(
-        (deliverable) => getQcPassed(deliverable) != null
+      const anyQcSet = kase.deliverables.some((deliverable) =>
+        caseQcComplete(getQcStatus(deliverable))
       );
       if (analysisReview && !anyQcSet) {
         if (
@@ -812,21 +840,21 @@ function makeDeliverableTypePhaseColumn(
       ) {
         addDeliverableTypeIcons(
           kase,
-          getQcPassed,
+          getQcStatus,
           getQcUser,
           getQcNote,
           fragment,
           tooltipInstance
         );
       }
-      const allQcPassed = kase.deliverables.every((deliverable) =>
-        getQcPassed(deliverable)
+      const allQcComplete = kase.deliverables.every((deliverable) =>
+        caseQcComplete(getQcStatus(deliverable))
       );
       const targets = getTargets(kase);
       if (
         ((!analysisReview && kase.requisition.stopped) ||
           anyPreviousComplete) &&
-        !allQcPassed
+        !allQcComplete
       ) {
         addTurnAroundTimeInfo(kase.caseDaysSpent, getTarget(targets), fragment);
       }
@@ -834,7 +862,7 @@ function makeDeliverableTypePhaseColumn(
     getCellHighlight(kase) {
       return getDeliverableTypePhaseHighlight(
         kase,
-        (deliverable) => getQcPassed(deliverable),
+        getQcStatus,
         analysisReview
       );
     },
@@ -843,9 +871,9 @@ function makeDeliverableTypePhaseColumn(
 
 function makeDeliverableTypeQcStatusColumn<ChildType>(
   title: string,
-  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
-  getQcUser: (deliverable: CaseDeliverable) => string | undefined,
-  getQcNote: (deliverable: CaseDeliverable) => string | undefined
+  getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
+  getQcUser: (deliverable: CaseDeliverable) => string | null,
+  getQcNote: (deliverable: CaseDeliverable) => string | null
 ): ColumnDefinition<Case, ChildType> {
   return {
     title: title,
@@ -857,7 +885,7 @@ function makeDeliverableTypeQcStatusColumn<ChildType>(
       }
       addDeliverableTypeIcons(
         kase,
-        getQcPassed,
+        getQcStatus,
         getQcUser,
         getQcNote,
         fragment,
@@ -869,7 +897,7 @@ function makeDeliverableTypeQcStatusColumn<ChildType>(
         return "error";
       }
       const statuses = kase.deliverables.map((deliverable) =>
-        getDeliverableQcStatus(getQcPassed(deliverable))
+        getDeliverableQcStatus(getQcStatus(deliverable))
       );
       if (statuses.some((x) => x.cellStatus === "error")) {
         return "error";
@@ -900,7 +928,9 @@ function makeReleaseQcStatusColumn<ChildType>(
       }
       const statuses = kase.deliverables
         .flatMap((deliverable) => deliverable.releases)
-        .map((release) => getDeliverableQcStatus(release.qcPassed));
+        .map((release) =>
+          getDeliverableQcStatus(getReleaseQcStatus(release.qcStatus))
+        );
       if (statuses.some((x) => x.cellStatus === "error")) {
         return "error";
       } else if (statuses.some((x) => x.cellStatus === "warning")) {
@@ -974,9 +1004,12 @@ function generateAnalysisReviewMetricColumns(
             }
             const qcStatuses = !kase.deliverables
               ? []
-              : kase.deliverables.map(
-                  (deliverable) => deliverable.analysisReviewQcPassed
-                );
+              : kase.deliverables.map((deliverable) => {
+                  const qcStatus = getAnalysisReviewQcStatus(
+                    deliverable.analysisReviewQcStatus
+                  );
+                  return qcStatus ? qcStatus.qcPassed : null;
+                });
             fragment.appendChild(
               makeAnalysisMetricDisplay(
                 metricsPerGroup[i],
@@ -1012,11 +1045,21 @@ function generateAnalysisReviewMetricColumns(
             if (!kase.deliverables) {
               return "warning";
             } else if (
-              kase.deliverables.every((x) => x.analysisReviewQcPassed)
+              kase.deliverables.every((x) => {
+                const qcStatus = getAnalysisReviewQcStatus(
+                  x.analysisReviewQcStatus
+                );
+                return caseQcPassed(qcStatus) || caseQcNa(qcStatus);
+              })
             ) {
               return null;
             } else if (
-              kase.deliverables.some((x) => x.analysisReviewQcPassed === false)
+              kase.deliverables.some((x) => {
+                const qcStatus = getAnalysisReviewQcStatus(
+                  x.analysisReviewQcStatus
+                );
+                return caseQcFailed(qcStatus);
+              })
             ) {
               return "error";
             } else {
@@ -1107,7 +1150,7 @@ function makeQcGroupLabel(qcGroup: AnalysisQcGroup) {
 export function makeAnalysisMetricDisplay(
   metrics: Metric[],
   qcGroup: AnalysisQcGroup,
-  deliverableTypeQcStatuses: (boolean | undefined)[],
+  deliverableTypeQcStatuses: (boolean | null)[],
   addTooltip: boolean,
   prefix?: string,
   tooltipAdditionalContents?: Node
@@ -1157,10 +1200,17 @@ function addNoDeliverablesIcon(
   fragment.appendChild(icon);
 }
 
-export function getDeliverableQcStatus(qcPassed?: boolean) {
-  if (qcPassed == null) {
+export function getDeliverableQcStatus(qcStatus: CaseQc | null) {
+  if (qcStatus == null) {
     return qcStatuses.qc;
-  } else if (qcPassed) {
+  } else if (qcStatus.qcPassed == null) {
+    if (qcStatus.release == false) {
+      return qcStatuses.na;
+    } else {
+      // explicitly marked as pending
+      return qcStatuses.qc;
+    }
+  } else if (qcStatus.qcPassed) {
     return qcStatuses.passed;
   } else {
     return qcStatuses.failed;
@@ -1222,14 +1272,49 @@ export function samplePhaseComplete(
   );
 }
 
+function caseQcComplete(qc: CaseQc | null) {
+  if (qc == null) {
+    return false;
+  }
+  if (qc.qcPassed == null && qc.release == null) {
+    // QC explicitly set to pending
+    return false;
+  }
+  return true;
+}
+
+function caseQcPassed(qc: CaseQc | null) {
+  if (qc == null) {
+    return false;
+  }
+  return qc.qcPassed || false;
+}
+
+function caseQcFailed(qc: CaseQc | null) {
+  if (qc == null) {
+    return false;
+  }
+  return qc.qcPassed == false;
+}
+
+export function caseQcNa(qc: CaseQc | null) {
+  if (qc == null) {
+    return false;
+  }
+  if (qc.qcPassed == null && qc.release == false) {
+    return true;
+  }
+  return false;
+}
+
 function deliverableTypePhaseComplete(
   kase: Case,
-  getStatus: (deliverable: CaseDeliverable) => boolean | undefined
+  getStatus: (deliverable: CaseDeliverable) => CaseQc | null
 ) {
   if (!kase.deliverables.length) {
     return false;
   }
-  return kase.deliverables.map(getStatus).every((x) => x);
+  return kase.deliverables.map(getStatus).every((x) => caseQcComplete(x));
 }
 
 export function samplePhasePendingWork(samples: Sample[]) {
@@ -1293,7 +1378,7 @@ export function getSamplePhaseHighlight(
 
 function getDeliverableTypePhaseHighlight(
   kase: Case,
-  getQcPassed: (deliverable: CaseDeliverable) => boolean | undefined,
+  getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
   analysisReview: boolean
 ) {
   if (!kase.deliverables.length) {
@@ -1301,7 +1386,10 @@ function getDeliverableTypePhaseHighlight(
   }
   if (
     kase.requisition.paused ||
-    kase.deliverables.every((deliverable) => getQcPassed(deliverable))
+    kase.deliverables.every((deliverable) => {
+      const qcStatus = getQcStatus(deliverable);
+      return caseQcPassed(qcStatus) || caseQcNa(qcStatus);
+    })
   ) {
     return null;
   } else if (
@@ -1310,12 +1398,22 @@ function getDeliverableTypePhaseHighlight(
       kase.projects.every((project) => project.analysisReviewSkipped))
   ) {
     if (
-      kase.deliverables.some((deliverable) => getQcPassed(deliverable) != null)
+      kase.deliverables.some((deliverable) => {
+        const qcStatus = getQcStatus(deliverable);
+        return caseQcComplete(qcStatus);
+      })
     ) {
       return null;
     } else {
       return "na";
     }
+  } else if (
+    kase.deliverables.some((deliverable) => {
+      const qcStatus = getQcStatus(deliverable);
+      return caseQcFailed(qcStatus);
+    })
+  ) {
+    return "error";
   } else {
     return "warning";
   }
@@ -1447,9 +1545,9 @@ export function makeSampleTooltip(sample: Sample) {
 export function addStatusTooltipText(
   tooltip: Node,
   status: QcStatus,
-  qcReason?: string,
-  qcUser?: string,
-  qcNote?: string,
+  qcReason: string | null,
+  qcUser: string | null,
+  qcNote: string | null,
   alternateLabel?: string
 ) {
   if (status === qcStatuses.dataReview) {
@@ -1493,24 +1591,26 @@ function addTooltipRow(
 
 function addDeliverableTypeIcons(
   kase: Case,
-  getStatus: (deliverable: CaseDeliverable) => boolean | undefined,
-  getQcUser: (deliverable: CaseDeliverable) => string | undefined,
-  getQcNote: (deliverable: CaseDeliverable) => string | undefined,
+  getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
+  getQcUser: (deliverable: CaseDeliverable) => string | null,
+  getQcNote: (deliverable: CaseDeliverable) => string | null,
   fragment: DocumentFragment,
   tooltipInstance: Tooltip
 ) {
   kase.deliverables.forEach((deliverable, i) => {
-    const status = getDeliverableQcStatus(getStatus(deliverable));
+    const qcStatus = getQcStatus(deliverable);
+    const status = getDeliverableQcStatus(qcStatus);
     const icon = makeIcon(status.icon);
     const user = getQcUser(deliverable);
     const note = getQcNote(deliverable);
+    const qcReason = qcStatus?.label || null;
     tooltipInstance.addTarget(icon, (tooltip) => {
       const deliverableTypeLabel = makeTextDiv(
         deliverableTypeLabels[deliverable.deliverableType]
       );
       deliverableTypeLabel.classList.add("font-bold");
       tooltip.appendChild(deliverableTypeLabel);
-      addStatusTooltipText(tooltip, status, undefined, user, note);
+      addStatusTooltipText(tooltip, status, qcReason, user, note);
     });
     fragment.appendChild(icon);
     if (i < kase.deliverables.length - 1) {
@@ -1526,7 +1626,8 @@ function addReleaseIcons(
 ) {
   deliverables.forEach((deliverable, i) => {
     deliverable.releases.forEach((release, j) => {
-      const status = getDeliverableQcStatus(release.qcPassed);
+      const caseQcStatus = getReleaseQcStatus(release.qcStatus);
+      const status = getDeliverableQcStatus(caseQcStatus);
       const icon = makeIcon(status.icon);
       tooltipInstance.addTarget(icon, (tooltip) => {
         let deliverableLabel =
@@ -1540,7 +1641,7 @@ function addReleaseIcons(
         addStatusTooltipText(
           tooltip,
           status,
-          undefined,
+          caseQcStatus?.label || null,
           release.qcUser,
           release.qcNote
         );
@@ -1560,7 +1661,9 @@ function caseComplete(kase: Case) {
   return (
     kase.deliverables.length &&
     kase.deliverables.every((deliverable) =>
-      deliverable.releases.every((release) => release.qcPassed)
+      deliverable.releases.every((release) =>
+        caseQcComplete(getReleaseQcStatus(release.qcStatus))
+      )
     )
   );
 }
@@ -1584,7 +1687,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
   } else if (
     deliverableTypePhaseBehind(
       kase,
-      (x) => x.releaseApprovalQcPassed,
+      (x) => getReleaseApprovalQcStatus(x.releaseApprovalQcStatus),
       targets.releaseApprovalDays
     )
   ) {
@@ -1598,7 +1701,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
   } else if (
     deliverableTypePhaseBehind(
       kase,
-      (x) => x.analysisReviewQcPassed,
+      (x) => getAnalysisReviewQcStatus(x.analysisReviewQcStatus),
       targets.analysisReviewDays
     )
   ) {
@@ -1685,7 +1788,7 @@ function samplePhaseBehind(
 
 function deliverableTypePhaseBehind(
   kase: Case,
-  getStatus: (deliverable: CaseDeliverable) => boolean | undefined,
+  getStatus: (deliverable: CaseDeliverable) => CaseQc | null,
   stepTarget: number | null
 ) {
   return (
@@ -1729,7 +1832,7 @@ export function getAnalysisMetricCellHighlight(
   qcGroup: AnalysisQcGroup,
   kase: Case,
   metric: Metric,
-  qcPassed: boolean | undefined
+  qcPassed: boolean | null
 ): CellStatus | null {
   if (metric.name === "Trimming; Minimum base quality Q") {
     return null;
@@ -1806,20 +1909,20 @@ function showSignoffDialog(items: Case[]) {
     ],
     "Next",
     (result1) => {
+      const statuses = getStatusesForStep(result1.signoffStepName);
       const formFields: FormField<any>[] = [
         new DropdownField(
           "QC Status",
-          new Map<string, boolean | null>([
-            ["Approved", true],
-            ["Failed", false],
-          ]),
-          "qcPassed",
-          false,
+          new Map<string, CaseQc | null>(
+            Object.values(statuses).map((status) => [status.label, status])
+          ),
+          "qcStatus",
+          true,
+          undefined,
           "Pending"
         ),
         new TextField("Note", "comment"),
       ];
-
       if (result1.signoffStepName === "RELEASE") {
         const commonDeliverables = new Map<string, string>();
         items[0].deliverables
@@ -1871,7 +1974,8 @@ function showSignoffDialog(items: Case[]) {
             signoffStepName: result1.signoffStepName,
             deliverableType: result1.deliverableType,
             deliverable: result2.deliverable || null,
-            qcPassed: result2.qcPassed,
+            qcPassed: result2.qcStatus.qcPassed,
+            release: result2.qcStatus.release,
             comment: result2.comment || null,
           };
           post(urls.rest.cases.bulkSignoff, data)
@@ -1888,6 +1992,58 @@ function showSignoffDialog(items: Case[]) {
       );
     }
   );
+}
+
+function getStatusesForStep(stepName: string) {
+  let statuses;
+  switch (stepName) {
+    case "ANALYSIS_REVIEW":
+      statuses = siteConfig.analysisReviewQcStatuses;
+      break;
+    case "RELEASE_APPROVAL":
+      statuses = siteConfig.releaseApprovalQcStatuses;
+      break;
+    case "RELEASE":
+      statuses = siteConfig.releaseQcStatuses;
+      break;
+    default:
+      throw new Error("Invalid step name: " + stepName);
+  }
+  return Object.values(statuses).sort((a, b) => {
+    const aPriority = getQcStatusSortPriority(a);
+    const bPriority = getQcStatusSortPriority(b);
+    return aPriority - bPriority;
+  });
+}
+
+function getQcStatusSortPriority(status: CaseQc) {
+  // Sort by QC status, then release status
+  // true > false > null
+  let priority = 0;
+  switch (status.qcPassed) {
+    case true:
+      priority += 100;
+      break;
+    case false:
+      priority += 200;
+      break;
+    case null:
+      if (status.release == null) {
+        // exception: pending at top
+        return 0;
+      }
+      priority += 300;
+      break;
+  }
+  switch (status.release) {
+    case true:
+      priority += 10;
+      break;
+    case false:
+      priority += 20;
+      break;
+  }
+  return priority;
 }
 
 function hasDeliverable(kase: Case, deliverable: string) {

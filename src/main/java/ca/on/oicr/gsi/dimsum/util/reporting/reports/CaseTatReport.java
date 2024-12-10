@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Project;
@@ -118,12 +119,12 @@ public class CaseTatReport extends Report {
                   x -> x.dataRelease() == null ? null : x.dataRelease().getDeliverableDaysSpent()),
               // Combined (case-level) columns
               Column.forString("ALL Analysis Review Completed",
-                  x -> getGateCompletedDate(x, CaseDeliverable::getAnalysisReviewQcPassed,
+                  x -> getGateCompletedDate(x, CaseDeliverable::getAnalysisReviewQcStatus,
                       CaseDeliverable::getAnalysisReviewQcDate)),
               Column.forInteger("ALL Analysis Review Days",
                   x -> x.kase().getAnalysisReviewDaysSpent()),
               Column.forString("ALL Release Approval Completed",
-                  x -> getGateCompletedDate(x, CaseDeliverable::getReleaseApprovalQcPassed,
+                  x -> getGateCompletedDate(x, CaseDeliverable::getReleaseApprovalQcStatus,
                       CaseDeliverable::getReleaseApprovalQcDate)),
               Column.forInteger("ALL Release Approval Days",
                   x -> x.kase().getReleaseApprovalDaysSpent()),
@@ -229,10 +230,10 @@ public class CaseTatReport extends Report {
   }
 
   private static String getGateCompletedDate(RowData rowData,
-      Function<CaseDeliverable, Boolean> statusExtractor,
+      Function<CaseDeliverable, CaseQc> statusExtractor,
       Function<CaseDeliverable, LocalDate> dateExtractor) {
     if (rowData.kase().getDeliverables().stream()
-        .anyMatch(deliverable -> !Boolean.TRUE.equals(statusExtractor.apply(deliverable)))) {
+        .anyMatch(deliverable -> DataUtils.isPending((statusExtractor.apply(deliverable))))) {
       return null;
     }
     return formatDate(rowData.kase().getDeliverables().stream()
@@ -242,14 +243,14 @@ public class CaseTatReport extends Report {
   }
 
   private static String getAnalysisReviewCompletedDate(CaseDeliverable deliverable) {
-    if (deliverable == null || !Boolean.TRUE.equals(deliverable.getAnalysisReviewQcPassed())) {
+    if (deliverable == null || DataUtils.isPending(deliverable.getAnalysisReviewQcStatus())) {
       return null;
     }
     return formatDate(deliverable.getAnalysisReviewQcDate());
   }
 
   private static String getReleaseApprovalCompletedDate(CaseDeliverable deliverable) {
-    if (deliverable == null || !Boolean.TRUE.equals(deliverable.getReleaseApprovalQcPassed())) {
+    if (deliverable == null || DataUtils.isPending(deliverable.getReleaseApprovalQcStatus())) {
       return null;
     }
     return formatDate(deliverable.getReleaseApprovalQcDate());
@@ -257,7 +258,7 @@ public class CaseTatReport extends Report {
 
   private static String getCompletionDate(CaseDeliverable deliverable) {
     if (deliverable == null || deliverable.getReleases().stream()
-        .anyMatch(release -> !Boolean.TRUE.equals(release.getQcPassed()))) {
+        .anyMatch(release -> DataUtils.isPending(release.getQcStatus()))) {
       return null;
     }
 
