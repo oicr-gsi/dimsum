@@ -140,6 +140,12 @@ public class CaseService {
     return filterCases(cacheUpdatedCases, filters);
   }
 
+  public List<Case> getCasesByIds(Set<String> caseIds) {
+    return cacheUpdatedCases.stream()
+        .filter(kase -> caseIds.contains(kase.getId()))
+        .collect(Collectors.toList());
+  }
+
   public Map<Long, Assay> getAssaysById() {
     return caseData.getAssaysById();
   }

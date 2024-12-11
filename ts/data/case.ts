@@ -1898,11 +1898,13 @@ function hasDeliverable(kase: Case, deliverable: string) {
 
 const REPORT_FULL_DEPTH_SUMMARY = "full-depth-summary";
 const REPORT_DARE_INPUT_SHEET = "dare-input-sheet";
+const DONOR_ASSAY_REPORT = "donor-assay-report";
 
 function showDownloadDialog(items: Case[]) {
   const reportOptions = new Map<string, string>([
     ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
     ["DARE Input Sheet", REPORT_DARE_INPUT_SHEET],
+    ["Donor Assay Report", DONOR_ASSAY_REPORT],
   ]);
 
   const reportSelect = new DropdownField(
@@ -1915,6 +1917,7 @@ function showDownloadDialog(items: Case[]) {
     switch (result.report) {
       case REPORT_FULL_DEPTH_SUMMARY:
       case REPORT_DARE_INPUT_SHEET:
+      case DONOR_ASSAY_REPORT:
         showDownloadOptionsDialog(result.report, items);
         break;
       default:
