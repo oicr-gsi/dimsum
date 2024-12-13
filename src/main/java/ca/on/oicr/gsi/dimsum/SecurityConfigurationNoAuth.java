@@ -12,9 +12,7 @@ public class SecurityConfigurationNoAuth {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests()
-            .anyRequest().permitAll();
+    http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
     return http.build();
   }
 

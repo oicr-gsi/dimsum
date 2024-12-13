@@ -13,6 +13,8 @@ spring:
       # Disable UserDetailsServiceAutoConfiguration to prevent auto-creation of a test user
       - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   security:
+    filter:
+      dispatcher-types: request,async,error,forward,include
     saml2:
       relyingparty:
         registration:

@@ -1,5 +1,12 @@
 package ca.on.oicr.gsi.dimsum;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import javax.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -17,11 +24,11 @@ import org.springframework.security.saml2.provider.service.web.DefaultRelyingPar
 import org.springframework.security.saml2.provider.service.web.RelyingPartyRegistrationResolver;
 import org.springframework.security.saml2.provider.service.web.Saml2MetadataFilter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.io.*;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 @Configuration
 @Profile("!noauth")
@@ -32,14 +39,36 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
-        .antMatchers("/favicon.ico").permitAll()
-        .antMatchers("/css/**").permitAll()
-        .antMatchers("/js/**").permitAll()
-        .antMatchers("/img/**").permitAll()
-        .antMatchers("/libs/**").permitAll()
-        .antMatchers("/metrics").permitAll()
-        .antMatchers(LOGIN_URL).permitAll()
+        .shouldFilterAllDispatcherTypes(true) // TODO: remove after switch to Spring Sec 6
+        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll() // TODO: I don't think this can
+                                                                    // be removed?
+        .requestMatchers("/favicon.ico").permitAll()
+        .requestMatchers("/css/**").permitAll()
+        .requestMatchers("/js/**").permitAll()
+        .requestMatchers("/img/**").permitAll()
+        .requestMatchers("/libs/**").permitAll()
+        .requestMatchers("/metrics").permitAll()
+        .requestMatchers(LOGIN_URL).permitAll()
         .anyRequest().authenticated())
+        // Opt in to Spring Security 6.x defaults
+        .securityContext(securityContext -> securityContext
+            .requireExplicitSave(true)
+            .securityContextRepository(new DelegatingSecurityContextRepository(
+                new RequestAttributeSecurityContextRepository(),
+                new HttpSessionSecurityContextRepository())))
+        .requestCache(cache -> {
+          HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+          requestCache.setMatchingRequestParameterName("continue");
+          cache.requestCache(requestCache);
+        })
+        .sessionManagement(sessions -> sessions.requireExplicitAuthenticationStrategy(true))
+        .csrf(csrf -> {
+          XorCsrfTokenRequestAttributeHandler requestHandler =
+              new XorCsrfTokenRequestAttributeHandler();
+          requestHandler.setCsrfRequestAttributeName("_csrf");
+          csrf.csrfTokenRequestHandler(requestHandler);
+        })
+        // TODO: remove above after migrating to Spring Security 6.x/Spring Boot 3.x
         .saml2Login()
         .loginPage(LOGIN_URL)
         .and().saml2Logout(Customizer.withDefaults());
