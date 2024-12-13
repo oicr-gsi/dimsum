@@ -30,6 +30,9 @@ public class DonorAssayReport extends Report {
           Column.forString("Start Date", kase -> kase.getStartDate().toString()),
           Column.forString("Latest Activity", kase -> kase.getLatestActivityDate().toString()),
           Column.forString("Status", DonorAssayReport::getCaseStatus),
+          Column.forString("Completed",
+              kase -> CompletedGate.RELEASE.qualifyCase(kase) ? "Yes" : "No"),
+          Column.forString("Stopped/Paused", DonorAssayReport::getStoppedPausedStatus),
           Column.forString("Stop/Pause Reason", DonorAssayReport::getStopPauseReason))) {
         @Override
         public List<Case> getData(CaseService caseService, JsonNode parameters) {
@@ -57,12 +60,20 @@ public class DonorAssayReport extends Report {
   private static String getCaseStatus(Case kase) {
     if (CompletedGate.RELEASE.qualifyCase(kase)) {
       return "Completed";
-    } else if (kase.isStopped()) {
-      return "Failed";
     } else if (kase.getRequisition().isPaused()) {
       return "Paused";
     } else {
       return "In Progress";
+    }
+  }
+
+  private static String getStoppedPausedStatus(Case kase) {
+    if (kase.isStopped()) {
+      return "Stopped";
+    } else if (kase.getRequisition().isPaused()) {
+      return "Paused";
+    } else {
+      return "Neither";
     }
   }
 
