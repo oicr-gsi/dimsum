@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -70,6 +71,7 @@ public class CaseLoader {
       return null;
     }
 
+    long startTimeMillis = System.currentTimeMillis();
     ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
@@ -91,7 +93,9 @@ public class CaseLoader {
             projectSummariesByName);
 
     log.debug(String.format("Completed loading %d cases.", cardeaCaseData.getCases().size()));
-
+    if (refreshTimer != null) {
+      refreshTimer.record(System.currentTimeMillis() - startTimeMillis, TimeUnit.MILLISECONDS);
+    }
     return caseData;
   }
 
@@ -223,49 +227,51 @@ public class CaseLoader {
         && anySamplesMatch(kase.getReceipts(), afterDate, beforeDate)) {
       caseSummary.receiptCompletedCount(testSize);
     }
-    for (Test test : tests) {
-      if ((test.isExtractionSkipped() && afterDate == null && beforeDate == null)
-          || (CompletedGate.EXTRACTION.qualifyTest(test)
-              && anySamplesMatch(test.getExtractions(), afterDate, beforeDate))) {
-        caseSummary.incrementExtractionCompletedCount();
-      } else if (PendingState.EXTRACTION_QC.qualifyTest(test) && !kase.isStopped()) {
-        caseSummary.incrementExtractionPendingQcCount();
-      } else if (PendingState.EXTRACTION.qualifyTest(test) && !kase.isStopped()) {
-        caseSummary.incrementExtractionPendingCount();
-      }
+    if (tests != null) {
+      for (Test test : tests) {
+        if ((test.isExtractionSkipped() && afterDate == null && beforeDate == null)
+            || (CompletedGate.EXTRACTION.qualifyTest(test)
+                && anySamplesMatch(test.getExtractions(), afterDate, beforeDate))) {
+          caseSummary.incrementExtractionCompletedCount();
+        } else if (PendingState.EXTRACTION_QC.qualifyTest(test) && !kase.isStopped()) {
+          caseSummary.incrementExtractionPendingQcCount();
+        } else if (PendingState.EXTRACTION.qualifyTest(test) && !kase.isStopped()) {
+          caseSummary.incrementExtractionPendingCount();
+        }
 
-      // library Preparation
-      if ((test.isLibraryPreparationSkipped() && afterDate == null && beforeDate == null)
-          || (CompletedGate.LIBRARY_PREPARATION.qualifyTest(test)
-              && anySamplesMatch(test.getLibraryPreparations(), afterDate, beforeDate))) {
-        caseSummary.incrementLibraryPrepCompletedCount();
-      } else if (PendingState.LIBRARY_QC.qualifyTest(test) && !kase.isStopped()) {
-        caseSummary.incrementLibraryPrepPendingQcCount();
-      } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test) && !kase.isStopped()) {
-        caseSummary.incrementLibraryPrepPendingCount();
-      }
+        // library Preparation
+        if ((test.isLibraryPreparationSkipped() && afterDate == null && beforeDate == null)
+            || (CompletedGate.LIBRARY_PREPARATION.qualifyTest(test)
+                && anySamplesMatch(test.getLibraryPreparations(), afterDate, beforeDate))) {
+          caseSummary.incrementLibraryPrepCompletedCount();
+        } else if (PendingState.LIBRARY_QC.qualifyTest(test) && !kase.isStopped()) {
+          caseSummary.incrementLibraryPrepPendingQcCount();
+        } else if (PendingState.LIBRARY_PREPARATION.qualifyTest(test) && !kase.isStopped()) {
+          caseSummary.incrementLibraryPrepPendingCount();
+        }
 
-      // Library Qualification
-      if (CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(test)
-          && anySamplesMatch(test.getLibraryQualifications(), afterDate, beforeDate)) {
-        caseSummary.incrementLibraryQualCompletedCount();
-      } else if ((PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
-          || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
-          && !kase.isStopped()) {
-        caseSummary.incrementLibraryQualPendingQcCount();
-      } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test) && !kase.isStopped()) {
-        caseSummary.incrementLibraryQualPendingCount();
-      }
+        // Library Qualification
+        if (CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(test)
+            && anySamplesMatch(test.getLibraryQualifications(), afterDate, beforeDate)) {
+          caseSummary.incrementLibraryQualCompletedCount();
+        } else if ((PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
+            || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
+            && !kase.isStopped()) {
+          caseSummary.incrementLibraryQualPendingQcCount();
+        } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test) && !kase.isStopped()) {
+          caseSummary.incrementLibraryQualPendingCount();
+        }
 
-      // Full depth sequncing
-      if (CompletedGate.FULL_DEPTH_SEQUENCING.qualifyTest(test)
-          && anySamplesMatch(test.getFullDepthSequencings(), afterDate, beforeDate)) {
-        caseSummary.incrementFullDepthSeqCompletedCount();
-      } else if ((PendingState.FULL_DEPTH_QC.qualifyTest(test)
-          || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) && !kase.isStopped()) {
-        caseSummary.incrementFullDepthSeqPendingQcCount();
-      } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test) && !kase.isStopped()) {
-        caseSummary.incrementFullDepthSeqPendingCount();
+        // Full depth sequncing
+        if (CompletedGate.FULL_DEPTH_SEQUENCING.qualifyTest(test)
+            && anySamplesMatch(test.getFullDepthSequencings(), afterDate, beforeDate)) {
+          caseSummary.incrementFullDepthSeqCompletedCount();
+        } else if ((PendingState.FULL_DEPTH_QC.qualifyTest(test)
+            || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) && !kase.isStopped()) {
+          caseSummary.incrementFullDepthSeqPendingQcCount();
+        } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test) && !kase.isStopped()) {
+          caseSummary.incrementFullDepthSeqPendingCount();
+        }
       }
     }
 

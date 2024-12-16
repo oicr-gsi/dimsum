@@ -1,5 +1,11 @@
 package ca.on.oicr.gsi.dimsum;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +14,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.saml2.core.Saml2X509Credential;
-import org.springframework.security.saml2.provider.service.metadata.OpenSamlMetadataResolver;
+import org.springframework.security.saml2.provider.service.metadata.OpenSaml4MetadataResolver;
 import org.springframework.security.saml2.provider.service.registration.InMemoryRelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
@@ -17,11 +23,7 @@ import org.springframework.security.saml2.provider.service.web.DefaultRelyingPar
 import org.springframework.security.saml2.provider.service.web.RelyingPartyRegistrationResolver;
 import org.springframework.security.saml2.provider.service.web.Saml2MetadataFilter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.io.*;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
+import jakarta.servlet.DispatcherType;
 
 @Configuration
 @Profile("!noauth")
@@ -32,17 +34,17 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
-        .antMatchers("/favicon.ico").permitAll()
-        .antMatchers("/css/**").permitAll()
-        .antMatchers("/js/**").permitAll()
-        .antMatchers("/img/**").permitAll()
-        .antMatchers("/libs/**").permitAll()
-        .antMatchers("/metrics").permitAll()
-        .antMatchers(LOGIN_URL).permitAll()
+        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+        .requestMatchers("/favicon.ico").permitAll()
+        .requestMatchers("/css/**").permitAll()
+        .requestMatchers("/js/**").permitAll()
+        .requestMatchers("/img/**").permitAll()
+        .requestMatchers("/libs/**").permitAll()
+        .requestMatchers("/metrics").permitAll()
+        .requestMatchers(LOGIN_URL).permitAll()
         .anyRequest().authenticated())
-        .saml2Login()
-        .loginPage(LOGIN_URL)
-        .and().saml2Logout(Customizer.withDefaults());
+        .saml2Login(saml -> saml.loginPage(LOGIN_URL))
+        .saml2Logout(Customizer.withDefaults());
     return http.build();
   }
 
@@ -90,7 +92,7 @@ public class SecurityConfiguration {
   FilterRegistrationBean<Saml2MetadataFilter> metadata(
       RelyingPartyRegistrationResolver registrations) {
     Saml2MetadataFilter metadata =
-        new Saml2MetadataFilter(registrations, new OpenSamlMetadataResolver());
+        new Saml2MetadataFilter(registrations, new OpenSaml4MetadataResolver());
     FilterRegistrationBean<Saml2MetadataFilter> filter = new FilterRegistrationBean<>(metadata);
     filter.setOrder(-101);
     return filter;

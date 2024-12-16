@@ -5,6 +5,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +19,7 @@ public class RestExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(
             ResponseStatusException ex) {
-        return prepareErrorResponse(ex.getStatus(), ex.getReason(), ex);
+        return prepareErrorResponse(ex.getStatusCode(), ex.getReason(), ex);
     }
 
     @ExceptionHandler(Exception.class)
@@ -26,13 +27,13 @@ public class RestExceptionHandler {
         return prepareErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex);
     }
 
-    private ResponseEntity<Map<String, Object>> prepareErrorResponse(HttpStatus httpStatus,
+    private ResponseEntity<Map<String, Object>> prepareErrorResponse(HttpStatusCode httpStatus,
             String errorMessage, Exception ex) {
         logException(httpStatus.value(), errorMessage, ex);
 
         Map<String, Object> error = new HashMap<>();
         error.put("status", httpStatus.value());
-        error.put("error", httpStatus.getReasonPhrase());
+        error.put("error", HttpStatus.resolve(httpStatus.value()).getReasonPhrase());
         error.put("message", errorMessage);
 
         return new ResponseEntity<>(error, httpStatus);
