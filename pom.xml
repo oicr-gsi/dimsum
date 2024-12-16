@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.18</version>
+    <version>3.4.0</version>
     <relativePath />
     <!-- lookup parent from repository -->
   </parent>
@@ -42,54 +42,19 @@
       <id>artifacts-gsi-release</id>
       <url>https://artifacts.oicr.on.ca/artifactory/gsi-release/</url>
     </repository>
-    <repository>
-      <!-- needed for OpenSAML -->
-      <id>shibboleth</id>
-      <url>https://build.shibboleth.net/maven/releases</url>
-    </repository>
   </repositories>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <!-- keeps Jackson dependencies in sync -->
-        <groupId>com.fasterxml.jackson</groupId>
-        <artifactId>jackson-bom</artifactId>
-        <version>2.13.2.20220328</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <!-- all below here is temporary - remove after change to Spring Boot 3 -->
-        <groupId>org.springframework.security</groupId>
-        <artifactId>spring-security-bom</artifactId>
-        <version>5.8.16</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>opensaml-core</artifactId>
-        <version>4.3.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>opensaml-saml-api</artifactId>
-        <version>4.3.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>opensaml-saml-impl</artifactId>
-        <version>4.3.2</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-rest-java-client-core</artifactId>
       <version>5.2.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <!-- Needed by jira-rest-java-client-core (scope:provided) -->
@@ -148,7 +113,7 @@
     </dependency>
     <dependency>
       <groupId>org.thymeleaf.extras</groupId>
-      <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+      <artifactId>thymeleaf-extras-springsecurity6</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

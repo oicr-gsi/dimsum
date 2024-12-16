@@ -3,7 +3,6 @@ package ca.on.oicr.gsi.dimsum.controller.mvc;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -16,6 +15,7 @@ import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/cases")

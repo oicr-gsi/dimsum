@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,7 +21,7 @@ public class MvcExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ModelAndView handleResponseStatusException(ResponseStatusException ex) {
-        return prepareErrorModelAndView(ex.getStatus(), ex.getReason(), ex);
+        return prepareErrorModelAndView(ex.getStatusCode(), ex.getReason(), ex);
     }
 
     @ExceptionHandler(Exception.class)
@@ -28,7 +29,7 @@ public class MvcExceptionHandler {
         return prepareErrorModelAndView(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex);
     }
 
-    private ModelAndView prepareErrorModelAndView(HttpStatus status, String errorMessage,
+    private ModelAndView prepareErrorModelAndView(HttpStatusCode status, String errorMessage,
             Exception ex) {
         String resolvedErrorMessage =
                 (errorMessage != null) ? errorMessage : "No message available";
@@ -37,15 +38,15 @@ public class MvcExceptionHandler {
         } else {
             logger.info("Error Status: {}. Error Message: {}", status, resolvedErrorMessage);
         }
-
+        String reason = HttpStatus.resolve(status.value()).getReasonPhrase();
         ModelAndView mav = new ModelAndView("error");
         mav.addObject("errorStatus", status.value());
-        mav.addObject("errorReason", status.getReasonPhrase());
+        mav.addObject("errorReason", reason);
         mav.addObject("errorMessage", resolvedErrorMessage);
         mav.addObject("dataAgeMinutes", commonModelAttributeProvider.getDataAgeMinutes());
         mav.addObject("buildVersion", commonModelAttributeProvider.getBuildVersion());
 
-        mav.addObject("title", status.value() + " " + status.getReasonPhrase() + " - Dimsum");
+        mav.addObject("title", status.value() + " " + reason + " - Dimsum");
 
         return mav;
     }
