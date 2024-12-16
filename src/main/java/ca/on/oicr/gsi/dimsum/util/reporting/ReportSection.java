@@ -69,8 +69,7 @@ public abstract class ReportSection<T> {
     }
 
     @Override
-    public JsonNode createJson(List<T> objects, ObjectMapper objectMapper) {
-      ArrayNode arrayNode = objectMapper.createArrayNode();
+    public void writeJson(ArrayNode arrayNode, List<T> objects, ObjectMapper objectMapper) {
       for (T object : objects) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         List<Column<T>> columns = getColumns();
@@ -80,7 +79,6 @@ public abstract class ReportSection<T> {
         }
         arrayNode.add(objectNode);
       }
-      return arrayNode;
     }
   }
 
@@ -118,7 +116,13 @@ public abstract class ReportSection<T> {
   protected abstract void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
       boolean includeHeaders);
 
-  public abstract JsonNode createJson(List<T> objects, ObjectMapper objectMapper);
+  public void createJson(ArrayNode json, CaseService caseService, ObjectMapper objectMapper,
+      JsonNode parameters) {
+    List<T> objects = getData(caseService, parameters);
+    writeJson(json, objects, objectMapper);
+  }
+
+  protected abstract void writeJson(ArrayNode json, List<T> objects, ObjectMapper objectMapper);
 
   /**
    * Fetches data from the CaseService based on parameters provided
