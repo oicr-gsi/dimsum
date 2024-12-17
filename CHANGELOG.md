@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.48.0] - 2024-12-17
+
+### Added
+
+* Donor Assay Report Download from the Cases table
+
+### Changed
+
+* Any non-pending QC status will now complete analysis review, release approval, and release steps
+* Analysis review, release approval, and release now have QC statuses that indicate both QC passed and
+  the release status
+
+
 ## [1.47.1] - 2024-12-06
 
 ### Fixed
