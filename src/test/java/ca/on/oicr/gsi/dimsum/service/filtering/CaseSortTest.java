@@ -15,6 +15,7 @@ import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.AssayTargets;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Donor;
@@ -92,10 +93,10 @@ public class CaseSortTest {
   @org.junit.jupiter.api.Test
   public void testSortByUrgencyBothCompleted() {
     Case a = mockEmptyCase(1L);
-    addRelease(a, true, 2023, 1, 1);
+    addRelease(a, ReleaseQcStatus.PASSED_RELEASE, 2023, 1, 1);
 
     Case b = mockEmptyCase(1L);
-    addRelease(b, true, 2023, 1, 1);
+    addRelease(b, ReleaseQcStatus.PASSED_RELEASE, 2023, 1, 1);
 
     // Both completed, should be considered equivalent
     testUrgencyComparator(a, b, true);
@@ -106,7 +107,7 @@ public class CaseSortTest {
     Case a = mockEmptyCase(1L);
 
     Case b = mockEmptyCase(1L);
-    addRelease(b, true, 2023, 1, 1);
+    addRelease(b, ReleaseQcStatus.PASSED_RELEASE, 2023, 1, 1);
 
     // B completed. A is more urgent
     testUrgencyComparator(a, b);
@@ -344,9 +345,10 @@ public class CaseSortTest {
     }
   }
 
-  private static void addRelease(Case kase, boolean qcPassed, int year, int month, int day) {
+  private static void addRelease(Case kase, ReleaseQcStatus qcStatus, int year, int month,
+      int day) {
     CaseRelease release = kase.getDeliverables().get(0).getReleases().get(0);
-    when(release.getQcPassed()).thenReturn(qcPassed);
+    when(release.getQcStatus()).thenReturn(qcStatus);
     when(release.getQcUser()).thenReturn("User");
     when(release.getQcDate()).thenReturn(LocalDate.of(year, month, day));
   }

@@ -14,6 +14,7 @@ import {
   subcategoryApplies as analysisSubcategoryApplies,
   Donor,
   deliverableTypeLabels,
+  caseQcNa,
 } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
 import { makeTextDiv, styleText } from "./util/html-utils";
@@ -29,7 +30,7 @@ import {
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
-import { siteConfig } from "./util/site-config";
+import { getAnalysisReviewQcStatus, siteConfig } from "./util/site-config";
 import { urls } from "./util/urls";
 import { BasicDropdownOption, Dropdown } from "./component/dropdown";
 
@@ -244,7 +245,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        displayQcSignOff(
+        displaySampleSignOff(
           fragment,
           getRunOrSampleLevel(object),
           object.caseStopped
@@ -393,22 +394,28 @@ const analysisReviewMetricsDefinition: TableDefinition<
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
+        const qcStatus = getAnalysisReviewQcStatus(
+          parent.deliverable.analysisReviewQcStatus
+        );
         fragment.appendChild(
           makeAnalysisMetricDisplay(
             [object],
             parent.qcGroup,
-            [parent.deliverable.analysisReviewQcPassed],
+            [qcStatus?.qcPassed || null],
             false
           )
         );
       },
       getCellHighlight(object, metric) {
         if (metric) {
+          const qcStatus = getAnalysisReviewQcStatus(
+            object.deliverable.analysisReviewQcStatus
+          );
           return getAnalysisMetricCellHighlight(
             object.qcGroup,
             object.kase,
             metric,
-            object.deliverable.analysisReviewQcPassed
+            qcStatus?.qcPassed || null
           );
         } else {
           return "na";
@@ -419,11 +426,14 @@ const analysisReviewMetricsDefinition: TableDefinition<
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
         const deliverable = object.deliverable;
+        const qcStatus = getAnalysisReviewQcStatus(
+          deliverable.analysisReviewQcStatus
+        );
         displaySignOff(
           fragment,
           object.caseStopped,
-          deliverable.analysisReviewQcPassed,
-          undefined,
+          qcStatus?.qcPassed || null,
+          caseQcNa(qcStatus) ? "N/A" : null,
           deliverable.analysisReviewQcUser,
           deliverable.analysisReviewQcDate,
           deliverable.analysisReviewQcNote
@@ -431,9 +441,12 @@ const analysisReviewMetricsDefinition: TableDefinition<
       },
       getCellHighlight(object) {
         const status = getDeliverableQcStatus(
-          object.deliverable.analysisReviewQcPassed
+          getAnalysisReviewQcStatus(object.deliverable.analysisReviewQcStatus)
         );
-        if (status === qcStatuses.qc && object.caseStopped) {
+        if (
+          status === qcStatuses.na ||
+          (status === qcStatuses.qc && object.caseStopped)
+        ) {
           return "na";
         } else {
           return status.cellStatus;
@@ -452,7 +465,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
   ],
 };
 
-function displayQcSignOff(
+function displaySampleSignOff(
   fragment: DocumentFragment,
   qcable: Qcable,
   caseStopped: boolean
@@ -477,7 +490,7 @@ function displayDataReviewSignOff(
     fragment,
     caseStopped,
     qcable.dataReviewPassed,
-    undefined,
+    null,
     qcable.dataReviewUser,
     qcable.dataReviewDate
   );
@@ -486,11 +499,11 @@ function displayDataReviewSignOff(
 function displaySignOff(
   fragment: DocumentFragment,
   caseStopped: boolean,
-  qcPassed?: boolean,
-  qcReason?: string,
-  qcUser?: string,
-  qcDate?: string,
-  qcNote?: string
+  qcPassed: boolean | null,
+  qcReason: string | null,
+  qcUser: string | null,
+  qcDate: string | null,
+  qcNote?: string | null
 ) {
   if (qcDate) {
     if (!qcUser) {

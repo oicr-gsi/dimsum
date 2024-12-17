@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -49,6 +50,18 @@ public class DataUtils {
     return Boolean.FALSE.equals(value);
   }
 
+  public static boolean isComplete(CaseQc caseQc) {
+    return caseQc != null && !caseQc.isPending();
+  }
+
+  public static boolean isPassed(CaseQc caseQc) {
+    return caseQc != null && isTrue(caseQc.getQcPassed());
+  }
+
+  public static boolean isPending(CaseQc caseQc) {
+    return caseQc == null || caseQc.isPending();
+  }
+
   public static boolean isPendingQc(Sample sample) {
     return sample.getQcUser() == null
         || (sample.getRun() != null && sample.getRun().getQcPassed() == null);
@@ -83,8 +96,8 @@ public class DataUtils {
         .flatMap(deliverable -> deliverable.getReleases().stream())
         .collect(Collectors.toList());
 
-    if (releases.isEmpty() || releases.stream()
-        .anyMatch(release -> release.getQcPassed() == null || !release.getQcPassed())) {
+    if (releases.isEmpty()
+        || releases.stream().anyMatch(release -> isPending(release.getQcStatus()))) {
       return null;
     }
 
