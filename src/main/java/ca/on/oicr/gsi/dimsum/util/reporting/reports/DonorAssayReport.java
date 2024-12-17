@@ -56,16 +56,6 @@ public class DonorAssayReport extends Report {
         .collect(Collectors.joining(", "));
   }
 
-  private static String getCaseStatus(Case kase) {
-    if (CompletedGate.RELEASE.qualifyCase(kase)) {
-      return "Completed";
-    } else if (kase.getRequisition().isPaused()) {
-      return "Paused";
-    } else {
-      return "In Progress";
-    }
-  }
-
   private static String getStoppedPausedStatus(Case kase) {
     if (kase.isStopped()) {
       return "Stopped";
