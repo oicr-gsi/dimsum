@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.49.0] - 2024-12-19
+
+### Added
+
+* Full-Depth Sequencing Collapsed Coverage metric
+
+### Fixed
+
+* The Run Details page Library Design filter was missing some options
+* Error creating JIRA Service
+
+
 ## [1.48.0] - 2024-12-17
 
 ### Added
