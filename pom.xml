@@ -46,9 +46,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.atlassian.jira</groupId>
+      <groupId>ca.on.oicr.gsi</groupId>
       <artifactId>jira-rest-java-client-core</artifactId>
-      <version>5.2.4</version>
+      <version>6.0.2</version>
       <exclusions>
         <exclusion>
           <groupId>commons-logging</groupId>
