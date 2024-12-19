@@ -123,7 +123,7 @@
     <dependency>
       <groupId>ca.on.oicr.gsi.cardea</groupId>
       <artifactId>cardea-data</artifactId>
-      <version>1.18.0</version>
+      <version>1.19.0</version>
     </dependency>
   </dependencies>
 

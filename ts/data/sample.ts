@@ -93,6 +93,7 @@ export interface Sample extends Qcable {
   mappedToCoding?: number;
   rawCoverage?: number;
   onTargetReads?: number;
+  collapsedCoverage?: number;
   lambdaMethylation?: number;
   lambdaClusters?: number;
   puc19Methylation?: number;
@@ -1169,6 +1170,8 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.methylationBeta);
     case "PE Reads":
       return nullIfUndefined(sample.peReads);
+    case "Collapsed Coverage":
+      return nullIfUndefined(sample.collapsedCoverage);
   }
   if (/^Concentration/.test(metricName)) {
     return nullIfUndefined(sample.concentration);
