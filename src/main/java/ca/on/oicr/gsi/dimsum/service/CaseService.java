@@ -715,9 +715,13 @@ public class CaseService {
         .map(Project::getPipeline)
         .collect(Collectors.toSet()));
     frontEndConfig.setAssaysById(caseData.getAssaysById());
+    // Library preparation must always match the test design code
+    // Library qualification must match the library qualificiation design code if set, else above
+    // Full-depth must match one of the above items
     frontEndConfig.setLibraryDesigns(cacheUpdatedCases.stream()
         .flatMap(kase -> kase.getTests().stream())
-        .map(Test::getLibraryDesignCode)
+        .flatMap(test -> Stream.concat(Stream.of(test.getLibraryDesignCode()),
+            test.getLibraryQualifications().stream().map(Sample::getLibraryDesignCode)))
         .collect(Collectors.toSet()));
     frontEndConfig.setDeliverables(caseData.getCases().stream()
         .flatMap(kase -> kase.getDeliverables().stream())
