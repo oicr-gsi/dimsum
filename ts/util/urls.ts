@@ -1,7 +1,13 @@
-import { siteConfig } from "./site-config";
+import { internalUser, siteConfig } from "./site-config";
 import { Pair } from "./pair";
 
-const restBaseUrl = "/rest";
+function getRestBaseUrl() {
+  if (internalUser) {
+    return "/rest/internal";
+  } else {
+    return "/rest/external";
+  }
+}
 
 export const urls = {
   dimsum: {
@@ -14,44 +20,44 @@ export const urls = {
   },
   rest: {
     cases: {
-      bulkSignoff: `${restBaseUrl}/cases/bulk-signoff`,
-      get: (caseId: string) => `${restBaseUrl}/cases/${caseId}`,
-      list: `${restBaseUrl}/cases`,
+      bulkSignoff: `${getRestBaseUrl()}/cases/bulk-signoff`,
+      get: (caseId: string) => `${getRestBaseUrl()}/cases/${caseId}`,
+      list: `${getRestBaseUrl()}/cases`,
     },
-    receipts: `${restBaseUrl}/receipts`,
-    extractions: `${restBaseUrl}/extractions`,
-    libraryPreparations: `${restBaseUrl}/library-preparations`,
-    libraryQualifications: `${restBaseUrl}/library-qualifications`,
-    fullDepthSequencings: `${restBaseUrl}/full-depth-sequencings`,
-    requisitions: `${restBaseUrl}/requisitions`,
+    receipts: `${getRestBaseUrl()}/receipts`,
+    extractions: `${getRestBaseUrl()}/extractions`,
+    libraryPreparations: `${getRestBaseUrl()}/library-preparations`,
+    libraryQualifications: `${getRestBaseUrl()}/library-qualifications`,
+    fullDepthSequencings: `${getRestBaseUrl()}/full-depth-sequencings`,
+    requisitions: `${getRestBaseUrl()}/requisitions`,
     runs: {
       libraryQualifications: (runName: string) =>
-        `${restBaseUrl}/runs/${runName}/library-qualifications`,
+        `${getRestBaseUrl()}/runs/${runName}/library-qualifications`,
       fullDepthSequencings: (runName: string) =>
-        `${restBaseUrl}/runs/${runName}/full-depth-sequencings`,
+        `${getRestBaseUrl()}/runs/${runName}/full-depth-sequencings`,
       omissions: (runName: string) =>
-        `${restBaseUrl}/runs/${runName}/omissions`,
-      list: `${restBaseUrl}/runs`,
+        `${getRestBaseUrl()}/runs/${runName}/omissions`,
+      list: `${getRestBaseUrl()}/runs`,
     },
     autocomplete: {
-      assayNames: `${restBaseUrl}/autocomplete/assay-names`,
-      requisitionNames: `${restBaseUrl}/autocomplete/requisition-names`,
-      projectNames: `${restBaseUrl}/autocomplete/project-names`,
-      donorNames: `${restBaseUrl}/autocomplete/donor-names`,
-      runNames: `${restBaseUrl}/autocomplete/run-names`,
-      testNames: `${restBaseUrl}/autocomplete/test-names`,
+      assayNames: `${getRestBaseUrl()}/autocomplete/assay-names`,
+      requisitionNames: `${getRestBaseUrl()}/autocomplete/requisition-names`,
+      projectNames: `${getRestBaseUrl()}/autocomplete/project-names`,
+      donorNames: `${getRestBaseUrl()}/autocomplete/donor-names`,
+      runNames: `${getRestBaseUrl()}/autocomplete/run-names`,
+      testNames: `${getRestBaseUrl()}/autocomplete/test-names`,
     },
-    notifications: `${restBaseUrl}/notifications`,
-    omissions: `${restBaseUrl}/omissions`,
+    notifications: `${getRestBaseUrl()}/notifications`,
+    omissions: `${getRestBaseUrl()}/omissions`,
     projects: {
       summary: (projecttName: string) =>
-        `${restBaseUrl}/projects/${projecttName}/summary`,
-      list: `${restBaseUrl}/projects`,
+        `${getRestBaseUrl()}/projects/${projecttName}/summary`,
+      list: `${getRestBaseUrl()}/projects`,
     },
-    tests: `${restBaseUrl}/tests`,
+    tests: `${getRestBaseUrl()}/tests`,
     downloads: {
       reports: (reportName: string) =>
-        `${restBaseUrl}/downloads/reports/${reportName}`,
+        `${getRestBaseUrl()}/downloads/reports/${reportName}`,
     },
   },
   miso: {

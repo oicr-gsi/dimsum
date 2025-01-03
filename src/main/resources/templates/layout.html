@@ -15,6 +15,9 @@
   <link type="text/css" rel="stylesheet" th:href="@{/css/output.css}" />
 
   <script src="/js/site-config.js"></script>
+  <script th:inline="javascript">
+    window.internalUser = /*[[${internalUser}]]*/ false;
+  </script>
 </head>
 
 <body class="flex flex-col min-h-screen">
