@@ -25,6 +25,8 @@ spring:
               verification.credentials:
                 - certificate-location: file://${saml.idpcertificate}
               singlesignon.url: ${saml.ssourl}
+            assertingparty:
+              metadata-uri: ${saml.idpmetadataurl}
 
 build:
   version: "@project.version@"

@@ -15,7 +15,7 @@
 2. Copy [example-application.properties](example-application.properties) into the `config`
    directory and rename it to `application.properties`
 3. Are you enabling SAML authentication?
-   * If yes:
+   - If yes:
      1. add the IdP certificate to your `config` directory
      2. generate/add your SP key and certificate to the `config` directory. An example using `openssl`:
      
@@ -23,8 +23,37 @@
 
      3. fill out the SAML properties in `application.properties`, including paths to the
         above-mentioned certificates/key
-   * If no, add the following line to `application.properties` to disable authentication:
+   - If no, add the following line to `application.properties` to disable authentication:
      `spring.profiles.active=noauth`
+
+## Identity Provider Configuration
+
+Dimsum information you'll likely need to configure on your IdP:
+
+- **Entity ID**: `<base-url>/saml2/service-provider-metadata/dimsum` (this is also the URL of the service
+provider metadata if you need to download the XML)
+- **POST Logout URL for single logout**: `<base-url>/logout/saml2/slo`
+
+### Example Keycloak Client Configuration
+
+- **Client type**: SAML
+- **Client ID**: `<base-url>/saml2/service-provider-metadata/dimsum`
+- **Name**: Dimsum
+- **Always display in UI**: On
+- **Root URL**: `http://localhost:8081`
+- **Valid redirect URIs**: `/*`
+
+**Advanced settings (after saving)**
+
+- **Logout Service POST Binding URL**: `<base-url>/logout/saml2/slo`
+
+**Certificates**
+
+To add the SP certificate to Keycloak, go to __Client__ -> __Keys__ -> __Import Key__. Choose
+Archive format "Certificate PEM" and add the SP certificate generated above.
+
+To get the IdP certificate from Keycloak, go to __Realm settings__ -> __Keys__ > __RS256__ ->
+__Certificate__. Save the text to a file.
 
 ## Build/Run
 
