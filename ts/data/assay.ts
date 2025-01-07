@@ -45,8 +45,8 @@ export interface AssayTargets {
 export interface Assay {
   id: number;
   name: string;
-  description?: string;
+  description: string | null;
   version: string;
-  metricCategories: Record<MetricCategory, MetricSubcategory[]>;
-  targets: AssayTargets;
+  metricCategories?: Record<MetricCategory, MetricSubcategory[]>;
+  targets?: AssayTargets;
 }

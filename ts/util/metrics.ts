@@ -17,10 +17,11 @@ export function getMetricNames(
   const subcategories = assays
     .filter(
       (assay) =>
+        assay.metricCategories &&
         assay.metricCategories[category] &&
         assay.metricCategories[category].length
     )
-    .flatMap((assay) => assay.metricCategories[category]);
+    .flatMap((assay) => assay.metricCategories![category]);
 
   const subcategoryNames = subcategories
     .sort(byPriority)
@@ -94,10 +95,6 @@ export function makeStatusIcon(
   };
   tooltip.addTarget(element, addContents);
   return element;
-}
-
-export function nullIfUndefined(value: any) {
-  return value === undefined ? null : value;
 }
 
 export function makeMetricDisplay(

@@ -1,5 +1,6 @@
-import { Assay } from "../data/assay";
+import { Assay, MetricCategory } from "../data/assay";
 import { CaseQc } from "../data/case";
+import { assertRequired } from "../data/data-utils";
 
 interface SiteConfig {
   misoUrl: string;
@@ -38,4 +39,10 @@ function getCaseQc(qcs: Record<string, CaseQc>, name: string | null) {
   } else {
     return qcs[name];
   }
+}
+
+export function getMetricCategory(assayId: number, category: MetricCategory) {
+  const assay = siteConfig.assaysById[assayId];
+  assertRequired(assay.metricCategories);
+  return assay.metricCategories[category];
 }
