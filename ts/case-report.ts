@@ -30,9 +30,14 @@ import {
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
-import { getAnalysisReviewQcStatus, siteConfig } from "./util/site-config";
+import {
+  getAnalysisReviewQcStatus,
+  getMetricCategory,
+  siteConfig,
+} from "./util/site-config";
 import { urls } from "./util/urls";
 import { BasicDropdownOption, Dropdown } from "./component/dropdown";
+import { assertRequired } from "./data/data-utils";
 
 interface ReportSample {
   sample: Sample;
@@ -492,7 +497,8 @@ function displayDataReviewSignOff(
     qcable.dataReviewPassed,
     null,
     qcable.dataReviewUser,
-    qcable.dataReviewDate
+    qcable.dataReviewDate,
+    null
   );
 }
 
@@ -501,9 +507,9 @@ function displaySignOff(
   caseStopped: boolean,
   qcPassed: boolean | null,
   qcReason: string | null,
-  qcUser: string | null,
+  qcUser: string | null | undefined,
   qcDate: string | null,
-  qcNote?: string | null
+  qcNote: string | null | undefined
 ) {
   if (qcDate) {
     if (!qcUser) {
@@ -759,49 +765,47 @@ function getReportSamplesForAssays(
   category: MetricCategory
 ) {
   return assayIds
-    .map((assayId) => siteConfig.assaysById[assayId])
-    .filter((assay) => assay.metricCategories[category])
-    .flatMap((assay) =>
-      assay.metricCategories[category]
-        .filter((subcategory) => sampleSubcategoryApplies(subcategory, sample))
-        .map((subcategory) => {
-          return {
-            sample: sample,
-            metricCategory: category,
-            metricSubcategory: subcategory,
-            caseAssayId: kase.assayId,
-            caseStopped: kase.requisition.stopped,
-          };
-        })
-    );
+    .flatMap((assayId) => getMetricCategory(assayId, category) || [])
+    .filter((subcategory) => sampleSubcategoryApplies(subcategory, sample))
+    .map((subcategory) => {
+      return {
+        sample: sample,
+        metricCategory: category,
+        metricSubcategory: subcategory,
+        caseAssayId: kase.assayId,
+        caseStopped: kase.requisition.stopped,
+      };
+    });
 }
 
 function caseAssayAppliesToSample(object: ReportSample) {
   if (!object.sample.assayIds?.includes(object.caseAssayId)) {
     return false;
   }
-  return siteConfig.assaysById[object.caseAssayId].metricCategories[
-    object.metricCategory
-  ].some((subcategory) => sampleSubcategoryApplies(subcategory, object.sample));
+  return getMetricCategory(object.caseAssayId, object.metricCategory).some(
+    (subcategory) => sampleSubcategoryApplies(subcategory, object.sample)
+  );
 }
 
 function getReportAnalysisReviews(kase: Case) {
-  const assay = siteConfig.assaysById[kase.assayId];
   return kase.deliverables
     .flatMap((deliverable) => {
+      assertRequired(kase.qcGroups);
       return kase.qcGroups.flatMap((qcGroup) => {
-        return assay.metricCategories.ANALYSIS_REVIEW.filter((subcategory) =>
-          analysisSubcategoryApplies(subcategory, qcGroup)
-        ).map((subcategory): ReportAnalysisReview => {
-          return {
-            kase: kase,
-            qcGroup: qcGroup,
-            deliverable: deliverable,
-            metricCategory: "ANALYSIS_REVIEW",
-            metricSubcategory: subcategory,
-            caseStopped: kase.requisition.stopped,
-          };
-        });
+        return getMetricCategory(kase.assayId, "ANALYSIS_REVIEW")
+          .filter((subcategory) =>
+            analysisSubcategoryApplies(subcategory, qcGroup)
+          )
+          .map((subcategory): ReportAnalysisReview => {
+            return {
+              kase: kase,
+              qcGroup: qcGroup,
+              deliverable: deliverable,
+              metricCategory: "ANALYSIS_REVIEW",
+              metricSubcategory: subcategory,
+              caseStopped: kase.requisition.stopped,
+            };
+          });
       });
     })
     .sort((a, b) => {

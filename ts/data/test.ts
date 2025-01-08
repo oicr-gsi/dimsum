@@ -17,7 +17,6 @@ import {
   samplePhaseComplete,
   addConstructionIcon,
   addSpace,
-  assertNotNull,
   samplePhasePendingWork,
   getSamplePhaseHighlight,
   handleNaSamplePhase,
@@ -27,6 +26,7 @@ import { Sample } from "./sample";
 import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
+import { assertNotNull } from "./data-utils";
 
 export interface TestTableView {
   test: Test;

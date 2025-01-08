@@ -1,10 +1,9 @@
 import { legendAction, TableDefinition } from "../component/table-builder";
 import { Tooltip } from "../component/tooltip";
 import { makeIcon, makeNameDiv } from "../util/html-utils";
-import { postNavigate } from "../util/requests";
 import { urls } from "../util/urls";
 import { addStatusTooltipText, Qcable, Run } from "./case";
-import { extractLibraryName, getQcStatusWithDataReview } from "./sample";
+import { getQcStatusWithDataReview } from "./sample";
 
 export interface OmittedRunSample extends Qcable {
   id: string;

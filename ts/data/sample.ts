@@ -6,7 +6,6 @@ import {
   makeNameDiv,
   makeTextDiv,
 } from "../util/html-utils";
-import { siteConfig } from "../util/site-config";
 import {
   ColumnDefinition,
   legendAction,
@@ -29,7 +28,6 @@ import {
   makeMetricDisplay,
   makeNotFoundIcon,
   makeStatusIcon,
-  nullIfUndefined,
 } from "../util/metrics";
 import { showErrorDialog } from "../component/dialog";
 import {
@@ -38,6 +36,13 @@ import {
   runLibraryFilters,
 } from "../component/table-components";
 import { postNavigate } from "../util/requests";
+import {
+  assertDefined,
+  assertRequired,
+  nullIfUndefined,
+  nullOrUndefined,
+} from "./data-utils";
+import { getMetricCategory } from "../util/site-config";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
@@ -60,49 +65,49 @@ export const RUN_METRIC_LABELS = [
 export interface Sample extends Qcable {
   id: string;
   name: string;
-  requisitionId?: number;
-  requisitionName?: string;
-  assayIds?: number[];
+  requisitionId: number | null;
+  requisitionName: string | null;
+  assayIds: number[];
   tissueOrigin: string;
   tissueType: string;
-  tissueMaterial?: string;
-  timepoint?: string;
-  secondaryId?: string;
-  groupId?: string;
+  tissueMaterial: string | null;
+  timepoint: string | null;
+  secondaryId: string | null;
+  groupId: string | null;
   project: string;
-  nucleicAcidType?: string;
-  librarySize?: number;
-  libraryDesignCode?: string;
-  dv200?: number;
-  targetedSequencing?: string;
+  nucleicAcidType: string | null;
+  librarySize?: number | null;
+  libraryDesignCode: string | null;
+  dv200?: number | null;
+  targetedSequencing?: string | null;
   createdDate: string;
   volume?: number;
   concentration?: number;
   concentrationUnits?: string;
-  run?: Run;
+  run: Run | null;
   donor: Donor;
-  transferDate: string;
-  meanInsertSize?: number;
-  medianInsertSize?: number;
-  clustersPerSample?: number;
-  preliminaryClustersPerSample?: number;
-  duplicationRate?: number;
-  meanCoverageDeduplicated?: number;
-  preliminaryMeanCoverageDeduplicated?: number;
-  rRnaContamination?: number;
-  mappedToCoding?: number;
-  rawCoverage?: number;
-  onTargetReads?: number;
-  collapsedCoverage?: number;
-  lambdaMethylation?: number;
-  lambdaClusters?: number;
-  puc19Methylation?: number;
-  puc19Clusters?: number;
+  transferDate?: string | null;
+  meanInsertSize?: number | null;
+  medianInsertSize?: number | null;
+  clustersPerSample?: number | null;
+  preliminaryClustersPerSample?: number | null;
+  duplicationRate?: number | null;
+  meanCoverageDeduplicated?: number | null;
+  preliminaryMeanCoverageDeduplicated?: number | null;
+  rRnaContamination?: number | null;
+  mappedToCoding?: number | null;
+  rawCoverage?: number | null;
+  onTargetReads?: number | null;
+  collapsedCoverage?: number | null;
+  lambdaMethylation?: number | null;
+  lambdaClusters?: number | null;
+  puc19Methylation?: number | null;
+  puc19Clusters?: number | null;
   latestActivityDate: string;
-  sequencingLane: string;
-  relativeCpgInRegions?: number;
-  methylationBeta?: number;
-  peReads?: number;
+  sequencingLane: string | null;
+  relativeCpgInRegions?: number | null;
+  methylationBeta?: number | null;
+  peReads?: number | null;
 }
 
 interface MisoRunLibraryMetric {
@@ -444,10 +449,12 @@ function generateMetricData(
     const metricNames = getMetricNames(category, sample.assayIds).filter(
       (x) => RUN_METRIC_LABELS.indexOf(x) === -1
     );
+    const sequencingLane = sample.sequencingLane;
+    assertRequired(sequencingLane);
     data.push({
       name: extractLibraryName(sample.id),
       run_id: sample.run.id,
-      partition: parseInt(sample.sequencingLane),
+      partition: parseInt(sequencingLane),
       metrics: getSampleMetrics(sample, metricNames, category),
     });
   });
@@ -749,11 +756,14 @@ function addQ30Contents(
   );
 
   const contentWrapper = document.createElement("div");
-  sample.run!.lanes.forEach((lane) => {
+
+  assertDefined(sample.run.lanes);
+  const lanes = sample.run.lanes;
+  lanes.forEach((lane) => {
     if (nullOrUndefined(lane.percentOverQ30Read1)) {
       return;
     }
-    let text = sample.run?.lanes.length === 1 ? "" : `L${lane.laneNumber} `;
+    let text = lanes.length === 1 ? "" : `L${lane.laneNumber} `;
     text += `R1: ${lane.percentOverQ30Read1}`;
     if (lane.percentOverQ30Read2) {
       text += `; R2: ${lane.percentOverQ30Read2}`;
@@ -807,6 +817,7 @@ function addClustersPfContents(
     tooltip.addTarget(runDiv, addContents);
   }
 
+  assertDefined(sample.run.lanes);
   if (sample.run.lanes.length > 1) {
     const contentWrapper = document.createElement("div");
     const addContents = (fragment: DocumentFragment) => {
@@ -814,7 +825,7 @@ function addClustersPfContents(
       addMetricRequirementText(perLaneMetrics, fragment);
     };
 
-    sample.run!.lanes.forEach((lane) => {
+    sample.run.lanes.forEach((lane) => {
       if (!nullOrUndefined(lane.clustersPf)) {
         const laneDiv = document.createElement("div");
         laneDiv.classList.add("whitespace-nowrap", "print-hanging");
@@ -859,6 +870,7 @@ function getClustersPfHighlight(
 
   if (perLaneMetrics.length) {
     let highlight: CellStatus | null = null;
+    assertDefined(sample.run.lanes);
     for (let i = 0; i < sample.run.lanes.length; i++) {
       const lane = sample.run.lanes[i];
       if (nullOrUndefined(lane.clustersPf)) {
@@ -888,6 +900,7 @@ function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
     });
     perLaneMetrics = [];
   }
+  assertDefined(run.lanes);
   if (run.lanes.length === 1) {
     // Treat all as per run since we won't show the lane metrics separately
     perRunMetrics = metrics;
@@ -897,6 +910,7 @@ function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
 }
 
 function makePerRunFromLaneMetric(perLaneMetric: Metric, run: Run) {
+  assertDefined(run.lanes);
   const perRunMetric: Metric = Object.assign({}, perLaneMetric);
   if (perRunMetric.minimum) {
     perRunMetric.minimum *= run.lanes.length;
@@ -945,9 +959,16 @@ function addPhixContents(
   const multipleLanes = sample.run.lanes.length > 1;
 
   const minPhixValue = Math.min(
-    ...sample.run.lanes
-      .flatMap((lane) => [lane.percentPfixRead1, lane.percentPfixRead2])
-      .filter((value) => typeof value === "number")
+    ...sample.run.lanes.flatMap((lane) => {
+      const values = [];
+      if (lane.percentPfixRead1 !== null) {
+        values.push(lane.percentPfixRead1);
+      }
+      if (lane.percentPfixRead2 !== null) {
+        values.push(lane.percentPfixRead2);
+      }
+      return values;
+    })
   );
 
   const contentWrapper = document.createElement("div");
@@ -999,6 +1020,7 @@ function getPhixHighlight(
   }
   if (
     sample.run.lanes.some((lane) => {
+      assertRequired(lane.percentPfixRead1);
       return (
         anyFail(lane.percentPfixRead1, metrics) ||
         (!nullOrUndefined(lane.percentPfixRead2) &&
@@ -1020,8 +1042,7 @@ function getMatchingMetrics(
     return null;
   }
   return sample.assayIds
-    .map((assayId) => siteConfig.assaysById[assayId])
-    .flatMap((assay) => assay.metricCategories[category] || [])
+    .flatMap((assayId) => getMetricCategory(assayId, category) || [])
     .filter((subcategory) => subcategoryApplies(subcategory, sample))
     .flatMap((subcategory) => subcategory.metrics)
     .filter(
@@ -1237,10 +1258,6 @@ function makeSequencingIcon() {
     qcStatuses.sequencing.icon,
     qcStatuses.sequencing.label
   );
-}
-
-function nullOrUndefined(value: unknown): value is null | undefined {
-  return value === undefined || value === null;
 }
 
 export function extractLibraryName(runLibraryId: string): string {

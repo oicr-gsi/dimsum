@@ -16,6 +16,7 @@ import {
 import { urls } from "../util/urls";
 import {
   getAnalysisReviewQcStatus,
+  getMetricCategory,
   getReleaseApprovalQcStatus,
   getReleaseQcStatus,
   siteConfig,
@@ -30,7 +31,12 @@ import { QcStatus, qcStatuses } from "./qc-status";
 import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
-import { AssayTargets, Metric, MetricSubcategory } from "./assay";
+import {
+  AssayTargets,
+  Metric,
+  MetricCategory,
+  MetricSubcategory,
+} from "./assay";
 import {
   anyFail,
   getBooleanMetricHighlight,
@@ -38,7 +44,6 @@ import {
   getMetricNames,
   makeMetricDisplay,
   makeNotFoundIcon,
-  nullIfUndefined,
 } from "../util/metrics";
 import {
   DropdownField,
@@ -49,6 +54,7 @@ import {
   TextField,
 } from "../component/dialog";
 import { post, postDownload } from "../util/requests";
+import { assertDefined, assertNotNull, nullIfUndefined } from "./data-utils";
 
 export interface Project {
   name: string;
@@ -65,44 +71,44 @@ export interface Donor {
 export interface Qcable {
   qcPassed: boolean | null;
   qcReason: string | null;
-  qcUser: string | null;
+  qcUser?: string | null;
   qcDate: string | null;
-  qcNote: string | null;
+  qcNote?: string | null;
   dataReviewPassed: boolean | null;
-  dataReviewUser: string | null;
+  dataReviewUser?: string | null;
   dataReviewDate: string | null;
 }
 
 export interface Lane {
   laneNumber: number;
-  percentOverQ30Read1?: number;
-  percentOverQ30Read2?: number;
-  clustersPf?: number;
-  percentPfixRead1: number;
-  percentPfixRead2: number;
+  percentOverQ30Read1: number | null;
+  percentOverQ30Read2: number | null;
+  clustersPf: number | null;
+  percentPfixRead1: number | null;
+  percentPfixRead2: number | null;
 }
 
 export interface Run extends Qcable {
   id: number;
   name: string;
   containerModel?: string;
-  joinedLanes: boolean;
-  sequencingParameters?: string;
-  readLength?: number;
-  readLength2?: number;
-  completionDate?: string;
-  percentOverQ30?: number;
-  clustersPf?: number;
-  lanes: Lane[];
+  joinedLanes?: boolean;
+  sequencingParameters?: string | null;
+  readLength?: number | null;
+  readLength2?: number | null;
+  completionDate: string | null;
+  percentOverQ30?: number | null;
+  clustersPf?: number | null;
+  lanes?: Lane[];
 }
 
 export interface Test {
   name: string;
   tissueOrigin: string;
   tissueType: string;
-  timepoint: string;
-  groupId: string;
-  targetedSequencing: string;
+  timepoint: string | null;
+  groupId: string | null;
+  targetedSequencing: string | null;
   extractionSkipped: boolean;
   libraryPreparationSkipped: boolean;
   libraryQualificationSkipped: boolean;
@@ -110,19 +116,19 @@ export interface Test {
   libraryPreparations: Sample[];
   libraryQualifications: Sample[];
   fullDepthSequencings: Sample[];
-  latestActivityDate: string;
-  extractionDaysSpent: number;
-  libraryPreparationDaysSpent: number;
-  libraryQualificationDaysSpent: number;
-  fullDepthSequencingDaysSpent: number;
+  latestActivityDate?: string;
+  extractionDaysSpent?: number;
+  libraryPreparationDaysSpent?: number;
+  libraryQualificationDaysSpent?: number;
+  fullDepthSequencingDaysSpent?: number;
 }
 
 export interface CaseRelease {
   deliverable: string;
   qcStatus: string | null;
-  qcUser: string | null;
+  qcUser?: string | null;
   qcDate: string | null;
-  qcNote: string | null;
+  qcNote?: string | null;
 }
 
 export const deliverableTypes = ["DATA_RELEASE", "CLINICAL_REPORT"] as const;
@@ -143,28 +149,28 @@ export interface CaseQc {
 export interface CaseDeliverable {
   deliverableType: DeliverableType;
   analysisReviewQcStatus: string | null;
-  analysisReviewQcUser: string | null;
+  analysisReviewQcUser?: string | null;
   analysisReviewQcDate: string | null;
-  analysisReviewQcNote: string | null;
+  analysisReviewQcNote?: string | null;
   releaseApprovalQcStatus: string | null;
-  releaseApprovalQcUser: string | null;
+  releaseApprovalQcUser?: string | null;
   releaseApprovalQcDate: string | null;
-  releaseApprovalQcNote: string | null;
+  releaseApprovalQcNote?: string | null;
   releases: CaseRelease[];
-  analysisReviewDaysSpent: number;
-  releaseApprovalDaysSpent: number;
-  releaseDaysSpent: number;
-  deliverableDaysSpent: number;
+  analysisReviewDaysSpent?: number;
+  releaseApprovalDaysSpent?: number;
+  releaseDaysSpent?: number;
+  deliverableDaysSpent?: number;
 }
 
 export interface AnalysisQcGroup {
   tissueOrigin: string;
   tissueType: string;
   libraryDesignCode: string;
-  groupId?: string;
-  purity?: number;
-  collapsedCoverage?: number;
-  callability?: number;
+  groupId: string | null;
+  purity: number | null;
+  collapsedCoverage: number | null;
+  callability: number | null;
 }
 
 export interface Case {
@@ -176,18 +182,18 @@ export interface Case {
   tissueType: string;
   timepoint: string;
   receipts: Sample[];
-  startDate?: string;
+  startDate: string;
   tests: Test[];
   requisition: Requisition;
-  qcGroups: AnalysisQcGroup[];
+  qcGroups?: AnalysisQcGroup[];
   deliverables: CaseDeliverable[];
-  latestActivityDate?: string;
-  receiptDaysSpent: number;
-  analysisReviewDaysSpent: number;
-  releaseApprovalDaysSpent: number;
-  releaseDaysSpent: number;
-  caseDaysSpent: number;
-  pauseDays: number;
+  latestActivityDate: string | null;
+  receiptDaysSpent?: number;
+  analysisReviewDaysSpent?: number;
+  releaseApprovalDaysSpent?: number;
+  releaseDaysSpent?: number;
+  caseDaysSpent?: number;
+  pauseDays?: number;
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
@@ -245,37 +251,40 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         dateDiv.appendChild(document.createTextNode(kase.startDate));
         fragment.appendChild(dateDiv);
 
-        if (caseComplete(kase)) {
-          addTextDiv(`Completed in ${kase.caseDaysSpent} days`, fragment);
-          return;
-        }
-
-        addTextDiv(`${kase.caseDaysSpent}d spent`, fragment);
         const targets = getTargets(kase);
-        const overdue = caseOverdue(kase, targets);
-        if (overdue) {
-          const overdueDiv = makeTextDivWithTooltip(
-            "OVERDUE",
-            `Case target: ${targets.caseDays} days`
-          );
-          styleText(overdueDiv, "bold");
-          fragment.appendChild(overdueDiv);
-        } else if (targets.caseDays) {
-          const remainingDiv = makeTextDivWithTooltip(
-            `${targets.caseDays - kase.caseDaysSpent}d remain`,
-            `Case target: ${targets.caseDays} days`
-          );
-          fragment.appendChild(remainingDiv);
-        }
-        if (!overdue) {
-          const overdueStep = getOverdueStep(kase, targets);
-          if (overdueStep) {
-            const behindDiv = makeTextDivWithTooltip(
-              "BEHIND SCHEDULE",
-              `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
+        if (targets) {
+          assertDefined(kase.caseDaysSpent);
+          if (caseComplete(kase)) {
+            addTextDiv(`Completed in ${kase.caseDaysSpent} days`, fragment);
+            return;
+          }
+
+          addTextDiv(`${kase.caseDaysSpent}d spent`, fragment);
+          const overdue = caseOverdue(kase, targets);
+          if (overdue) {
+            const overdueDiv = makeTextDivWithTooltip(
+              "OVERDUE",
+              `Case target: ${targets.caseDays} days`
             );
-            styleText(behindDiv, "error");
-            fragment.appendChild(behindDiv);
+            styleText(overdueDiv, "bold");
+            fragment.appendChild(overdueDiv);
+          } else if (targets.caseDays) {
+            const remainingDiv = makeTextDivWithTooltip(
+              `${targets.caseDays - kase.caseDaysSpent}d remain`,
+              `Case target: ${targets.caseDays} days`
+            );
+            fragment.appendChild(remainingDiv);
+          }
+          if (!overdue) {
+            const overdueStep = getOverdueStep(kase, targets);
+            if (overdueStep) {
+              const behindDiv = makeTextDivWithTooltip(
+                "BEHIND SCHEDULE",
+                `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`
+              );
+              styleText(behindDiv, "error");
+              fragment.appendChild(behindDiv);
+            }
           }
         }
       },
@@ -285,10 +294,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           return null;
         }
         const targets = getTargets(kase);
-        if (caseOverdue(kase, targets)) {
-          return "error";
-        } else if (getOverdueStep(kase, targets)) {
-          return "warning";
+        if (targets) {
+          if (caseOverdue(kase, targets)) {
+            return "error";
+          } else if (getOverdueStep(kase, targets)) {
+            return "warning";
+          }
         }
         return null;
       },
@@ -306,11 +317,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           }
           if (!kase.requisition.stopped) {
             const targets = getTargets(kase);
-            addTurnAroundTimeInfo(
-              kase.caseDaysSpent,
-              targets.receiptDays,
-              fragment
-            );
+            if (targets) {
+              assertDefined(kase.caseDaysSpent);
+              addTurnAroundTimeInfo(
+                kase.caseDaysSpent,
+                targets.receiptDays,
+                fragment
+              );
+            }
           }
         }
       },
@@ -362,11 +376,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
             }
             if (!kase.requisition.stopped) {
               const targets = getTargets(kase);
-              addTurnAroundTimeInfo(
-                kase.caseDaysSpent,
-                targets.extractionDays,
-                fragment
-              );
+              if (targets) {
+                assertDefined(kase.caseDaysSpent);
+                addTurnAroundTimeInfo(
+                  kase.caseDaysSpent,
+                  targets.extractionDays,
+                  fragment
+                );
+              }
             }
           }
         }
@@ -420,11 +437,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
             }
             if (!kase.requisition.stopped) {
               const targets = getTargets(kase);
-              addTurnAroundTimeInfo(
-                kase.caseDaysSpent,
-                targets.libraryPreparationDays,
-                fragment
-              );
+              if (targets) {
+                assertDefined(kase.caseDaysSpent);
+                addTurnAroundTimeInfo(
+                  kase.caseDaysSpent,
+                  targets.libraryPreparationDays,
+                  fragment
+                );
+              }
             }
           }
         }
@@ -480,11 +500,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
             }
             if (!kase.requisition.stopped) {
               const targets = getTargets(kase);
-              addTurnAroundTimeInfo(
-                kase.caseDaysSpent,
-                targets.libraryQualificationDays,
-                fragment
-              );
+              if (targets) {
+                assertDefined(kase.caseDaysSpent);
+                addTurnAroundTimeInfo(
+                  kase.caseDaysSpent,
+                  targets.libraryQualificationDays,
+                  fragment
+                );
+              }
             }
           }
         }
@@ -533,11 +556,14 @@ export const caseDefinition: TableDefinition<Case, Test> = {
             }
             if (!kase.requisition.stopped) {
               const targets = getTargets(kase);
-              addTurnAroundTimeInfo(
-                kase.caseDaysSpent,
-                targets.fullDepthSequencingDays,
-                fragment
-              );
+              if (targets) {
+                assertDefined(kase.caseDaysSpent);
+                addTurnAroundTimeInfo(
+                  kase.caseDaysSpent,
+                  targets.fullDepthSequencingDays,
+                  fragment
+                );
+              }
             }
           }
         }
@@ -606,11 +632,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
         }
         if (anyPreviousComplete && !caseComplete(kase)) {
-          addTurnAroundTimeInfo(
-            kase.caseDaysSpent,
-            getTargets(kase).releaseDays,
-            fragment
-          );
+          const targets = getTargets(kase);
+          if (targets) {
+            assertDefined(kase.caseDaysSpent);
+            addTurnAroundTimeInfo(
+              kase.caseDaysSpent,
+              targets.releaseDays,
+              fragment
+            );
+          }
         }
       },
       getCellHighlight(kase) {
@@ -807,8 +837,8 @@ function makeDeliverableTypePhaseColumn(
   isPreviousComplete: (kase: Case, deliverableType: DeliverableType) => boolean,
   getTarget: (targets: AssayTargets) => number | null,
   getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
-  getQcUser: (deliverable: CaseDeliverable) => string | null,
-  getQcNote: (deliverable: CaseDeliverable) => string | null
+  getQcUser: (deliverable: CaseDeliverable) => string | null | undefined,
+  getQcNote: (deliverable: CaseDeliverable) => string | null | undefined
 ): ColumnDefinition<Case, Test> {
   return {
     title: title,
@@ -852,10 +882,11 @@ function makeDeliverableTypePhaseColumn(
       );
       const targets = getTargets(kase);
       if (
-        ((!analysisReview && kase.requisition.stopped) ||
-          anyPreviousComplete) &&
-        !allQcComplete
+        targets &&
+        !allQcComplete &&
+        ((!analysisReview && kase.requisition.stopped) || anyPreviousComplete)
       ) {
+        assertDefined(kase.caseDaysSpent);
         addTurnAroundTimeInfo(kase.caseDaysSpent, getTarget(targets), fragment);
       }
     },
@@ -872,8 +903,8 @@ function makeDeliverableTypePhaseColumn(
 function makeDeliverableTypeQcStatusColumn<ChildType>(
   title: string,
   getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
-  getQcUser: (deliverable: CaseDeliverable) => string | null,
-  getQcNote: (deliverable: CaseDeliverable) => string | null
+  getQcUser: (deliverable: CaseDeliverable) => string | null | undefined,
+  getQcNote: (deliverable: CaseDeliverable) => string | null | undefined
 ): ColumnDefinition<Case, ChildType> {
   return {
     title: title,
@@ -953,6 +984,7 @@ function generateAnalysisReviewMetricColumns(
     return {
       title: metricName,
       addParentContents(kase, fragment) {
+        assertDefined(kase.qcGroups);
         if (metricName === "Trimming; Minimum base quality Q") {
           fragment.appendChild(
             document.createTextNode("Standard pipeline removes reads below Q30")
@@ -1024,6 +1056,7 @@ function generateAnalysisReviewMetricColumns(
         }
       },
       getCellHighlight(kase) {
+        assertDefined(kase.qcGroups);
         if (metricName === "Trimming; Minimum base quality Q") {
           return null;
         } else if (!kase.qcGroups.length) {
@@ -1085,7 +1118,7 @@ function getMatchingAnalysisReviewMetrics(
   kase: Case,
   qcGroup: AnalysisQcGroup
 ): Metric[] | null {
-  return siteConfig.assaysById[kase.assayId].metricCategories["ANALYSIS_REVIEW"]
+  return getMetricCategory(kase.assayId, "ANALYSIS_REVIEW")
     .filter((subcategory) => subcategoryApplies(subcategory, qcGroup))
     .flatMap((subcategory) => subcategory.metrics)
     .filter(
@@ -1215,13 +1248,6 @@ export function getDeliverableQcStatus(qcStatus: CaseQc | null) {
   } else {
     return qcStatuses.failed;
   }
-}
-
-export function assertNotNull<Type>(object: Type | null) {
-  if (object === null) {
-    throw new Error("Unexpected null value");
-  }
-  return object;
 }
 
 export function handleNaSamplePhase(
@@ -1546,8 +1572,8 @@ export function addStatusTooltipText(
   tooltip: Node,
   status: QcStatus,
   qcReason: string | null,
-  qcUser: string | null,
-  qcNote: string | null,
+  qcUser?: string | null,
+  qcNote?: string | null,
   alternateLabel?: string
 ) {
   if (status === qcStatuses.dataReview) {
@@ -1592,8 +1618,8 @@ function addTooltipRow(
 function addDeliverableTypeIcons(
   kase: Case,
   getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
-  getQcUser: (deliverable: CaseDeliverable) => string | null,
-  getQcNote: (deliverable: CaseDeliverable) => string | null,
+  getQcUser: (deliverable: CaseDeliverable) => string | null | undefined,
+  getQcNote: (deliverable: CaseDeliverable) => string | null | undefined,
   fragment: DocumentFragment,
   tooltipInstance: Tooltip
 ) {
@@ -1669,6 +1695,7 @@ function caseComplete(kase: Case) {
 }
 
 function caseOverdue(kase: Case, targets: AssayTargets) {
+  assertDefined(kase.caseDaysSpent);
   return targets.caseDays && kase.caseDaysSpent > targets.caseDays;
 }
 
@@ -1678,6 +1705,8 @@ interface OverdueStep {
 }
 
 function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
+  const caseDaysSpent = kase.caseDaysSpent;
+  assertDefined(caseDaysSpent);
   // Check later steps first to emphasize if we are multiple steps overdue
   if (releasePhaseBehind(kase, targets.releaseDays)) {
     return {
@@ -1713,7 +1742,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
     kase.tests.some((test) =>
       samplePhaseBehind(
         test.fullDepthSequencings,
-        kase.caseDaysSpent,
+        caseDaysSpent,
         targets.fullDepthSequencingDays
       )
     )
@@ -1726,7 +1755,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
     kase.tests.some((test) =>
       samplePhaseBehind(
         test.libraryQualifications,
-        kase.caseDaysSpent,
+        caseDaysSpent,
         targets.libraryQualificationDays
       )
     )
@@ -1741,7 +1770,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
         !test.libraryPreparationSkipped &&
         samplePhaseBehind(
           test.libraryPreparations,
-          kase.caseDaysSpent,
+          caseDaysSpent,
           targets.libraryPreparationDays
         )
     )
@@ -1756,7 +1785,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
         !test.extractionSkipped &&
         samplePhaseBehind(
           test.extractions,
-          kase.caseDaysSpent,
+          caseDaysSpent,
           targets.extractionDays
         )
     )
@@ -1766,7 +1795,7 @@ function getOverdueStep(kase: Case, targets: AssayTargets): OverdueStep | null {
       targetDays: targets.extractionDays,
     };
   } else if (
-    samplePhaseBehind(kase.receipts, kase.caseDaysSpent, targets.receiptDays)
+    samplePhaseBehind(kase.receipts, caseDaysSpent, targets.receiptDays)
   ) {
     return {
       stepLabel: "Receipt",
@@ -1791,6 +1820,7 @@ function deliverableTypePhaseBehind(
   getStatus: (deliverable: CaseDeliverable) => CaseQc | null,
   stepTarget: number | null
 ) {
+  assertDefined(kase.caseDaysSpent);
   return (
     stepTarget &&
     !deliverableTypePhaseComplete(kase, getStatus) &&
@@ -1799,6 +1829,7 @@ function deliverableTypePhaseBehind(
 }
 
 function releasePhaseBehind(kase: Case, stepTarget: number | null) {
+  assertDefined(kase.caseDaysSpent);
   return stepTarget && !caseComplete(kase) && kase.caseDaysSpent > stepTarget;
 }
 
