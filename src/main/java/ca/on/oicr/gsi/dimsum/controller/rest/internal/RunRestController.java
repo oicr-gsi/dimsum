@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 import java.util.List;
@@ -23,7 +23,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
 @RestController
-@RequestMapping("/rest/runs")
+@RequestMapping("/rest/internal/runs")
 public class RunRestController {
 
   @Autowired

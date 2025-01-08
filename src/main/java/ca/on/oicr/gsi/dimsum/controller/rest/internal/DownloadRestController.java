@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -24,7 +24,7 @@ import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
 
 @RestController
-@RequestMapping("/rest/downloads")
+@RequestMapping("/rest/internal/downloads")
 public class DownloadRestController {
 
   @Autowired

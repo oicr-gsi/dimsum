@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 import java.util.List;
@@ -8,27 +8,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
-import ca.on.oicr.gsi.cardea.data.OmittedSample;
+import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
-import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
+import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
 
 @RestController
-@RequestMapping("/rest/omissions")
-public class OmittedSampleRestController {
+@RequestMapping("/rest/internal/tests")
+public class TestRestController {
 
   @Autowired
   private CaseService caseService;
 
   @PostMapping
-  public TableData<OmittedSample> query(@RequestBody DataQuery query) {
+  public TableData<TestTableView> query(@RequestBody DataQuery query) {
     validateDataQuery(query);
-    OmittedSampleSort sort = parseSort(query, OmittedSampleSort::getByLabel);
+    TestTableViewSort sort = parseSort(query, TestTableViewSort::getByLabel);
     boolean descending = parseDescending(query);
-    List<OmittedSampleFilter> filters = parseOmittedSampleFilters(query);
-    return caseService.getOmittedSamples(query.getPageSize(), query.getPageNumber(), sort,
-        descending, filters);
+    CaseFilter baseFilter = parseBaseFilter(query);
+    List<CaseFilter> filters = parseCaseFilters(query);
+    return caseService.getTestTableViews(query.getPageSize(), query.getPageNumber(), sort,
+        descending, baseFilter,
+        filters);
   }
-
 }

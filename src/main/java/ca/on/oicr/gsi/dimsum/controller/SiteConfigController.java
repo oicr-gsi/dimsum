@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.mvc;
+package ca.on.oicr.gsi.dimsum.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
