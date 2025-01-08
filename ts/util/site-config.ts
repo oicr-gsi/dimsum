@@ -20,6 +20,8 @@ interface SiteConfig {
 
 export const siteConfig = (window as any).siteConfig as SiteConfig;
 
+export const internalUser = (window as any).internalUser as boolean;
+
 export function getAnalysisReviewQcStatus(name: string | null) {
   return getCaseQc(siteConfig.analysisReviewQcStatuses, name);
 }
