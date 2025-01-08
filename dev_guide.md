@@ -45,6 +45,32 @@ SAML authentication is configured using Spring Security. Documentation for that 
 [here](https://docs.spring.io/spring-security/reference/servlet/saml2/index.html). Authentication
 may be disabled for development/testing using the "noauth" Spring profile
 
+## Authorization
+
+### Role-Based Access Control
+
+Roles are used to control access to Dimsum and decide what information is available.
+
+`INTERNAL`: For internal users. All pages are accessible and all details are shown.
+`EXTERNAL`: For external collaborators. Some pages are inaccessible, some details are hidden, and
+some features are disabled.
+
+A user that has successfully logged in will be either internal or external.
+
+In back-end code, `SecurityUtils#isInternalUser` lets you check whether the current user is
+internal. On the front-end, `site-config.ts` contains an `internalUser` constant that holds the same
+value.
+
+### Project Access Control
+
+Internal users should have access to all projects, but external users should only have access to
+their own specific projects. This is controlled via the `projects` attribute that is included on an
+authenticated `Principal`.
+
+In back-end code, `SecurityUtils#getUserProjects` can be used to easily check project access. Keep
+in mind that this check is unnecessary for internal users. There should be no need to check project
+access on the front-end.
+
 ## HTML Templates
 
 The Thymeleaf template engine is used for page design. Model attributes can be added via the Spring

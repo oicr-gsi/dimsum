@@ -1,14 +1,16 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import ca.on.oicr.gsi.dimsum.SecurityUtils;
 
 @Controller
 public class HomeController {
+
+  @Autowired
+  private SecurityUtils securityUtils;
 
   @GetMapping("/")
   public String getHomePage() {
@@ -18,17 +20,11 @@ public class HomeController {
   @GetMapping("/login")
   public String getLoginPage(ModelMap model) {
     model.put("hideNav", true);
-    if (isAuthenticated()) {
+    if (SecurityUtils.isAuthenticated() || securityUtils.authenticationDisabled()) {
       return "redirect:/";
     } else {
       return "login";
     }
-  }
-
-  private static boolean isAuthenticated() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return authentication != null && authentication.isAuthenticated()
-        && !(authentication instanceof AnonymousAuthenticationToken);
   }
 
 }

@@ -1,7 +1,6 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
-
 import java.util.Collection;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,15 +8,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
 @RestController
-@RequestMapping("/rest")
+@RequestMapping("/rest/internal")
 public class SampleRestController {
 
   @Autowired

@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @RestController
-@RequestMapping("/rest/autocomplete")
+@RequestMapping("/rest/internal/autocomplete")
 public class AutocompleteRestController {
 
   @Autowired

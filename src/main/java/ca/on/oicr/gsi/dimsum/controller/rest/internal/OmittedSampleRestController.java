@@ -1,36 +1,34 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
+import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleFilter;
+import ca.on.oicr.gsi.dimsum.service.filtering.OmittedSampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
-import java.util.List;
-import ca.on.oicr.gsi.dimsum.data.TestTableView;
-import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
-import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
 
 @RestController
-@RequestMapping("/rest/tests")
-public class TestRestController {
+@RequestMapping("/rest/internal/omissions")
+public class OmittedSampleRestController {
 
   @Autowired
   private CaseService caseService;
 
   @PostMapping
-  public TableData<TestTableView> query(@RequestBody DataQuery query) {
+  public TableData<OmittedSample> query(@RequestBody DataQuery query) {
     validateDataQuery(query);
-    TestTableViewSort sort = parseSort(query, TestTableViewSort::getByLabel);
+    OmittedSampleSort sort = parseSort(query, OmittedSampleSort::getByLabel);
     boolean descending = parseDescending(query);
-    CaseFilter baseFilter = parseBaseFilter(query);
-    List<CaseFilter> filters = parseCaseFilters(query);
-    return caseService.getTestTableViews(query.getPageSize(), query.getPageNumber(), sort,
-        descending, baseFilter,
-        filters);
+    List<OmittedSampleFilter> filters = parseOmittedSampleFilters(query);
+    return caseService.getOmittedSamples(query.getPageSize(), query.getPageNumber(), sort,
+        descending, filters);
   }
+
 }
