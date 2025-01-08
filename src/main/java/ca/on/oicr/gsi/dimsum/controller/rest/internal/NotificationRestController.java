@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.rest;
+package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.NotificationSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
 @RestController
-@RequestMapping("/rest/notifications")
+@RequestMapping("/rest/internal/notifications")
 public class NotificationRestController {
 
   @Autowired
