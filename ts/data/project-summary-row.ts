@@ -32,11 +32,13 @@ export function getProjectSummaryRowDefinition(
         title: "After Date",
         key: "AFTER_DATE",
         type: "text",
+        showExternal: true,
       },
       {
         title: "Before Date",
         key: "BEFORE_DATE",
         type: "text",
+        showExternal: true,
       },
     ],
     disablePageControls: true,

@@ -19,6 +19,7 @@ import {
   getMetricCategory,
   getReleaseApprovalQcStatus,
   getReleaseQcStatus,
+  internalUser,
   siteConfig,
 } from "../util/site-config";
 import {
@@ -222,20 +223,24 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     {
       title: "TAT Report",
       handler: showTatReportDialog,
+      view: "internal",
     },
     {
       title: "TAT Trend",
       handler: showTatTrendPage,
+      view: "internal",
     },
   ],
   bulkActions: [
     {
       title: "Download",
       handler: showDownloadDialog,
+      view: "internal",
     },
     {
       title: "Sign Off",
       handler: showSignoffDialog,
+      view: "internal",
     },
   ],
   generateColumns: () => [
@@ -362,9 +367,11 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addNaText(fragment);
           return;
         }
-        addSampleIcons(kase.assayId, test.extractions, fragment, true);
+        addSampleIcons(kase.assayId, test.extractions, fragment, internalUser);
         if (samplePhaseComplete(kase.receipts)) {
-          if (samplePhasePendingWorkQcOrTransfer(test.extractions, true)) {
+          if (
+            samplePhasePendingWorkQcOrTransfer(test.extractions, internalUser)
+          ) {
             if (
               samplePhasePendingWork(test.extractions) &&
               !kase.requisition.paused
@@ -423,7 +430,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
         if (
           test.extractionSkipped ||
-          samplePhaseComplete(test.extractions, true)
+          samplePhaseComplete(test.extractions, internalUser)
         ) {
           if (samplePhasePendingWorkQcOrTransfer(test.libraryPreparations)) {
             if (
@@ -1235,13 +1242,13 @@ function addNoDeliverablesIcon(
 
 export function getDeliverableQcStatus(qcStatus: CaseQc | null) {
   if (qcStatus == null) {
-    return qcStatuses.qc;
+    return internalUser ? qcStatuses.qc : qcStatuses.construction;
   } else if (qcStatus.qcPassed == null) {
     if (qcStatus.release == false) {
       return qcStatuses.na;
     } else {
       // explicitly marked as pending
-      return qcStatuses.qc;
+      return internalUser ? qcStatuses.qc : qcStatuses.construction;
     }
   } else if (qcStatus.qcPassed) {
     return qcStatuses.passed;
@@ -1464,7 +1471,11 @@ export function addSampleIcons(
   const phaseComplete = samplePhaseComplete(samples, transferRequired);
   samples.forEach((sample, i) => {
     let status = getQcStatus(sample);
-    if (status === qcStatuses.passed && !sample.assayIds?.includes(assayId)) {
+    if (
+      internalUser &&
+      status === qcStatuses.passed &&
+      !sample.assayIds?.includes(assayId)
+    ) {
       status = qcStatuses.passedDifferentAssay;
     }
     if (
@@ -1494,16 +1505,18 @@ export function makeSampleTooltip(sample: Sample) {
       "grid grid-cols-2 grid-flow-row gap-y-1 font-inter font-medium font-14 text-black mt-3";
     // sample run links
     if (sample.run) {
-      topContainer.appendChild(
-        makeNameDiv(
-          sample.sequencingLane
-            ? sample.run.name + " (L" + sample.sequencingLane + ")"
-            : sample.run.name,
-          urls.miso.run(sample.run.name),
-          urls.dimsum.run(sample.run.name),
-          sample.run.name
-        )
+      const runNameContainer = makeNameDiv(
+        sample.sequencingLane
+          ? sample.run.name + " (L" + sample.sequencingLane + ")"
+          : sample.run.name,
+        urls.miso.run(sample.run.name),
+        internalUser ? urls.dimsum.run(sample.run.name) : undefined,
+        sample.run.name
       );
+      if (!internalUser) {
+        runNameContainer.classList.add("font-bold");
+      }
+      topContainer.appendChild(runNameContainer);
       const runStatus = getQcStatusWithDataReview(sample.run);
       addStatusTooltipText(
         topContainer,

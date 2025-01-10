@@ -42,12 +42,14 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
       key: "NAME",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.projectNames,
+      showExternal: true,
     },
     {
       title: "Pipeline",
       key: "PIPELINE",
       type: "dropdown",
       values: siteConfig.pipelines,
+      showExternal: true,
     },
   ],
   bulkActions: [
