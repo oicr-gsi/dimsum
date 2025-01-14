@@ -42,10 +42,18 @@ must have the following extensions installed:
 ## Authentication
 
 SAML authentication is configured using Spring Security. Documentation for that is
-[here](https://docs.spring.io/spring-security/reference/servlet/saml2/index.html). Authentication
-may be disabled for development/testing using the "noauth" Spring profile
+[here](https://docs.spring.io/spring-security/reference/servlet/saml2/index.html).
+
+Authentication may be disabled for development/testing using the "noauth" Spring profile. This will
+cause the anonymous user to be used. The anonymous user will be internal by default, but can be
+changed to external by setting the `testuser.external` property to `true` and specifying project
+access in `testuser.projects`, which should be a comma-separated list.
 
 ## Authorization
+
+In back-end code, all necessary authorization information can be found in `DimsumPrincipal`, which
+can be injected into controller methods using `@AuthenticationPrincipal` or retrieved in other
+components from an `@Autowired` `SecurityManager`.
 
 ### Role-Based Access Control
 
@@ -57,9 +65,8 @@ some features are disabled.
 
 A user that has successfully logged in will be either internal or external.
 
-In back-end code, `SecurityUtils#isInternalUser` lets you check whether the current user is
-internal. On the front-end, `site-config.ts` contains an `internalUser` constant that holds the same
-value.
+In back-end code, `DimsumPrincipal#isInternal` lets you check whether the current user is internal.
+On the front-end, `site-config.ts` contains an `internalUser` constant that holds the same value.
 
 ### Project Access Control
 
@@ -67,7 +74,7 @@ Internal users should have access to all projects, but external users should onl
 their own specific projects. This is controlled via the `projects` attribute that is included on an
 authenticated `Principal`.
 
-In back-end code, `SecurityUtils#getUserProjects` can be used to easily check project access. Keep
+In back-end code, `DimsumPrincipal#getProjects` can be used to easily check project access. Keep
 in mind that this check is unnecessary for internal users. There should be no need to check project
 access on the front-end.
 
