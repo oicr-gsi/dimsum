@@ -49,6 +49,7 @@ import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.data.external.ExternalCase;
+import ca.on.oicr.gsi.dimsum.data.external.ExternalProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.external.ExternalSample;
 import ca.on.oicr.gsi.dimsum.data.external.ExternalTestTableView;
 import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
@@ -496,8 +497,8 @@ public class CaseService {
   }
 
   public TableData<ProjectSummary> getProjects(int pageSize, int pageNumber,
-      ProjectSummarySort sort,
-      boolean descending, Collection<ProjectSummaryFilter> filters) {
+      ProjectSummarySort sort, boolean descending, Collection<ProjectSummaryFilter> filters) {
+    authorizeInternalOnly();
     List<ProjectSummary> baseProjectSummaries = caseData.getProjectSummaries().stream().toList();
     Stream<ProjectSummary> stream = filterProjectSummaries(baseProjectSummaries, filters);
 
@@ -511,6 +512,33 @@ public class CaseService {
         stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).collect(Collectors.toList());
 
     TableData<ProjectSummary> data = new TableData<>();
+    data.setTotalCount(baseProjectSummaries.size());
+    data.setFilteredCount(filterProjectSummaries(baseProjectSummaries, filters).count());
+    data.setItems(filteredProjectSummaries);
+    return data;
+  }
+
+  public TableData<ExternalProjectSummary> getExternalProjects(int pageSize, int pageNumber,
+      ProjectSummarySort sort, boolean descending, Collection<ProjectSummaryFilter> filters) {
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    List<ProjectSummary> baseProjectSummaries = caseData.getProjectSummaries().stream()
+        .filter(summary -> principal.getProjects().contains(summary.getName()))
+        .toList();
+    Stream<ProjectSummary> stream = filterProjectSummaries(baseProjectSummaries, filters);
+
+    if (sort == null) {
+      sort = ProjectSummarySort.NAME;
+      descending = true;
+    }
+    stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
+
+    List<ExternalProjectSummary> filteredProjectSummaries =
+        stream.skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .map(ExternalProjectSummary::new)
+            .collect(Collectors.toList());
+
+    TableData<ExternalProjectSummary> data = new TableData<>();
     data.setTotalCount(baseProjectSummaries.size());
     data.setFilteredCount(filterProjectSummaries(baseProjectSummaries, filters).count());
     data.setItems(filteredProjectSummaries);
