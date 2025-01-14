@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,13 @@ import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
-import ca.on.oicr.gsi.dimsum.SecurityUtils;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.data.NabuBulkSignoff;
 import ca.on.oicr.gsi.dimsum.data.NabuSignoff;
 import ca.on.oicr.gsi.dimsum.data.NabuSignoff.NabuSignoffStep;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.NabuService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
@@ -38,8 +39,6 @@ public class CaseRestController {
   private CaseService caseService;
   @Autowired(required = false)
   private NabuService nabuService;
-  @Autowired
-  private SecurityUtils securityUtils;
 
   @PostMapping
   public TableData<Case> query(@RequestBody DataQuery query) {
@@ -63,7 +62,7 @@ public class CaseRestController {
 
   @PostMapping("/bulk-signoff")
   public @ResponseStatus(HttpStatus.NO_CONTENT) void postSignoffs(
-      @RequestBody NabuBulkSignoff data) {
+      @RequestBody NabuBulkSignoff data, @AuthenticationPrincipal DimsumPrincipal principal) {
     if (nabuService == null) {
       throw new BadRequestException("Nabu integration is not enabled");
     }
@@ -104,7 +103,7 @@ public class CaseRestController {
         throw new BadRequestException("Deliverable not applicable to selected QC step");
       }
     }
-    data.setUsername(securityUtils.getUserFullname());
+    data.setUsername(principal.getDisplayName());
     nabuService.postSignoff(data);
   }
 
