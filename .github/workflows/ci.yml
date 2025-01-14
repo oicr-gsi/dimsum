@@ -3,9 +3,11 @@ on:
   push:
     branches:
       - main
+      - dimsum-external
   pull_request:
     branches:
       - main
+      - dimsum-external
 jobs:
   CI:
     runs-on: ubuntu-latest
