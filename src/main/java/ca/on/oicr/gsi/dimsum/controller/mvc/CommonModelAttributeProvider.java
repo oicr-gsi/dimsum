@@ -2,9 +2,10 @@ package ca.on.oicr.gsi.dimsum.controller.mvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import ca.on.oicr.gsi.dimsum.SecurityUtils;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @ControllerAdvice(basePackages = {"ca.on.oicr.gsi.dimsum.controller.mvc"})
@@ -12,8 +13,6 @@ public class CommonModelAttributeProvider {
 
   @Autowired
   private CaseService caseService;
-  @Autowired
-  private SecurityUtils securityUtils;
 
   @Value("${instancename}")
   private String instanceName;
@@ -52,8 +51,8 @@ public class CommonModelAttributeProvider {
   }
 
   @ModelAttribute("internalUser")
-  public boolean isInternalUser() {
-    return securityUtils.isInternalUser();
+  public boolean isInternalUser(@AuthenticationPrincipal DimsumPrincipal principal) {
+    return principal != null ? principal.isInternal() : false;
   }
 
 }
