@@ -38,7 +38,6 @@ import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.CaseLoader;
 import ca.on.oicr.gsi.dimsum.FrontEndConfig;
-import ca.on.oicr.gsi.dimsum.SecurityUtils;
 import ca.on.oicr.gsi.dimsum.data.CacheUpdatedCase;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.data.NabuSavedSignoff;
@@ -48,6 +47,8 @@ import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.data.external.ExternalCase;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
@@ -87,7 +88,7 @@ public class CaseService {
   private NotificationManager notificationManager;
 
   @Autowired
-  private SecurityUtils securityUtils;
+  private SecurityManager securityManager;
 
   private CaseData caseData;
 
@@ -182,7 +183,7 @@ public class CaseService {
 
   public TableData<ExternalCase> getExternalCases(int pageSize, int pageNumber, CaseSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    Set<String> userProjects = securityUtils.getUserProjects();
+    Set<String> userProjects = securityManager.getPrincipal().getProjects();
     List<Case> baseCases = getCases(baseFilter).stream()
         .filter(kase -> kase.getProjects().stream()
             .anyMatch(project -> userProjects.contains(project.getName())))
@@ -217,7 +218,7 @@ public class CaseService {
 
   public Set<String> getMatchingRequisitionNames(String prefix) {
     Stream<String> stream = null;
-    if (securityUtils.isInternalUser()) {
+    if (securityManager.getPrincipal().isInternal()) {
       stream = caseData.getRequisitionNames().stream();
     } else {
       stream = streamAuthorizedCases()
@@ -230,8 +231,9 @@ public class CaseService {
 
   private Stream<Case> streamAuthorizedCases() {
     Stream<Case> stream = caseData.getCases().stream();
-    if (!securityUtils.isInternalUser()) {
-      Set<String> userProjects = securityUtils.getUserProjects();
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    if (!principal.isInternal()) {
+      Set<String> userProjects = principal.getProjects();
       stream = stream.filter(kase -> kase.getProjects().stream()
           .map(Project::getName)
           .anyMatch(userProjects::contains));
@@ -241,10 +243,11 @@ public class CaseService {
 
   public Set<String> getMatchingProjectNames(String prefix) {
     Stream<String> stream = null;
-    if (securityUtils.isInternalUser()) {
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    if (principal.isInternal()) {
       stream = caseData.getProjectNames().stream();
     } else {
-      stream = securityUtils.getUserProjects().stream();
+      stream = principal.getProjects().stream();
     }
 
     return stream
@@ -254,7 +257,7 @@ public class CaseService {
 
   public Set<String> getMatchingDonorNames(String prefix) {
     Stream<String> stream = null;
-    if (securityUtils.isInternalUser()) {
+    if (securityManager.getPrincipal().isInternal()) {
       stream = caseData.getDonorNames().stream();
     } else {
       stream = streamAuthorizedCases().map(Case::getDonor).map(Donor::getName);

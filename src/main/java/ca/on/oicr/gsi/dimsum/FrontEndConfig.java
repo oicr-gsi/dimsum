@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,6 +19,8 @@ import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.dimsum.data.external.ExternalAssay;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 
@@ -40,7 +41,7 @@ public class FrontEndConfig {
   private String jiraUrl;
 
   @Autowired
-  private SecurityUtils securityUtils;
+  private SecurityManager securityManager;
 
   private final List<String> pendingStates =
       Stream.of(PendingState.values()).map(PendingState::getLabel).toList();
@@ -92,7 +93,11 @@ public class FrontEndConfig {
   }
 
   public Map<Long, ?> getAssaysById() {
-    return securityUtils.isInternalUser() ? internalAssaysById : externalAssaysById;
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    if (principal != null && principal.isInternal()) {
+      return internalAssaysById;
+    }
+    return externalAssaysById;
   }
 
   public void setAssaysById(Map<Long, Assay> assaysById) {
