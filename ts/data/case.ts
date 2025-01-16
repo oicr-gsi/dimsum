@@ -117,7 +117,7 @@ export interface Test {
   libraryPreparations: Sample[];
   libraryQualifications: Sample[];
   fullDepthSequencings: Sample[];
-  latestActivityDate?: string;
+  latestActivityDate: string | null;
   extractionDaysSpent?: number;
   libraryPreparationDaysSpent?: number;
   libraryQualificationDaysSpent?: number;

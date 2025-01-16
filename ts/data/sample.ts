@@ -42,7 +42,7 @@ import {
   nullIfUndefined,
   nullOrUndefined,
 } from "./data-utils";
-import { getMetricCategory } from "../util/site-config";
+import { getMetricCategory, internalUser } from "../util/site-config";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
@@ -179,11 +179,10 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
               ? runName + " (L" + sample.sequencingLane + ")"
               : runName,
             urls.miso.run(runName),
-            urls.dimsum.run(runName),
+            internalUser ? urls.dimsum.run(runName) : undefined,
             runName
           )
         );
-        // TODO: add Dashi icon link
       }
     },
     sortType: "text",
@@ -339,6 +338,7 @@ export function getLibraryQualificationsDefinition(
         handler(items) {
           qcInMiso(items, "LIBRARY_QUALIFICATION");
         },
+        view: "internal",
       },
     ],
     generateColumns(data) {
@@ -350,7 +350,7 @@ export function getLibraryQualificationsDefinition(
         ...generateMetricColumns("LIBRARY_QUALIFICATION", data),
         latestActivityColumn,
       ];
-      if (includeSequencingAttributes) {
+      if (includeSequencingAttributes && internalUser) {
         columns.splice(4, 0, sequencingAttributesColumn);
       }
       return columns;
@@ -373,6 +373,7 @@ export function getFullDepthSequencingsDefinition(
         handler(items) {
           qcInMiso(items, "FULL_DEPTH_SEQUENCING");
         },
+        view: "internal",
       },
     ],
     generateColumns(data) {
@@ -384,7 +385,7 @@ export function getFullDepthSequencingsDefinition(
         ...generateMetricColumns("FULL_DEPTH_SEQUENCING", data),
         latestActivityColumn,
       ];
-      if (includeSequencingAttributes) {
+      if (includeSequencingAttributes && internalUser) {
         columns.splice(4, 0, sequencingAttributesColumn);
       }
       return columns;
