@@ -1,9 +1,9 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
+import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import groovy.transform.Immutable;
 
 @Immutable
 @JsonDeserialize(builder = ProjectSummaryRow.Builder.class)
