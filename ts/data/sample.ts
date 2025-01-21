@@ -246,7 +246,7 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
@@ -284,7 +284,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
@@ -308,7 +308,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
@@ -329,7 +329,7 @@ export function getLibraryQualificationsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: latestActivitySort,
+    getDefaultSort: () => latestActivitySort,
     filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
     staticActions: [legendAction],
     bulkActions: [
@@ -364,7 +364,7 @@ export function getFullDepthSequencingsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: latestActivitySort,
+    getDefaultSort: () => latestActivitySort,
     filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
     staticActions: [legendAction],
     bulkActions: [

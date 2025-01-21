@@ -71,8 +71,8 @@ export interface BulkAction<ParentType> {
 
 export interface TableDefinition<ParentType, ChildType> {
   queryUrl?: string; // required if table is loaded via AJAX
-  defaultSort?: Sort; // required if table is loaded via AJAX and page controls are NOT disabled
-  nonColumnSorting?: SortDefinition[];
+  getDefaultSort?: () => Sort; // required if table is loaded via AJAX and page controls are NOT disabled
+  getNonColumnSorting?: () => SortDefinition[];
   filters?: FilterDefinition[];
   getSubheading?: (parent: ParentType) => string | null;
   getChildren?: (parent: ParentType) => ChildType[];
@@ -156,12 +156,12 @@ export class TableBuilder<ParentType, ChildType> {
     onFilterChange?: (key: string, value: string, add: boolean) => void
   ) {
     this.definition = definition;
-    if (definition.defaultSort) {
-      this.sortColumn = definition.defaultSort.columnTitle;
+    let defaultSort = null;
+    if (definition.getDefaultSort) {
+      defaultSort = definition.getDefaultSort();
+      this.sortColumn = definition.getDefaultSort().columnTitle;
     }
-    this.sortDescending = definition.defaultSort
-      ? definition.defaultSort.descending
-      : false;
+    this.sortDescending = defaultSort ? defaultSort.descending : false;
     const container = document.getElementById(containerId);
     if (container === null) {
       throw Error(`Container ID "${containerId}" not found on page`);
@@ -386,8 +386,8 @@ export class TableBuilder<ParentType, ChildType> {
           this.addSortOption(column.title, column.sortType, true)
         );
       });
-    if (this.definition.nonColumnSorting) {
-      for (let nonColumnSort of this.definition.nonColumnSorting) {
+    if (this.definition.getNonColumnSorting) {
+      for (let nonColumnSort of this.definition.getNonColumnSorting()) {
         dropdownOptions.push(
           this.addSortOption(
             nonColumnSort.columnTitle,
@@ -405,13 +405,13 @@ export class TableBuilder<ParentType, ChildType> {
       }
     }
 
-    const defaultOption = this.definition.defaultSort
-      ? this.definition.defaultSort.columnTitle +
+    const defaultSort = this.definition.getDefaultSort
+      ? this.definition.getDefaultSort()
+      : null;
+    const defaultOption = defaultSort
+      ? defaultSort.columnTitle +
         " - " +
-        this.getSortDescriptor(
-          this.definition.defaultSort.type,
-          this.definition.defaultSort.descending
-        )
+        this.getSortDescriptor(defaultSort.type, defaultSort.descending)
       : "undefined";
     const sortDropdown = new Dropdown(
       dropdownOptions,
@@ -850,7 +850,9 @@ export class TableBuilder<ParentType, ChildType> {
       this.load(data.items);
       this.showLoaded(data);
     } catch (reason) {
-      showErrorDialog("Error reloading table - " + reason);
+      showErrorDialog(
+        "Error reloading table - " + (reason || "Unexpected error")
+      );
     }
   }
 

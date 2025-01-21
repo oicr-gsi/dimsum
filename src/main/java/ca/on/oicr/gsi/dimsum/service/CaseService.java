@@ -193,6 +193,12 @@ public class CaseService {
     }
   }
 
+  private void authorizeSort(CaseSort sort) {
+    if (!sort.allowExternal()) {
+      authorizeInternalOnly();
+    }
+  }
+
   public Stream<Case> getCaseStream(Collection<CaseFilter> filters) {
     return filterCases(getAuthorizedCases(null), filters);
   }
@@ -240,6 +246,7 @@ public class CaseService {
       sort = CaseSort.LAST_ACTIVITY;
       descending = true;
     }
+    authorizeSort(sort);
     Comparator<Case> comparator = sort.comparator(getAssaysById());
     stream = stream.sorted(descending ? comparator.reversed() : comparator);
 
