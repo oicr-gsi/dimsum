@@ -2,10 +2,13 @@ package ca.on.oicr.gsi.dimsum;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,6 +19,9 @@ import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
+import ca.on.oicr.gsi.dimsum.data.external.ExternalAssay;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 
@@ -35,12 +41,16 @@ public class FrontEndConfig {
   @Value("${jira.baseurl:#{null}}")
   private String jiraUrl;
 
+  @Autowired
+  private SecurityManager securityManager;
+
   private final Map<String, ObjectNode> analysisReviewQcStatuses;
   private final Map<String, ObjectNode> releaseApprovalQcStatuses;
   private final Map<String, ObjectNode> releaseQcStatuses;
 
   private Set<String> pipelines;
-  private Map<Long, Assay> assaysById;
+  private Map<Long, Assay> internalAssaysById;
+  private Map<Long, ExternalAssay> externalAssaysById;
   private Set<String> libraryDesigns;
   private Set<String> deliverableCategories;
   private Set<String> deliverables;
@@ -84,12 +94,18 @@ public class FrontEndConfig {
     this.pipelines = pipelines;
   }
 
-  public Map<Long, Assay> getAssaysById() {
-    return assaysById;
+  public Map<Long, ?> getAssaysById() {
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    if (principal != null && principal.isInternal()) {
+      return internalAssaysById;
+    }
+    return externalAssaysById;
   }
 
   public void setAssaysById(Map<Long, Assay> assaysById) {
-    this.assaysById = assaysById;
+    this.internalAssaysById = assaysById;
+    this.externalAssaysById = assaysById.entrySet().stream()
+        .collect(Collectors.toMap(Entry::getKey, entry -> new ExternalAssay(entry.getValue())));
   }
 
   public List<String> getCompletedGates() {

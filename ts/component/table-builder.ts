@@ -14,6 +14,7 @@ import { Pair } from "../util/pair";
 import { TextInput } from "./text-input";
 import { showErrorDialog } from "./dialog";
 import { DateInput } from "./date-input";
+import { internalUser } from "../util/site-config";
 
 type SortType = "number" | "text" | "date" | "custom";
 type FilterType = "text" | "dropdown" | "date";
@@ -50,6 +51,7 @@ export interface FilterDefinition {
   type: FilterType; // either text or dropdown or date
   values?: string[]; // required for dropdown filters
   autocompleteUrl?: string; // required for text filters w/autocomplete
+  showExternal: boolean;
 }
 
 export interface StaticAction {
@@ -58,11 +60,13 @@ export interface StaticAction {
     filters: { key: string; value: string }[],
     baseFilter?: { key: string; value: string }
   ) => void;
+  view?: "internal" | "external"; // both if undefined
 }
 
 export interface BulkAction<ParentType> {
   title: string;
   handler: (items: ParentType[]) => void;
+  view?: "internal" | "external"; // both if undefined
 }
 
 export interface TableDefinition<ParentType, ChildType> {
@@ -326,25 +330,37 @@ export class TableBuilder<ParentType, ChildType> {
   private addActionButtons(container: HTMLElement) {
     if (this.definition.bulkActions) {
       this.definition.bulkActions.forEach((action) => {
-        addActionButton(container, action.title, () => {
-          if (!this.selectedItems.size) {
-            showErrorDialog("No items selected");
-            return;
-          }
-          action.handler(Array.from(this.selectedItems));
-        });
+        if (this.showAction(action.view)) {
+          addActionButton(container, action.title, () => {
+            if (!this.selectedItems.size) {
+              showErrorDialog("No items selected");
+              return;
+            }
+            action.handler(Array.from(this.selectedItems));
+          });
+        }
       });
     }
     if (this.definition.staticActions) {
       this.definition.staticActions.forEach((action) => {
-        addActionButton(container, action.title, () => {
-          const baseFilter =
-            this.baseFilterKey && this.baseFilterValue
-              ? { key: this.baseFilterKey, value: this.baseFilterValue }
-              : undefined;
-          action.handler(this.acceptedFilters, baseFilter);
-        });
+        if (this.showAction(action.view)) {
+          addActionButton(container, action.title, () => {
+            const baseFilter =
+              this.baseFilterKey && this.baseFilterValue
+                ? { key: this.baseFilterKey, value: this.baseFilterValue }
+                : undefined;
+            action.handler(this.acceptedFilters, baseFilter);
+          });
+        }
       });
+    }
+  }
+
+  private showAction(view?: "internal" | "external") {
+    if (internalUser) {
+      return view !== "external";
+    } else {
+      return view !== "internal";
     }
   }
 
@@ -458,21 +474,29 @@ export class TableBuilder<ParentType, ChildType> {
     }
 
     let filterOptions: DropdownOption[] = [];
-    this.definition.filters.forEach((filter) => {
-      switch (filter.type) {
-        case "dropdown":
-          filterOptions.push(this.makeDropdownFilter(filter, filterContainer));
-          break;
-        case "text":
-          filterOptions.push(this.makeTextInputFilter(filter, filterContainer));
-          break;
-        case "date":
-          filterOptions.push(this.makeDateInputFilter(filter, filterContainer));
-          break;
-        default:
-          throw new Error(`Unhandled filter type: ${filter.type}`);
-      }
-    });
+    this.definition.filters
+      .filter((filter) => internalUser || filter.showExternal)
+      .forEach((filter) => {
+        switch (filter.type) {
+          case "dropdown":
+            filterOptions.push(
+              this.makeDropdownFilter(filter, filterContainer)
+            );
+            break;
+          case "text":
+            filterOptions.push(
+              this.makeTextInputFilter(filter, filterContainer)
+            );
+            break;
+          case "date":
+            filterOptions.push(
+              this.makeDateInputFilter(filter, filterContainer)
+            );
+            break;
+          default:
+            throw new Error(`Unhandled filter type: ${filter.type}`);
+        }
+      });
 
     const addFilterDropdown = new Dropdown(
       filterOptions,
