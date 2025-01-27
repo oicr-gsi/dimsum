@@ -120,6 +120,10 @@ public class CaseService {
     }
   }
 
+  protected void setSecurityManager(SecurityManager securityManager) {
+    this.securityManager = securityManager;
+  }
+
   protected void setCaseData(CaseData caseData) {
     this.caseData = caseData;
     refreshCacheUpdatedCases();
