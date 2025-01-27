@@ -26,6 +26,11 @@ public class CaseController {
   @Autowired
   private CaseService caseService;
 
+  @GetMapping
+  public String getCaseListPage() {
+    return "case-list";
+  }
+
   @GetMapping("/{caseId}")
   public String getCaseDetailsPage(@PathVariable String caseId, ModelMap model,
       HttpServletRequest request) {
