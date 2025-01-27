@@ -26,6 +26,7 @@ export interface QcStatus {
   qcComplete: boolean;
   cellStatus: CellStatus | null;
   priority: number; // lower wins when combining multiple statuses (run-libraries)
+  showExternal: boolean;
 }
 
 export const qcStatuses: Record<QcStatusKey, QcStatus> = {
@@ -35,6 +36,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: false,
     cellStatus: "warning",
     priority: 0,
+    showExternal: true,
   },
   sequencing: {
     label: "Sequencing in progress",
@@ -42,6 +44,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: false,
     cellStatus: "warning",
     priority: 2,
+    showExternal: false,
   },
   analysis: {
     label: "Pending analysis",
@@ -49,6 +52,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: false,
     cellStatus: "warning",
     priority: 3,
+    showExternal: false,
   },
   qc: {
     label: "Pending QC",
@@ -56,6 +60,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: false,
     cellStatus: "warning",
     priority: 4,
+    showExternal: false,
   },
   transfer: {
     label: "Pending transfer",
@@ -63,6 +68,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: "warning",
     priority: 0,
+    showExternal: false,
   },
   dataReview: {
     label: "Pending data review",
@@ -70,6 +76,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: "warning",
     priority: 5,
+    showExternal: false,
   },
   passed: {
     label: "Approved",
@@ -77,6 +84,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: null,
     priority: 7,
+    showExternal: true,
   },
   passedDifferentAssay: {
     label: "Approved with different assay",
@@ -84,6 +92,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: null,
     priority: 7,
+    showExternal: false,
   },
   failed: {
     label: "Failed",
@@ -91,6 +100,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: "error",
     priority: 1,
+    showExternal: true,
   },
   topUp: {
     label: "Top-up Required",
@@ -98,6 +108,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: "warning",
     priority: 6,
+    showExternal: true,
   },
   na: {
     label: "Not Applicable",
@@ -105,6 +116,7 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     qcComplete: true,
     cellStatus: null,
     priority: 8,
+    showExternal: true,
   },
 };
 

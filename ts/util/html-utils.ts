@@ -1,4 +1,5 @@
 import { Tooltip } from "../component/tooltip";
+import { internalUser } from "./site-config";
 
 // adds a header cell to a table header
 export function addColumnHeader(
@@ -157,7 +158,7 @@ export function makeNameDiv(
     button.classList.add("text-12");
     div.appendChild(button);
   }
-  if (misoUrl) {
+  if (misoUrl && internalUser) {
     addMisoIcon(div, misoUrl);
   }
   return div;

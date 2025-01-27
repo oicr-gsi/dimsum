@@ -53,7 +53,19 @@ public class SecurityConfiguration {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return setupCommon(http)
+    return http.authorizeHttpRequests(auth -> auth
+        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+        .requestMatchers("/favicon.ico").permitAll()
+        .requestMatchers("/css/**").permitAll()
+        .requestMatchers("/js/**").permitAll()
+        .requestMatchers("/img/**").permitAll()
+        .requestMatchers("/libs/**").permitAll()
+        .requestMatchers("/metrics").permitAll()
+        .requestMatchers(LOGIN_URL).permitAll()
+        .requestMatchers("/rest/external").hasAuthority(AUTHORITY_EXTERNAL)
+        .requestMatchers("/rest/internal").hasAuthority(AUTHORITY_INTERNAL)
+        .anyRequest().hasAnyAuthority(AUTHORITY_INTERNAL, AUTHORITY_EXTERNAL))
+        .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/error"))
         .saml2Login(saml -> saml.loginPage(LOGIN_URL)
             .authenticationManager(new ProviderManager(makeAuthenticationProvider())))
         .saml2Metadata(Customizer.withDefaults())

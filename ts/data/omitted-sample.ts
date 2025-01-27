@@ -29,18 +29,21 @@ export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
       key: "DONOR",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.donorNames,
+      showExternal: false,
     },
     {
       title: "Project",
       key: "PROJECT",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.projectNames,
+      showExternal: false,
     },
     {
       title: "Requisition",
       key: "REQUISITION",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.requisitionNames,
+      showExternal: false,
     },
   ],
   generateColumns(data) {

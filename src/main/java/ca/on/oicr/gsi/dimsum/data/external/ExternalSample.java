@@ -34,7 +34,7 @@ public record ExternalSample(String id, String name, String project, Donor donor
         from.getQcReason(),
         from.getDataReviewDate(),
         from.getDataReviewPassed(),
-        new ExternalRun(from.getRun()),
+        from.getRun() == null ? null : new ExternalRun(from.getRun()),
         from.getSequencingLane(),
         from.getLatestActivityDate());
   }
