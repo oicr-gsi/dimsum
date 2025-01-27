@@ -29,10 +29,12 @@ import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
+import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
+import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
@@ -46,6 +48,9 @@ import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
+import ca.on.oicr.gsi.dimsum.data.external.ExternalCase;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
@@ -83,6 +88,9 @@ public class CaseService {
 
   @Autowired
   private NotificationManager notificationManager;
+
+  @Autowired
+  private SecurityManager securityManager;
 
   private CaseData caseData;
 
@@ -175,6 +183,35 @@ public class CaseService {
     return data;
   }
 
+  public TableData<ExternalCase> getExternalCases(int pageSize, int pageNumber, CaseSort sort,
+      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    Set<String> userProjects = securityManager.getPrincipal().getProjects();
+    List<Case> baseCases = getCases(baseFilter).stream()
+        .filter(kase -> kase.getProjects().stream()
+            .anyMatch(project -> userProjects.contains(project.getName())))
+        .toList();
+    Stream<Case> stream = filterCases(baseCases, filters);
+
+    if (sort == null) {
+      sort = CaseSort.LAST_ACTIVITY;
+      descending = true;
+    }
+    Comparator<Case> comparator = sort.comparator(getAssaysById());
+    stream = stream.sorted(descending ? comparator.reversed() : comparator);
+
+    List<ExternalCase> filteredCases = stream.skip(pageSize * (pageNumber - 1))
+        .limit(pageSize)
+        .map(ExternalCase::new)
+        .toList();
+
+    TableData<ExternalCase> data = new TableData<>();
+    data.setTotalCount(baseCases.size());
+    data.setFilteredCount(filterCases(baseCases, filters).count());
+    data.setItems(filteredCases);
+
+    return data;
+  }
+
   public Set<String> getMatchingAssayNames(String prefix) {
     return caseData.getAssayNames().stream()
         .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
@@ -182,19 +219,52 @@ public class CaseService {
   }
 
   public Set<String> getMatchingRequisitionNames(String prefix) {
-    return caseData.getRequisitionNames().stream()
-        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+    Stream<String> stream = null;
+    if (securityManager.getPrincipal().isInternal()) {
+      stream = caseData.getRequisitionNames().stream();
+    } else {
+      stream = streamAuthorizedCases()
+          .map(Case::getRequisition)
+          .map(Requisition::getName);
+    }
+    return stream.filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
   }
 
+  private Stream<Case> streamAuthorizedCases() {
+    Stream<Case> stream = caseData.getCases().stream();
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    if (!principal.isInternal()) {
+      Set<String> userProjects = principal.getProjects();
+      stream = stream.filter(kase -> kase.getProjects().stream()
+          .map(Project::getName)
+          .anyMatch(userProjects::contains));
+    }
+    return stream;
+  }
+
   public Set<String> getMatchingProjectNames(String prefix) {
-    return caseData.getProjectNames().stream()
+    Stream<String> stream = null;
+    DimsumPrincipal principal = securityManager.getPrincipal();
+    if (principal.isInternal()) {
+      stream = caseData.getProjectNames().stream();
+    } else {
+      stream = principal.getProjects().stream();
+    }
+
+    return stream
         .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
   }
 
   public Set<String> getMatchingDonorNames(String prefix) {
-    return caseData.getDonorNames().stream()
+    Stream<String> stream = null;
+    if (securityManager.getPrincipal().isInternal()) {
+      stream = caseData.getDonorNames().stream();
+    } else {
+      stream = streamAuthorizedCases().map(Case::getDonor).map(Donor::getName);
+    }
+    return stream
         .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
   }
