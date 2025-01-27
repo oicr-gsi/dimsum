@@ -147,13 +147,24 @@ public enum CaseFilterKey {
   private static final String SEPARATOR = " - ";
 
   private final Function<String, Predicate<Case>> create;
+  private final boolean allowExternal;
 
   private CaseFilterKey(Function<String, Predicate<Case>> create) {
     this.create = create;
+    this.allowExternal = true;
+  }
+
+  private CaseFilterKey(Function<String, Predicate<Case>> create, boolean allowExternal) {
+    this.create = create;
+    this.allowExternal = allowExternal;
   }
 
   public Function<String, Predicate<Case>> create() {
     return create;
+  }
+
+  public boolean allowExternal() {
+    return allowExternal;
   }
 
   public Function<String, Predicate<Test>> testPredicate() {
