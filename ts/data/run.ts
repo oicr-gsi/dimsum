@@ -17,6 +17,7 @@ export const runDefinition: TableDefinition<Run, void> = {
       key: "NAME",
       type: "text",
       autocompleteUrl: urls.rest.autocomplete.runNames,
+      showExternal: false,
     },
   ],
   generateColumns(data) {

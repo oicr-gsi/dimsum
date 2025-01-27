@@ -1,6 +1,7 @@
 import { qcStatuses } from "../data/qc-status";
 import { makeIcon } from "../util/html-utils";
 import { GATE_COLOR_MAPPING, getColorForGate } from "../util/color-mapping";
+import { internalUser } from "../util/site-config";
 
 const legendId = "legend-container";
 
@@ -42,10 +43,14 @@ class Legend {
     body.className = "m-4 grid grid-rows-5 grid-flow-col gap-2";
     // populate legend based on type
     if (type === "qc") {
-      for (const qcStatus of Object.values(qcStatuses)) {
-        body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label));
+      Object.values(qcStatuses)
+        .filter((qcStatus) => qcStatus.showExternal)
+        .forEach((qcStatus) =>
+          body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label))
+        );
+      if (internalUser) {
+        body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
       }
-      body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
     } else if (type === "gate") {
       for (const gate of Object.keys(GATE_COLOR_MAPPING)) {
         const color = getColorForGate(gate);
