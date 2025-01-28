@@ -1,8 +1,10 @@
 import { internalUser, siteConfig } from "./site-config";
 import { Pair } from "./pair";
 
-function getRestBaseUrl() {
-  if (internalUser) {
+function getRestBaseUrl(common?: boolean) {
+  if (common) {
+    return "/rest/common";
+  } else if (internalUser) {
     return "/rest/internal";
   } else {
     return "/rest/external";
@@ -40,12 +42,14 @@ export const urls = {
       list: `${getRestBaseUrl()}/runs`,
     },
     autocomplete: {
-      assayNames: `${getRestBaseUrl()}/autocomplete/assay-names`,
-      requisitionNames: `${getRestBaseUrl()}/autocomplete/requisition-names`,
-      projectNames: `${getRestBaseUrl()}/autocomplete/project-names`,
-      donorNames: `${getRestBaseUrl()}/autocomplete/donor-names`,
+      assayNames: `${getRestBaseUrl(true)}/autocomplete/assay-names`,
+      requisitionNames: `${getRestBaseUrl(
+        true
+      )}/autocomplete/requisition-names`,
+      projectNames: `${getRestBaseUrl(true)}/autocomplete/project-names`,
+      donorNames: `${getRestBaseUrl(true)}/autocomplete/donor-names`,
       runNames: `${getRestBaseUrl()}/autocomplete/run-names`,
-      testNames: `${getRestBaseUrl()}/autocomplete/test-names`,
+      testNames: `${getRestBaseUrl(true)}/autocomplete/test-names`,
     },
     notifications: `${getRestBaseUrl()}/notifications`,
     omissions: `${getRestBaseUrl()}/omissions`,
