@@ -14,10 +14,12 @@ export interface OmittedRunSample extends Qcable {
 
 export const runDefinition: TableDefinition<Run, void> = {
   queryUrl: urls.rest.runs.list,
-  defaultSort: {
-    columnTitle: "Completion Date",
-    descending: true,
-    type: "date",
+  getDefaultSort: () => {
+    return {
+      columnTitle: "Completion Date",
+      descending: true,
+      type: "date",
+    };
   },
   staticActions: [legendAction],
   filters: [
@@ -63,10 +65,12 @@ export function getOmissionsDefinition(
 ): TableDefinition<OmittedRunSample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: {
-      columnTitle: "Name",
-      descending: true,
-      type: "text",
+    getDefaultSort: () => {
+      return {
+        columnTitle: "Name",
+        descending: true,
+        type: "text",
+      };
     },
     staticActions: [legendAction],
     generateColumns(data) {
