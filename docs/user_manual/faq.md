@@ -98,6 +98,44 @@ own project
 *You can hover over items in Dimsum to see their project*
 
 
+## How do I limit my case to a single project?
+
+Some cases are associated with multiple projects. This is usually caused by samples having been
+previously received into one project, then the samples themselves were used for sequencing in a
+different project. If the samples had previous data that could be used, then they could have been
+added as supplemental to the new requisition, and supplemental samples do not effect the case's
+projects. If the samples had to be derived and sequenced, they should have undergone the process
+described in the example below instead:
+
+X1 is a tumour tissue sample – received in Project A for WTS
+
+- Accessioned into Project A; Requisition 1 – WTS Assay
+- Dual extraction done: X1TDNA and X1TRNA are the propagated samples
+- X1TRNA aliquot transferred to library prep team
+
+X2 is a buffy coat sample – received for Project B a year later for WGTS
+
+- Accessioned into Project A, then changed to Project B (assumes knowledge that this is for a
+  different project that already exists – often true but not always); Requisition 2 – WGTS Assay
+- DNA extraction done: X2BCDNA is the propagated sample
+- X2BCDNA aliquot transferred to library prep team
+- X1TDNA aliquot transferred to library prep team
+
+Option 1:
+
+X1TDNA stock and X1TRNA aliquot can be added as a supplemental samples to Req 2. This needs to be
+the case with X1TRNA if the same WTS data previously generated is being used for the newly requested
+WGTS Assay.
+
+Option 2:
+
+X1TDNA and X1TRNA should have new aliquots propagated into Project B. These should be added as
+requisitioned samples to Requisition 2.
+
+Using either option, the requisitioned samples in Requisition 2 and everything downstream of them
+are associated with Project B, so that will be the only project associated with the WGTS case.
+
+
 ## Why is my case associated with a particular pipeline?
 
 Case pipelines come from the case’s projects. See previous question regarding case project
@@ -105,6 +143,12 @@ association.
 
 ![Case pipelines](../images/faq/case_pipelines.png)<br>
 *Case pipelines*
+
+
+## Why does my case have a particular deliverable?
+
+Case deliverables are also defined by the case's projects. See previous question regarding case
+project association.
 
 
 ## Why are there missing steps in a test?
