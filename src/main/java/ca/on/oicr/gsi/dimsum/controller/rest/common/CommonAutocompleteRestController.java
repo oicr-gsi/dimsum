@@ -1,4 +1,4 @@
-package ca.on.oicr.gsi.dimsum.controller.rest.external;
+package ca.on.oicr.gsi.dimsum.controller.rest.common;
 
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @RestController
-@RequestMapping("/rest/external/autocomplete")
-public class ExternalAutocompleteRestController {
+@RequestMapping("/rest/common/autocomplete")
+public class CommonAutocompleteRestController {
 
   // Note: CaseService filters all below results based on the user's authorized projects
 
