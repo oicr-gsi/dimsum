@@ -11,8 +11,8 @@
   <div layout:fragment="content">
     <div class="flex space-x-2 justify-between items-center">
       <div class="flex space-x-2 items-center">
-        <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">Details</h1>
-        <a id="titleMisoLink" th:if="${titleLink != null}" th:href="${titleLink}" target="_blank"
+        <h1 id="pageHeading" class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">Details</h1>
+        <a id="titleMisoLink" th:if="${internalUser && titleLink != null}" th:href="${titleLink}" target="_blank"
           rel="noopener noreferrer">
           <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
         </a>
