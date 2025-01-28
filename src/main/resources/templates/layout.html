@@ -52,6 +52,8 @@
       </div>
     </div>
     <nav th:unless="${hideNav}" class="noprint text-right">
+      <a th:href="@{/cases}" class="text-green-200 font-bold hover:underline">Cases</a>
+      <span class="text-grey-200 font-bold"> | </span>
       <a th:href="@{/projects}" class="text-green-200 font-bold hover:underline">Projects</a>
       <div th:if="${internalUser}" class="inline">
         <span class="text-grey-200 font-bold"> | </span>

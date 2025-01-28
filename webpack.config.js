@@ -4,7 +4,7 @@ const webpack = require("webpack");
 module.exports = {
   mode: "production",
   entry: {
-    index: "./ts/index.ts",
+    caseList: "./ts/case-list.ts",
     details: "./ts/details.ts",
     projectDetails: "./ts/project-details.ts",
     notifications: "./ts/notifications.ts",
