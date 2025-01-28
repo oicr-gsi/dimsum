@@ -1475,6 +1475,13 @@ export function addSampleIcons(
     ) {
       status = qcStatuses.transfer;
     }
+    if (
+      sample.run &&
+      !sample.run.completionDate &&
+      [qcStatuses.qc, qcStatuses.dataReview].includes(status)
+    ) {
+      status = qcStatuses.sequencing;
+    }
     const icon = makeIcon(status.icon);
     const tooltipInstance = Tooltip.getInstance();
     tooltipInstance.addTarget(icon, makeSampleTooltip(sample));
