@@ -101,11 +101,11 @@ own project
 ## How do I limit my case to a single project?
 
 Some cases are associated with multiple projects. This is usually caused by samples having been
-previously received into one project, then the samples themselves were used for sequencing in a
+previously received into one project, then the samples themselves being used for sequencing in a
 different project. If the samples had previous data that could be used, then they could have been
-added as supplemental to the new requisition, and supplemental samples do not effect the case's
-projects. If the samples had to be derived and sequenced, they should have undergone the process
-described in the example below instead:
+added as supplemental to the new requisition, as in Option 1 in the example below. Supplemental
+samples do not effect the case's projects. If the samples had to be derived and sequenced, they
+should have undergone the process described in Option 2 in the example below instead:
 
 X1 is a tumour tissue sample – received in Project A for WTS
 
@@ -119,18 +119,22 @@ X2 is a buffy coat sample – received for Project B a year later for WGTS
   different project that already exists – often true but not always); Requisition 2 – WGTS Assay
 - DNA extraction done: X2BCDNA is the propagated sample
 - X2BCDNA aliquot transferred to library prep team
-- X1TDNA aliquot transferred to library prep team
+- X1TDNA aliquot (extraction from Requisition 1) transferred to library prep team
 
 Option 1:
 
-X1TDNA stock and X1TRNA aliquot can be added as a supplemental samples to Req 2. This needs to be
-the case with X1TRNA if the same WTS data previously generated is being used for the newly requested
-WGTS Assay.
+If the WTS data previously generated from X1TRNA is being used for the newly-requested WGTS assay,
+X1TRNA should be added as a supplemental sample to Requisition 2.
+
+This option doesn't work well for X1TDNA since DNA isn't used in the WTS assay and there won't be
+any metrics for the sample or anything downstream of it.
 
 Option 2:
 
-X1TDNA and X1TRNA should have new aliquots propagated into Project B. These should be added as
-requisitioned samples to Requisition 2.
+If there is no previous data or the previous data will not be used, the samples should have new
+aliquots propagated into Project B. These should be added as requisitioned samples to Requisition 2.
+This may be done with X1TDNA and/or X1TRNA if appropriate. Note that these will be treated as
+receipt samples, and the extraction step will be marked N/A.
 
 Using either option, the requisitioned samples in Requisition 2 and everything downstream of them
 are associated with Project B, so that will be the only project associated with the WGTS case.
