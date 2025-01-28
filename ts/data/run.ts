@@ -5,10 +5,12 @@ import { Run } from "./case";
 
 export const runDefinition: TableDefinition<Run, void> = {
   queryUrl: urls.rest.runs.list,
-  defaultSort: {
-    columnTitle: "Completion Date",
-    descending: true,
-    type: "date",
+  getDefaultSort: () => {
+    return {
+      columnTitle: "Completion Date",
+      descending: true,
+      type: "date",
+    };
   },
   staticActions: [legendAction],
   filters: [
