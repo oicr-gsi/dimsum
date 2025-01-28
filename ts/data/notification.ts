@@ -15,10 +15,12 @@ interface Notification {
 
 export const notificationDefinition: TableDefinition<Notification, void> = {
   queryUrl: urls.rest.notifications,
-  defaultSort: {
-    columnTitle: "Completion Date",
-    descending: true,
-    type: "date",
+  getDefaultSort: () => {
+    return {
+      columnTitle: "Completion Date",
+      descending: true,
+      type: "date",
+    };
   },
   staticActions: [legendAction],
   generateColumns(data) {

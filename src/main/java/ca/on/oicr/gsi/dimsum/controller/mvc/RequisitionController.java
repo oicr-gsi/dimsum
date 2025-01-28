@@ -31,14 +31,14 @@ public class RequisitionController {
       throw new BadRequestException(String.format("Invalid requisition ID: ", requisitionId));
     }
     List<Case> cases =
-        caseService.getCases(new CaseFilter(CaseFilterKey.REQUISITION_ID, requisitionId));
+        caseService.getAuthorizedCases(new CaseFilter(CaseFilterKey.REQUISITION_ID, requisitionId));
     return setupDetailsPage(cases, requisitionId, model);
   }
 
   @GetMapping("/by-name/{name}")
   public String getRequisitionDetailsByName(@PathVariable String name, ModelMap model) {
     List<Case> cases =
-        caseService.getCases(new CaseFilter(CaseFilterKey.REQUISITION, name));
+        caseService.getAuthorizedCases(new CaseFilter(CaseFilterKey.REQUISITION, name));
     return setupDetailsPage(cases, name, model);
   }
 

@@ -64,16 +64,16 @@ function reload(definition: TableDefinition<any, any>) {
 
 switch (tableContainer.getAttribute("data-detail-type")) {
   case "REQUISITION_ID": {
-    const titleMisoLink = document.getElementById("titleMisoLink");
-    if (titleMisoLink === null) {
-      throw Error("title link not found on page");
+    const pageHeading = document.getElementById("pageHeading");
+    if (pageHeading === null) {
+      throw Error("page heading not found on page");
     }
     const requisitionName = tableContainer.getAttribute("data-detail-name");
     if (requisitionName === null) {
       throw Error("requisition name data attribute missing");
     }
     const copyButton = makeCopyButton(requisitionName);
-    titleMisoLink.parentNode?.insertBefore(copyButton, titleMisoLink);
+    pageHeading.parentNode?.appendChild(copyButton);
     break;
   }
   case "CASE_ID": {

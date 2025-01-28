@@ -12,7 +12,7 @@ import ca.on.oicr.gsi.cardea.data.Case;
 public enum CaseSort {
 
   // @formatter:off
-  URGENCY("Urgency", null) {
+  URGENCY("Urgency", null, false) {
     @Override
     public Comparator<Case> comparator(Map<Long, Assay> assaysById) {
       return (a, b) -> {
@@ -149,10 +149,18 @@ public enum CaseSort {
 
   private final String label;
   private final Comparator<Case> comparator;
+  private final boolean allowExternal;
 
   private CaseSort(String label, Comparator<Case> comparator) {
     this.label = label;
     this.comparator = comparator;
+    this.allowExternal = true;
+  }
+
+  private CaseSort(String label, Comparator<Case> comparator, boolean allowExternal) {
+    this.label = label;
+    this.comparator = comparator;
+    this.allowExternal = allowExternal;
   }
 
   public String getLabel() {
@@ -161,6 +169,10 @@ public enum CaseSort {
 
   public Comparator<Case> comparator(Map<Long, Assay> assaysById) {
     return comparator;
+  }
+
+  public boolean allowExternal() {
+    return allowExternal;
   }
 
 }
