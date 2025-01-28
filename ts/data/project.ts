@@ -31,10 +31,12 @@ export interface ProjectSummary {
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
   queryUrl: urls.rest.projects.list,
-  defaultSort: {
-    columnTitle: "Name",
-    descending: true,
-    type: "text",
+  getDefaultSort: () => {
+    return {
+      columnTitle: "Name",
+      descending: true,
+      type: "text",
+    };
   },
   filters: [
     {

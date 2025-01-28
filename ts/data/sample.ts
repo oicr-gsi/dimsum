@@ -45,7 +45,7 @@ import {
   nullIfUndefined,
   nullOrUndefined,
 } from "./data-utils";
-import { getMetricCategory } from "../util/site-config";
+import { getMetricCategory, internalUser } from "../util/site-config";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
@@ -197,11 +197,10 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
               ? runName + " (L" + sample.sequencingLane + ")"
               : runName,
             urls.miso.run(runName),
-            urls.dimsum.run(runName),
+            internalUser ? urls.dimsum.run(runName) : undefined,
             runName
           )
         );
-        // TODO: add Dashi icon link
       }
     },
     sortType: "text",
@@ -265,7 +264,7 @@ const latestActivityColumn: ColumnDefinition<Sample, void> = {
 
 export const receiptDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.receipts,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
@@ -303,7 +302,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
 
 export const extractionDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.extractions,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
@@ -327,7 +326,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
 
 export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   queryUrl: urls.rest.libraryPreparations,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns(data) {
@@ -349,7 +348,7 @@ export function getLibraryQualificationsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: latestActivitySort,
+    getDefaultSort: () => latestActivitySort,
     filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
     staticActions: [
       legendAction,
@@ -371,6 +370,7 @@ export function getLibraryQualificationsDefinition(
         handler(items) {
           qcInMiso(items, "LIBRARY_QUALIFICATION");
         },
+        view: "internal",
       },
     ],
     generateColumns(data) {
@@ -382,7 +382,7 @@ export function getLibraryQualificationsDefinition(
         ...generateMetricColumns("LIBRARY_QUALIFICATION", data),
         latestActivityColumn,
       ];
-      if (includeSequencingAttributes) {
+      if (includeSequencingAttributes && internalUser) {
         columns.splice(4, 0, sequencingAttributesColumn);
       }
       return columns;
@@ -397,7 +397,7 @@ export function getFullDepthSequencingsDefinition(
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
-    defaultSort: latestActivitySort,
+    getDefaultSort: () => latestActivitySort,
     filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
     staticActions: [
       legendAction,
@@ -419,6 +419,7 @@ export function getFullDepthSequencingsDefinition(
         handler(items) {
           qcInMiso(items, "FULL_DEPTH_SEQUENCING");
         },
+        view: "internal",
       },
     ],
     generateColumns(data) {
@@ -430,7 +431,7 @@ export function getFullDepthSequencingsDefinition(
         ...generateMetricColumns("FULL_DEPTH_SEQUENCING", data),
         latestActivityColumn,
       ];
-      if (includeSequencingAttributes) {
+      if (includeSequencingAttributes && internalUser) {
         columns.splice(4, 0, sequencingAttributesColumn);
       }
       return columns;

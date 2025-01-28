@@ -75,10 +75,12 @@ export function getOmittedRunSamplesDefinition(
 
   return {
     queryUrl: queryUrl,
-    defaultSort: {
-      columnTitle: "Name",
-      descending: true,
-      type: "text",
+    getDefaultSort: () => {
+      return {
+        columnTitle: "Name",
+        descending: true,
+        type: "text",
+      };
     },
     staticActions: [legendAction],
     bulkActions: [

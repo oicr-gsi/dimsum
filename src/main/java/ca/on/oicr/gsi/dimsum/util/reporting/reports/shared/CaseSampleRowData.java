@@ -25,7 +25,7 @@ public class CaseSampleRowData {
 
   public static List<CaseSampleRowData> listByCaseIds(CaseService caseService,
       Collection<String> caseIds) {
-    return caseService.getCases(null).stream()
+    return caseService.getAuthorizedCases(null).stream()
         .filter(x -> caseIds.contains(x.getId()))
         .flatMap(kase -> kase.getTests().stream()
             .flatMap(test -> test.getFullDepthSequencings().stream()
