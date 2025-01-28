@@ -45,7 +45,7 @@ export interface TestTableView {
 
 export const testDefinition: TableDefinition<TestTableView, void> = {
   queryUrl: urls.rest.tests,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [

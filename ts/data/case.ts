@@ -112,7 +112,7 @@ export interface Test {
   libraryPreparations: Sample[];
   libraryQualifications: Sample[];
   fullDepthSequencings: Sample[];
-  latestActivityDate?: string;
+  latestActivityDate: string | null;
   extractionDaysSpent?: number;
   libraryPreparationDaysSpent?: number;
   libraryQualificationDaysSpent?: number;
@@ -187,17 +187,27 @@ export interface Case {
 
 export const caseDefinition: TableDefinition<Case, Test> = {
   queryUrl: urls.rest.cases.list,
-  defaultSort: {
-    columnTitle: "Urgency",
-    type: "number",
-    descending: true,
-  },
-  nonColumnSorting: [
-    {
-      columnTitle: "Urgency",
-      type: "number",
-    },
-  ],
+  getDefaultSort: () =>
+    internalUser
+      ? {
+          columnTitle: "Urgency",
+          type: "number",
+          descending: true,
+        }
+      : {
+          columnTitle: "Latest Activity",
+          type: "date",
+          descending: true,
+        },
+  getNonColumnSorting: () =>
+    internalUser
+      ? [
+          {
+            columnTitle: "Urgency",
+            type: "number",
+          },
+        ]
+      : [],
   filters: caseFilters,
   getChildren: (parent) => parent.tests,
   getRowHighlight: (kase) => {
@@ -665,7 +675,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
 
 export const analysisReviewDefinition: TableDefinition<Case, void> = {
   queryUrl: urls.rest.cases.list,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: (data?: Case[]) => [
@@ -684,7 +694,7 @@ export const analysisReviewDefinition: TableDefinition<Case, void> = {
 
 export const releaseApprovalDefinition: TableDefinition<Case, void> = {
   queryUrl: urls.rest.cases.list,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [
@@ -702,7 +712,7 @@ export const releaseApprovalDefinition: TableDefinition<Case, void> = {
 
 export const releaseDefinition: TableDefinition<Case, void> = {
   queryUrl: urls.rest.cases.list,
-  defaultSort: latestActivitySort,
+  getDefaultSort: () => latestActivitySort,
   filters: caseFilters,
   staticActions: [legendAction],
   generateColumns: () => [

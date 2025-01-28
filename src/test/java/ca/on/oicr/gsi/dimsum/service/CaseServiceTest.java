@@ -14,6 +14,8 @@ import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
@@ -22,6 +24,7 @@ public class CaseServiceTest {
 
   private CaseService sut;
   private CaseData caseData;
+  private SecurityManager securityManager;
 
   @BeforeEach
   public void setup() {
@@ -32,6 +35,10 @@ public class CaseServiceTest {
     addCase(caseData, 2, 2);
     when(caseData.getTimestamp()).thenReturn(ZonedDateTime.now());
     sut.setCaseData(caseData);
+    securityManager = mock(SecurityManager.class);
+    DimsumPrincipal principal = makeInternalPrincipal();
+    when(securityManager.getPrincipal()).thenReturn(principal);
+    sut.setSecurityManager(securityManager);
   }
 
   @org.junit.jupiter.api.Test
@@ -160,6 +167,14 @@ public class CaseServiceTest {
         .name(String.format("REQ_%d", requisitionNumber))
         .assayIds(Collections.singleton(2L))
         .build();
+  }
+
+  private DimsumPrincipal makeInternalPrincipal() {
+    DimsumPrincipal principal = mock(DimsumPrincipal.class);
+    when(principal.getDisplayName()).thenReturn("Internal Test");
+    when(principal.isInternal()).thenReturn(true);
+    when(principal.getProjects()).thenReturn(Collections.emptySet());
+    return principal;
   }
 
 }

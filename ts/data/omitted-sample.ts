@@ -18,10 +18,12 @@ interface OmittedSample {
 
 export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
   queryUrl: urls.rest.omissions,
-  defaultSort: {
-    columnTitle: "Created Date",
-    descending: true,
-    type: "date",
+  getDefaultSort: () => {
+    return {
+      columnTitle: "Created Date",
+      descending: true,
+      type: "date",
+    };
   },
   filters: [
     {
