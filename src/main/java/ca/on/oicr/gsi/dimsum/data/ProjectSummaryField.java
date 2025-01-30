@@ -1,8 +1,7 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-
-import groovy.transform.Immutable;
+import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public class ProjectSummaryField {

@@ -30,6 +30,7 @@ import {
   getRequiredElementById,
 } from "./util/html-utils";
 import { Tooltip } from "./component/tooltip";
+import { internalUser } from "./util/site-config";
 
 const tableContainerId = "tableContainer";
 const tableContainer = getRequiredElementById(tableContainerId); // use same table container across all tables
@@ -40,14 +41,16 @@ const beforeDatePicker = getRequiredElementById(
 const afterDateKey = "AFTER_DATE";
 const beforeDateKey = "BEFORE_DATE";
 
-// Add Dashi links
-const dashiLink = getRequiredElementById("dashiProjectLink");
-const projectName = getRequiredDataAttribute(dashiLink, "data-project-name");
-const libraryDesignsString = dashiLink.getAttribute("data-library-designs");
-const libraryDesigns = libraryDesignsString
-  ? libraryDesignsString.split(",")
-  : [];
-makeDashiProjectLinksTooltip(dashiLink, projectName, libraryDesigns);
+if (internalUser) {
+  // Add Dashi links
+  const dashiLink = getRequiredElementById("dashiProjectLink");
+  const projectName = getRequiredDataAttribute(dashiLink, "data-project-name");
+  const libraryDesignsString = dashiLink.getAttribute("data-library-designs");
+  const libraryDesigns = libraryDesignsString
+    ? libraryDesignsString.split(",")
+    : [];
+  makeDashiProjectLinksTooltip(dashiLink, projectName, libraryDesigns);
+}
 
 // creating dropdown for pre-defined date range filter
 const today = new Date();
