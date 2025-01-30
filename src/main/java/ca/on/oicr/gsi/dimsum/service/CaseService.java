@@ -573,7 +573,7 @@ public class CaseService {
     }
 
     ProjectSummaryRow completed = getCompletedProjectSummaryRow(projectSummary);
-    if (afterDate == null && beforeDate == null) {
+    if (afterDate == null && beforeDate == null && principal.isInternal()) {
       ProjectSummaryRow pendingWork = getPendingProjectSummaryRow(projectSummary);
       ProjectSummaryRow pendingQc = getPendingQcProjectSummaryRow(projectSummary);
       data.setItems(Arrays.asList(pendingWork, pendingQc, completed));

@@ -54,8 +54,8 @@ export const urls = {
     notifications: `${getRestBaseUrl()}/notifications`,
     omissions: `${getRestBaseUrl()}/omissions`,
     projects: {
-      summary: (projecttName: string) =>
-        `${getRestBaseUrl()}/projects/${projecttName}/summary`,
+      summary: (projectName: string) =>
+        `${getRestBaseUrl(true)}/projects/${projectName}/summary`,
       list: `${getRestBaseUrl()}/projects`,
     },
     tests: `${getRestBaseUrl()}/tests`,
