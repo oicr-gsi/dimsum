@@ -12,11 +12,11 @@
 
     <div class="flex space-x-2 items-center">
       <h1 class="text-green-200 font-sarabun font-light font text-32" th:text="${title}">Details</h1>
-      <a th:if="${titleLink != null}" th:href="${titleLink}" target="_blank" rel="noopener noreferrer">
+      <a th:if="${internalUser && titleLink != null}" th:href="${titleLink}" target="_blank" rel="noopener noreferrer">
         <img src="/img/miso_logo.svg" class="w-6" alt="View in MISO" title="View in MISO">
       </a>
-      <img id="dashiProjectLink" th:data-project-name="${detailValue}" th:data-library-designs="${libraryDesigns}"
-        src="/img/dashi_logo.svg" class="w-6" alt="View in Dashi">
+      <img th:if="${internalUser}" id="dashiProjectLink" th:data-project-name="${detailValue}"
+        th:data-library-designs="${libraryDesigns}" src="/img/dashi_logo.svg" class="w-6" alt="View in Dashi">
     </div>
 
     <div id="projectSummaryDateControls" class="flex gap-2 items-center">
