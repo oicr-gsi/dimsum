@@ -1,7 +1,6 @@
 package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
-import java.time.LocalDate;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,9 +12,7 @@ import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
-import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
-import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedRunSampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummarySort;
@@ -37,15 +34,6 @@ public class ProjectRestController {
     List<ProjectSummaryFilter> filters = parseProjectSummaryFilters(query);
     return caseService.getProjects(query.getPageSize(), query.getPageNumber(), sort, descending,
         filters);
-  }
-
-  @PostMapping("/{projectName}/summary")
-  public TableData<ProjectSummaryRow> getProjectSummary(@PathVariable String projectName,
-      @RequestBody DataQuery query) {
-    List<CaseFilter> filters = parseCaseFiltersForProject(query);
-    LocalDate afterDate = parseAfterDate(query);
-    LocalDate beforDate = parseBeforeDate(query);
-    return caseService.getProjectSummaryRows(projectName, filters, afterDate, beforDate);
   }
 
   @PostMapping("/{projectName}/omissions/library-qualification")
