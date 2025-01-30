@@ -55,7 +55,7 @@ export const urls = {
     omissions: `${getRestBaseUrl()}/omissions`,
     projects: {
       summary: (projectName: string) =>
-        `${getRestBaseUrl()}/projects/${projectName}/summary`,
+        `${getRestBaseUrl(true)}/projects/${projectName}/summary`,
       list: `${getRestBaseUrl()}/projects`,
       libraryQualificationOmissions: (projectName: string) =>
         `${getRestBaseUrl()}/projects/${projectName}/omissions/library-qualification`,

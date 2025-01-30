@@ -57,7 +57,7 @@ public class ProjectController {
   }
 
   private String makeMisoProjectUrl(String projectName) {
-    return String.format("%s/miso/project/shortname/%s", frontEndConfig.getMisoUrl(), projectName);
+    return String.format("%s/project/shortname/%s", frontEndConfig.getMisoUrl(), projectName);
   }
 
 }
