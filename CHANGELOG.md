@@ -7,6 +7,14 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.50.0] - 2025-01-30
+
+### Changed
+
+* The Cases list will now show a status of "Sequencing in progress" instead of pending QC or data
+  review for sequencing items that are currently running
+
+
 ## [1.49.0] - 2024-12-19
 
 ### Added
