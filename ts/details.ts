@@ -17,6 +17,7 @@ import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { makeCopyButton } from "./util/html-utils";
+import { internalUser } from "./util/site-config";
 
 const tableContainerId = "tableContainer";
 const tableContainer = document.getElementById(tableContainerId); // use same table container across all tables
@@ -77,33 +78,35 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     break;
   }
   case "CASE_ID": {
-    // add QC Report button
-    const caseId = tableContainer.getAttribute("data-detail-value");
-    if (!caseId) {
-      throw new Error("Missing case ID value");
+    if (internalUser) {
+      // add QC Report button
+      const caseId = tableContainer.getAttribute("data-detail-value");
+      if (!caseId) {
+        throw new Error("Missing case ID value");
+      }
+      const actionContainer = document.getElementById("pageActionsContainer"); // use same table container across all tables
+      if (actionContainer === null) {
+        throw Error(`Container ID "${actionContainer}" not found on page`);
+      }
+      const button = document.createElement("button");
+      button.classList.add(
+        "bg-green-200",
+        "rounded-md",
+        "hover:ring-2",
+        "ring-offset-1",
+        "ring-green-200",
+        "text-white",
+        "font-inter",
+        "font-medium",
+        "text-12",
+        "px-2",
+        "py-1"
+      );
+      button.innerText = "QC Report";
+      button.onclick = (event) =>
+        (window.location.href = urls.dimsum.caseQcReport(caseId));
+      actionContainer.appendChild(button);
+      break;
     }
-    const actionContainer = document.getElementById("pageActionsContainer"); // use same table container across all tables
-    if (actionContainer === null) {
-      throw Error(`Container ID "${actionContainer}" not found on page`);
-    }
-    const button = document.createElement("button");
-    button.classList.add(
-      "bg-green-200",
-      "rounded-md",
-      "hover:ring-2",
-      "ring-offset-1",
-      "ring-green-200",
-      "text-white",
-      "font-inter",
-      "font-medium",
-      "text-12",
-      "px-2",
-      "py-1"
-    );
-    button.innerText = "QC Report";
-    button.onclick = (event) =>
-      (window.location.href = urls.dimsum.caseQcReport(caseId));
-    actionContainer.appendChild(button);
-    break;
   }
 }
