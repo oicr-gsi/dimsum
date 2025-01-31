@@ -44,5 +44,5 @@ function getCaseQc(qcs: Record<string, CaseQc>, name: string | null) {
 export function getMetricCategory(assayId: number, category: MetricCategory) {
   const assay = siteConfig.assaysById[assayId];
   assertRequired(assay.metricCategories);
-  return assay.metricCategories[category];
+  return assay.metricCategories[category] || [];
 }
