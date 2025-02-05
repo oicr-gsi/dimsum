@@ -1,1 +1,1 @@
-TAT trend report metrics column and row name from Case Count to Test Count, Full Case to Full Test
+TAT Trend Report column and row name from Case Count to Test Count, Full Case to Full Test
