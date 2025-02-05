@@ -131,7 +131,7 @@ function getCompletedDateAndDays(
         : null;
       days = row[COLUMN_NAMES.FD_DAYS] ?? 0;
       break;
-    case "Full Case":
+    case "Full Test":
       completedDate = row[getCompletionColumnName(selectedDataType, "Release")]
         ? new Date(row[getCompletionColumnName(selectedDataType, "Release")])
         : null;
@@ -560,7 +560,7 @@ function generateDynamicColumns(
       },
     });
     dynamicColumns.push({
-      title: `Case Count`,
+      title: `Test Count`,
       addParentContents(
         assayMetrics: AssayMetrics,
         fragment: DocumentFragment
