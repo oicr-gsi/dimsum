@@ -42,6 +42,10 @@
       <id>artifacts-gsi-release</id>
       <url>https://artifacts.oicr.on.ca/artifactory/gsi-release/</url>
     </repository>
+    <repository>
+      <id>shibboleth</id>
+      <url>https://build.shibboleth.net/nexus/content/repositories/releases/</url>
+    </repository>
   </repositories>
 
   <dependencies>
