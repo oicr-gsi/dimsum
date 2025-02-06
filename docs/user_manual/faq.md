@@ -98,6 +98,48 @@ own project
 *You can hover over items in Dimsum to see their project*
 
 
+## How do I limit my case to a single project?
+
+Some cases are associated with multiple projects. This is usually caused by samples having been
+previously received into one project, then the samples themselves being used for sequencing in a
+different project. If the samples had previous data that could be used, then they could have been
+added as supplemental to the new requisition, as in Option 1 in the example below. Supplemental
+samples do not effect the case's projects. If the samples had to be derived and sequenced, they
+should have undergone the process described in Option 2 in the example below instead:
+
+X1 is a tumour tissue sample – received in Project A for WTS
+
+- Accessioned into Project A; Requisition 1 – WTS Assay
+- Dual extraction done: X1TDNA and X1TRNA are the propagated samples
+- X1TRNA aliquot transferred to library prep team
+
+X2 is a buffy coat sample – received for Project B a year later for WGTS
+
+- Accessioned into Project A, then changed to Project B (assumes knowledge that this is for a
+  different project that already exists – often true but not always); Requisition 2 – WGTS Assay
+- DNA extraction done: X2BCDNA is the propagated sample
+- X2BCDNA aliquot transferred to library prep team
+- X1TDNA aliquot (extraction from Requisition 1) transferred to library prep team
+
+Option 1:
+
+If the WTS data previously generated from X1TRNA is being used for the newly-requested WGTS assay,
+X1TRNA should be added as a supplemental sample to Requisition 2.
+
+This option doesn't work well for X1TDNA since DNA isn't used in the WTS assay and there won't be
+any metrics for the sample or anything downstream of it.
+
+Option 2:
+
+If there is no previous data or the previous data will not be used, the samples should have new
+aliquots propagated into Project B. These should be added as requisitioned samples to Requisition 2.
+This may be done with X1TDNA and/or X1TRNA if appropriate. Note that these will be treated as
+receipt samples, and the extraction step will be marked N/A.
+
+Using either option, the requisitioned samples in Requisition 2 and everything downstream of them
+are associated with Project B, so that will be the only project associated with the WGTS case.
+
+
 ## Why is my case associated with a particular pipeline?
 
 Case pipelines come from the case’s projects. See previous question regarding case project
@@ -105,6 +147,12 @@ association.
 
 ![Case pipelines](../images/faq/case_pipelines.png)<br>
 *Case pipelines*
+
+
+## Why does my case have a particular deliverable?
+
+Case deliverables are also defined by the case's projects. See previous question regarding case
+project association.
 
 
 ## Why are there missing steps in a test?
