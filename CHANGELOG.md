@@ -7,6 +7,21 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.51.0] - 2025-02-06
+
+### Added
+
+* More information about case projects in the user manual FAQ
+
+### Changed
+
+* TAT Trend Report column and row name from Case Count to Test Count, Full Case to Full Test
+
+### Fixed
+
+* Error when attempting to display some items with no metrics
+
+
 ## [1.50.0] - 2025-01-30
 
 ### Changed
