@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.51.1] - 2025-02-06
+
+### Fixed
+
+* OpenSAML dependency in pom.xml
+
+
 ## [1.51.0] - 2025-02-06
 
 ### Added
