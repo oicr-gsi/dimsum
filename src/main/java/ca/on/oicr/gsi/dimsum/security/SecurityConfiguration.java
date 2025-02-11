@@ -53,19 +53,7 @@ public class SecurityConfiguration {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http.authorizeHttpRequests(auth -> auth
-        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
-        .requestMatchers("/favicon.ico").permitAll()
-        .requestMatchers("/css/**").permitAll()
-        .requestMatchers("/js/**").permitAll()
-        .requestMatchers("/img/**").permitAll()
-        .requestMatchers("/libs/**").permitAll()
-        .requestMatchers("/metrics").permitAll()
-        .requestMatchers(LOGIN_URL).permitAll()
-        .requestMatchers("/rest/external").hasAuthority(AUTHORITY_EXTERNAL)
-        .requestMatchers("/rest/internal").hasAuthority(AUTHORITY_INTERNAL)
-        .anyRequest().hasAnyAuthority(AUTHORITY_INTERNAL, AUTHORITY_EXTERNAL))
-        .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/error"))
+    return setupCommon(http)
         .saml2Login(saml -> saml.loginPage(LOGIN_URL)
             .authenticationManager(new ProviderManager(makeAuthenticationProvider())))
         .saml2Metadata(Customizer.withDefaults())
@@ -82,10 +70,13 @@ public class SecurityConfiguration {
         .requestMatchers("/img/**").permitAll()
         .requestMatchers("/libs/**").permitAll()
         .requestMatchers("/metrics").permitAll()
-        .requestMatchers(LOGIN_URL).permitAll()
-        .requestMatchers("/rest/external").hasAuthority(AUTHORITY_EXTERNAL)
-        .requestMatchers("/rest/internal").hasAuthority(AUTHORITY_INTERNAL)
-        .anyRequest().hasAnyAuthority(AUTHORITY_INTERNAL, AUTHORITY_EXTERNAL))
+        .requestMatchers(LOGIN_URL, "/logout").permitAll()
+        .requestMatchers("/rest/external/**").hasAuthority(AUTHORITY_EXTERNAL)
+        .requestMatchers("/rest/common/**").hasAnyAuthority(AUTHORITY_INTERNAL, AUTHORITY_EXTERNAL)
+        .requestMatchers("/", "/cases", "/cases/*", "/projects", "/projects/*",
+            "/requisitions/*", "/donors/*")
+        .hasAnyAuthority(AUTHORITY_INTERNAL, AUTHORITY_EXTERNAL)
+        .anyRequest().hasAuthority(AUTHORITY_INTERNAL))
         .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/error"));
   }
 
@@ -95,7 +86,8 @@ public class SecurityConfiguration {
       Saml2Authentication auth = OpenSaml4AuthenticationProvider
           .createDefaultResponseAuthenticationConverter().convert(token);
       Saml2AuthenticatedPrincipal samlPrincipal = (Saml2AuthenticatedPrincipal) auth.getPrincipal();
-      log.debug("Principal {} attributes: {}", samlPrincipal.getName(), samlPrincipal.getAttributes());
+      log.debug("Principal {} attributes: {}", samlPrincipal.getName(),
+          samlPrincipal.getAttributes());
 
       boolean internal = false;
       List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
