@@ -39,6 +39,10 @@ public class CaseController {
       request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
       return "redirect:/cases/" + redirectId;
     }
+    Case kase = caseService.getCase(caseId);
+    if (kase == null) {
+      throw new NotFoundException("No data found for case: " + caseId);
+    }
     model.put("title", "Case Details");
     model.put("detailType", CaseFilterKey.CASE_ID.name());
     model.put("detailValue", caseId);
