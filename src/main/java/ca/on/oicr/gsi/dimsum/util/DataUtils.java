@@ -9,6 +9,7 @@ import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
+import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class DataUtils {
@@ -34,12 +35,18 @@ public class DataUtils {
   }
 
   public static boolean isFailed(Sample sample) {
-    if (sample.getRun() != null && sample.getDataReviewDate() == null) {
-      // Data review pass/fail are considered the same in the case of failed QC, but data review
-      // must be completed to confirm the failure
-      return false;
+    Run run = sample.getRun();
+    if (run != null) {
+      if (sample.getDataReviewDate() == null || run.getDataReviewDate() == null) {
+        // Data review pass/fail are considered the same in the case of failed QC, but data review
+        // must be completed to confirm the failure
+        return false;
+      }
+      if (isFalse(run.getQcPassed()) || isFalse(run.getDataReviewPassed())) {
+        return true;
+      }
     }
-    return isFalse(sample.getQcPassed());
+    return isFalse(sample.getQcPassed()) || isFalse(sample.getDataReviewPassed());
   }
 
   private static boolean isTrue(Boolean value) {
