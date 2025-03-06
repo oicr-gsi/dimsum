@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.52.0] - 2025-03-06
+
+### Added
+
+* QC Status column on the Full-Depth Summary download sheet
+
+
 ## [1.51.1] - 2025-02-06
 
 ### Fixed
