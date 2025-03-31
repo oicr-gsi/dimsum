@@ -103,11 +103,14 @@ public enum CaseFilterKey {
         return string -> getGate(string).samplePredicate(requestCategory).negate();
     }
 },
-  LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> test.getLibraryDesignCode().equals(string));
+  LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> 
+      Objects.equals(test.getLibraryDesignCode(), string)
+      || Objects.equals(test.getLibraryQualificationDesignCode(), string));
   }) {
     @Override 
     public Function<String, Predicate<Test>> testPredicate() {
-      return string -> test -> Objects.equals(test.getLibraryDesignCode(), string);
+      return string -> test -> Objects.equals(test.getLibraryDesignCode(), string)
+          || Objects.equals(test.getLibraryQualificationDesignCode(), string);
     }
 
     @Override
