@@ -107,6 +107,7 @@ function getCompletedDateAndDays(
       completedDate = row[COLUMN_NAMES.RC_COMPLETED]
         ? new Date(row[COLUMN_NAMES.RC_COMPLETED])
         : null;
+      break;
     case "Extraction":
       completedDate = row[COLUMN_NAMES.EX_COMPLETED]
         ? new Date(row[COLUMN_NAMES.EX_COMPLETED])
@@ -492,7 +493,7 @@ function updateMetricsTable(
   const caseTatTableDefinition: TableDefinition<AssayMetrics, void> = {
     generateColumns: () => dynamicColumns,
     parentHeaders, // pass parent headers for multi-level header support
-    disablePageControls: false,
+    disablePageControls: true,
   };
   // reuse or create a new TableBuilder instance
   if (tableBuilder) {
@@ -748,7 +749,7 @@ window.addEventListener("load", () => {
     csvRows.push(parentHeaders.join(","));
     const subHeaders = ["Assay", "Step"];
     timeRanges.forEach(() => {
-      subHeaders.push("Mean Days", "Median Days", "Case Count");
+      subHeaders.push("Mean Days", "Median Days", "Test Count");
     });
     csvRows.push(subHeaders.join(","));
     tableData.forEach((row) => {
