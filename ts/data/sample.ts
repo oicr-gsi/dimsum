@@ -472,17 +472,11 @@ function getSampleMetrics(
     )
     .map((metric) => {
       const value = getMetricValue(metric.name, sample);
-      const displayValue = nullOrUndefined(value)
-        ? null
-        : formatMetricValue(value, [metric]);
-      const revisedValue = nullOrUndefined(displayValue)
-        ? null
-        : parseFloat(displayValue.replaceAll(",", ""));
       const misoMetric: MisoRunLibraryMetric = {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
         threshold: getSingleThreshold(metric),
-        value: revisedValue,
+        value: value,
       };
       if (metric.thresholdType == "BETWEEN") {
         if (metric.maximum === undefined) {
