@@ -7,6 +7,20 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.52.1] - 2025-04-03
+
+### Fixed
+
+* Issues with the TAT Trend Report metrics table and download
+  * Receipt rows were showing Extraction values instead of the correct Receipt values
+  * Columns were incorrectly labelled "Case Count" instead of "Test Count"
+  * Filtering/Paging controls were displayed, but did not work
+* The QC in MISO feature was sending truncated values to MISO, which could cause MISO to evaluate a
+  metric incorrectly if the value was very close to the threshold
+* When filtering by library design, cases using the specified design code only after library
+  preparation were not included
+
+
 ## [1.52.0] - 2025-03-06
 
 ### Added
