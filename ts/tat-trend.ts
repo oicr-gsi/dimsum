@@ -33,6 +33,7 @@ interface CaseCounts {
 const COLUMN_NAMES = {
   ASSAY: "Assay",
   CASE_ID: "Case ID",
+  RC_DAYS: "Receipt Days",
   EX_DAYS: "EX Days",
   LP_DAYS: "Library Prep. Days",
   LQ_DAYS: "LQ Total Days",
@@ -107,6 +108,7 @@ function getCompletedDateAndDays(
       completedDate = row[COLUMN_NAMES.RC_COMPLETED]
         ? new Date(row[COLUMN_NAMES.RC_COMPLETED])
         : null;
+      days = row[COLUMN_NAMES.RC_DAYS] ?? 0;
       break;
     case "Extraction":
       completedDate = row[COLUMN_NAMES.EX_COMPLETED]
