@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.52.2] - 2025-04-08
+
+### Fixed
+
+* TAT Trend Report showing zero receipt days for all tests
+
+
 ## [1.52.1] - 2025-04-03
 
 ### Fixed
