@@ -37,7 +37,7 @@ import {
 } from "./util/site-config";
 import { urls } from "./util/urls";
 import { BasicDropdownOption, Dropdown } from "./component/dropdown";
-import { assertRequired } from "./data/data-utils";
+import { assertRequired, nullIfUndefined } from "./data/data-utils";
 
 interface ReportSample {
   sample: Sample;
@@ -406,7 +406,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
           makeAnalysisMetricDisplay(
             [object],
             parent.qcGroup,
-            [qcStatus?.qcPassed || null],
+            [nullIfUndefined(qcStatus?.qcPassed)],
             false
           )
         );
@@ -420,7 +420,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
             object.qcGroup,
             object.kase,
             metric,
-            qcStatus?.qcPassed || null
+            nullIfUndefined(qcStatus?.qcPassed)
           );
         } else {
           return "na";
