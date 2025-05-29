@@ -7,6 +7,14 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.52.3] - 2025-05-29
+
+### Fixed
+
+* The Case QC Report Analysis Review table still showed pass/fail metrics as pending after QC signoff
+  was failed
+
+
 ## [1.52.2] - 2025-04-08
 
 ### Fixed
