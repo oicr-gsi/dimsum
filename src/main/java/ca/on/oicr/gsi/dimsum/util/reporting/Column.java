@@ -45,7 +45,7 @@ public abstract class Column<T> {
       @Override
       public String getDelimitedColumnString(String delimiter, T object) {
         BigDecimal value = getter.apply(object);
-        return value.toPlainString();
+        return value != null ? value.toPlainString() : "";
       }
 
     };

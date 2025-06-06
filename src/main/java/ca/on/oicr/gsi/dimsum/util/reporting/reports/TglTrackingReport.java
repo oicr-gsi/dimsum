@@ -24,7 +24,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
-import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
+import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
 
 public class TglTrackingReport extends Report {
 
@@ -57,7 +57,7 @@ public class TglTrackingReport extends Report {
   }
 
   private static final ReportSection<RowData> trackerSection =
-      new TableReportSection<RowData>("Tracker",
+      new StaticTableReportSection<RowData>("Tracker",
           Arrays.asList(
               Column.forString("Case ID", x -> x.getCase().getId()),
               Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),

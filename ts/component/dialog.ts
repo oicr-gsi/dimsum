@@ -275,3 +275,61 @@ export function showFormDialog(
     callback
   );
 }
+
+export function showDownloadOptionsDialog<Type>(
+  report: string,
+  items: Type[],
+  callback: (result: any) => void,
+  additionalFields?: FormField<any>[]
+) {
+  const formatOptions = new Map<string, any>([
+    [
+      "Excel",
+      {
+        format: "excel",
+      },
+    ],
+    [
+      "CSV with headings",
+      {
+        format: "csv",
+        includeHeadings: true,
+      },
+    ],
+    [
+      "CSV, no headings",
+      {
+        format: "csv",
+        includeHeadings: false,
+      },
+    ],
+    [
+      "TSV with headings",
+      {
+        format: "tsv",
+        includeHeadings: true,
+      },
+    ],
+    [
+      "TSV, no headings",
+      {
+        format: "tsv",
+        includeHeadings: false,
+      },
+    ],
+  ]);
+  let fields: FormField<any>[] = [
+    new DropdownField(
+      "Format",
+      formatOptions,
+      "formatOptions",
+      true,
+      undefined,
+      "Excel"
+    ),
+  ];
+  if (additionalFields) {
+    fields = fields.concat(additionalFields);
+  }
+  showFormDialog("Download Options", fields, "Download", callback);
+}

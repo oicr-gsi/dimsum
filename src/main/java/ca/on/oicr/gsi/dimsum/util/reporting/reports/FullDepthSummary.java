@@ -11,13 +11,13 @@ import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
-import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
+import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.shared.CaseSampleRowData;
 
 public class FullDepthSummary extends Report {
 
   private static final ReportSection<CaseSampleRowData> mainSection =
-      new TableReportSection<CaseSampleRowData>("Full-Depth Sequencing", Arrays.asList(
+      new StaticTableReportSection<CaseSampleRowData>("Full-Depth Sequencing", Arrays.asList(
           Column.forString("Case ID", x -> x.getCase().getId()),
           Column.forString("Project", x -> x.getSample().getProject()),
           Column.forString("Donor", x -> x.getCase().getDonor().getName()),
