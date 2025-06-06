@@ -14,12 +14,12 @@ import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
-import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
+import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
 
 public class DonorAssayReport extends Report {
 
   private static final ReportSection<Case> mainSection =
-      new TableReportSection<Case>("Donor Assay Report", Arrays.asList(
+      new StaticTableReportSection<Case>("Donor Assay Report", Arrays.asList(
           Column.forString("Project", kase -> kase.getProjects().stream()
               .map(Project::getName)
               .collect(Collectors.joining(", "))),
