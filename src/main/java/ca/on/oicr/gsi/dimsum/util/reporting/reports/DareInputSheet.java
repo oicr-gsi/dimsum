@@ -11,13 +11,13 @@ import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
-import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
+import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.shared.CaseSampleRowData;
 
 public class DareInputSheet extends Report {
 
   private static final ReportSection<CaseSampleRowData> mainSection =
-      new TableReportSection<CaseSampleRowData>("Full-Depth Sequencing", Arrays.asList(
+      new StaticTableReportSection<CaseSampleRowData>("Full-Depth Sequencing", Arrays.asList(
           Column.forString("Library", x -> x.getSample().getName()),
           Column.forString("Run", x -> x.getSample().getRun().getName()),
           Column.forString("Lane", x -> x.getSample().getSequencingLane()))) {

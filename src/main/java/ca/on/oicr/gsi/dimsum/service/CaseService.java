@@ -227,10 +227,24 @@ public class CaseService {
         MetricCategory.LIBRARY_PREP);
   }
 
+  public List<Sample> getLibraryQualifications(CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    return filterSamples(getCases(baseFilter), filters, MetricCategory.LIBRARY_QUALIFICATION)
+        .distinct()
+        .toList();
+  }
+
   public TableData<Sample> getLibraryQualifications(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
         MetricCategory.LIBRARY_QUALIFICATION);
+  }
+
+  public List<Sample> getFullDepthSequencings(CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    return filterSamples(getCases(baseFilter), filters, MetricCategory.FULL_DEPTH_SEQUENCING)
+        .distinct()
+        .toList();
   }
 
   public TableData<Sample> getFullDepthSequencings(int pageSize, int pageNumber, SampleSort sort,
@@ -554,10 +568,22 @@ public class CaseService {
     return caseData.getRunAndLibraries(name);
   }
 
+  public List<Sample> getLibraryQualificationsForRun(String runName,
+      Collection<CaseFilter> filters) {
+    Set<Sample> samples = getRunLibraries(runName, RunAndLibraries::getLibraryQualifications);
+    return filterRunLibraries(samples, filters, MetricCategory.LIBRARY_QUALIFICATION);
+  }
+
   public TableData<Sample> getLibraryQualificationsForRun(String runName, int pageSize,
       int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters) {
     return getRunLibraries(runName, pageSize, pageNumber, sort, descending, filters,
         RunAndLibraries::getLibraryQualifications, MetricCategory.LIBRARY_QUALIFICATION);
+  }
+
+  public List<Sample> getFullDepthSequencingsForRun(String runName,
+      Collection<CaseFilter> filters) {
+    Set<Sample> samples = getRunLibraries(runName, RunAndLibraries::getFullDepthSequencings);
+    return filterRunLibraries(samples, filters, MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
   public TableData<Sample> getFullDepthSequencingsForRun(String runName, int pageSize,
@@ -586,19 +612,8 @@ public class CaseService {
   private TableData<Sample> getRunLibraries(String runName, int pageSize,
       int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters,
       Function<RunAndLibraries, Set<Sample>> getSamples, MetricCategory requestCategory) {
-    RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
-    Set<Sample> samples = runAndLibraries == null ? Collections.emptySet()
-        : getSamples.apply(runAndLibraries);
-    Stream<Sample> stream = samples.stream();
-
-    if (filters != null && !filters.isEmpty()) {
-      Map<CaseFilterKey, Predicate<Sample>> filterMap =
-          buildFilterMap(filters, filter -> filter.samplePredicate(requestCategory));
-      for (Predicate<Sample> predicate : filterMap.values()) {
-        stream = stream.filter(predicate);
-      }
-    }
-    List<Sample> filteredSamples = stream.toList();
+    Set<Sample> samples = getRunLibraries(runName, getSamples);
+    List<Sample> filteredSamples = filterRunLibraries(samples, filters, requestCategory);
 
     TableData<Sample> data = new TableData<>();
     data.setTotalCount(samples.size());
@@ -611,6 +626,27 @@ public class CaseService {
     return data;
   }
 
+  private Set<Sample> getRunLibraries(String runName,
+      Function<RunAndLibraries, Set<Sample>> getSamples) {
+    RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
+    Set<Sample> samples = runAndLibraries == null ? Collections.emptySet()
+        : getSamples.apply(runAndLibraries);
+    return samples;
+  }
+
+  private List<Sample> filterRunLibraries(Collection<Sample> samples,
+      Collection<CaseFilter> filters, MetricCategory requestCategory) {
+    Stream<Sample> stream = samples.stream();
+
+    if (filters != null && !filters.isEmpty()) {
+      Map<CaseFilterKey, Predicate<Sample>> filterMap =
+          buildFilterMap(filters, filter -> filter.samplePredicate(requestCategory));
+      for (Predicate<Sample> predicate : filterMap.values()) {
+        stream = stream.filter(predicate);
+      }
+    }
+    return stream.toList();
+  }
 
   private ProjectSummaryRow getCompletedProjectSummaryRow(ProjectSummary projectSummary) {
     return new ProjectSummaryRow.Builder()
