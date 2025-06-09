@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -20,9 +21,7 @@ public class DonorAssayReport extends Report {
 
   private static final ReportSection<Case> mainSection =
       new TableReportSection<Case>("Donor Assay Report", Arrays.asList(
-          Column.forString("Project", kase -> kase.getProjects().stream()
-              .map(Project::getName)
-              .collect(Collectors.joining(", "))),
+          Column.forString("Project", DonorAssayReport::getProjectNames),
           Column.forString("Pipeline", DonorAssayReport::getProjectPipelines),
           Column.forString("Donor", kase -> kase.getDonor().getName()),
           Column.forString("External Name", kase -> kase.getDonor().getExternalName()),
@@ -33,13 +32,16 @@ public class DonorAssayReport extends Report {
               kase -> CompletedGate.RELEASE.qualifyCase(kase) ? "Yes" : "No"),
           Column.forString("Stopped/Paused", DonorAssayReport::getStoppedPausedStatus),
           Column.forString("Stop/Pause Reason", DonorAssayReport::getStopPauseReason))) {
+
         @Override
         public List<Case> getData(CaseService caseService, JsonNode parameters) {
           Set<String> caseIds = getParameterStringSet(parameters, "caseIds");
           if (caseIds == null || caseIds.isEmpty()) {
             throw new BadRequestException("caseIds parameter missing or empty");
           }
-          return caseService.getCasesByIds(caseIds);
+          return caseService.getCasesByIds(caseIds).stream()
+              .sorted(Comparator.comparing(DonorAssayReport::getProjectNames))
+              .toList();
         }
       };
 
@@ -49,10 +51,18 @@ public class DonorAssayReport extends Report {
     super("Donor Assay Report", mainSection);
   }
 
+  private static String getProjectNames(Case kase) {
+    return kase.getProjects().stream()
+        .map(Project::getName)
+        .sorted()
+        .collect(Collectors.joining(", "));
+  }
+
   private static String getProjectPipelines(Case kase) {
     return kase.getProjects().stream()
         .map(Project::getPipeline)
         .filter(Objects::nonNull)
+        .sorted()
         .collect(Collectors.joining(", "));
   }
 
