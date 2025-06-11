@@ -577,9 +577,9 @@ export class TableBuilder<ParentType, ChildType> {
     filterContainer: HTMLElement
   ) {
     const onClose = (textInput: TextInput) => {
+      const value = textInput.getValue();
       const onRemove = () => {
-        if (this.onFilterChange)
-          this.onFilterChange(filter.key, textInput.getValue(), false);
+        if (this.onFilterChange) this.onFilterChange(filter.key, value, false);
         this.reload(true);
       };
       const filterLabel = new AcceptedFilter(
