@@ -149,7 +149,8 @@ public class CaseServiceTest {
 
     collection.add(new Sample.Builder().id(name).name(name).donor(mock(Donor.class)).project("PROJ")
         .tissueOrigin("To").tissueType("T")
-        .createdDate(LocalDate.now()).build());
+        .createdDate(LocalDate.now())
+        .metrics(new ArrayList<>()).build());
   }
 
   private Requisition makeRequisition(int requisitionNumber) {
