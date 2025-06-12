@@ -29,13 +29,16 @@ import {
   makeNotFoundIcon,
   makeStatusIcon,
 } from "../util/metrics";
-import { showErrorDialog } from "../component/dialog";
+import {
+  showDownloadOptionsDialog,
+  showErrorDialog,
+} from "../component/dialog";
 import {
   caseFilters,
   latestActivitySort,
   runLibraryFilters,
 } from "../component/table-components";
-import { postNavigate } from "../util/requests";
+import { postDownload, postNavigate } from "../util/requests";
 import {
   assertDefined,
   assertRequired,
@@ -326,13 +329,27 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
 
 export function getLibraryQualificationsDefinition(
   queryUrl: string,
-  includeSequencingAttributes: boolean
+  includeSequencingAttributes: boolean,
+  runName?: string
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
     filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
-    staticActions: [legendAction],
+    staticActions: [
+      legendAction,
+      {
+        title: "Download",
+        handler(filters, baseFilter) {
+          downloadSampleMetrics(
+            filters,
+            baseFilter,
+            "LIBRARY_QUALIFICATION",
+            runName
+          );
+        },
+      },
+    ],
     bulkActions: [
       {
         title: "QC in MISO",
@@ -360,13 +377,27 @@ export function getLibraryQualificationsDefinition(
 
 export function getFullDepthSequencingsDefinition(
   queryUrl: string,
-  includeSequencingAttributes: boolean
+  includeSequencingAttributes: boolean,
+  runName?: string
 ): TableDefinition<Sample, void> {
   return {
     queryUrl: queryUrl,
     defaultSort: latestActivitySort,
     filters: includeSequencingAttributes ? caseFilters : runLibraryFilters,
-    staticActions: [legendAction],
+    staticActions: [
+      legendAction,
+      {
+        title: "Download",
+        handler(filters, baseFilter) {
+          downloadSampleMetrics(
+            filters,
+            baseFilter,
+            "FULL_DEPTH_SEQUENCING",
+            runName
+          );
+        },
+      },
+    ],
     bulkActions: [
       {
         title: "QC in MISO",
@@ -390,6 +421,25 @@ export function getFullDepthSequencingsDefinition(
       return columns;
     },
   };
+}
+
+function downloadSampleMetrics(
+  filters: { key: string; value: string }[],
+  baseFilter: { key: string; value: string } | undefined,
+  category: MetricCategory,
+  runName?: string
+) {
+  const callback = (result: any) => {
+    const options = result.formatOptions;
+    options.category = category;
+    options.baseFilter = baseFilter;
+    options.filters = filters;
+    if (runName) {
+      options.runName = runName;
+    }
+    postDownload(urls.rest.downloads.reports("sample-metrics"), options);
+  };
+  showDownloadOptionsDialog("sample-metrics", [], callback);
 }
 
 function qcInMiso(items: Sample[], category: MetricCategory) {

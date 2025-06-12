@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum.util.reporting;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -14,21 +15,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
+import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 
 public abstract class ReportSection<T> {
 
-  public static abstract class TableReportSection<T> extends ReportSection<T> {
+  public static abstract class DynamicTableReportSection<T> extends ReportSection<T> {
 
-    public TableReportSection(String title, List<Column<T>> columns) {
-      super(title, columns);
+    public DynamicTableReportSection(String title) {
+      super(title);
     }
+
+    public abstract List<Column<T>> getColumns(List<T> data);
 
     @Override
     public void writeExcelSheet(XSSFSheet worksheet, List<T> objects) {
       int row = 0;
       Row headRow = worksheet.createRow(row++);
-      List<Column<T>> columns = getColumns();
+      List<Column<T>> columns = getColumns(objects);
       for (int i = 0; i < columns.size(); i++) {
         Column<T> column = columns.get(i);
         Cell cell = headRow.createCell(i);
@@ -48,7 +53,7 @@ public abstract class ReportSection<T> {
     @Override
     public void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
         boolean includeHeaders) {
-      List<Column<T>> columns = getColumns();
+      List<Column<T>> columns = getColumns(objects);
       if (includeHeaders) {
         for (int i = 0; i < columns.size(); i++) {
           if (i > 0) {
@@ -56,6 +61,7 @@ public abstract class ReportSection<T> {
           }
           sb.append(columns.get(i).getTitle());
         }
+        sb.append("\r\n");
       }
       for (T object : objects) {
         for (int i = 0; i < columns.size(); i++) {
@@ -72,7 +78,7 @@ public abstract class ReportSection<T> {
     public void writeJson(ArrayNode arrayNode, List<T> objects, ObjectMapper objectMapper) {
       for (T object : objects) {
         ObjectNode objectNode = objectMapper.createObjectNode();
-        List<Column<T>> columns = getColumns();
+        List<Column<T>> columns = getColumns(objects);
         for (Column<T> column : columns) {
           String value = column.getDelimitedColumnString(",", object).replaceAll("\"", "");
           objectNode.put(column.getTitle(), value);
@@ -82,20 +88,30 @@ public abstract class ReportSection<T> {
     }
   }
 
-  private final String title;
-  private final List<Column<T>> columns;
+  public static abstract class StaticTableReportSection<T> extends DynamicTableReportSection<T> {
 
-  public ReportSection(String title, List<Column<T>> columns) {
+    private final List<Column<T>> columns;
+
+    public StaticTableReportSection(String title, List<Column<T>> columns) {
+      super(title);
+      this.columns = Collections.unmodifiableList(columns);
+    }
+
+    @Override
+    public List<Column<T>> getColumns(List<T> data) {
+      return columns;
+    }
+
+  }
+
+  private final String title;
+
+  public ReportSection(String title) {
     this.title = title;
-    this.columns = Collections.unmodifiableList(columns);
   }
 
   public String getTitle() {
     return title;
-  }
-
-  public List<Column<T>> getColumns() {
-    return columns;
   }
 
   public void createExcelSheet(XSSFWorkbook workbook, CaseService caseService,
@@ -135,12 +151,48 @@ public abstract class ReportSection<T> {
    */
   public abstract List<T> getData(CaseService caseService, JsonNode parameters);
 
-  protected static Set<String> getParameterStringSet(JsonNode parameters, String name) {
-    JsonNode valueNode = parameters.get(name);
+  protected static Set<String> getParameterStringSet(JsonNode parameters, String key) {
+    JsonNode valueNode = parameters.get(key);
     String value = (valueNode != null) ? valueNode.asText() : null;
     if (value == null || value.isEmpty()) {
       return null;
     }
     return Stream.of(value.split("\\s*,\\s*")).collect(Collectors.toSet());
+  }
+
+  protected static String getParameterString(JsonNode parameters, String key, boolean required) {
+    JsonNode node = parameters.get(key);
+    if (node == null || node.isNull()) {
+      if (required) {
+        throw new BadRequestException(key + " parameter missing");
+      }
+      return null;
+    }
+    return node.asText();
+  }
+
+  protected static CaseFilter getParameterFilter(JsonNode parameters, String key) {
+    JsonNode node = parameters.get(key);
+    if (node == null || node.isNull()) {
+      return null;
+    }
+    return parseCaseFilter(node);
+  }
+
+  protected static List<CaseFilter> getParameterFilters(JsonNode parameters) {
+    List<CaseFilter> filters = new ArrayList<>();
+    JsonNode filtersParam = parameters.get("filters");
+    if (filtersParam.isArray()) {
+      for (JsonNode filterParam : filtersParam) {
+        filters.add(parseCaseFilter(filterParam));
+      }
+    }
+    return filters;
+  }
+
+  private static CaseFilter parseCaseFilter(JsonNode node) {
+    String key = node.get("key").asText();
+    String value = node.get("value").asText();
+    return MvcUtils.parseCaseFilter(key, value);
   }
 }

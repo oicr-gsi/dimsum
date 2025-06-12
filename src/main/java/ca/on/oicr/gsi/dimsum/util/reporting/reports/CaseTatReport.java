@@ -2,7 +2,6 @@ package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,14 +17,13 @@ import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
-import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
-import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.TableReportSection;
+import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
 
 public class CaseTatReport extends Report {
 
@@ -35,7 +33,7 @@ public class CaseTatReport extends Report {
 
   // the TAT Trend Report depends on the column names defined here
   private static final ReportSection<RowData> caseSection =
-      new TableReportSection<>("Case TAT",
+      new StaticTableReportSection<>("Case TAT",
           Arrays.asList(
               Column.forString("Case ID", x -> x.kase().getId()),
               Column.forString("Projects",
@@ -138,7 +136,8 @@ public class CaseTatReport extends Report {
 
         @Override
         public List<RowData> getData(CaseService caseService, JsonNode parameters) {
-          List<CaseFilter> filters = convertParametersToFilters(parameters);
+          List<CaseFilter> filters =
+              getParameterFilters(parameters);
           return caseService.getCaseStream(filters)
               .flatMap(kase -> kase.getTests().stream().map(test -> {
                 CaseDeliverable clinical =
@@ -171,19 +170,6 @@ public class CaseTatReport extends Report {
         .map(function)
         .sorted()
         .collect(Collectors.joining(", "));
-  }
-
-  private static List<CaseFilter> convertParametersToFilters(JsonNode parameters) {
-    List<CaseFilter> caseFilters = new ArrayList<>();
-    JsonNode filtersParam = parameters.get("filters");
-    if (filtersParam.isArray()) {
-      for (JsonNode filterParam : filtersParam) {
-        String key = filterParam.get("key").asText();
-        String value = filterParam.get("value").asText();
-        caseFilters.add(MvcUtils.parseCaseFilter(key, value));
-      }
-    }
-    return caseFilters;
   }
 
   private static boolean isSupplementalOnly(Test test, Requisition requisition) {

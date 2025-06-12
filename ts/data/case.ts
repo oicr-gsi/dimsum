@@ -49,6 +49,7 @@ import {
   DropdownField,
   FormField,
   showAlertDialog,
+  showDownloadOptionsDialog,
   showErrorDialog,
   showFormDialog,
   TextField,
@@ -2112,7 +2113,7 @@ function showDownloadDialog(items: Case[]) {
       case REPORT_FULL_DEPTH_SUMMARY:
       case REPORT_DARE_INPUT_SHEET:
       case DONOR_ASSAY_REPORT:
-        showDownloadOptionsDialog(result.report, items);
+        showDownloadOptionsDialogX(result.report, items);
         break;
       default:
         throw new Error(`Invalid report: ${result.report}`);
@@ -2120,76 +2121,31 @@ function showDownloadDialog(items: Case[]) {
   });
 }
 
-function showDownloadOptionsDialog(report: string, items: Case[]) {
-  const formatOptions = new Map<string, any>([
-    [
-      "Excel",
-      {
-        format: "excel",
-      },
-    ],
-    [
-      "CSV with headings",
-      {
-        format: "csv",
-        includeHeadings: false,
-      },
-    ],
-    [
-      "CSV, no headings",
-      {
-        format: "csv",
-        includeHeadings: false,
-      },
-    ],
-    [
-      "TSV with headings",
-      {
-        format: "tsv",
-        includeHeadings: false,
-      },
-    ],
-    [
-      "TSV, no headings",
-      {
-        format: "tsv",
-        includeHeadings: false,
-      },
-    ],
-  ]);
-  const fields: FormField<any>[] = [];
-  fields.push(
-    new DropdownField(
-      "Format",
-      formatOptions,
-      "formatOptions",
-      true,
-      undefined,
-      "Excel"
-    )
-  );
-  if (report === REPORT_DARE_INPUT_SHEET) {
-    fields.push(
-      new DropdownField(
-        "Include Supplemental",
-        new Map<string, boolean>([
-          ["Yes", true],
-          ["No", false],
-        ]),
-        "includeSupplemental",
-        true,
-        undefined,
-        "Yes"
-      )
-    );
-  }
-  showFormDialog("Download Options", fields, "Download", (result) => {
+function showDownloadOptionsDialogX(report: string, items: Case[]) {
+  const additionalOptions: FormField<any>[] | undefined =
+    report === REPORT_DARE_INPUT_SHEET
+      ? [
+          new DropdownField(
+            "Include Supplemental",
+            new Map<string, boolean>([
+              ["Yes", true],
+              ["No", false],
+            ]),
+            "includeSupplemental",
+            true,
+            undefined,
+            "Yes"
+          ),
+        ]
+      : undefined;
+  const callback = (result: any) => {
     const options = result.formatOptions;
     if (report === REPORT_DARE_INPUT_SHEET) {
       options.includeSupplemental = result.includeSupplemental;
     }
     downloadCaseReport(report, options, items);
-  });
+  };
+  showDownloadOptionsDialog(report, items, callback, additionalOptions);
 }
 
 function downloadCaseReport(report: string, params: any, items: Case[]) {
