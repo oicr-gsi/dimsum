@@ -7,6 +7,22 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.53.0] - 2025-06-12
+
+### Added
+
+* Sample Metrics Report, downloadable from Library Qualification and Full-Depth Sequencing tables
+
+### Changed
+
+* The Donor Assay Report is now sorted by projects, and each case's projects and pipelines are also sorted
+
+### Fixed
+
+* Some filters were remaining in the URL after removed from a table
+* When choosing to download csv/tsv with headings, the headings were not actually included
+
+
 ## [1.52.3] - 2025-05-29
 
 ### Fixed
