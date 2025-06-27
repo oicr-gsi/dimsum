@@ -13,7 +13,6 @@ import {
   makeAnalysisMetricDisplay,
   subcategoryApplies as analysisSubcategoryApplies,
   Donor,
-  deliverableTypeLabels,
   caseQcNa,
 } from "./data/case";
 import { qcStatuses } from "./data/qc-status";
@@ -362,8 +361,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
       analysisMetricApplies(metric, parent.qcGroup)
     );
   },
-  getSubheading: (object) =>
-    deliverableTypeLabels[object.deliverable.deliverableType],
+  getSubheading: (object) => object.deliverable.deliverableCategory,
   generateColumns: () => [
     {
       title: "Item",
@@ -622,13 +620,13 @@ function addDeliverablesMenu(
   analysisReviewTable: TableBuilder<ReportAnalysisReview, Metric>,
   analysisReviews: ReportAnalysisReview[]
 ) {
-  const deliverableTypes = analysisReviews
-    .map((review) => review.deliverable.deliverableType)
+  const deliverableCategories = analysisReviews
+    .map((review) => review.deliverable.deliverableCategory)
     .filter(
       (deliverable, index, array) => array.indexOf(deliverable) === index
     );
 
-  if (deliverableTypes.length <= 1) {
+  if (deliverableCategories.length <= 1) {
     // Only one option - don't show menu
     return;
   }
@@ -638,13 +636,13 @@ function addDeliverablesMenu(
   if (!deliverableMenuContainerDiv) {
     throw new Error("Deliverable menu container missing");
   }
-  const deliverableOptions = deliverableTypes.map(
+  const deliverableOptions = deliverableCategories.map(
     (deliverable) =>
-      new BasicDropdownOption(deliverableTypeLabels[deliverable], () => {
+      new BasicDropdownOption(deliverable, () => {
         analysisReviewTable.clear();
         analysisReviewTable.build(
           analysisReviews.filter(
-            (review) => review.deliverable.deliverableType === deliverable
+            (review) => review.deliverable.deliverableCategory === deliverable
           )
         );
       })
@@ -810,10 +808,12 @@ function getReportAnalysisReviews(kase: Case) {
     })
     .sort((a, b) => {
       // sort by deliverable type > subcategory > item name
-      if (a.deliverable.deliverableType < b.deliverable.deliverableType) {
+      if (
+        a.deliverable.deliverableCategory < b.deliverable.deliverableCategory
+      ) {
         return -1;
       } else if (
-        a.deliverable.deliverableType > b.deliverable.deliverableType
+        a.deliverable.deliverableCategory > b.deliverable.deliverableCategory
       ) {
         return 1;
       }

@@ -29,7 +29,7 @@ public class DonorAssayReport extends Report {
           Column.forString("Start Date", kase -> kase.getStartDate().toString()),
           Column.forString("Latest Activity", kase -> kase.getLatestActivityDate().toString()),
           Column.forString("Completed",
-              kase -> CompletedGate.RELEASE.qualifyCase(kase) ? "Yes" : "No"),
+              kase -> CompletedGate.RELEASE.qualifyCase(kase, null) ? "Yes" : "No"),
           Column.forString("Stopped/Paused", DonorAssayReport::getStoppedPausedStatus),
           Column.forString("Stop/Pause Reason", DonorAssayReport::getStopPauseReason))) {
 

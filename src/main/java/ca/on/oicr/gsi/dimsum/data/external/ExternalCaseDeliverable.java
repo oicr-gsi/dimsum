@@ -6,15 +6,14 @@ import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
-import ca.on.oicr.gsi.cardea.data.DeliverableType;
 
-public record ExternalCaseDeliverable(DeliverableType deliverableType,
+public record ExternalCaseDeliverable(String deliverableCategory,
     AnalysisReviewQcStatus analysisReviewQcStatus, LocalDate analysisReviewQcDate,
     ReleaseApprovalQcStatus releaseApprovalQcStatus, LocalDate releaseApprovalQcDate,
     List<ExternalCaseRelease> releases) {
 
   public ExternalCaseDeliverable(CaseDeliverable from) {
-    this(from.getDeliverableType(),
+    this(from.getDeliverableCategory(),
         from.getAnalysisReviewQcStatus(),
         from.getAnalysisReviewQcDate(),
         from.getReleaseApprovalQcStatus(),

@@ -10,7 +10,6 @@ import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
-import ca.on.oicr.gsi.cardea.data.DeliverableType;
 
 public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
 
@@ -52,6 +51,11 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   }
 
   @Override
+  public boolean isAnalysisReviewSkipped() {
+    return baseDeliverable.isAnalysisReviewSkipped();
+  }
+
+  @Override
   public LocalDate getAnalysisReviewQcDate() {
     if (cachedAnalysisReviewSignoff != null) {
       return cachedAnalysisReviewSignoff.getQcDate();
@@ -88,8 +92,8 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   }
 
   @Override
-  public DeliverableType getDeliverableType() {
-    return baseDeliverable.getDeliverableType();
+  public String getDeliverableCategory() {
+    return baseDeliverable.getDeliverableCategory();
   }
 
   @Override

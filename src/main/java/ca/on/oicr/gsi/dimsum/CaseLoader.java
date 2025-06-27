@@ -221,10 +221,10 @@ public class CaseLoader {
         new ProjectSummary.Builder();
     int testSize = tests != null ? tests.size() : 0;
     caseSummary.totalTestCount(testSize);
-    if (PendingState.RECEIPT_QC.qualifyCase(kase) && !kase.isStopped()) {
+    if (PendingState.RECEIPT_QC.qualifyCase(kase, null) && !kase.isStopped()) {
       caseSummary.receiptPendingQcCount(testSize);
     }
-    if (CompletedGate.RECEIPT.qualifyCase(kase)
+    if (CompletedGate.RECEIPT.qualifyCase(kase, null)
         && anySamplesMatch(kase.getReceipts(), afterDate, beforeDate)) {
       caseSummary.receiptCompletedCount(testSize);
     }
@@ -277,33 +277,33 @@ public class CaseLoader {
     }
 
     // analysis review
-    if (CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase)
+    if (CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, null)
         && kase.getDeliverables().stream()
             .anyMatch(x -> dateBetween(x.getAnalysisReviewQcDate(), afterDate, beforeDate))) {
       caseSummary.analysisReviewCompletedCount(testSize);
     }
-    if (PendingState.ANALYSIS_REVIEW.qualifyCase(kase) && !kase.isStopped()) {
+    if (PendingState.ANALYSIS_REVIEW.qualifyCase(kase, null) && !kase.isStopped()) {
       caseSummary.analysisReviewPendingCount(testSize);
     }
 
     // release approval
-    if (CompletedGate.RELEASE_APPROVAL.qualifyCase(kase)
+    if (CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, null)
         && kase.getDeliverables().stream()
             .anyMatch(x -> DataUtils.isComplete(x.getReleaseApprovalQcStatus()))) {
       caseSummary.releaseApprovalCompletedCount(testSize);
     }
-    if (PendingState.RELEASE_APPROVAL.qualifyCase(kase)) {
+    if (PendingState.RELEASE_APPROVAL.qualifyCase(kase, null)) {
       caseSummary.releaseApprovalPendingCount(testSize);
     }
 
     // release
-    if (CompletedGate.RELEASE.qualifyCase(kase)
+    if (CompletedGate.RELEASE.qualifyCase(kase, null)
         && kase.getDeliverables().stream()
             .anyMatch(d -> d.getReleases() != null && d.getReleases().stream()
                 .anyMatch(r -> dateBetween(r.getQcDate(), afterDate, beforeDate)))) {
       caseSummary.releaseCompletedCount(testSize);
     }
-    if (PendingState.RELEASE.qualifyCase(kase)) {
+    if (PendingState.RELEASE.qualifyCase(kase, null)) {
       caseSummary.releasePendingCount(testSize);
     }
 

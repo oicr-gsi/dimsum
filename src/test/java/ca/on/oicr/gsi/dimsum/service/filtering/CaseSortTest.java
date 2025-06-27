@@ -17,7 +17,6 @@ import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
-import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -293,7 +292,7 @@ public class CaseSortTest {
 
     when(kase.getDeliverables()).thenReturn(new ArrayList<>());
     CaseDeliverable deliverable = mock(CaseDeliverable.class);
-    when(deliverable.getDeliverableType()).thenReturn(DeliverableType.DATA_RELEASE);
+    when(deliverable.getDeliverableCategory()).thenReturn("Data Release");
     when(deliverable.getReleases()).thenReturn(new ArrayList<>());
     CaseRelease release = mock(CaseRelease.class);
     when(release.getDeliverable()).thenReturn("Full Pipeline");

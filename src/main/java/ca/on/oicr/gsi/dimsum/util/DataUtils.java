@@ -90,7 +90,8 @@ public class DataUtils {
   }
 
   public static boolean isAnalysisReviewSkipped(Case kase) {
-    return kase.getProjects().stream().allMatch(project -> project.isAnalysisReviewSkipped());
+    return kase.getDeliverables().stream()
+        .allMatch(deliverable -> deliverable.isAnalysisReviewSkipped());
   }
 
   public static LocalDate getCompletionDate(Case kase) {

@@ -16,6 +16,9 @@ import ca.on.oicr.gsi.dimsum.MockCase;
 
 public class CaseFilterTest {
 
+  private static final String DELIVERABLE_CLINICAL = "Clinical Report";
+  private static final String DELIVERABLE_DATA = "Data Release";
+
   private static List<Case> cases = MockCase.getCases();
 
   @org.junit.jupiter.api.Test
@@ -515,16 +518,15 @@ public class CaseFilterTest {
 
   @org.junit.jupiter.api.Test
   public void testPendingAnalysisReviewDataReleaseFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.ANALYSIS_REVIEW_DATA_RELEASE.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING,
+        concatStateAndDeliverable(PendingState.ANALYSIS_REVIEW, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(4, 31));
   }
 
   @org.junit.jupiter.api.Test
   public void testPendingAnalysisReviewClinicalReportFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING,
-            PendingState.ANALYSIS_REVIEW_CLINICAL_REPORT.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING,
+        concatStateAndDeliverable(PendingState.ANALYSIS_REVIEW, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(25, 30));
   }
 
@@ -537,17 +539,15 @@ public class CaseFilterTest {
 
   @org.junit.jupiter.api.Test
   public void testPendingReleaseApprovalDataReleaseFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING,
-            PendingState.RELEASE_APPROVAL_DATA_RELEASE.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING,
+        concatStateAndDeliverable(PendingState.RELEASE_APPROVAL, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(5, 23, 29, 30, 33));
   }
 
   @org.junit.jupiter.api.Test
   public void testPendingReleaseApprovalClinicalReportFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING,
-            PendingState.RELEASE_APPROVAL_CLINICAL_REPORT.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING,
+        concatStateAndDeliverable(PendingState.RELEASE_APPROVAL, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(26));
   }
 
@@ -559,15 +559,15 @@ public class CaseFilterTest {
 
   @org.junit.jupiter.api.Test
   public void testPendingReleaseDataReleaseFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_DATA_RELEASE.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING,
+        concatStateAndDeliverable(PendingState.RELEASE, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(6));
   }
 
   @org.junit.jupiter.api.Test
   public void testPendingReleaseClinicalReportFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.PENDING, PendingState.RELEASE_CLINICAL_REPORT.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.PENDING,
+        concatStateAndDeliverable(PendingState.RELEASE, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(27, 29));
   }
 
@@ -1002,16 +1002,15 @@ public class CaseFilterTest {
 
   @org.junit.jupiter.api.Test
   public void testCompletedAnalysisReviewDataReleaseFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED,
-            CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.COMPLETED,
+        concatGateAndDeliverable(CompletedGate.ANALYSIS_REVIEW, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(5, 6, 25, 26, 27, 28, 29, 30, 33));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteAnalysisReviewDataReleaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.INCOMPLETE,
-        CompletedGate.ANALYSIS_REVIEW_DATA_RELEASE.getLabel());
+        concatGateAndDeliverable(CompletedGate.ANALYSIS_REVIEW, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
         18, 19, 20, 21, 22, 23, 24, 31, 32, 35));
   }
@@ -1019,14 +1018,14 @@ public class CaseFilterTest {
   @org.junit.jupiter.api.Test
   public void testCompletedAnalysisReviewClinicalReportFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.COMPLETED,
-        CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.getLabel());
+        concatGateAndDeliverable(CompletedGate.ANALYSIS_REVIEW, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(26, 27, 29, 31));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteAnalysisReviewClinicalReportFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.INCOMPLETE,
-        CompletedGate.ANALYSIS_REVIEW_CLINICAL_REPORT.getLabel());
+        concatGateAndDeliverable(CompletedGate.ANALYSIS_REVIEW, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(25, 30));
   }
 
@@ -1048,14 +1047,14 @@ public class CaseFilterTest {
   @org.junit.jupiter.api.Test
   public void testCompletedReleaseApprovalDataReleaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.COMPLETED,
-        CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.getLabel());
+        concatGateAndDeliverable(CompletedGate.RELEASE_APPROVAL, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(6, 25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteReleaseApprovalDataReleaseFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.INCOMPLETE,
-        CompletedGate.RELEASE_APPROVAL_DATA_RELEASE.getLabel());
+        concatGateAndDeliverable(CompletedGate.RELEASE_APPROVAL, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
         18, 19, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 35));
   }
@@ -1063,14 +1062,14 @@ public class CaseFilterTest {
   @org.junit.jupiter.api.Test
   public void testCompletedReleaseApprovalClinicalReportFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.COMPLETED,
-        CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.getLabel());
+        concatGateAndDeliverable(CompletedGate.RELEASE_APPROVAL, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(27, 29, 31));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteReleaseApprovalClinicalReportFilter() {
     CaseFilter filter = new CaseFilter(CaseFilterKey.INCOMPLETE,
-        CompletedGate.RELEASE_APPROVAL_CLINICAL_REPORT.getLabel());
+        concatGateAndDeliverable(CompletedGate.RELEASE_APPROVAL, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(25, 26, 30));
   }
 
@@ -1089,30 +1088,30 @@ public class CaseFilterTest {
 
   @org.junit.jupiter.api.Test
   public void testCompletedReleaseDataReleaseFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE_DATA_RELEASE.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.COMPLETED,
+        concatGateAndDeliverable(CompletedGate.RELEASE, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(25, 26, 27, 28));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteReleaseDataReleaseFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.RELEASE_DATA_RELEASE.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.INCOMPLETE,
+        concatGateAndDeliverable(CompletedGate.RELEASE, DELIVERABLE_DATA));
     testFilterCases(filter, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         17, 18, 19, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 35));
   }
 
   @org.junit.jupiter.api.Test
   public void testCompletedReleaseClinicalReportFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.COMPLETED, CompletedGate.RELEASE_CLINICAL_REPORT.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.COMPLETED,
+        concatGateAndDeliverable(CompletedGate.RELEASE, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Collections.singletonList(31));
   }
 
   @org.junit.jupiter.api.Test
   public void testIncompleteReleaseClinicalReportFilter() {
-    CaseFilter filter =
-        new CaseFilter(CaseFilterKey.INCOMPLETE, CompletedGate.RELEASE_CLINICAL_REPORT.getLabel());
+    CaseFilter filter = new CaseFilter(CaseFilterKey.INCOMPLETE,
+        concatGateAndDeliverable(CompletedGate.RELEASE, DELIVERABLE_CLINICAL));
     testFilterCases(filter, Arrays.asList(25, 26, 27, 29, 30));
   }
 
@@ -1246,5 +1245,15 @@ public class CaseFilterTest {
   private static String makeSampleId(int caseNumber, int testNumber, MetricCategory gate,
       int sampleNumber) {
     return "C%dT%dG%dS%d".formatted(caseNumber, testNumber, gate.ordinal(), sampleNumber);
+  }
+
+  private static final String concatGateAndDeliverable(CompletedGate gate,
+      String deliverableCategory) {
+    return gate.getLabel() + " - " + deliverableCategory;
+  }
+
+  private static final String concatStateAndDeliverable(PendingState state,
+      String deliverableCategory) {
+    return state.getLabel() + " - " + deliverableCategory;
   }
 }

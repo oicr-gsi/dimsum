@@ -31,12 +31,7 @@ import { QcStatus, qcStatuses } from "./qc-status";
 import { Requisition } from "./requisition";
 import { Tooltip } from "../component/tooltip";
 import { caseFilters, latestActivitySort } from "../component/table-components";
-import {
-  AssayTargets,
-  Metric,
-  MetricCategory,
-  MetricSubcategory,
-} from "./assay";
+import { AssayTargets, Metric, MetricSubcategory } from "./assay";
 import {
   anyFail,
   getBooleanMetricHighlight,
@@ -60,7 +55,6 @@ import { assertDefined, assertNotNull, nullIfUndefined } from "./data-utils";
 export interface Project {
   name: string;
   pipeline: string;
-  analysisReviewSkipped: boolean;
 }
 
 export interface Donor {
@@ -132,14 +126,6 @@ export interface CaseRelease {
   qcNote?: string | null;
 }
 
-export const deliverableTypes = ["DATA_RELEASE", "CLINICAL_REPORT"] as const;
-export type DeliverableType = (typeof deliverableTypes)[number];
-
-export const deliverableTypeLabels: Record<DeliverableType, string> = {
-  DATA_RELEASE: "Data Release",
-  CLINICAL_REPORT: "Clinical Report",
-};
-
 export interface CaseQc {
   name: string;
   label: string;
@@ -148,7 +134,8 @@ export interface CaseQc {
 }
 
 export interface CaseDeliverable {
-  deliverableType: DeliverableType;
+  deliverableCategory: string;
+  analysisReviewSkipped: boolean;
   analysisReviewQcStatus: string | null;
   analysisReviewQcUser?: string | null;
   analysisReviewQcDate: string | null;
@@ -594,13 +581,17 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       "Release Approval",
       false,
       (kase, deliverableType) => {
-        if (kase.projects.every((project) => project.analysisReviewSkipped)) {
+        if (
+          kase.deliverables.every(
+            (deliverable) => deliverable.analysisReviewSkipped
+          )
+        ) {
           return kase.tests.every((test) =>
             samplePhaseComplete(test.fullDepthSequencings)
           );
         }
         return kase.deliverables
-          .filter((x) => x.deliverableType == deliverableType)
+          .filter((x) => x.deliverableCategory == deliverableType)
           .some((x) =>
             caseQcComplete(getAnalysisReviewQcStatus(x.analysisReviewQcStatus))
           );
@@ -835,7 +826,7 @@ function makeLatestActivityColumn<ChildType>(): ColumnDefinition<
 function makeDeliverableTypePhaseColumn(
   title: string,
   analysisReview: boolean,
-  isPreviousComplete: (kase: Case, deliverableType: DeliverableType) => boolean,
+  isPreviousComplete: (kase: Case, deliverableType: string) => boolean,
   getTarget: (targets: AssayTargets) => number | null,
   getQcStatus: (deliverable: CaseDeliverable) => CaseQc | null,
   getQcUser: (deliverable: CaseDeliverable) => string | null | undefined,
@@ -855,14 +846,16 @@ function makeDeliverableTypePhaseColumn(
       if (analysisReview && !anyQcSet) {
         if (
           kase.requisition.stopped ||
-          kase.projects.every((project) => project.analysisReviewSkipped)
+          kase.deliverables.every(
+            (deliverable) => deliverable.analysisReviewSkipped
+          )
         ) {
           addNaText(fragment);
           return;
         }
       }
       const anyPreviousComplete = kase.deliverables.some((x) =>
-        isPreviousComplete(kase, x.deliverableType)
+        isPreviousComplete(kase, x.deliverableCategory)
       );
       if (
         (!analysisReview && kase.requisition.stopped) ||
@@ -1422,7 +1415,9 @@ function getDeliverableTypePhaseHighlight(
   } else if (
     analysisReview &&
     (kase.requisition.stopped ||
-      kase.projects.every((project) => project.analysisReviewSkipped))
+      kase.deliverables.every(
+        (deliverable) => deliverable.analysisReviewSkipped
+      ))
   ) {
     if (
       kase.deliverables.some((deliverable) => {
@@ -1639,9 +1634,7 @@ function addDeliverableTypeIcons(
     const note = getQcNote(deliverable);
     const qcReason = qcStatus?.label || null;
     tooltipInstance.addTarget(icon, (tooltip) => {
-      const deliverableTypeLabel = makeTextDiv(
-        deliverableTypeLabels[deliverable.deliverableType]
-      );
+      const deliverableTypeLabel = makeTextDiv(deliverable.deliverableCategory);
       deliverableTypeLabel.classList.add("font-bold");
       tooltip.appendChild(deliverableTypeLabel);
       addStatusTooltipText(tooltip, status, qcReason, user, note);
@@ -1664,8 +1657,7 @@ function addReleaseIcons(
       const status = getDeliverableQcStatus(caseQcStatus);
       const icon = makeIcon(status.icon);
       tooltipInstance.addTarget(icon, (tooltip) => {
-        let deliverableLabel =
-          deliverableTypeLabels[deliverable.deliverableType];
+        let deliverableLabel = deliverable.deliverableCategory;
         if (release.deliverable !== deliverableLabel) {
           deliverableLabel += " - " + release.deliverable;
         }
@@ -1894,21 +1886,19 @@ export function getAnalysisMetricCellHighlight(
 }
 
 function showSignoffDialog(items: Case[]) {
-  const commonDeliverableTypes = new Map<string, DeliverableType>();
-  for (let deliverableType of deliverableTypes) {
-    if (
+  const commonDeliverableTypes = new Map<string, string>();
+  items[0].deliverables
+    .map((deliverable) => deliverable.deliverableCategory)
+    .filter((deliverableType) =>
       items.every((item) =>
         item.deliverables.some(
-          (deliverable) => deliverable.deliverableType === deliverableType
+          (deliverable) => deliverable.deliverableCategory === deliverableType
         )
       )
-    ) {
-      commonDeliverableTypes.set(
-        deliverableTypeLabels[deliverableType],
-        deliverableType
-      );
-    }
-  }
+    )
+    .forEach((deliverableType) =>
+      commonDeliverableTypes.set(deliverableType, deliverableType)
+    );
   if (!commonDeliverableTypes.size) {
     showErrorDialog("The selected cases have no deliverable type in common");
     return;
@@ -1967,7 +1957,7 @@ function showSignoffDialog(items: Case[]) {
         items[0].deliverables
           .filter(
             (deliverable) =>
-              deliverable.deliverableType === result1.deliverableType
+              deliverable.deliverableCategory === result1.deliverableType
           )
           .flatMap((deliverableType) => deliverableType.releases)
           .map((release) => release.deliverable)
@@ -1978,10 +1968,8 @@ function showSignoffDialog(items: Case[]) {
             commonDeliverables.set(deliverable, deliverable)
           );
         if (!commonDeliverables.size) {
-          const deliverableTypeLabel =
-            deliverableTypeLabels[result1.deliverableType as DeliverableType];
           showErrorDialog(
-            `The selected cases have no ${deliverableTypeLabel} deliverable in common`
+            `The selected cases have no ${result1.deliverableType} deliverable in common`
           );
           return;
         }
@@ -2001,10 +1989,8 @@ function showSignoffDialog(items: Case[]) {
 
       const qcStepLabel =
         nabuQcStepLabels[result1.signoffStepName as NabuQcStep];
-      const deliverableTypeLabel =
-        deliverableTypeLabels[result1.deliverableType as DeliverableType];
       showFormDialog(
-        `${qcStepLabel} QC - ${deliverableTypeLabel}`,
+        `${qcStepLabel} QC - ${result1.deliverableType}`,
         formFields,
         "Submit",
         (result2) => {

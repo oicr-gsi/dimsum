@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import ca.on.oicr.gsi.cardea.data.AnalysisQcGroup;
 import ca.on.oicr.gsi.cardea.data.Case;
@@ -25,7 +26,7 @@ public class CacheUpdatedCase implements Case {
     requireNonNull(signoff);
     List<CaseDeliverable> deliverables = new ArrayList<>();
     for (CaseDeliverable original : baseCase.getDeliverables()) {
-      if (original.getDeliverableType() == signoff.getDeliverableType()) {
+      if (Objects.equals(original.getDeliverableCategory(), signoff.getDeliverableType())) {
         deliverables.add(new CacheUpdatedCaseDeliverable(original, signoff));
       } else {
         deliverables.add(original);
