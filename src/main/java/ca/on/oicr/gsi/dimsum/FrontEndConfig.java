@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.on.oicr.gsi.cardea.data.Assay;
@@ -34,12 +35,6 @@ public class FrontEndConfig {
   @Value("${jira.baseurl:#{null}}")
   private String jiraUrl;
 
-  private final List<String> pendingStates =
-      Stream.of(PendingState.values()).map(PendingState::getLabel).toList();
-
-  private final List<String> completedGates =
-      Stream.of(CompletedGate.values()).map(CompletedGate::getLabel).toList();
-
   private final Map<String, ObjectNode> analysisReviewQcStatuses;
   private final Map<String, ObjectNode> releaseApprovalQcStatuses;
   private final Map<String, ObjectNode> releaseQcStatuses;
@@ -47,7 +42,14 @@ public class FrontEndConfig {
   private Set<String> pipelines;
   private Map<Long, Assay> assaysById;
   private Set<String> libraryDesigns;
+  private Set<String> deliverableCategories;
   private Set<String> deliverables;
+
+  private List<String> pendingStates =
+      Stream.of(PendingState.values()).map(PendingState::getLabel).toList();
+
+  private List<String> completedGates =
+      Stream.of(CompletedGate.values()).map(CompletedGate::getLabel).toList();
 
   public FrontEndConfig(ObjectMapper objectMapper) {
     this.analysisReviewQcStatuses =
@@ -114,6 +116,35 @@ public class FrontEndConfig {
     return libraryDesigns;
   }
 
+  @JsonIgnore
+  public Set<String> getDeliverableCategories() {
+    return deliverableCategories;
+  }
+
+  public void setDeliverableCategories(Set<String> deliverableCategories) {
+    this.deliverableCategories = deliverableCategories;
+    completedGates = Stream.of(CompletedGate.values())
+        .flatMap(gate -> {
+          Stream<String> stream = Stream.of(gate.getLabel());
+          if (gate.considerDeliverableCategory()) {
+            stream = Stream.concat(stream, deliverableCategories.stream()
+                .map(category -> gate.getLabel() + " - " + category));
+          }
+          return stream;
+        })
+        .toList();
+    pendingStates = Stream.of(PendingState.values())
+        .flatMap(state -> {
+          Stream<String> stream = Stream.of(state.getLabel());
+          if (state.considerDeliverableCategory()) {
+            stream = Stream.concat(stream, deliverableCategories.stream()
+                .map(category -> state.getLabel() + " - " + category));
+          }
+          return stream;
+        })
+        .toList();
+  }
+
   public Set<String> getDeliverables() {
     return deliverables;
   }
@@ -122,7 +153,7 @@ public class FrontEndConfig {
     this.deliverables = deliverables;
   }
 
-  private ObjectNode toDto(ObjectMapper objectMapper, String name, CaseQc qc) {
+  private static ObjectNode toDto(ObjectMapper objectMapper, String name, CaseQc qc) {
     ObjectNode node = objectMapper.createObjectNode();
     node.put("name", name);
     node.put("label", qc.getLabel());
@@ -131,7 +162,7 @@ public class FrontEndConfig {
     return node;
   }
 
-  private <T extends CaseQc> Map<String, ObjectNode> mapCaseQcs(T[] values,
+  private static <T extends CaseQc> Map<String, ObjectNode> mapCaseQcs(T[] values,
       Function<T, String> getName, ObjectMapper mapper) {
     Map<String, ObjectNode> map = new TreeMap<>();
     for (T value : values) {

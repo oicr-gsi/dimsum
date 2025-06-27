@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
@@ -758,6 +759,10 @@ public class CaseService {
         .flatMap(kase -> kase.getTests().stream())
         .flatMap(test -> Stream.concat(Stream.of(test.getLibraryDesignCode()),
             test.getLibraryQualifications().stream().map(Sample::getLibraryDesignCode)))
+        .collect(Collectors.toSet()));
+    frontEndConfig.setDeliverableCategories(caseData.getCases().stream()
+        .flatMap(kase -> kase.getDeliverables().stream())
+        .map(CaseDeliverable::getDeliverableCategory)
         .collect(Collectors.toSet()));
     frontEndConfig.setDeliverables(caseData.getCases().stream()
         .flatMap(kase -> kase.getDeliverables().stream())

@@ -23,10 +23,11 @@ public enum CaseFilterKey {
       || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),
   PENDING(string -> {
     PendingState state = getState(string);
+    String deliverableCategory = getDeliverableCategory(string);
     Predicate<Case> notStoppedOrPaused = kase ->
         (!state.isStoppable() || !kase.getRequisition().isStopped())
         && !kase.getRequisition().isPaused();
-    return notStoppedOrPaused.and(state.predicate());
+    return notStoppedOrPaused.and(kase -> state.qualifyCase(kase, deliverableCategory));
   }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
@@ -75,8 +76,9 @@ public enum CaseFilterKey {
   PAUSED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isPaused() : !kase.getRequisition().isPaused()),
   COMPLETED(string -> {
     CompletedGate gate = getGate(string);
-    Predicate<Case> applicable = x -> gate.isApplicable(x);
-    return applicable.and(gate.predicate());
+    String deliverableCategory = getDeliverableCategory(string);
+    Predicate<Case> applicable = kase -> gate.isApplicable(kase, deliverableCategory);
+    return applicable.and(kase -> gate.qualifyCase(kase, deliverableCategory));
   }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
@@ -90,8 +92,10 @@ public enum CaseFilterKey {
   },
   INCOMPLETE(string -> {
     CompletedGate gate = getGate(string);
-    Predicate<Case> applicable = x -> gate.isApplicable(x);
-    return applicable.and(gate.predicate().negate()); // Negate the completed condition
+    String deliverableCategory = getDeliverableCategory(string);
+    Predicate<Case> applicable = kase -> gate.isApplicable(kase, deliverableCategory);
+    Predicate<Case> gatePredicate = kase -> gate.qualifyCase(kase, deliverableCategory);
+    return applicable.and(gatePredicate.negate()); // Negate the completed condition
 }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
@@ -163,18 +167,34 @@ public enum CaseFilterKey {
   }
 
   private static PendingState getState(String label) {
-    PendingState state = PendingState.getByLabel(label);
+    String stateLabel = label;
+    if (label.contains(" - ")) {
+      stateLabel = label.replaceFirst(" - .*", "");
+    }
+    PendingState state = PendingState.getByLabel(stateLabel);
     if (state == null) {
-      throw new IllegalArgumentException(String.format("Invalid pending state: %s", label));
+      throw new IllegalArgumentException(String.format("Invalid pending state: %s", stateLabel));
     }
     return state;
   }
 
   private static CompletedGate getGate(String label) {
-    CompletedGate gate = CompletedGate.getByLabel(label);
+    String gateLabel = label;
+    if (label.contains(" - ")) {
+      gateLabel = label.replaceFirst(" - .*", "");
+    }
+    CompletedGate gate = CompletedGate.getByLabel(gateLabel);
     if (gate == null) {
-      throw new IllegalArgumentException(String.format("Invalid gate: %s", label));
+      throw new IllegalArgumentException(String.format("Invalid gate: %s", gateLabel));
     }
     return gate;
+  }
+
+  private static String getDeliverableCategory(String label) {
+    if (label.contains(" - ")) {
+      return label.replaceFirst(".* - ", "");
+    } else {
+      return null;
+    }
   }
 }
