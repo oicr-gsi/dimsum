@@ -2,13 +2,13 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
-import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
@@ -17,9 +17,9 @@ import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum CompletedGate {
   // @formatter:off
-  RECEIPT("Receipt", true) {
+  RECEIPT("Receipt", true, false) {
     @Override
-    public boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase, String deliverableCategory) {
       return Helpers.isReceiptCompleted(kase);
     }
 
@@ -37,7 +37,7 @@ public enum CompletedGate {
       }
     }
   },
-  EXTRACTION("Extraction", true) {
+  EXTRACTION("Extraction", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isExtractionSkipped() || test.getExtractions().stream().anyMatch(sample ->
@@ -53,7 +53,7 @@ public enum CompletedGate {
       }
     }
   },
-  LIBRARY_PREPARATION("Library Preparation", true) {
+  LIBRARY_PREPARATION("Library Preparation", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isLibraryPreparationSkipped()
@@ -70,7 +70,7 @@ public enum CompletedGate {
     }
 
   },
-  LIBRARY_QUALIFICATION("Library Qualification", true) {
+  LIBRARY_QUALIFICATION("Library Qualification", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isLibraryQualificationSkipped()
@@ -86,7 +86,7 @@ public enum CompletedGate {
       }
     }
   },
-  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true) {
+  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getFullDepthSequencings());
@@ -101,78 +101,28 @@ public enum CompletedGate {
       }
     }
   },
-  ANALYSIS_REVIEW("Analysis Review", true) {
+  ANALYSIS_REVIEW("Analysis Review", true, true) {
     @Override
-    public boolean qualifyCase(Case kase) {
+    public boolean qualifyCase(Case kase, String deliverableCategory) {
       if (DataUtils.isAnalysisReviewSkipped(kase)) {
-        return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
+        return FULL_DEPTH_SEQUENCING.qualifyCase(kase, deliverableCategory);
       } else {
-        return qualifyCaseForDeliverableType(kase, null,
+        return qualifyCaseForDeliverableType(kase, deliverableCategory,
             CompletedGate::analysisReviewComplete);
       }
     }
   },
-  ANALYSIS_REVIEW_DATA_RELEASE("Analysis Review - Data Release", true, DeliverableType.DATA_RELEASE) {
+  RELEASE_APPROVAL("Release Approval", false, true) {
     @Override
-    public boolean qualifyCase(Case kase) {
-      if (DataUtils.isAnalysisReviewSkipped(kase)) {
-        return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
-      } else {
-        return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
-            CompletedGate::analysisReviewComplete);
-      }
-    }
-  },
-  ANALYSIS_REVIEW_CLINICAL_REPORT("Analysis Review - Clinical Report", true,
-      DeliverableType.CLINICAL_REPORT) {
-
-    @Override
-    public boolean qualifyCase(Case kase) {
-      if (DataUtils.isAnalysisReviewSkipped(kase)) {
-        return FULL_DEPTH_SEQUENCING.qualifyCase(kase);
-      } else {
-        return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
-            CompletedGate::analysisReviewComplete);
-      }
-    }
-  },
-  RELEASE_APPROVAL("Release Approval", false) {
-    @Override
-    public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, null, CompletedGate::releaseApprovalComplete);
-    }
-  },
-  RELEASE_APPROVAL_DATA_RELEASE("Release Approval - Data Release", false, DeliverableType.DATA_RELEASE) {
-    @Override
-    public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
+    public boolean qualifyCase(Case kase, String deliverableCategory) {
+      return qualifyCaseForDeliverableType(kase, deliverableCategory,
           CompletedGate::releaseApprovalComplete);
     }
   },
-  RELEASE_APPROVAL_CLINICAL_REPORT("Release Approval - Clinical Report", false, DeliverableType.CLINICAL_REPORT) {
+  RELEASE("Release", false, true) {
     @Override
-    public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
-          CompletedGate::releaseApprovalComplete);
-    }
-  },
-  RELEASE("Release", false) {
-    @Override
-    public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, null, CompletedGate::allReleasesComplete);
-    }
-  },
-  RELEASE_DATA_RELEASE("Release - Data Release", false, DeliverableType.DATA_RELEASE) {
-    @Override
-    public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, DeliverableType.DATA_RELEASE,
-          CompletedGate::allReleasesComplete);
-    }
-  },
-  RELEASE_CLINICAL_REPORT("Release - Clinical Report", false, DeliverableType.CLINICAL_REPORT) {
-    @Override
-    public boolean qualifyCase(Case kase) {
-      return qualifyCaseForDeliverableType(kase, DeliverableType.CLINICAL_REPORT,
+    public boolean qualifyCase(Case kase, String deliverableCategory) {
+      return qualifyCaseForDeliverableType(kase, deliverableCategory,
           CompletedGate::allReleasesComplete);
     }
   };
@@ -187,18 +137,13 @@ public enum CompletedGate {
 
   private final String label;
   private final boolean stoppable;
-  private final Predicate<Case> casePredicate = this::qualifyCase;
+  private final boolean considerDeliverableCategory;
   private final Predicate<Test> testPredicate = this::qualifyTest;
-  private final DeliverableType deliverableType;
 
-  private CompletedGate(String label, boolean stoppable, DeliverableType deliverableType) {
+  private CompletedGate(String label, boolean stoppable, boolean considerDeliverableCategory) {
     this.label = label;
     this.stoppable = stoppable;
-    this.deliverableType = deliverableType;
-  }
-
-  private CompletedGate(String label, boolean stoppable) {
-    this(label, stoppable, null);
+    this.considerDeliverableCategory = considerDeliverableCategory;
   }
 
   public String getLabel() {
@@ -209,8 +154,8 @@ public enum CompletedGate {
     return stoppable;
   }
 
-  public Predicate<Case> predicate() {
-    return casePredicate;
+  public boolean considerDeliverableCategory() {
+    return considerDeliverableCategory;
   }
 
   public Predicate<Test> testPredicate() {
@@ -225,13 +170,22 @@ public enum CompletedGate {
     return sample -> qualifySample(sample, requestCategory);
   }
 
-  public boolean qualifyCase(Case kase) {
+  /**
+   * Check whether a case is completed the step represented by this CompletedGate
+   * 
+   * @param kase the case to check
+   * @param deliverableCategory the specific deliverable category to check for steps where this is
+   *        relevant (see {@link #isApplicable(Case, String)}), or null for all
+   * @return true if the step is completed; false otherwise
+   */
+  public boolean qualifyCase(Case kase, String deliverableCategory) {
     return kase.getTests().stream().allMatch(test -> qualifyTest(test));
   }
 
-  public boolean isApplicable(Case kase) {
-    return deliverableType == null
-        || kase.getDeliverables().stream().anyMatch(x -> x.getDeliverableType() == deliverableType);
+  public boolean isApplicable(Case kase, String deliverableCategory) {
+    return deliverableCategory == null
+        || kase.getDeliverables().stream()
+            .anyMatch(x -> Objects.equals(x.getDeliverableCategory(), deliverableCategory));
   }
 
   public boolean qualifyTest(Test test) {
@@ -247,19 +201,20 @@ public enum CompletedGate {
     throw new IllegalStateException("This gate does not apply to samples");
   }
 
-  private static boolean qualifyCaseForDeliverableType(Case kase, DeliverableType deliverableType,
+  private static boolean qualifyCaseForDeliverableType(Case kase, String deliverableCategory,
       Function<CaseDeliverable, Boolean> getQcPassed) {
     if (kase.getDeliverables() == null || kase.getDeliverables().isEmpty()) {
       return false;
     }
     Stream<CaseDeliverable> stream = null;
-    if (deliverableType != null) {
+    if (deliverableCategory != null) {
       if (kase.getDeliverables().stream()
-          .noneMatch(x -> x.getDeliverableType() == deliverableType)) {
+          .noneMatch(x -> Objects.equals(x.getDeliverableCategory(), deliverableCategory))) {
         return false;
       }
       stream =
-          kase.getDeliverables().stream().filter(x -> x.getDeliverableType() == deliverableType);
+          kase.getDeliverables().stream()
+              .filter(x -> Objects.equals(x.getDeliverableCategory(), deliverableCategory));
     } else {
       stream = kase.getDeliverables().stream();
     }

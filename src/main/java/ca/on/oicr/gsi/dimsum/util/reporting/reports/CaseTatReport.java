@@ -12,7 +12,6 @@ import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
-import ca.on.oicr.gsi.cardea.data.DeliverableType;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -26,6 +25,11 @@ import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
 
 public class CaseTatReport extends Report {
+
+  // TODO: generate columns dynamically instead of hard-coding deliverable categories:
+  // Ticket: GLT-4422
+  private static final String DELIVERABLE_CLINICAL = "Clinical Report";
+  private static final String DELIVERABLE_DATA = "Data Release";
 
   private static record RowData(Case kase, Test test, CaseDeliverable clinical,
       CaseDeliverable dataRelease) {
@@ -49,9 +53,9 @@ public class CaseTatReport extends Report {
               Column.forInteger("Receipt Days", x -> x.kase().getReceiptDaysSpent()),
               Column.forString("Test", x -> x.test().getName()),
               Column.forString("Supplemental Only",
-                  x -> isSupplementalOnly(x.test(), x.kase().getRequisition()) ? "Yes"
-                      : "No"),
-              Column.forString("Extraction (EX) Completed",
+                  x -> isSupplementalOnly(x.test(), x.kase().getRequisition()) ? "Yes" : "No"),
+              Column.forString(
+                  "Extraction (EX) Completed",
                   x -> findLatestCompletionDate(x.test().getExtractions(), true)),
               Column.forInteger("EX Days", x -> x.test().getExtractionDaysSpent()),
               Column.forInteger("EX Prep. Days", x -> x.test().getExtractionPreparationDaysSpent()),
@@ -67,23 +71,19 @@ public class CaseTatReport extends Report {
                   x -> x.test().getLibraryQualificationLoadingDaysSpent()),
               Column.forInteger("LQ Sequencing Days",
                   x -> x.test().getLibraryQualificationSequencingDaysSpent()),
-              Column.forInteger("LQ QC Days",
-                  x -> x.test().getLibraryQualificationQcDaysSpent()),
-              Column.forInteger("LQ Total Days",
-                  x -> x.test().getLibraryQualificationDaysSpent()),
+              Column.forInteger("LQ QC Days", x -> x.test().getLibraryQualificationQcDaysSpent()),
+              Column.forInteger("LQ Total Days", x -> x.test().getLibraryQualificationDaysSpent()),
               Column.forString("Full-Depth (FD) Completed",
                   x -> findLatestCompletionDate(x.test().getFullDepthSequencings(), false)),
               Column.forInteger("FD Loading Days",
                   x -> x.test().getFullDepthSequencingLoadingDaysSpent()),
               Column.forInteger("FD Sequencing Days",
                   x -> x.test().getFullDepthSequencingSequencingDaysSpent()),
-              Column.forInteger("FD QC Days",
-                  x -> x.test().getFullDepthSequencingQcDaysSpent()),
-              Column.forInteger("FD Total Days",
-                  x -> x.test().getFullDepthSequencingDaysSpent()),
+              Column.forInteger("FD QC Days", x -> x.test().getFullDepthSequencingQcDaysSpent()),
+              Column.forInteger("FD Total Days", x -> x.test().getFullDepthSequencingDaysSpent()),
               // Clinical Report columns
               Column.forString("Clinical Report (CR)",
-                  x -> hasDeliverableType(x, DeliverableType.CLINICAL_REPORT)),
+                  x -> hasDeliverableCategory(x, DELIVERABLE_CLINICAL)),
               Column.forString("CR Analysis Review Completed",
                   x -> getAnalysisReviewCompletedDate(x.clinical())),
               Column.forInteger("CR Analysis Review Days",
@@ -99,7 +99,7 @@ public class CaseTatReport extends Report {
                   x -> x.clinical() == null ? null : x.clinical().getDeliverableDaysSpent()),
               // Data Release columns
               Column.forString("Data Release (DR)",
-                  x -> hasDeliverableType(x, DeliverableType.DATA_RELEASE)),
+                  x -> hasDeliverableCategory(x, DELIVERABLE_DATA)),
               Column.forString("DR Analysis Review Completed",
                   x -> getAnalysisReviewCompletedDate(x.dataRelease())),
               Column.forInteger("DR Analysis Review Days",
@@ -136,23 +136,20 @@ public class CaseTatReport extends Report {
 
         @Override
         public List<RowData> getData(CaseService caseService, JsonNode parameters) {
-          List<CaseFilter> filters =
-              getParameterFilters(parameters);
+          List<CaseFilter> filters = getParameterFilters(parameters);
           return caseService.getCaseStream(filters)
               .flatMap(kase -> kase.getTests().stream().map(test -> {
-                CaseDeliverable clinical =
-                    getDeliverableType(kase, DeliverableType.CLINICAL_REPORT);
-                CaseDeliverable dataRelease =
-                    getDeliverableType(kase, DeliverableType.DATA_RELEASE);
+                CaseDeliverable clinical = getDeliverableCategory(kase, DELIVERABLE_CLINICAL);
+                CaseDeliverable dataRelease = getDeliverableCategory(kase, DELIVERABLE_DATA);
                 return new RowData(kase, test, clinical, dataRelease);
               }))
               .collect(Collectors.toList());
         }
 
-        private static CaseDeliverable getDeliverableType(Case kase,
-            DeliverableType deliverableType) {
+        private static CaseDeliverable getDeliverableCategory(Case kase,
+            String deliverableCategory) {
           return kase.getDeliverables().stream()
-              .filter(x -> x.getDeliverableType() == deliverableType)
+              .filter(x -> Objects.equals(x.getDeliverableCategory(), deliverableCategory))
               .findFirst()
               .orElse(null);
         }
@@ -173,10 +170,8 @@ public class CaseTatReport extends Report {
   }
 
   private static boolean isSupplementalOnly(Test test, Requisition requisition) {
-    if (test.getExtractions().isEmpty()
-        && test.getLibraryPreparations().isEmpty()
-        && test.getLibraryQualifications().isEmpty()
-        && test.getFullDepthSequencings().isEmpty()) {
+    if (test.getExtractions().isEmpty() && test.getLibraryPreparations().isEmpty()
+        && test.getLibraryQualifications().isEmpty() && test.getFullDepthSequencings().isEmpty()) {
       return false;
     }
     return test.getExtractions().stream()
@@ -254,9 +249,11 @@ public class CaseTatReport extends Report {
         .orElse(null));
   }
 
-  private static String hasDeliverableType(RowData rowData, DeliverableType deliverableType) {
+  private static String hasDeliverableCategory(RowData rowData, String deliverableCategory) {
     return rowData.kase().getDeliverables().stream().anyMatch(
-        deliverable -> deliverable.getDeliverableType() == deliverableType) ? "YES" : "no";
+        deliverable -> Objects.equals(deliverable.getDeliverableCategory(), deliverableCategory))
+            ? "YES"
+            : "no";
   }
 
   private static String formatDate(LocalDate date) {

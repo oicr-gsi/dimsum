@@ -1,7 +1,5 @@
 package ca.on.oicr.gsi.dimsum.data;
 
-import ca.on.oicr.gsi.cardea.data.DeliverableType;
-
 public class NabuSignoff {
 
   public enum NabuSignoffStep {
@@ -12,7 +10,7 @@ public class NabuSignoff {
   private Boolean release;
   private String username;
   private NabuSignoffStep signoffStepName;
-  private DeliverableType deliverableType;
+  private String deliverableType;
   private String deliverable;
   private String comment;
 
@@ -48,11 +46,11 @@ public class NabuSignoff {
     this.signoffStepName = signoffStepName;
   }
 
-  public DeliverableType getDeliverableType() {
+  public String getDeliverableType() {
     return deliverableType;
   }
 
-  public void setDeliverableType(DeliverableType deliverableType) {
+  public void setDeliverableType(String deliverableType) {
     this.deliverableType = deliverableType;
   }
 
