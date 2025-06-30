@@ -144,6 +144,8 @@ public enum CaseFilterKey {
   });
   // @formatter:on
 
+  private static final String SEPARATOR = " - ";
+
   private final Function<String, Predicate<Case>> create;
 
   private CaseFilterKey(Function<String, Predicate<Case>> create) {
@@ -168,8 +170,8 @@ public enum CaseFilterKey {
 
   private static PendingState getState(String label) {
     String stateLabel = label;
-    if (label.contains(" - ")) {
-      stateLabel = label.replaceFirst(" - .*", "");
+    if (label.contains(SEPARATOR)) {
+      stateLabel = label.split(SEPARATOR)[0];
     }
     PendingState state = PendingState.getByLabel(stateLabel);
     if (state == null) {
@@ -180,8 +182,8 @@ public enum CaseFilterKey {
 
   private static CompletedGate getGate(String label) {
     String gateLabel = label;
-    if (label.contains(" - ")) {
-      gateLabel = label.replaceFirst(" - .*", "");
+    if (label.contains(SEPARATOR)) {
+      gateLabel = label.split(SEPARATOR)[0];
     }
     CompletedGate gate = CompletedGate.getByLabel(gateLabel);
     if (gate == null) {
@@ -191,8 +193,9 @@ public enum CaseFilterKey {
   }
 
   private static String getDeliverableCategory(String label) {
-    if (label.contains(" - ")) {
-      return label.replaceFirst(".* - ", "");
+    if (label.contains(SEPARATOR)) {
+      int index = label.indexOf(SEPARATOR, 0);
+      return label.substring(index + 3);
     } else {
       return null;
     }
