@@ -281,7 +281,8 @@ public enum PendingState {
             .anyMatch(category -> (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, category))
                 && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, category));
       } else {
-        return (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, deliverableCategory))
+        return CompletedGate.RELEASE_APPROVAL.isApplicable(kase, deliverableCategory)
+            && (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, deliverableCategory))
             && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, deliverableCategory);
       }
     }
