@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.54.0] - 2025-06-30
+
+### Added
+
+* Support for custom deliverable categories
+
+
 ## [1.53.0] - 2025-06-12
 
 ### Added
