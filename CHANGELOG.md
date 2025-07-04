@@ -7,6 +7,14 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.54.1] - 2025-07-04
+
+### Fixed
+
+* QC in MISO feature was not working with pass/fail metrics. These will now be excluded from display in
+  MISO instead.
+
+
 ## [1.54.0] - 2025-06-30
 
 ### Added
