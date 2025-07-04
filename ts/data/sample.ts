@@ -520,6 +520,7 @@ function getSampleMetrics(
     .flatMap(
       (metricName) => getMatchingMetrics(metricName, category, sample) || []
     )
+    .filter((metric) => metric.thresholdType !== "BOOLEAN")
     .map((metric) => {
       const value = getMetricValue(metric.name, sample);
       const misoMetric: MisoRunLibraryMetric = {
