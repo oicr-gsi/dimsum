@@ -368,6 +368,7 @@ export function getLibraryQualificationsDefinition(
             runName
           );
         },
+        view: "internal",
       },
     ],
     bulkActions: [
@@ -417,6 +418,7 @@ export function getFullDepthSequencingsDefinition(
             runName
           );
         },
+        view: "internal",
       },
     ],
     bulkActions: [
