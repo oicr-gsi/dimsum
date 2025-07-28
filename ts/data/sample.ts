@@ -65,6 +65,20 @@ export const RUN_METRIC_LABELS = [
   METRIC_LABEL_PHIX,
 ];
 
+export interface SampleMetric {
+  // minimal fields implemented for now; others commented
+  name: string;
+  //thresholdType:
+  // minimum: number | null;
+  // maximum: number | null;
+  //metricLevel:
+  // preliminary: boolean;
+  // value: number | null;
+  //laneValues:
+  qcPassed: boolean | null;
+  // units: string | null;
+}
+
 export interface Sample extends Qcable {
   id: string;
   name: string;
@@ -111,6 +125,7 @@ export interface Sample extends Qcable {
   relativeCpgInRegions?: number | null;
   methylationBeta?: number | null;
   peReads?: number | null;
+  metrics: SampleMetric[];
 }
 
 interface MisoRunLibraryMetric {
@@ -613,7 +628,13 @@ export function getSampleMetricCellHighlight(
     case METRIC_LABEL_PHIX:
       return getPhixHighlight(sample, metrics);
   }
-  if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+  if (metricName === "Sample Authenticated") {
+    const sampleMetric = sample.metrics.find(
+      (metric) => metric.name === metricName
+    );
+    const qcPassed = sampleMetric ? sampleMetric.qcPassed : null;
+    return getBooleanMetricHighlight(qcPassed);
+  } else if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
     return getBooleanMetricHighlight(sample.qcPassed);
   }
   if (
@@ -692,7 +713,21 @@ export function addMetricValueContents(
       return;
   }
 
-  if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+  if (metricName === "Sample Authenticated") {
+    const sampleMetric = sample.metrics.find(
+      (metric) => metric.name === metricName
+    );
+    const qcPassed = sampleMetric ? sampleMetric.qcPassed : null;
+    if (qcPassed == null) {
+      // Show pending analysis rather than pending QC
+      fragment.append(
+        makeStatusIcon(qcStatuses.analysis.icon, qcStatuses.analysis.label)
+      );
+    } else {
+      fragment.append(getBooleanMetricValueIcon(qcPassed));
+    }
+    return;
+  } else if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
     fragment.append(getBooleanMetricValueIcon(sample.qcPassed));
     return;
   }
