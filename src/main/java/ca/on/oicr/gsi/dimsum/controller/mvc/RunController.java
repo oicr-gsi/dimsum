@@ -38,9 +38,6 @@ public class RunController {
             .map(Sample::getLibraryDesignCode)
             .distinct()
             .collect(Collectors.joining(",")));
-    model.put("showLibraryQualifications", !runAndLibraries.getLibraryQualifications().isEmpty());
-    model.put("showFullDepthSequencings", !runAndLibraries.getFullDepthSequencings().isEmpty());
-    model.put("showOmitted", !runAndLibraries.getOmittedSamples().isEmpty());
     return "run-detail";
   }
 

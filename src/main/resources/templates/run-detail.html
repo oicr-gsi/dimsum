@@ -43,18 +43,18 @@
       </tr>
     </table>
 
-    <h2 th:if="${showLibraryQualifications}" class="text-green-200 font-sarabun font-light font
+    <h2 id="libraryQualificationsHeading" class="text-green-200 font-sarabun font-light font
         text-24 mt-8">Library Qualifications</h2>
-    <div th:if="${showLibraryQualifications}" id="libraryQualificationsTableContainer"></div>
+    <div id="libraryQualificationsTableContainer"></div>
 
-    <h2 th:if="${showFullDepthSequencings}" class="text-green-200 font-sarabun font-light font
+    <h2 id="fullDepthSequencingsHeading" class="text-green-200 font-sarabun font-light font
         text-24 mt-8">Full Depth Sequencings</h2>
-    <div th:if="${showFullDepthSequencings}" id="fullDepthSequencingsTableContainer"></div>
+    <div id="fullDepthSequencingsTableContainer"></div>
 
-    <h2 th:if="${showOmitted}" class="text-green-200 font-sarabun font-light font text-24 mt-8">
+    <h2 id="omissionsHeading" class="text-green-200 font-sarabun font-light font text-24 mt-8">
       Omissions <i id="omissionsInfo" class="fa-solid fa-circle-question text-black"></i>
     </h2>
-    <div th:if="${showOmitted}" id="omissionsTableContainer"></div>
+    <div id="omissionsTableContainer"></div>
 
     <script src="/js/runDetails.js"></script>
 

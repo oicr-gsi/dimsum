@@ -16,7 +16,7 @@ import {
 import { TableBuilder, TableDefinition } from "./component/table-builder";
 import { urls } from "./util/urls";
 import { Tooltip } from "./component/tooltip";
-import { getOmissionsDefinition } from "./data/run";
+import { getOmittedRunSamplesDefinition } from "./data/omitted-run-sample";
 import { showAlertDialog } from "./component/dialog";
 
 const misoRunLink = getRequiredElementById("misoRunLink");
@@ -33,34 +33,16 @@ const libraryDesigns = libraryDesignsString
 makeDashiRunLinksTooltip(dashiRunLink, runName, libraryDesigns);
 
 function makeTable(
+  headingId: string,
   containerId: string,
-  definition: TableDefinition<Sample, void>
+  definition: TableDefinition<any, void>
 ) {
-  const container = document.getElementById(containerId);
-  if (container) {
-    new TableBuilder(definition, containerId).build();
-  }
-}
-
-function makeOmissionsTable(runName: string) {
-  const containerId = "omissionsTableContainer";
-  const container = document.getElementById(containerId);
-  if (container) {
-    addOmissionsHelp();
-    const definition = getOmissionsDefinition(
-      urls.rest.runs.omissions(runName)
-    );
-    new TableBuilder(definition, containerId).build();
-  }
-}
-
-function addOmissionsHelp() {
-  document.getElementById("omissionsInfo")?.addEventListener("click", () => {
-    showAlertDialog(
-      "Omissions",
-      "The libraries listed here were included in the run, but are not a part of any case."
-    );
-  });
+  new TableBuilder(definition, containerId, undefined, undefined, (data) => {
+    if (!data || !data.length) {
+      document.getElementById(headingId)?.remove();
+      document.getElementById(containerId)?.remove();
+    }
+  }).build();
 }
 
 const runQcCell = getRequiredElementById("runStatus");
@@ -72,6 +54,7 @@ runQcCell.appendChild(icon);
 shadeElement(runQcCell, status.cellStatus);
 
 makeTable(
+  "libraryQualificationsHeading",
   "libraryQualificationsTableContainer",
   getLibraryQualificationsDefinition(
     urls.rest.runs.libraryQualifications(runName),
@@ -81,6 +64,7 @@ makeTable(
 );
 
 makeTable(
+  "fullDepthSequencingsHeading",
   "fullDepthSequencingsTableContainer",
   getFullDepthSequencingsDefinition(
     urls.rest.runs.fullDepthSequencings(runName),
@@ -89,7 +73,18 @@ makeTable(
   )
 );
 
-makeOmissionsTable(runName);
+document.getElementById("omissionsInfo")?.addEventListener("click", () => {
+  showAlertDialog(
+    "Omissions",
+    "The libraries listed here were included in the run, but are not a part of any case."
+  );
+});
+
+makeTable(
+  "omissionsHeading",
+  "omissionsTableContainer",
+  getOmittedRunSamplesDefinition(urls.rest.runs.omissions(runName), false)
+);
 
 function makeDashiRunLinksTooltip(
   element: HTMLElement,

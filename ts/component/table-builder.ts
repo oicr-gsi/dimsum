@@ -83,6 +83,7 @@ export interface TableDefinition<ParentType, ChildType> {
   // if noChildrenWarning is not provided, 'N/A' is displayed instead
   noChildrenWarning?: string;
   parentHeaders?: Array<{ title: string; colspan: number }>;
+  removeIfEmpty?: boolean;
 }
 
 class AcceptedFilter {
@@ -142,6 +143,7 @@ export class TableBuilder<ParentType, ChildType> {
   topSelectionCountElement?: HTMLElement;
   bottomSelectionCountElement?: HTMLElement;
   onFilterChange?: (key: string, value: string, add: boolean) => void;
+  onLoad?: (data: ParentType[]) => void;
   lastClickedRowIndex: number | null = null;
   private isShiftKeyPressed: boolean = false;
 
@@ -149,7 +151,8 @@ export class TableBuilder<ParentType, ChildType> {
     definition: TableDefinition<ParentType, ChildType>,
     containerId: string,
     filterParams?: Array<Pair<string, string>>,
-    onFilterChange?: (key: string, value: string, add: boolean) => void
+    onFilterChange?: (key: string, value: string, add: boolean) => void,
+    onLoad?: (data: ParentType[]) => void
   ) {
     this.definition = definition;
     if (definition.defaultSort) {
@@ -172,6 +175,7 @@ export class TableBuilder<ParentType, ChildType> {
       });
     }
     this.onFilterChange = onFilterChange;
+    this.onLoad = onLoad;
     this.container = container;
     this.columns = definition.generateColumns();
     document.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -310,7 +314,11 @@ export class TableBuilder<ParentType, ChildType> {
 
     this.load(data);
     this.setupScrollListener();
-    if (!data) {
+    if (data) {
+      if (this.onLoad) {
+        this.onLoad(data);
+      }
+    } else {
       this.reload();
     }
     return this;
@@ -825,6 +833,9 @@ export class TableBuilder<ParentType, ChildType> {
       });
       this.load(data.items);
       this.showLoaded(data);
+      if (this.onLoad) {
+        this.onLoad(data.items);
+      }
     } catch (reason) {
       showErrorDialog("Error reloading table - " + reason);
     }

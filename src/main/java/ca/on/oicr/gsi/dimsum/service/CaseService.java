@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -593,12 +594,28 @@ public class CaseService {
         RunAndLibraries::getFullDepthSequencings, MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
-  public TableData<OmittedRunSample> getOmittedSamplesForRun(String runName, int pageSize,
+  public TableData<OmittedRunSample> getOmittedRunSamplesForRun(String runName, int pageSize,
       int pageNumber, OmittedRunSampleSort sort, boolean descending) {
-    RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
-    Set<OmittedRunSample> samples =
-        runAndLibraries == null ? Collections.emptySet() : runAndLibraries.getOmittedSamples();
+    Set<OmittedRunSample> samples = caseData.getOmittedRunSamples().stream()
+        .filter(x -> Objects.equals(x.getRunName(), runName))
+        .collect(Collectors.toSet());
 
+    return filterOmittedRunSamples(samples, pageSize, pageNumber, sort, descending);
+  }
+
+  public TableData<OmittedRunSample> getOmittedRunSamplesForProject(String projectName,
+      MetricCategory sequencingType, int pageSize, int pageNumber, OmittedRunSampleSort sort,
+      boolean descending) {
+    Set<OmittedRunSample> samples = caseData.getOmittedRunSamples().stream()
+        .filter(x -> Objects.equals(x.getProject(), projectName)
+            && x.getSequencingType() == sequencingType)
+        .collect(Collectors.toSet());
+
+    return filterOmittedRunSamples(samples, pageSize, pageNumber, sort, descending);
+  }
+
+  private TableData<OmittedRunSample> filterOmittedRunSamples(Set<OmittedRunSample> samples,
+      int pageSize, int pageNumber, OmittedRunSampleSort sort, boolean descending) {
     TableData<OmittedRunSample> data = new TableData<>();
     data.setTotalCount(samples.size());
     data.setFilteredCount(samples.size());

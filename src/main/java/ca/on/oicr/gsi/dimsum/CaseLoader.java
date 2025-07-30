@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
-import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -76,8 +75,7 @@ public class CaseLoader {
     ca.on.oicr.gsi.cardea.data.CaseData cardeaCaseData = loadCardeaData(builder);
 
     Map<Long, Assay> assaysById = cardeaCaseData.getAssaysById();
-    Map<String, RunAndLibraries> runsByName =
-        sortRuns(cardeaCaseData.getCases(), cardeaCaseData.getOmittedRunSamples());
+    Map<String, RunAndLibraries> runsByName = sortRuns(cardeaCaseData.getCases());
     List<OmittedSample> omittedSamples = cardeaCaseData.getOmittedSamples();
     Set<String> requisitionNames = loadRequisitionNames(cardeaCaseData.getCases());
     Set<String> projectsNames = loadProjectsNames(cardeaCaseData.getCases());
@@ -89,9 +87,8 @@ public class CaseLoader {
 
     CaseData caseData =
         new CaseData(cardeaCaseData.getCases(), runsByName, assaysById, omittedSamples,
-            afterTimestamp,
-            requisitionNames, projectsNames, donorNames, getRunNames(runsByName), testNames,
-            projectSummariesByName);
+            cardeaCaseData.getOmittedRunSamples(), afterTimestamp, requisitionNames, projectsNames,
+            donorNames, getRunNames(runsByName), testNames, projectSummariesByName);
 
     log.debug(String.format("Completed loading %d cases.", cardeaCaseData.getCases().size()));
     if (refreshTimer != null) {
@@ -152,8 +149,7 @@ public class CaseLoader {
     return runsByName.keySet();
   }
 
-  private Map<String, RunAndLibraries> sortRuns(List<Case> cases,
-      List<OmittedRunSample> omittedRunSamples) {
+  private Map<String, RunAndLibraries> sortRuns(List<Case> cases) {
     Map<Long, RunAndLibraries.Builder> map = new HashMap<>();
     for (Case kase : cases) {
       for (Test test : kase.getTests()) {
@@ -165,13 +161,6 @@ public class CaseLoader {
         for (Sample sample : test.getFullDepthSequencings()) {
           addRunLibrary(map, sample, RunAndLibraries.Builder::addFullDepthSequencing);
         }
-      }
-    }
-    for (OmittedRunSample sample : omittedRunSamples) {
-      if (map.containsKey(sample.getRunId())) {
-        map.get(sample.getRunId()).addOmittedSample(sample);
-      } else {
-        log.warn("OmittedRunSample found for missing run ID: {}", sample.getRunId());
       }
     }
     return map.values().stream()
