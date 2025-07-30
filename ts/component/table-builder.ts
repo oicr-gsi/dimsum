@@ -83,7 +83,6 @@ export interface TableDefinition<ParentType, ChildType> {
   // if noChildrenWarning is not provided, 'N/A' is displayed instead
   noChildrenWarning?: string;
   parentHeaders?: Array<{ title: string; colspan: number }>;
-  removeIfEmpty?: boolean;
 }
 
 class AcceptedFilter {
