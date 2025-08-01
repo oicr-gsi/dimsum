@@ -76,9 +76,9 @@ public abstract class ReportSection<T> {
 
     @Override
     public void writeJson(ArrayNode arrayNode, List<T> objects, ObjectMapper objectMapper) {
+      List<Column<T>> columns = getColumns(objects);
       for (T object : objects) {
         ObjectNode objectNode = objectMapper.createObjectNode();
-        List<Column<T>> columns = getColumns(objects);
         for (Column<T> column : columns) {
           String value = column.getDelimitedColumnString(",", object).replaceAll("\"", "");
           objectNode.put(column.getTitle(), value);

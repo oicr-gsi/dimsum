@@ -1,5 +1,5 @@
 import Plotly from "plotly.js-dist-min";
-import { get, post } from "./util/requests";
+import { post } from "./util/requests";
 import { getRequiredElementById } from "./util/html-utils";
 import { toggleLegend } from "./component/legend";
 import { getColorForGate } from "./util/color-mapping";
@@ -8,6 +8,8 @@ import {
   TableBuilder,
   ColumnDefinition,
 } from "./component/table-builder";
+import { urls } from "./util/urls";
+import { siteConfig } from "./util/site-config";
 
 let jsonData: any[] = [];
 const uirevision = "true";
@@ -44,32 +46,18 @@ const COLUMN_NAMES = {
   LP_COMPLETED: "Library Prep. Completed",
   LQ_COMPLETED: "Library Qual. (LQ) Completed",
   FD_COMPLETED: "Full-Depth (FD) Completed",
-  CR_COMPLETED: "CR Release Completed",
-  DR_COMPLETED: "DR Release Completed",
-  ALL_COMPLETED: "ALL Release Completed",
 };
 
-// function to construct completion date column name
-function getCompletionColumnName(dataType: string, gate: string): string {
-  return `${DATA_PREFIX_MAPPING[dataType]} ${gate} Completed`.trim();
+function getCompletionColumnName(
+  deliverableCategory: string,
+  gate: string
+): string {
+  return `${deliverableCategory} ${gate} Completed`.trim();
 }
 
-// function to construct days column name
-function getDaysColumnName(dataType: string, gate: string): string {
-  return `${DATA_PREFIX_MAPPING[dataType]} ${gate} Days`.trim();
+function getDaysColumnName(deliverableCategory: string, gate: string): string {
+  return `${deliverableCategory} ${gate} Days`.trim();
 }
-
-const DATA_SELECTION = {
-  CLINICAL_REPORT: "ClinicalReport",
-  DATA_RELEASE: "DataRelease",
-  ALL: "All",
-};
-
-const DATA_PREFIX_MAPPING: { [key: string]: string } = {
-  [DATA_SELECTION.CLINICAL_REPORT]: "CR",
-  [DATA_SELECTION.DATA_RELEASE]: "DR",
-  [DATA_SELECTION.ALL]: "ALL",
-};
 
 function generateColor(index: number): string {
   const colors = [
@@ -98,7 +86,7 @@ interface GroupDays {
 function getCompletedDateAndDays(
   row: any,
   gate: string,
-  selectedDataType: string
+  deliverableCategory: string
 ) {
   let completedDate: Date | null = null;
   let days: number = 0;
@@ -135,16 +123,18 @@ function getCompletedDateAndDays(
       days = row[COLUMN_NAMES.FD_DAYS] ?? 0;
       break;
     case "Full Test":
-      completedDate = row[getCompletionColumnName(selectedDataType, "Release")]
-        ? new Date(row[getCompletionColumnName(selectedDataType, "Release")])
+      completedDate = row[
+        getCompletionColumnName(deliverableCategory, "Release")
+      ]
+        ? new Date(row[getCompletionColumnName(deliverableCategory, "Release")])
         : null;
-      days = row[getDaysColumnName(selectedDataType, "Total")] ?? 0;
+      days = row[getDaysColumnName(deliverableCategory, "Total")] ?? 0;
       break;
     default:
-      completedDate = row[getCompletionColumnName(selectedDataType, gate)]
-        ? new Date(row[getCompletionColumnName(selectedDataType, gate)])
+      completedDate = row[getCompletionColumnName(deliverableCategory, gate)]
+        ? new Date(row[getCompletionColumnName(deliverableCategory, gate)])
         : null;
-      days = row[getDaysColumnName(selectedDataType, gate)] ?? 0;
+      days = row[getDaysColumnName(deliverableCategory, gate)] ?? 0;
   }
 
   return { completedDate, days };
@@ -210,16 +200,15 @@ function groupData(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDataType: string
+  deliverableCategory: string
 ): AssayGroups {
   const assayGroups: AssayGroups = {};
 
   jsonData.forEach((row: any) => {
     const assay = row[COLUMN_NAMES.ASSAY];
     const caseId = row[COLUMN_NAMES.CASE_ID];
-    const completedKey =
-      `${DATA_PREFIX_MAPPING[selectedDataType]}_COMPLETED` as keyof typeof COLUMN_NAMES;
-    const caseCompletedDate = row[COLUMN_NAMES[completedKey]];
+    const caseCompletedDate =
+      row[getCompletionColumnName(deliverableCategory, "Release")];
 
     // skip if case completed date is missing
     if (!caseCompletedDate) {
@@ -233,7 +222,7 @@ function groupData(
         const { completedDate, days } = getCompletedDateAndDays(
           row,
           gate,
-          selectedDataType
+          deliverableCategory
         );
         if (!completedDate) {
           return;
@@ -318,13 +307,13 @@ function plotData(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDataType: string
+  selectedDeliverableCategory: string
 ): { newPlot: Partial<Plotly.PlotData>[]; layout: Partial<Plotly.Layout> } {
   const assayGroups = groupData(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDataType
+    selectedDeliverableCategory
   );
   const newPlot: Partial<Plotly.PlotData>[] = [];
   const assayColors: { [assay: string]: string } = {};
@@ -407,7 +396,7 @@ function newPlot(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
-  selectedDataType: string
+  selectedDeliverableCategory: string
 ) {
   const plotContainer = getRequiredElementById("plotContainer");
   plotContainer.textContent = "";
@@ -416,7 +405,7 @@ function newPlot(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDataType
+    selectedDeliverableCategory
   );
   Plotly.newPlot("plotContainer", newPlot, layout);
 
@@ -432,13 +421,13 @@ function updatePlot(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
-  selectedDataType: string
+  selectedDeliverableCategory: string
 ) {
   const { newPlot, layout } = plotData(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDataType
+    selectedDeliverableCategory
   );
   Plotly.react("plotContainer", newPlot, layout);
 }
@@ -447,9 +436,14 @@ function updatePlotWithLegend(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
-  selectedDataType: string
+  selectedDeliverableCategory: string
 ) {
-  updatePlot(selectedGrouping, jsonData, selectedGates, selectedDataType);
+  updatePlot(
+    selectedGrouping,
+    jsonData,
+    selectedGates,
+    selectedDeliverableCategory
+  );
   const legendButton = document.getElementById("legendButton");
   if (getColorByGate()) {
     // show the Legend button
@@ -472,14 +466,14 @@ function updateMetricsTable(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDataType: string
+  selectedDeliverableCategory: string
 ) {
   // build the table data and get the time ranges from the metrics
   const { tableData, timeRanges } = buildTableFromMetrics(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDataType
+    selectedDeliverableCategory
   );
   const sortedTimeRanges = sortTimeRanges(timeRanges);
   const dynamicColumns = generateDynamicColumns(sortedTimeRanges);
@@ -589,13 +583,13 @@ function buildTableFromMetrics(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDataType: string
+  selectedDeliverableCategory: string
 ) {
   const groupedData = groupData(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDataType
+    selectedDeliverableCategory
   );
   const tableData: AssayMetrics[] = [];
   const timeRanges: string[] = [];
@@ -664,31 +658,55 @@ function getSelectedGrouping(): string {
   return selectedButton ? selectedButton.dataset.grouping! : "fiscalQuarter";
 }
 
-function getSelectedDataType(): string {
-  const dataSelection = getRequiredElementById(
-    "dataSelection"
+function getSelectedDeliverableCategory(): string {
+  const deliverableCategorySelect = getRequiredElementById(
+    "deliverableCategorySelect"
   ) as HTMLSelectElement;
-  return dataSelection.value;
+  return deliverableCategorySelect.value;
+}
+
+function addDeliverableCategoryOptions() {
+  const deliverableCategorySelect = getRequiredElementById(
+    "deliverableCategorySelect"
+  ) as HTMLSelectElement;
+  deliverableCategorySelect.innerHTML = "";
+  siteConfig.deliverableCategories.forEach((category) =>
+    deliverableCategorySelect.options.add(
+      makeDeliverableCategoryOption(category)
+    )
+  );
+  const allOption = makeDeliverableCategoryOption("ALL");
+  allOption.selected = true;
+  deliverableCategorySelect.options.add(allOption);
+}
+
+function makeDeliverableCategoryOption(deliverableCategory: string) {
+  const option = document.createElement("option");
+  option.value = deliverableCategory;
+  option.text = deliverableCategory;
+  return option;
 }
 
 window.addEventListener("load", () => {
+  addDeliverableCategoryOptions();
+
   const params = parseUrlParams();
   const requestData = { filters: params.length > 0 ? params : [] };
 
-  post("/rest/downloads/reports/case-tat-report/data", requestData)
+  post(urls.rest.downloads.reportData("case-tat-report"), requestData)
     .then((data) => {
       jsonData = data; // update jsonData with fetched data
       newPlot(
         getSelectedGrouping(),
         jsonData,
         getSelectedGates(),
-        getSelectedDataType()
+        getSelectedDeliverableCategory()
       );
       updateMetricsTable(
         jsonData,
         getSelectedGrouping(),
         getSelectedGates(),
-        getSelectedDataType()
+        getSelectedDeliverableCategory()
       );
     })
     .catch((error) => {
@@ -698,18 +716,18 @@ window.addEventListener("load", () => {
   const handlePlotUpdate = () => {
     const selectedGrouping = getSelectedGrouping();
     const selectedGates = getSelectedGates();
-    const selectedDataType = getSelectedDataType();
+    const selectedDeliverableCategory = getSelectedDeliverableCategory();
     updatePlotWithLegend(
       selectedGrouping,
       jsonData,
       selectedGates,
-      selectedDataType
+      selectedDeliverableCategory
     );
     updateMetricsTable(
       jsonData,
       selectedGrouping,
       selectedGates,
-      selectedDataType
+      selectedDeliverableCategory
     );
   };
   selectAllGates(handlePlotUpdate);
@@ -726,9 +744,11 @@ window.addEventListener("load", () => {
     getRequiredElementById(id).addEventListener("click", handleNewPlot);
   });
 
-  ["dataSelection", "gatesCheckboxes", "toggleColors"].forEach((id) => {
-    getRequiredElementById(id).addEventListener("change", handlePlotUpdate);
-  });
+  ["deliverableCategorySelect", "gatesCheckboxes", "toggleColors"].forEach(
+    (id) => {
+      getRequiredElementById(id).addEventListener("change", handlePlotUpdate);
+    }
+  );
 
   const metricsButton = getRequiredElementById("metricsButton");
   const metricContainer = getRequiredElementById("metricContainer");
@@ -798,7 +818,7 @@ window.addEventListener("load", () => {
       jsonData,
       getSelectedGrouping(),
       getSelectedGates(),
-      getSelectedDataType()
+      getSelectedDeliverableCategory()
     );
     const csvContent = generateCSV(tableData, sortTimeRanges(timeRanges));
     downloadCSV(csvContent, "metrics.csv");

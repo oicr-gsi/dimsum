@@ -52,6 +52,8 @@ export const urls = {
     downloads: {
       reports: (reportName: string) =>
         `${restBaseUrl}/downloads/reports/${reportName}`,
+      reportData: (reportName: string) =>
+        `${restBaseUrl}/downloads/reports/${reportName}/data`,
     },
   },
   miso: {
