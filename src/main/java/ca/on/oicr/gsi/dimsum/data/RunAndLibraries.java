@@ -4,7 +4,6 @@ import static java.util.Objects.requireNonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
@@ -15,14 +14,12 @@ public class RunAndLibraries {
 
   private final Set<Sample> fullDepthSequencings;
   private final Set<Sample> libraryQualifications;
-  private final Set<OmittedRunSample> omittedSamples;
   private final Run run;
 
   private RunAndLibraries(Builder builder) {
     this.run = requireNonNull(builder.run);
     this.libraryQualifications = Collections.unmodifiableSet(builder.libraryQualifications);
     this.fullDepthSequencings = Collections.unmodifiableSet(builder.fullDepthSequencings);
-    this.omittedSamples = Collections.unmodifiableSet(builder.omittedSamples);
   }
 
   public Set<Sample> getFullDepthSequencings() {
@@ -33,10 +30,6 @@ public class RunAndLibraries {
     return libraryQualifications;
   }
 
-  public Set<OmittedRunSample> getOmittedSamples() {
-    return omittedSamples;
-  }
-
   public Run getRun() {
     return run;
   }
@@ -45,7 +38,6 @@ public class RunAndLibraries {
 
     private Set<Sample> fullDepthSequencings = new HashSet<>();
     private Set<Sample> libraryQualifications = new HashSet<>();
-    private Set<OmittedRunSample> omittedSamples = new HashSet<>();
     private Run run;
 
     public Builder addFullDepthSequencing(Sample sample) {
@@ -55,11 +47,6 @@ public class RunAndLibraries {
 
     public Builder addLibraryQualification(Sample sample) {
       libraryQualifications.add(sample);
-      return this;
-    }
-
-    public Builder addOmittedSample(OmittedRunSample sample) {
-      omittedSamples.add(sample);
       return this;
     }
 

@@ -67,7 +67,7 @@ public class RunRestController {
     checkRunExists(runName);
     OmittedRunSampleSort sort = parseSort(query, OmittedRunSampleSort::getByLabel);
     boolean descending = parseDescending(query);
-    return caseService.getOmittedSamplesForRun(runName, query.getPageSize(),
+    return caseService.getOmittedRunSamplesForRun(runName, query.getPageSize(),
         query.getPageNumber(), sort, descending);
   }
 

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 @Immutable
@@ -21,6 +22,7 @@ public class CaseData {
   private final Map<String, RunAndLibraries> runsByName;
   private final Map<Long, Assay> assaysById;
   private final List<OmittedSample> omittedSamples;
+  private final List<OmittedRunSample> omittedRunSamples;
   private final ZonedDateTime timestamp;
   private final Set<String> assayNames;
   private final Set<String> requisitionNames;
@@ -30,14 +32,15 @@ public class CaseData {
   private final Map<String, ProjectSummary> projectSummariesByName;
 
   public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
-      Map<Long, Assay> assaysById, List<OmittedSample> omittedSamples, ZonedDateTime timestamp,
+      Map<Long, Assay> assaysById, List<OmittedSample> omittedSamples,
+      List<OmittedRunSample> omittedRunSamples, ZonedDateTime timestamp,
       Set<String> requisitions, Set<String> projects, Set<String> donors, Set<String> runs,
-      Set<String> tests,
-      Map<String, ProjectSummary> projectSummariesByName) {
+      Set<String> tests, Map<String, ProjectSummary> projectSummariesByName) {
     this.cases = unmodifiableList(cases);
     this.runsByName = Collections.unmodifiableMap(runsByName);
     this.assaysById = Collections.unmodifiableMap(assaysById);
     this.omittedSamples = Collections.unmodifiableList(omittedSamples);
+    this.omittedRunSamples = Collections.unmodifiableList(omittedRunSamples);
     this.timestamp = requireNonNull(timestamp);
     this.assayNames = Collections.unmodifiableSet(getAssayNames(assaysById));
     this.requisitionNames = Collections.unmodifiableSet(requisitions);
@@ -72,6 +75,10 @@ public class CaseData {
 
   public List<OmittedSample> getOmittedSamples() {
     return omittedSamples;
+  }
+
+  public List<OmittedRunSample> getOmittedRunSamples() {
+    return omittedRunSamples;
   }
 
   public ZonedDateTime getTimestamp() {

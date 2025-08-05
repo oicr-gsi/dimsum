@@ -44,9 +44,13 @@ export const urls = {
     notifications: `${restBaseUrl}/notifications`,
     omissions: `${restBaseUrl}/omissions`,
     projects: {
-      summary: (projecttName: string) =>
-        `${restBaseUrl}/projects/${projecttName}/summary`,
+      summary: (projectName: string) =>
+        `${restBaseUrl}/projects/${projectName}/summary`,
       list: `${restBaseUrl}/projects`,
+      libraryQualificationOmissions: (projectName: string) =>
+        `${restBaseUrl}/projects/${projectName}/omissions/library-qualification`,
+      fullDepthOmissions: (projectName: string) =>
+        `${restBaseUrl}/projects/${projectName}/omissions/full-depth-sequencing`,
     },
     tests: `${restBaseUrl}/tests`,
     downloads: {

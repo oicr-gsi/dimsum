@@ -30,6 +30,7 @@ import {
   getRequiredElementById,
 } from "./util/html-utils";
 import { Tooltip } from "./component/tooltip";
+import { getOmittedRunSamplesDefinition } from "./data/omitted-run-sample";
 
 const tableContainerId = "tableContainer";
 const tableContainer = getRequiredElementById(tableContainerId); // use same table container across all tables
@@ -51,6 +52,9 @@ makeDashiProjectLinksTooltip(dashiLink, projectName, libraryDesigns);
 
 // creating dropdown for pre-defined date range filter
 const today = new Date();
+
+let omissionsHeading: HTMLElement | null = null;
+let omissionsTableContainer: HTMLElement | null = null;
 
 const dateOptions = [
   new BasicDropdownOption("Any Time", () => {
@@ -164,16 +168,20 @@ const tables = [
   new Pair("Receipts", () => reload(receiptDefinition)),
   new Pair("Extractions", () => reload(extractionDefinition)),
   new Pair("Library Preparations", () => reload(libraryPreparationDefinition)),
-  new Pair("Library Qualifications", () =>
+  new Pair("Library Qualifications", () => {
     reload(
       getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true)
-    )
-  ),
-  new Pair("Full-Depth Sequencings", () =>
+    );
+    addOmissionsTable(
+      urls.rest.projects.libraryQualificationOmissions(projectName)
+    );
+  }),
+  new Pair("Full-Depth Sequencings", () => {
     reload(
       getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
-    )
-  ),
+    );
+    addOmissionsTable(urls.rest.projects.fullDepthOmissions(projectName));
+  }),
   new Pair("Analysis Reviews", () => reload(analysisReviewDefinition)),
   new Pair("Release Approvals", () => reload(releaseApprovalDefinition)),
   new Pair("Releases", () => reload(releaseDefinition)),
@@ -194,10 +202,29 @@ function reload(definition: TableDefinition<any, any>) {
     getSearchParams(),
     handleTabbedTableFilters
   ).build();
+
+  omissionsHeading?.remove();
+  omissionsTableContainer?.remove();
 }
+
 function handleTabbedTableFilters(key: string, value: string, add: boolean) {
   projectSummaryTable.applyFilter(key, value, add);
   updateUrlParams(key, value, add);
+}
+
+function addOmissionsTable(queryUrl: string) {
+  omissionsHeading = document.createElement("h2");
+  omissionsHeading.innerText = "Omissions";
+  omissionsHeading.className =
+    "text-green-200 font-sarabun font-light font text-24 mt-8";
+  omissionsTableContainer = document.createElement("div");
+  omissionsTableContainer.id = "omissionsTableContainer";
+
+  tableContainer.after(omissionsHeading, omissionsTableContainer);
+  new TableBuilder(
+    getOmittedRunSamplesDefinition(queryUrl, true),
+    omissionsTableContainer.id
+  ).build();
 }
 
 function handleDateFilter(filterKey: string, filterValue: string) {
