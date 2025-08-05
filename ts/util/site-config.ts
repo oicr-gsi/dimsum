@@ -14,6 +14,7 @@ interface SiteConfig {
   pipelines: string[];
   assaysById: Record<number, Assay>;
   libraryDesigns: string[];
+  deliverableCategories: string[];
   deliverables: string[];
 }
 

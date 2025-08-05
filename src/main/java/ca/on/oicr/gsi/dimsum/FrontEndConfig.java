@@ -8,7 +8,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.on.oicr.gsi.cardea.data.Assay;
@@ -116,7 +115,6 @@ public class FrontEndConfig {
     return libraryDesigns;
   }
 
-  @JsonIgnore
   public Set<String> getDeliverableCategories() {
     return deliverableCategories;
   }
