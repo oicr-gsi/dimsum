@@ -7,6 +7,19 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.55.0] - 2025-08-07
+
+### Added
+
+* Omissions table to Library Qualification and Full-Depth Sequencing tabs on the Project Details page
+* Source for Sample Authenticated metric - will now show pass/fail based on swap detection and "Pending
+  Analysis" when unavailable
+
+### Changed
+
+* All deliverable categories are now included in the Case TAT and TAT Trend Reports
+
+
 ## [1.54.1] - 2025-07-04
 
 ### Fixed
