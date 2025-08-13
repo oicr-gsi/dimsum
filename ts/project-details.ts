@@ -179,15 +179,19 @@ const tables = [
     reload(
       getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true)
     );
-    addOmissionsTable(
-      urls.rest.projects.libraryQualificationOmissions(projectName)
-    );
+    if (internalUser) {
+      addOmissionsTable(
+        urls.rest.projects.libraryQualificationOmissions(projectName)
+      );
+    }
   }),
   new Pair("Full-Depth Sequencings", () => {
     reload(
       getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
     );
-    addOmissionsTable(urls.rest.projects.fullDepthOmissions(projectName));
+    if (internalUser) {
+      addOmissionsTable(urls.rest.projects.fullDepthOmissions(projectName));
+    }
   }),
   new Pair("Analysis Reviews", () => reload(analysisReviewDefinition)),
   new Pair("Release Approvals", () => reload(releaseApprovalDefinition)),
