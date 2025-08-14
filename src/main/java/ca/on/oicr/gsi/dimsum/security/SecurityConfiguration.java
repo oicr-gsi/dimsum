@@ -105,6 +105,9 @@ public class SecurityConfiguration {
       log.debug("Authorities mapped: {}", grantedAuthorities);
       DimsumSamlPrincipal dimsumPrincipal = new DimsumSamlPrincipal(samlPrincipal,
           getDisplayName(samlPrincipal), internal, getProjects(samlPrincipal));
+      log.debug("DimsumSamlPrincipal name='%s', displayName='%s', internal=%s, projects=%s"
+          .formatted(dimsumPrincipal.getName(), dimsumPrincipal.getDisplayName(),
+              Boolean.toString(dimsumPrincipal.isInternal()), dimsumPrincipal.getProjects()));
 
       return new Saml2Authentication(dimsumPrincipal, auth.getSaml2Response(), grantedAuthorities);
     });
@@ -112,8 +115,16 @@ public class SecurityConfiguration {
   }
 
   private String getDisplayName(Saml2AuthenticatedPrincipal principal) {
-    return principal.getFirstAttribute(samlFirstNameAttribute) + " "
-        + principal.getFirstAttribute(samlLastNameAttribute);
+    String firstName = principal.getFirstAttribute(samlFirstNameAttribute);
+    String lastName = principal.getFirstAttribute(samlLastNameAttribute);
+    if (firstName == null || lastName == null) {
+      String errorMessage =
+          "Null first or last name detected for principal. Attributes may not be configured correctly.";
+      // Logging explicitly because the exception was not showing up in logs
+      log.error(errorMessage);
+      throw new IllegalStateException(errorMessage);
+    }
+    return firstName + " " + lastName;
   }
 
   private Set<String> getProjects(Saml2AuthenticatedPrincipal principal) {
