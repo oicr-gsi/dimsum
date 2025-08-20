@@ -65,16 +65,19 @@ export const RUN_METRIC_LABELS = [
   METRIC_LABEL_PHIX,
 ];
 
+type ThresholdType = "BOOLEAN" | "LT" | "LE" | "GT" | "GE" | "BETWEEN";
+type MetricLevel = "SAMPLE" | "RUN" | "LANE";
+
 export interface SampleMetric {
   // minimal fields implemented for now; others commented
   name: string;
-  //thresholdType:
+  thresholdType: ThresholdType;
   // minimum: number | null;
   // maximum: number | null;
-  //metricLevel:
-  // preliminary: boolean;
-  // value: number | null;
-  //laneValues:
+  metricLevel: MetricLevel;
+  preliminary: boolean | null;
+  value: number | null;
+  // laneValues:
   qcPassed: boolean | null;
   // units: string | null;
 }
@@ -645,12 +648,21 @@ export function getSampleMetricCellHighlight(
   ) {
     return null;
   }
+
+  // TODO: handle run and lane level metrics (not populated at time of writing)
+  const sampleMetric = sample.metrics.find(
+    (metric) => metric.name === metricName && metric.metricLevel == "SAMPLE"
+  );
   // handle metrics that may be preliminary
-  if (isPreliminary(metricName, sample)) {
+  const preliminary = sampleMetric
+    ? sampleMetric.preliminary
+    : isPreliminary(metricName, sample);
+  if (preliminary) {
     return "warning";
   }
-
-  const value = getMetricValue(metricName, sample);
+  const value = sampleMetric
+    ? sampleMetric.value
+    : getMetricValue(metricName, sample);
   if (nullOrUndefined(value)) {
     return "warning";
   }
@@ -744,7 +756,16 @@ export function addMetricValueContents(
     addTextDiv("Manual check required", fragment);
     return;
   }
-  const value = getMetricValue(metricName, sample);
+  // TODO: handle run and lane level metrics (not populated at time of writing)
+  const sampleMetric = sample.metrics.find(
+    (metric) => metric.name === metricName && metric.metricLevel == "SAMPLE"
+  );
+  const value = sampleMetric
+    ? sampleMetric.value
+    : getMetricValue(metricName, sample);
+  const preliminary = sampleMetric
+    ? sampleMetric.preliminary
+    : isPreliminary(metricName, sample);
   if (value === null) {
     if (sample.run) {
       const status = sample.run.completionDate
@@ -755,7 +776,6 @@ export function addMetricValueContents(
       fragment.appendChild(makeNotFoundIcon());
     }
   } else {
-    const preliminary = isPreliminary(metricName, sample);
     let additionalTooltip = undefined;
     if (preliminary) {
       additionalTooltip = makeTextDiv("PRELIMINARY VALUE ONLY");
