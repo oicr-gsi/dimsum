@@ -256,6 +256,9 @@ const sequencingAttributesColumn: ColumnDefinition<Sample, void> = {
       fragment.appendChild(document.createTextNode("N/A"));
     }
   },
+  getCellHighlight(sample) {
+    return sample.run ? null : "na";
+  },
 };
 
 const latestActivityColumn: ColumnDefinition<Sample, void> = {
@@ -1158,6 +1161,15 @@ export function subcategoryApplies(
     subcategory.libraryDesignCode &&
     subcategory.libraryDesignCode !== sample.libraryDesignCode
   ) {
+    return false;
+  }
+  if (
+    subcategory.metrics.every((metric) =>
+      RUN_METRIC_LABELS.includes(metric.name)
+    ) &&
+    !sample.run
+  ) {
+    // This is a run subcategory and the sample has no run
     return false;
   }
   return true;
