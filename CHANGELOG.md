@@ -7,6 +7,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.56.0] - 2025-08-21
+
+### Added
+
+* Handling of Tumour Content metric
+
+### Fixed
+
+* In some places, library qualification included run metrics for tests that did not involve a run
+
+
 ## [1.55.0] - 2025-08-07
 
 ### Added
