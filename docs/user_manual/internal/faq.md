@@ -5,7 +5,7 @@
 1. Dimsum is periodically updated with data from other systems. Check the page footer to see when
 the last refresh happened.
 
-    ![Fetch time](../images/faq/fetch_time.png)<br>
+    ![Fetch time](../../images/faq/fetch_time.png)<br>
     *Fetch time in page footer*
 
 1. The sample/library must have a requisition with a proper assay
@@ -30,7 +30,7 @@ the last refresh happened.
     E.g. If the assay is WGS and you created a TS library, this will not be shown
     * The assay page in MISO shows the test parameters
 
-    ![MISO assay test details](../images/faq/miso_test_details.png)<br>
+    ![MISO assay test details](../../images/faq/miso_test_details.png)<br>
     *MISO assay tests*
 
 
@@ -50,7 +50,7 @@ the last refresh happened.
 * Moving a child item to a different requisition removes it and any of its descendants from the original requisition
 * Removing items from a requisition removes them from any cases for that requisition
 
-    ![Splitting a requisition](../images/faq/requisition_split.png)<br>
+    ![Splitting a requisition](../../images/faq/requisition_split.png)<br>
     *Example: Moving Aliquot 2 into its own requisition removes Aliquot 2 and Library 2 from the original requisition and its cases.*
 
 
@@ -70,7 +70,7 @@ Add the relevant samples/libraries as supplemental in the new requisition
 * Supplemental items are not included in TAT calculation
 * Supplemental items may have been QC’d under a different assay. Dimsum will indicate this
 
-    ![Supplemental library with different assay](../images/faq/supplemental_assay.png)<br>
+    ![Supplemental library with different assay](../../images/faq/supplemental_assay.png)<br>
     *The circle/checkmark icon indicates items passed under a different assay. The tooltip shows which assay.*
 
 
@@ -80,7 +80,7 @@ Usually this is caused by group IDs. Different group IDs cannot merge, so they c
 tests. Items that have **NO** group ID also cannot merge with other items that **DO** have a group
 ID.
 
-![Test group IDs](../images/faq/test_group_ids.png)<br>
+![Test group IDs](../../images/faq/test_group_ids.png)<br>
 *Group ID is included in the Test column in Dimsum.*
 
 
@@ -94,7 +94,7 @@ included in the case
 * Note that a library belongs to the same project as its parent sample – libraries do not set their
 own project
 
-![Detailed library tooltip](../images/faq/library_tooltip.png)<br>
+![Detailed library tooltip](../../images/faq/library_tooltip.png)<br>
 *You can hover over items in Dimsum to see their project*
 
 
@@ -145,7 +145,7 @@ are associated with Project B, so that will be the only project associated with 
 Case pipelines come from the case’s projects. See previous question regarding case project
 association.
 
-![Case pipelines](../images/faq/case_pipelines.png)<br>
+![Case pipelines](../../images/faq/case_pipelines.png)<br>
 *Case pipelines*
 
 
@@ -159,7 +159,7 @@ project association.
 
 1. Step appears grey with "N/A" text
 
-    ![Skipped QC step](../images/faq/step_skipped.png)<br>
+    ![Skipped QC step](../../images/faq/step_skipped.png)<br>
     *Extraction is skipped for these tests*
 
     * **Extraction** will be marked N/A if stock/aliquot samples or libraries are requisitioned because
@@ -174,7 +174,7 @@ project association.
 2. Step appears yellow/incomplete with no icons in it, while later steps show work in progress or
 completed
 
-    ![Missing QC step](../images/faq/step_missing.png)<br>
+    ![Missing QC step](../../images/faq/step_missing.png)<br>
     *Library Preparation step is missing*
 
     * This is usually because a group ID was added later in the process
@@ -195,7 +195,7 @@ completed
   * See QM-024 Quality Control and Calibration Procedures – Appendix A – QC Metrics, which details
   where all metrics come from
 
-    ![Metric not found](../images/faq/metric_not_found.png)<br>
+    ![Metric not found](../../images/faq/metric_not_found.png)<br>
     *Metric value missing*
 
 

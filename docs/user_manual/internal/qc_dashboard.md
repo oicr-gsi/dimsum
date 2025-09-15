@@ -7,7 +7,7 @@ by clicking on the Dimsum logo on the top left of all pages.
 By default, the table is sorted by urgency. Overdue cases are considered most urgent, followed by
 those behind schedule, and then cases with the least time remaining.
 
-![QC Dashboard](../images/qc_dashboard.png)
+![QC Dashboard](../../images/qc_dashboard.png)
 
 ## Cases Table Columns
 
@@ -50,7 +50,7 @@ Clicking on the "Case Details" link will take you to the [Case Details](details.
 ### Start Date
 
 Displays the case start date and total turn-around time. Start date is the earliest receipt date of
-the tumour sample(s) involved in the case. For ongoing cases, the turn-around time is the number of
+the receipt sample(s) involved in the case. For ongoing cases, the turn-around time is the number of
 days from the start date until the current date. For completed cases, the turn-around time is the
 number of days from the start date until the Release sign-off.
 
@@ -63,7 +63,7 @@ of days remaining for the case, and warnings if the case isn't meeting the targe
   is shaded yellow. Hovering over the text will open a pop-up indicating which gate is behind
   schedule and its target
 
-![TAT Targets](../images/tat_targets.png)
+![TAT Targets](../../images/tat_targets.png)
 
 ### Test
 
@@ -81,16 +81,16 @@ The following are QC step columns, and their associated items:
 | Library Preparation   | Libraries                                                 |
 | Library Qualification | Library aliquots or run-libraries, depending on the assay |
 | Full-Depth Sequencing | Run-libraries                                             |
-| Analysis Review       | Requisition-level QC                                      |
-| Release Approvals     | Requisition-level QC                                      |
-| Releases              | Requisition-level QC                                      |
+| Analysis Review       | Deliverable category sign-off                             |
+| Release Approval      | Deliverable category sign-off                             |
+| Release               | Deliverable sign-off                                      |
 
 Each QC step cell includes icons representing the QC status of each item relevant to that step. A
 checkmark represents an item that has passed QC, while an 'X' represents a QC failure. Click the
 Legend button at the top or bottom of the table for a full list of statuses and their icons.
-Analysis review, release approval, and release are considered complete when all deliverable types
-have been signed off, regardless of the QC status chosen. Other steps require a single passing item
-to be considered complete. Hover over an icon to view a tooltip containing item details and relevant
+Analysis review, release approval, and release are considered complete when all sign-offs have been
+completed, regardless of the QC status chosen. Other steps require a single passing item to be
+considered complete. Hover over an icon to view a tooltip containing item details and relevant
 links.
 
 If the case's assay has turn-around time (TAT) targets defined, these columns also display the
