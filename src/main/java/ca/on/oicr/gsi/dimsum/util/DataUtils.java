@@ -34,6 +34,11 @@ public class DataUtils {
         && isTrue(sample.getRun().getQcPassed()) && isTrue(sample.getRun().getDataReviewPassed());
   }
 
+  public static boolean passedOrTopUpConfirmed(Sample sample) {
+    return DataUtils.isPassed(sample) || (DataUtils.isTopUpRequired(sample)
+        && Boolean.TRUE.equals(sample.getDataReviewPassed()));
+  }
+
   public static boolean isFailed(Sample sample) {
     Run run = sample.getRun();
     if (run != null) {
