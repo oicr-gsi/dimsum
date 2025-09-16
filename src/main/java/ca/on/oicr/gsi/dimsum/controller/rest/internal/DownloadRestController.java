@@ -23,6 +23,8 @@ import ca.on.oicr.gsi.dimsum.util.reporting.reports.DonorAssayReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.SampleMetricsReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
+import ca.on.oicr.gsi.dimsum.util.reporting.reports.MohTglTrackingReport;
+
 
 @RestController
 @RequestMapping("/rest/internal/downloads")
@@ -61,6 +63,8 @@ public class DownloadRestController {
     switch (reportName) {
       case "tgl-tracking-sheet":
         return TglTrackingReport.INSTANCE;
+      case "moh-tgl-tracking-sheet":
+        return MohTglTrackingReport.INSTANCE;
       case "full-depth-summary":
         return FullDepthSummary.INSTANCE;
       case "dare-input-sheet":
