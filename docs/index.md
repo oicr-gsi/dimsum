@@ -5,6 +5,8 @@ title: "Dimsum Documentation Home"
 
 ![Dimsum](images/dimsum_logo.svg)
 
+This is the documentation for internal users. **External Users**: [See external documentation here](user_manual/external/).
+
 Dimsum can be used for a number of tasks and processes at OICR, including the following:
 
 ### 1. QC Approvals
