@@ -42,7 +42,7 @@ page. This page lists all active notifications, including
 - Counts of libraries that are pending analysis, QC, and data review
 - The JIRA ticket number, linking to JIRA
 
-![Active Notifications page](../images/active_notifications.png)
+![Active Notifications page](../../images/active_notifications.png)
 
 ---
 

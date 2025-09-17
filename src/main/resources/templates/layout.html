@@ -44,8 +44,8 @@
         <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
           class="font-inter text-16 text-black hover:text-green-200 float-right pl-4 inline-block mt-2">report
           a problem</a>
-        <a th:href="'https://dimsum-docs.readthedocs.io/en/' + ${docsVersion} + '/'" target="_blank"
-          rel="noopener noreferrer"
+        <a th:href="'https://dimsum-docs.readthedocs.io/en/' + ${docsVersion} + '/' + ${internalUser ? '' : 'user_manual/external/'}"
+          target="_blank" rel="noopener noreferrer"
           class="font-inter text-16 text-black hover:text-green-200 float-right inline-block mt-2">
           help</a>
 
