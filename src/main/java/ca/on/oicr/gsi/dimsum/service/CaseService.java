@@ -74,6 +74,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.RunSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -384,13 +385,15 @@ public class CaseService {
       MetricCategory requestCategory) {
     authorizeInternalOnly();
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters, requestCategory,
-        Function.identity());
+        Function.identity(), false);
   }
 
   public TableData<ExternalSample> getExternalReceipts(int pageSize, int pageNumber,
       SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    return getExternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.RECEIPT);
+    // Receipts should all be included regardless of QC status because these are the
+    // collaborator's samples that they expect to see
+    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
+        MetricCategory.RECEIPT, ExternalSample::new, false);
   }
 
   public TableData<ExternalSample> getExternalExtractions(int pageSize, int pageNumber,
@@ -421,17 +424,25 @@ public class CaseService {
       SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
       MetricCategory requestCategory) {
     return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters, requestCategory,
-        ExternalSample::new);
+        ExternalSample::new, true);
   }
 
   private <T> TableData<T> getSamples(int pageSize, int pageNumber, SampleSort sort,
       boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
-      MetricCategory requestCategory, Function<Sample, T> transform) {
+      MetricCategory requestCategory, Function<Sample, T> transform, boolean passedOnly) {
+    Predicate<Sample> passingFilter =
+        passedOnly ? DataUtils::passedOrTopUpConfirmed : sample -> true;
     List<Case> cases = getAuthorizedCases(baseFilter);
     TableData<T> data = new TableData<>();
-    data.setTotalCount(
-        cases.stream().flatMap(getAllGateSamples(requestCategory)).distinct().count());
-    List<Sample> samples = filterSamples(cases, filters, requestCategory).distinct().toList();
+    data.setTotalCount(cases.stream()
+        .flatMap(getAllGateSamples(requestCategory))
+        .filter(passingFilter)
+        .distinct()
+        .count());
+    List<Sample> samples = filterSamples(cases, filters, requestCategory)
+        .filter(passingFilter)
+        .distinct()
+        .toList();
     data.setFilteredCount(samples.size());
     data.setItems(samples.stream()
         .sorted(descending ? sort.comparator().reversed() : sort.comparator())

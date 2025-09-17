@@ -3,7 +3,6 @@ package ca.on.oicr.gsi.dimsum.data.external;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
@@ -34,19 +33,14 @@ public record ExternalTest(String name, String tissueType, String tissueOrigin, 
             .map(ExternalSample::new)
             .collect(Collectors.toUnmodifiableList()),
         from.getLibraryQualifications().stream()
-            .filter(ExternalTest::passedOrTopUpConfirmed)
+            .filter(DataUtils::passedOrTopUpConfirmed)
             .map(ExternalSample::new)
             .collect(Collectors.toUnmodifiableList()),
         from.getFullDepthSequencings().stream()
-            .filter(ExternalTest::passedOrTopUpConfirmed)
+            .filter(DataUtils::passedOrTopUpConfirmed)
             .map(ExternalSample::new)
             .collect(Collectors.toUnmodifiableList()),
         from.getLatestActivityDate());
-  }
-
-  private static boolean passedOrTopUpConfirmed(Sample sample) {
-    return DataUtils.isPassed(sample) || (DataUtils.isTopUpRequired(sample)
-        && Boolean.TRUE.equals(sample.getDataReviewPassed()));
   }
 
 }
