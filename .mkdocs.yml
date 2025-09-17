@@ -15,22 +15,29 @@ theme:
 
 nav:
   - User Manual:
-      - Overview: index.md
-      - Cases: user_manual/cases.md
-      - Common Features: user_manual/features.md
-      - QC Dashboard: user_manual/qc_dashboard.md
-      - Detail Pages: user_manual/details.md
-      - Notifications: user_manual/notifications.md
-      - Runs Page: user_manual/runs.md
-      - Omissions Page: user_manual/omissions.md
-      - Projects Page: user_manual/projects.md
-      - Reports: user_manual/reports.md
-      - FAQ: user_manual/faq.md
-  - Guides:
-      - Complete Run Sign-Offs: user_manual/guides/sign_off_run.md
-      - Complete Case Sign-Offs: user_manual/guides/sign_off_case.md
-      - Review Data Entry: user_manual/guides/review_data_entry.md
-      - Review Case Sign-Offs: user_manual/guides/review_sign_offs.md
+      - Internal Users:
+          - Overview: index.md
+          - Cases: user_manual/internal/cases.md
+          - Common Features: user_manual/internal/features.md
+          - QC Dashboard: user_manual/internal/qc_dashboard.md
+          - Detail Pages: user_manual/internal/details.md
+          - Notifications: user_manual/internal/notifications.md
+          - Runs Page: user_manual/internal/runs.md
+          - Omissions Page: user_manual/internal/omissions.md
+          - Projects Page: user_manual/internal/projects.md
+          - Reports: user_manual/internal/reports.md
+          - FAQ: user_manual/internal/faq.md
+          - Guides:
+              - Complete Run Sign-Offs: user_manual/internal/guides/sign_off_run.md
+              - Complete Case Sign-Offs: user_manual/internal/guides/sign_off_case.md
+              - Review Data Entry: user_manual/internal/guides/review_data_entry.md
+              - Review Case Sign-Offs: user_manual/internal/guides/review_sign_offs.md
+      - External Users:
+          - Overview: user_manual/external/index.md
+          - Common Features: user_manual/external/features.md
+          - Projects Page: user_manual/external/projects.md
+          - Cases Page: user_manual/external/cases.md
+          - Detail Pages: user_manual/external/details.md
 
 extra_css:
   - css/extra.css

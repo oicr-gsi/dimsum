@@ -22,17 +22,17 @@ indicate that any partial results or failed deliverable have been delivered as r
     5. Note that all the options you choose will apply to every case that you select. If you wish to
        set a different status or note for some cases, you will need to select and sign them off them
        separately.
-2. Click the <img src="../../../images/signoff_button.png" alt="Sign Off button" width="64"> button at the top or bottom of the table
+2. Click the <img src="../../../../images/signoff_button.png" alt="Sign Off button" width="64"> button at the top or bottom of the table
 3. In the dialog that appears, choose the QC step and deliverable type you wish to sign off and
    click "Submit."
 
-   <img src="../../../images/case_qc_dialog_1.png" alt="Case QC Dialog" width="400">
+   <img src="../../../../images/case_qc_dialog_1.png" alt="Case QC Dialog" width="400">
 
 4. In the next dialog, choose the QC status and enter a note if desired. If signing off the Release
    QC step, you will also need to specify which deliverable you wish to sign off. Click "Submit"
    when you are done.
 
-   <img src="../../../images/case_qc_dialog_2.png" alt="Release QC Dialog" width="400">
+   <img src="../../../../images/case_qc_dialog_2.png" alt="Release QC Dialog" width="400">
 
 5. Another dialog should confirm that your sign-offs were saved successfully. Once you close the
    dialog, the page will refresh to show the updated cases.
