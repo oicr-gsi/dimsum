@@ -31,9 +31,9 @@ showing summary counts of the tests that are completed each QC step.
 ![Project Details page](../../images/project_details_external.png)
 
 Any filters applied to the below tables will also affect the summary table. Clicking any of the
-counts will apply a related filter to both tables. For example, clicking the count of tests that are
-completed full-depth sequencing will filter to show only the items that are completed full-depth
-sequencing.
+counts will apply a related filter to both tables. For example, clicking the count of tests that
+have completed full-depth sequencing will filter to show only the items that have completed
+full-depth sequencing.
 
 There are additional controls above the summary table which allow you to filter by a date range to
 show counts of the work that was completed within the selected period.
