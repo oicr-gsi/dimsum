@@ -401,7 +401,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         return getSamplePhaseHighlight(
           kase.requisition,
           test.extractions,
-          true
+          internalUser
         );
       },
     },
