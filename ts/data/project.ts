@@ -67,8 +67,6 @@ function downloadProjectReport(report: string, items: ProjectSummary[]) {
     params.projects = items.map((project) => project.name).join(", ");
   }
   postDownload(urls.rest.downloads.reports(report), params);
-  //params.caseIds = items.map((kase) => kase.id).join(", ");
-  //postDownload(urls.rest.downloads.reports(report), params);
 }
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
