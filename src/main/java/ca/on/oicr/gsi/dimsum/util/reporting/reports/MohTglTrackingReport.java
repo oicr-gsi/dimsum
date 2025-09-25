@@ -31,79 +31,50 @@ public class MohTglTrackingReport extends Report {
     private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
     private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
 
-    private static class RowData {
-
-        private final Case kase;
-        private final Test test;
-        private final Assay assay;
-        private final Sample sample;
-
-        public RowData(Case kase, Test test, Assay assay, Sample sample) {
-            this.kase = kase;
-            this.test = test;
-            this.assay = assay;
-            this.sample = sample;
-        }
-
-        public Case getCase() {
-            return kase;
-        }
-
-        public Test getTest() {
-            return test;
-        }
-
-        public Assay getAssay() {
-            return assay;
-        }
-
-        public Sample getSample() {
-            return sample;
-        }
-    }
+     record RowData(Case kase, Test test, Assay assay, Sample sample) { }
 
     private static final ReportSection<RowData> trackerSection =
             new StaticTableReportSection<RowData>("Tracker",
                     Arrays.asList(
-                            Column.forString("Case ID", x -> x.getCase().getId()),
-                            Column.forString("Assay", x -> x.getCase().getAssayName()),
-                            Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),
-                            Column.forString("Test", x -> x.getTest().getName()),
-                            Column.forString("Tissue Type", x -> x.getTest().getTissueType()),
-                            Column.forString("Group ID", x -> x.getTest().getGroupId()),
+                            Column.forString("Case ID", x -> x.kase().getId()),
+                            Column.forString("Assay", x -> x.kase().getAssayName()),
+                            Column.forString("External Name", x -> x.kase().getDonor().getExternalName()),
+                            Column.forString("Test", x -> x.test().getName()),
+                            Column.forString("Tissue Type", x -> x.test().getTissueType()),
+                            Column.forString("Group ID", x -> x.test().getGroupId()),
                             Column.forString("Extraction Pass?",
-                                    x -> CompletedGate.EXTRACTION.qualifyTest(x.getTest()) ? "Yes" : null),
-                            Column.forString("Stock ID", x -> x.getTest().getExtractions().stream()
+                                    x -> CompletedGate.EXTRACTION.qualifyTest(x.test()) ? "Yes" : null),
+                            Column.forString("Stock ID", x -> x.test().getExtractions().stream()
                                     .map(Sample::getId).collect(Collectors.joining(", "))),
-                            Column.forString("Stock Name (Sample Alias)", x -> x.getTest().getExtractions().stream()
+                            Column.forString("Stock Name (Sample Alias)", x -> x.test().getExtractions().stream()
                                     .map(Sample::getName).collect(Collectors.joining(", "))),
-                            Column.forString("Library (Tissue Alias)", x -> x.getSample().getName()),
+                            Column.forString("Library (Tissue Alias)", x -> x.sample().getName()),
                             Column.forString("Library Aliquot ID",
                                     x -> Stream
-                                            .concat(x.getTest().getLibraryQualifications().stream(),
-                                                    x.getTest().getFullDepthSequencings().stream())
+                                            .concat(x.test().getLibraryQualifications().stream(),
+                                                    x.test().getFullDepthSequencings().stream())
                                             .map(Sample::getId).collect(Collectors.joining(", "))),
                             Column.forString("Library Aliquot Name (Library Alias)",
                                     x -> Stream
-                                            .concat(x.getTest().getLibraryQualifications().stream(),
-                                                    x.getTest().getFullDepthSequencings().stream())
+                                            .concat(x.test().getLibraryQualifications().stream(),
+                                                    x.test().getFullDepthSequencings().stream())
                                             .map(Sample::getName).collect(Collectors.joining(", "))),
                             Column.forString("Library Qualification Runs",
-                                    x -> x.getTest().getLibraryQualifications().stream()
+                                    x -> x.test().getLibraryQualifications().stream()
                                             .filter(sample -> sample.getRun() != null)
                                             .map(runlib -> runlib.getRun().getName())
                                             .collect(Collectors.joining(", "))),
                             Column.forString("Library Qualification Pass?",
-                                    x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.getTest()) ? "Yes"
+                                    x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.test()) ? "Yes"
                                             : null),
                             Column.forString("Full-Depth Runs",
-                                    x -> x.getTest().getFullDepthSequencings().stream()
+                                    x -> x.test().getFullDepthSequencings().stream()
                                             .map(runlib -> runlib.getRun().getName())
                                             .collect(Collectors.joining(", "))),
                             Column.forDecimal("Coverage Required", MohTglTrackingReport::getCoverageRequired),
                             Column.forDecimal("Coverage Achieved", MohTglTrackingReport::getCoverageAchieved),
-                            Column.forString("MOH Data Released", x -> getCaseMOHDelivered(x.getCase())),
-                            Column.forString("Case Status", x -> getCaseStatus(x.getCase())))) {
+                            Column.forString("MOH Data Released", x -> getCaseMOHDelivered(x.kase())),
+                            Column.forString("Case Status", x -> getCaseStatus(x.kase())))) {
 
                 @Override
                 public List<RowData> getData(CaseService caseService,
@@ -136,7 +107,7 @@ public class MohTglTrackingReport extends Report {
     public static final MohTglTrackingReport INSTANCE = new MohTglTrackingReport();
 
     private MohTglTrackingReport() {
-        super("More TGL Tracking Sheet", trackerSection);
+        super("MOH TGL Tracking Sheet", trackerSection);
     }
 
     private static String getCaseStatus(Case kase) {
@@ -156,7 +127,7 @@ public class MohTglTrackingReport extends Report {
     }
 
     private static BigDecimal getCoverageRequired(RowData rowData) {
-        Metric metric = getCoverageMetric(rowData.getAssay(), rowData.getTest());
+        Metric metric = getCoverageMetric(rowData.assay(), rowData.test());
         if (metric == null) {
             return null;
         }
@@ -164,15 +135,15 @@ public class MohTglTrackingReport extends Report {
     }
 
     private static BigDecimal getCoverageAchieved(RowData rowData) {
-        Metric metric = getCoverageMetric(rowData.getAssay(), rowData.getTest());
+        Metric metric = getCoverageMetric(rowData.assay(), rowData.test());
         if (metric == null) {
             return null;
         }
         switch (metric.getName()) {
             case METRIC_COVERAGE:
-                return getMetricValue(rowData.getTest(), Sample::getMeanCoverageDeduplicated);
+                return getMetricValue(rowData.test(), Sample::getMeanCoverageDeduplicated);
             case METRIC_CLUSTERS:
-                return getMetricValue(rowData.getTest(),
+                return getMetricValue(rowData.test(),
                         sample -> sample.getClustersPerSample() == null ? null
                                 : new BigDecimal(sample.getClustersPerSample()));
             default:
