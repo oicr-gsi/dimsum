@@ -543,7 +543,13 @@ function getSampleMetrics(
     )
     .filter((metric) => metric.thresholdType !== "BOOLEAN")
     .map((metric) => {
-      const value = getMetricValue(metric.name, sample);
+      const sampleMetric = sample.metrics.find(
+        (metric) =>
+          metric.name === metric.name && metric.metricLevel == "SAMPLE"
+      );
+      const value = sampleMetric
+        ? sampleMetric.value
+        : getMetricValue(metric.name, sample);
       const misoMetric: MisoRunLibraryMetric = {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
@@ -1237,6 +1243,8 @@ export function metricApplies(metric: Metric, sample: Sample): boolean {
   return true;
 }
 
+// Note: sample.metrics should be checked before this. This function should
+// eventually be removed as sample.metrics will include all metrics
 function getMetricValue(metricName: string, sample: Sample): number | null {
   switch (metricName) {
     case "Appropriate volume":
