@@ -28,81 +28,77 @@ import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSecti
 
 public class MohTglTrackingReport extends Report {
 
-    private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
-    private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
+  private static final String METRIC_COVERAGE = "Mean Coverage Deduplicated";
+  private static final String METRIC_CLUSTERS = "Pipeline Filtered Clusters";
 
-     record RowData(Case kase, Test test, Assay assay, Sample sample) { }
+  record RowData(Case kase, Test test, Assay assay, Sample sample) { }
 
-    private static final ReportSection<RowData> trackerSection =
-            new StaticTableReportSection<RowData>("Tracker",
-                    Arrays.asList(
-                            Column.forString("Case ID", x -> x.kase().getId()),
-                            Column.forString("Assay", x -> x.kase().getAssayName()),
-                            Column.forString("External Name", x -> x.kase().getDonor().getExternalName()),
-                            Column.forString("Test", x -> x.test().getName()),
-                            Column.forString("Tissue Type", x -> x.test().getTissueType()),
-                            Column.forString("Group ID", x -> x.test().getGroupId()),
-                            Column.forString("Extraction Pass?",
-                                    x -> CompletedGate.EXTRACTION.qualifyTest(x.test()) ? "Yes" : null),
-                            Column.forString("Stock ID", x -> x.test().getExtractions().stream()
-                                    .map(Sample::getId).collect(Collectors.joining(", "))),
-                            Column.forString("Stock Name (Sample Alias)", x -> x.test().getExtractions().stream()
-                                    .map(Sample::getName).collect(Collectors.joining(", "))),
-                            Column.forString("Library (Tissue Alias)", x -> x.sample().getName()),
-                            Column.forString("Library Aliquot ID",
-                                    x -> Stream
-                                            .concat(x.test().getLibraryQualifications().stream(),
-                                                    x.test().getFullDepthSequencings().stream())
-                                            .map(Sample::getId).collect(Collectors.joining(", "))),
-                            Column.forString("Library Aliquot Name (Library Alias)",
-                                    x -> Stream
-                                            .concat(x.test().getLibraryQualifications().stream(),
-                                                    x.test().getFullDepthSequencings().stream())
-                                            .map(Sample::getName).collect(Collectors.joining(", "))),
-                            Column.forString("Library Qualification Runs",
-                                    x -> x.test().getLibraryQualifications().stream()
-                                            .filter(sample -> sample.getRun() != null)
-                                            .map(runlib -> runlib.getRun().getName())
-                                            .collect(Collectors.joining(", "))),
-                            Column.forString("Library Qualification Pass?",
-                                    x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.test()) ? "Yes"
-                                            : null),
-                            Column.forString("Full-Depth Runs",
-                                    x -> x.test().getFullDepthSequencings().stream()
-                                            .map(runlib -> runlib.getRun().getName())
-                                            .collect(Collectors.joining(", "))),
-                            Column.forDecimal("Coverage Required", MohTglTrackingReport::getCoverageRequired),
-                            Column.forDecimal("Coverage Achieved", MohTglTrackingReport::getCoverageAchieved),
-                            Column.forString("MOH Data Released", x -> getCaseMOHDelivered(x.kase())),
-                            Column.forString("Case Status", x -> getCaseStatus(x.kase())))) {
+  private static final ReportSection<RowData> trackerSection =
+      new StaticTableReportSection<RowData>("Tracker",
+              Arrays.asList(
+              Column.forString("Case ID", x -> x.kase().getId()),
+              Column.forString("Assay", x -> x.kase().getAssayName()),
+              Column.forString("External Name", x -> x.kase().getDonor().getExternalName()),
+              Column.forString("Test", x -> x.test().getName()),
+              Column.forString("Tissue Type", x -> x.test().getTissueType()),
+              Column.forString("Group ID", x -> x.test().getGroupId()),
+              Column.forString("Extraction Pass?",
+                  x -> CompletedGate.EXTRACTION.qualifyTest(x.test()) ? "Yes" : null),
+              Column.forString("Stock ID", x -> x.test().getExtractions().stream()
+                  .map(Sample::getId).collect(Collectors.joining(", "))),
+              Column.forString("Stock Name", x -> x.test().getExtractions().stream()
+                  .map(Sample::getName).collect(Collectors.joining(", "))),
+              Column.forString("Library Aliquot Name", x -> x.sample().getName()),
+              Column.forString("Library Aliquot ID",
+                  x -> Stream
+                    .concat(x.test().getLibraryQualifications().stream(),
+                    x.test().getFullDepthSequencings().stream())
+                    .map(Sample::getId).collect(Collectors.joining(", "))),
+              Column.forString("Run Library Name(s)",
+                  x -> Stream
+                    .concat(x.test().getLibraryQualifications().stream(),
+                    x.test().getFullDepthSequencings().stream())
+                    .map(Sample::getName).collect(Collectors.joining(", "))),
+              Column.forString("Library Qualification Runs",
+                  x -> x.test().getLibraryQualifications().stream()
+                    .filter(sample -> sample.getRun() != null)
+                    .map(runlib -> runlib.getRun().getName())
+                    .collect(Collectors.joining(", "))),
+              Column.forString("Library Qualification Pass?",
+                  x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.test()) ? "Yes"
+                    : null),
+              Column.forString("Full-Depth Runs",
+                    x -> x.test().getFullDepthSequencings().stream()
+                    .map(runlib -> runlib.getRun().getName())
+                    .collect(Collectors.joining(", "))),
+              Column.forDecimal("Coverage Required", MohTglTrackingReport::getCoverageRequired),
+              Column.forDecimal("Coverage Achieved", MohTglTrackingReport::getCoverageAchieved),
+              Column.forString("MOH Data Released", x -> getCaseMOHDelivered(x.kase())),
+              Column.forString("Case Status", x -> getCaseStatus(x.kase())))) {
 
-                @Override
-                public List<RowData> getData(CaseService caseService,
-                                             JsonNode parameters) {
-                    Set<String> projectNames = getParameterStringSet(parameters, "projects");
-                    List<CaseFilter> filters = null;
-                    if (projectNames != null) {
-                        filters = projectNames.stream()
-                                .map(project -> new CaseFilter(CaseFilterKey.PROJECT, project))
-                                .toList();
-                    }
+        @Override
+        public List<RowData> getData(CaseService caseService,
+            JsonNode parameters) {
+          Set<String> projectNames = getParameterStringSet(parameters, "projects");
+          List<CaseFilter> filters = null;
+          if (projectNames != null) {
+          filters = projectNames.stream()
+          .map(project -> new CaseFilter(CaseFilterKey.PROJECT, project))
+          .toList();
+          }
 
-                    Map<Long, Assay> assaysById = caseService.getAssaysById();
+          Map<Long, Assay> assaysById = caseService.getAssaysById();
 
-                    return caseService.getCaseStream(filters)
-                            .flatMap(kase -> kase.getTests().stream()
-                                    .flatMap(test -> test.getFullDepthSequencings().stream()
-                                            .map(sample -> new RowData(
-                                                    kase,
-                                                    test,
-                                                    assaysById.get(kase.getAssayId()),
-                                                    sample
-                                            ))
-                                    )
-                            )
-                            .toList();
-                }
-            };
+          return caseService.getCaseStream(filters)
+            .flatMap(kase -> kase.getTests().stream()
+            .flatMap(test -> test.getFullDepthSequencings().stream()
+            .map(sample -> new RowData(
+                kase,
+                test,
+                assaysById.get(kase.getAssayId()),
+                sample)))).toList();
+            }
+    };
 
     public static final MohTglTrackingReport INSTANCE = new MohTglTrackingReport();
 

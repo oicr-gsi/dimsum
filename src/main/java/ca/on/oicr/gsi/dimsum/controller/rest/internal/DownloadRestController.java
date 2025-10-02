@@ -22,7 +22,6 @@ import ca.on.oicr.gsi.dimsum.util.reporting.reports.DareInputSheet;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.DonorAssayReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.SampleMetricsReport;
-import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.MohTglTrackingReport;
 
 
@@ -61,8 +60,6 @@ public class DownloadRestController {
 
   private static Report getReport(String reportName) {
     switch (reportName) {
-      case "tgl-tracking-sheet":
-        return TglTrackingReport.INSTANCE;
       case "moh-tgl-tracking-sheet":
         return MohTglTrackingReport.INSTANCE;
       case "full-depth-summary":

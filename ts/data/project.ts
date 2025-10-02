@@ -33,13 +33,11 @@ export interface ProjectSummary {
   releaseCompletedCount: number;
 }
 
-const TGL_TRACKING_SHEET = "tgl-tracking-sheet";
 const MOH_TGL_TRACKING_SHEET = "moh-tgl-tracking-sheet";
 
 function showDownloadDialog(items: ProjectSummary[]) {
   const reportOptions = new Map<string, string>([
-    ["TGL Tracking Sheet", TGL_TRACKING_SHEET],
-    ["MOH TGL Tracking Sheet", MOH_TGL_TRACKING_SHEET],
+    ["MOH TGL Tracking Sheet", MOH_TGL_TRACKING_SHEET]
   ]);
 
   const reportSelect = new DropdownField(
@@ -50,7 +48,6 @@ function showDownloadDialog(items: ProjectSummary[]) {
   );
   showFormDialog("Download Project Data", [reportSelect], "Next", (result) => {
     switch (result.report) {
-      case TGL_TRACKING_SHEET:
       case MOH_TGL_TRACKING_SHEET:
         downloadProjectReport(result.report, items);
         break;
