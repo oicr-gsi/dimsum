@@ -436,6 +436,36 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
+  public void testPendingFullDepthSequencingTopUpFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.FULL_DEPTH_TOP_UP.getLabel());
+    testFilterCases(filter, Arrays.asList(17));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingFullDepthSequencingTopUpTestFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.FULL_DEPTH_TOP_UP.getLabel());
+    testFilterTests(filter, Arrays.asList(makeTestGroupId(17, 1)));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testPendingFullDepthSequencingTopUpSampleFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING, PendingState.FULL_DEPTH_TOP_UP.getLabel());
+    testFilterSamples(filter, MetricCategory.RECEIPT, Arrays.asList(
+        makeSampleId(17, 0, MetricCategory.RECEIPT, 1)));
+    testFilterSamples(filter, MetricCategory.EXTRACTION, Arrays.asList(
+        makeSampleId(17, 1, MetricCategory.EXTRACTION, 1)));
+    testFilterSamples(filter, MetricCategory.LIBRARY_PREP, Arrays.asList(
+        makeSampleId(17, 1, MetricCategory.LIBRARY_PREP, 1)));
+    testFilterSamples(filter, MetricCategory.LIBRARY_QUALIFICATION, Arrays.asList(
+        makeSampleId(17, 1, MetricCategory.LIBRARY_QUALIFICATION, 1)));
+    testFilterSamples(filter, MetricCategory.FULL_DEPTH_SEQUENCING, Arrays.asList(
+        makeSampleId(17, 1, MetricCategory.FULL_DEPTH_SEQUENCING, 1)));
+  }
+
+  @org.junit.jupiter.api.Test
   public void testPendingFullDepthQcFilter() {
     CaseFilter filter =
         new CaseFilter(CaseFilterKey.PENDING, PendingState.FULL_DEPTH_QC.getLabel());
