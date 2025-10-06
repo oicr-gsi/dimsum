@@ -223,6 +223,26 @@ public enum PendingState {
       }
     }
   },
+  FULL_DEPTH_TOP_UP("Full-Depth Sequencing Top-Up", true, false) {
+    @Override
+    public boolean qualifyTest(Test test) {
+      return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications(),
+          false) && test.getFullDepthSequencings().stream().anyMatch(DataUtils::isTopUpRequired);
+    }
+
+    @Override
+    public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
+      switch (requestCategory) {
+        case RECEIPT:
+        case EXTRACTION:
+        case LIBRARY_PREP:
+        case LIBRARY_QUALIFICATION:
+          return DataUtils.isPassed(sample);
+        default:
+          return true;
+      }
+    }
+  },
   FULL_DEPTH_QC("Full-Depth Sequencing QC Sign-Off", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
