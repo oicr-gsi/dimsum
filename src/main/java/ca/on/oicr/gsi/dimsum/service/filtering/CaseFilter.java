@@ -24,6 +24,10 @@ public class CaseFilter {
     return key;
   }
 
+  public String getValue() {
+    return value;
+  }
+
   public Predicate<Case> casePredicate() {
     return key.create().apply(value);
   }
