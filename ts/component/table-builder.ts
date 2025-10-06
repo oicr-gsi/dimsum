@@ -583,29 +583,31 @@ export class TableBuilder<ParentType, ChildType> {
     filter: FilterDefinition,
     filterContainer: HTMLElement
   ) {
-    const onClose = (textInput: TextInput) => {
-      const value = textInput.getValue();
-      const onRemove = () => {
-        if (this.onFilterChange) this.onFilterChange(filter.key, value, false);
-        this.reload(true);
-      };
-      const filterLabel = new AcceptedFilter(
-        filter.title,
-        filter.key,
-        textInput.getValue(),
-        onRemove
-      );
-      textInput.getContainerTag().remove();
-      filterContainer.insertBefore(
-        filterLabel.element,
-        filterContainer.lastChild
-      );
-      this.acceptedFilters.push(filterLabel);
-      // update params
-      if (this.onFilterChange) {
-        this.onFilterChange(filter.key, textInput.getValue(), true);
-      }
-      this.reload(true); // apply new filter
+    const onClose = (values: string[]) => {
+      values.forEach((value) => {
+        const onRemove = () => {
+          if (this.onFilterChange) {
+            this.onFilterChange(filter.key, value, false);
+          }
+          this.reload(true);
+        };
+        const filterLabel = new AcceptedFilter(
+          filter.title,
+          filter.key,
+          value,
+          onRemove
+        );
+        filterContainer.insertBefore(
+          filterLabel.element,
+          filterContainer.lastChild
+        );
+        this.acceptedFilters.push(filterLabel);
+        // update params
+        if (this.onFilterChange) {
+          this.onFilterChange(filter.key, value, true);
+        }
+      });
+      this.reload(true); // apply new filter(s)
     };
     return new BasicDropdownOption(filter.title, () => {
       if (!filter.autocompleteUrl) {
