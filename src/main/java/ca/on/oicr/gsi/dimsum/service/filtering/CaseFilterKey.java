@@ -99,12 +99,20 @@ public enum CaseFilterKey {
 }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
-        return string -> getGate(string).testPredicate().negate();
+        return string -> {
+          CompletedGate gate = getGate(string);
+          if (gate.isCaseLevel()) {
+            // show all tests within cases that are incomplete (case is always filtered first)
+            return sample -> true;
+          }
+          return gate.testPredicate().negate();
+        };
     }
 
     @Override
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
-        return string -> getGate(string).samplePredicate(requestCategory).negate();
+        // show all items within tests that are incomplete (test is always filtered first)
+        return string -> sample -> true;
     }
 },
   LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> 

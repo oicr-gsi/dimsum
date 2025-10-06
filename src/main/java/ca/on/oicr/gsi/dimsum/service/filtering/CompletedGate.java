@@ -17,7 +17,7 @@ import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum CompletedGate {
   // @formatter:off
-  RECEIPT("Receipt", true, false) {
+  RECEIPT("Receipt", true, true, false) {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
       return Helpers.isReceiptCompleted(kase);
@@ -37,7 +37,7 @@ public enum CompletedGate {
       }
     }
   },
-  EXTRACTION("Extraction", true, false) {
+  EXTRACTION("Extraction", false, true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isExtractionSkipped() || test.getExtractions().stream().anyMatch(sample ->
@@ -53,7 +53,7 @@ public enum CompletedGate {
       }
     }
   },
-  LIBRARY_PREPARATION("Library Preparation", true, false) {
+  LIBRARY_PREPARATION("Library Preparation", false, true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isLibraryPreparationSkipped()
@@ -70,7 +70,7 @@ public enum CompletedGate {
     }
 
   },
-  LIBRARY_QUALIFICATION("Library Qualification", true, false) {
+  LIBRARY_QUALIFICATION("Library Qualification", false, true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return test.isLibraryQualificationSkipped()
@@ -86,7 +86,7 @@ public enum CompletedGate {
       }
     }
   },
-  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true, false) {
+  FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", false, true, false) {
     @Override
     public boolean qualifyTest(Test test) {
       return Helpers.isCompleted(test.getFullDepthSequencings());
@@ -101,7 +101,7 @@ public enum CompletedGate {
       }
     }
   },
-  ANALYSIS_REVIEW("Analysis Review", true, true) {
+  ANALYSIS_REVIEW("Analysis Review", true, true, true) {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
       if (DataUtils.isAnalysisReviewSkipped(kase)) {
@@ -112,14 +112,14 @@ public enum CompletedGate {
       }
     }
   },
-  RELEASE_APPROVAL("Release Approval", false, true) {
+  RELEASE_APPROVAL("Release Approval", true, false, true) {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
       return qualifyCaseForDeliverableType(kase, deliverableCategory,
           CompletedGate::releaseApprovalComplete);
     }
   },
-  RELEASE("Release", false, true) {
+  RELEASE("Release", true, false, true) {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
       return qualifyCaseForDeliverableType(kase, deliverableCategory,
@@ -136,18 +136,25 @@ public enum CompletedGate {
   }
 
   private final String label;
+  private final boolean caseLevel;
   private final boolean stoppable;
   private final boolean considerDeliverableCategory;
   private final Predicate<Test> testPredicate = this::qualifyTest;
 
-  private CompletedGate(String label, boolean stoppable, boolean considerDeliverableCategory) {
+  private CompletedGate(String label, boolean caseLevel, boolean stoppable,
+      boolean considerDeliverableCategory) {
     this.label = label;
+    this.caseLevel = caseLevel;
     this.stoppable = stoppable;
     this.considerDeliverableCategory = considerDeliverableCategory;
   }
 
   public String getLabel() {
     return label;
+  }
+
+  public boolean isCaseLevel() {
+    return caseLevel;
   }
 
   public boolean isStoppable() {
