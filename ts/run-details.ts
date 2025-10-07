@@ -42,6 +42,7 @@ function makeTable(
       document.getElementById(headingId)?.remove();
       document.getElementById(containerId)?.remove();
     }
+    return true;
   }).build();
 }
 

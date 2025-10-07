@@ -142,7 +142,7 @@ export class TableBuilder<ParentType, ChildType> {
   topSelectionCountElement?: HTMLElement;
   bottomSelectionCountElement?: HTMLElement;
   onFilterChange?: (key: string, value: string, add: boolean) => void;
-  onLoad?: (data: ParentType[]) => void;
+  onLoad?: (data: ParentType[]) => boolean; // return true to remove handler after running
   lastClickedRowIndex: number | null = null;
   private isShiftKeyPressed: boolean = false;
 
@@ -151,7 +151,7 @@ export class TableBuilder<ParentType, ChildType> {
     containerId: string,
     filterParams?: Array<Pair<string, string>>,
     onFilterChange?: (key: string, value: string, add: boolean) => void,
-    onLoad?: (data: ParentType[]) => void
+    onLoad?: (data: ParentType[]) => boolean
   ) {
     this.definition = definition;
     if (definition.defaultSort) {
@@ -314,13 +314,20 @@ export class TableBuilder<ParentType, ChildType> {
     this.load(data);
     this.setupScrollListener();
     if (data) {
-      if (this.onLoad) {
-        this.onLoad(data);
-      }
+      this.triggerOnLoad(data);
     } else {
       this.reload();
     }
     return this;
+  }
+
+  private triggerOnLoad(data: ParentType[]) {
+    if (this.onLoad) {
+      const remove = this.onLoad(data);
+      if (remove) {
+        this.onLoad = undefined;
+      }
+    }
   }
 
   private addSelectionCount(container: HTMLElement, countElement: HTMLElement) {
@@ -832,9 +839,7 @@ export class TableBuilder<ParentType, ChildType> {
       });
       this.load(data.items);
       this.showLoaded(data);
-      if (this.onLoad) {
-        this.onLoad(data.items);
-      }
+      this.triggerOnLoad(data.items);
     } catch (reason) {
       showErrorDialog("Error reloading table - " + reason);
     }
