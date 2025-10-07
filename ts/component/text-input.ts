@@ -7,7 +7,7 @@ export class TextInput {
   private textField: HTMLInputElement;
   constructor(
     title: string,
-    onClose: (textInput: TextInput) => void,
+    onClose: (values: string[]) => void,
     queryUrl: string
   ) {
     this.container = document.createElement("div");
@@ -30,10 +30,8 @@ export class TextInput {
         .filter((val) => val.length > 0);
 
       if (inputValues.length > 0) {
-        inputValues.forEach((value) => {
-          this.textField.value = value;
-          onClose(this);
-        });
+        onClose(inputValues);
+        this.container.remove();
         document.removeEventListener("keydown", handleEsc);
         this.textField.value = ""; // reset field after all values are processed
       } else {
