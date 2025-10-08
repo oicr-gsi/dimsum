@@ -7,6 +7,25 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.57.0] - 2025-10-08
+
+### Added
+
+* Pending Full-Depth Sequencing Top-Up case filter
+
+### Fixed
+
+* When adding multiple filters at once via text entry, sometimes only partial results would display
+* Error on QC in MISO page with certain metrics
+* results of "incomplete" filters
+  * when choosing a step that is evaluated at the case level, all tests and samples within the matching
+  cases will be included
+  * when choosing a step that is evaluated at the test level, all samples within the matching tests
+  will be included
+* On the Run Details page, the Library Qualifications and Full-Depth Sequencing tables would disappear
+  after filtering if no items matched the filters
+
+
 ## [1.56.0] - 2025-08-21
 
 ### Added
