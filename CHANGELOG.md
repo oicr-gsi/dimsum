@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.57.1] - 2025-10-09
+
+### Fixed
+
+* The QC in MISO page was showing the same value for all metrics
+
+
 ## [1.57.0] - 2025-10-08
 
 ### Added
