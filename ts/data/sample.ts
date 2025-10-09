@@ -544,8 +544,9 @@ function getSampleMetrics(
     .filter((metric) => metric.thresholdType !== "BOOLEAN")
     .map((metric) => {
       const sampleMetric = sample.metrics.find(
-        (metric) =>
-          metric.name === metric.name && metric.metricLevel == "SAMPLE"
+        (sampleMetric) =>
+          sampleMetric.name === metric.name &&
+          sampleMetric.metricLevel == "SAMPLE"
       );
       const value = sampleMetric
         ? sampleMetric.value
