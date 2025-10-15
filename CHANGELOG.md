@@ -7,6 +7,21 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.58.0] - 2025-10-15
+
+### Added
+
+* User Manual section for external users
+* External view of Requisition, Donor, and Case Detail pages
+* External view of QC Dashboard
+* External view of Projects list page
+
+### Changed
+
+* Users must now be authorized to access Dimsum as either internal or external users
+* Home page for external users to the Projects list
+
+
 ## [1.57.1] - 2025-10-09
 
 ### Fixed
