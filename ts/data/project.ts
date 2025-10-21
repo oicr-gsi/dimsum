@@ -6,6 +6,7 @@ import { siteConfig } from "../util/site-config";
 import {
   DropdownField,
   showFormDialog,
+  showDownloadOptionsDialog,
 } from "../component/dialog";
 
 export interface ProjectSummary {
@@ -49,7 +50,7 @@ function showDownloadDialog(items: ProjectSummary[]) {
   showFormDialog("Download Project Data", [reportSelect], "Next", (result) => {
     switch (result.report) {
       case MOH_TGL_TRACKING_SHEET:
-        downloadProjectReport(result.report, items);
+        showDownloadOptionsDialogX(result.report, items);
         break;
       default:
         throw new Error(`Invalid report: ${result.report}`);
@@ -57,9 +58,16 @@ function showDownloadDialog(items: ProjectSummary[]) {
   });
 }
 
+function showDownloadOptionsDialogX(report: string, items: ProjectSummary[]) {
+  const callback = (result: any) => {
+    const options = result.formatOptions;
+    downloadProjectReport(report, options, items);
+  };
+  showDownloadOptionsDialog(report, items, callback, undefined);
+}
 
-function downloadProjectReport(report: string, items: ProjectSummary[]) {
-  const params: any = {};
+
+function downloadProjectReport(report: string, params: any, items: ProjectSummary[]) {
   if (items && items.length) {
     params.projects = items.map((project) => project.name).join(", ");
   }

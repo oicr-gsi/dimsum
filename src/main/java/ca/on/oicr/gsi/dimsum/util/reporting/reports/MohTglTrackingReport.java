@@ -48,17 +48,15 @@ public class MohTglTrackingReport extends Report {
                   .map(Sample::getId).collect(Collectors.joining(", "))),
               Column.forString("Stock Name", x -> x.test().getExtractions().stream()
                   .map(Sample::getName).collect(Collectors.joining(", "))),
-              Column.forString("Library Aliquot Name", x -> x.sample().getName()),
               Column.forString("Library Aliquot ID",
                   x -> Stream
                     .concat(x.test().getLibraryQualifications().stream(),
                     x.test().getFullDepthSequencings().stream())
                     .map(Sample::getId).collect(Collectors.joining(", "))),
-              Column.forString("Run Library Name(s)",
-                  x -> Stream
-                    .concat(x.test().getLibraryQualifications().stream(),
-                    x.test().getFullDepthSequencings().stream())
-                    .map(Sample::getName).collect(Collectors.joining(", "))),
+              Column.forString("Library Aliquot Name", x -> Stream
+                      .concat(x.test().getLibraryQualifications().stream(),
+                              x.test().getFullDepthSequencings().stream())
+                      .map(Sample::getName).collect(Collectors.joining(", "))),
               Column.forString("Library Qualification Runs",
                   x -> x.test().getLibraryQualifications().stream()
                     .filter(sample -> sample.getRun() != null)
@@ -73,7 +71,7 @@ public class MohTglTrackingReport extends Report {
                     .collect(Collectors.joining(", "))),
               Column.forDecimal("Coverage Required", MohTglTrackingReport::getCoverageRequired),
               Column.forDecimal("Coverage Achieved", MohTglTrackingReport::getCoverageAchieved),
-              Column.forString("MOH Data Released", x -> getCaseMOHDelivered(x.kase())),
+              Column.forString("MOH Data Released", x -> CompletedGate.RELEASE.qualifyCase(x.kase(), "MOH") ? "Yes" : null),
               Column.forString("Case Status", x -> getCaseStatus(x.kase())))) {
 
         @Override
@@ -116,10 +114,6 @@ public class MohTglTrackingReport extends Report {
         } else {
             return "In Progress";
         }
-    }
-
-    private static String getCaseMOHDelivered(Case kase) {
-        return String.valueOf(CompletedGate.RELEASE.qualifyCase(kase, "MOH"));
     }
 
     private static BigDecimal getCoverageRequired(RowData rowData) {
