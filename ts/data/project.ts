@@ -3,6 +3,11 @@ import { makeNameDiv } from "../util/html-utils";
 import { postDownload } from "../util/requests";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
+import {
+  DropdownField,
+  showFormDialog,
+  showDownloadOptionsDialog,
+} from "../component/dialog";
 
 export interface ProjectSummary {
   name: string;
@@ -27,6 +32,47 @@ export interface ProjectSummary {
   releaseApprovalCompletedCount: number;
   releasePendingCount: number;
   releaseCompletedCount: number;
+}
+
+const TGL_TRACKING_SHEET = "tgl-tracking-sheet";
+
+function showDownloadDialog(items: ProjectSummary[]) {
+  const reportOptions = new Map<string, string>([
+    ["TGL Tracking Sheet", TGL_TRACKING_SHEET]
+  ]);
+
+  const reportSelect = new DropdownField(
+    "Report",
+    reportOptions,
+    "report",
+    true
+  );
+  showFormDialog("Download Project Data", [reportSelect], "Next", (result) => {
+  switch (result.report) {
+        case TGL_TRACKING_SHEET:
+          showDownloadOptionsDialogX(result.report, items);
+          break;
+        default:
+          throw new Error(`Invalid report: ${result.report}`);
+      }
+  });
+}
+
+
+function showDownloadOptionsDialogX(report: string, items: ProjectSummary[]) {
+  const callback = (result: any) => {
+    const options = result.formatOptions;
+    downloadProjectReport(report, options, items);
+  };
+  showDownloadOptionsDialog(report, items, callback, undefined);
+}
+
+
+function downloadProjectReport(report: string, params: any, items: ProjectSummary[]) {
+  if (items && items.length) {
+    params.projects = items.map((project) => project.name).join(", ");
+  }
+  postDownload(urls.rest.downloads.reports(report), params);
 }
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
@@ -57,14 +103,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
   bulkActions: [
     {
       title: "Download",
-      handler: (items) => {
-        const params: any = {};
-        if (items && items.length) {
-          params.projects = items.map((project) => project.name).join(",");
-        }
-        // May be expanded in the future to handle different reports, but for now there is only one
-        postDownload(urls.rest.downloads.reports("tgl-tracking-sheet"), params);
-      },
+      handler: showDownloadDialog,
     },
   ],
   generateColumns(data) {
