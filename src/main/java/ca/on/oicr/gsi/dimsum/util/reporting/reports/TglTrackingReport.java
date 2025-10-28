@@ -62,6 +62,7 @@ public class TglTrackingReport extends Report {
               Column.forString("Case ID", x -> x.getCase().getId()),
               Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),
               Column.forString("Test", x -> x.getTest().getName()),
+              Column.forString("Assay", x -> x.getCase().getAssayName()),
               Column.forString("Tissue Type", x -> x.getTest().getTissueType()),
               Column.forString("Group ID", x -> x.getTest().getGroupId()),
               Column.forString("Extraction Pass?",
@@ -94,6 +95,7 @@ public class TglTrackingReport extends Report {
                       .collect(Collectors.joining(", "))),
               Column.forDecimal("Coverage Required", TglTrackingReport::getCoverageRequired),
               Column.forDecimal("Coverage Achieved", TglTrackingReport::getCoverageAchieved),
+              Column.forString("MOH Data Released", x -> CompletedGate.RELEASE.qualifyCase(x.getCase(), "MOH") ? "Yes" : null),
               Column.forString("Case Status", x -> getCaseStatus(x.getCase())))) {
 
         @Override
