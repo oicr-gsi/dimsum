@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.59.0] - 2025-10-30
+
+### Changed
+
+* Modified version of tgl report, adding more columns used by MOH
+
+
 ## [1.58.0] - 2025-10-15
 
 ### Added
