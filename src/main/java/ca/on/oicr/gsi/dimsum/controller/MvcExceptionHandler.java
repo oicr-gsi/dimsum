@@ -5,11 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 import ca.on.oicr.gsi.dimsum.controller.mvc.CommonModelAttributeProvider;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 
 @ControllerAdvice(basePackages = "ca.on.oicr.gsi.dimsum.controller.mvc")
 public class MvcExceptionHandler {
@@ -20,17 +22,20 @@ public class MvcExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(MvcExceptionHandler.class);
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ModelAndView handleResponseStatusException(ResponseStatusException ex) {
-        return prepareErrorModelAndView(ex.getStatusCode(), ex.getReason(), ex);
+    public ModelAndView handleResponseStatusException(ResponseStatusException ex,
+            @AuthenticationPrincipal DimsumPrincipal principal) {
+        return prepareErrorModelAndView(ex.getStatusCode(), ex.getReason(), ex, principal);
     }
 
     @ExceptionHandler(Exception.class)
-    public ModelAndView handleGeneralException(Exception ex) {
-        return prepareErrorModelAndView(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex);
+    public ModelAndView handleGeneralException(Exception ex,
+            @AuthenticationPrincipal DimsumPrincipal principal) {
+        return prepareErrorModelAndView(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex,
+                principal);
     }
 
     private ModelAndView prepareErrorModelAndView(HttpStatusCode status, String errorMessage,
-            Exception ex) {
+            Exception ex, DimsumPrincipal principal) {
         String resolvedErrorMessage =
                 (errorMessage != null) ? errorMessage : "No message available";
         if (status.is5xxServerError()) {
@@ -40,13 +45,12 @@ public class MvcExceptionHandler {
         }
         String reason = HttpStatus.resolve(status.value()).getReasonPhrase();
         ModelAndView mav = new ModelAndView("error");
+        mav.setStatus(status);
         mav.addObject("errorStatus", status.value());
         mav.addObject("errorReason", reason);
         mav.addObject("errorMessage", resolvedErrorMessage);
-        mav.addObject("dataAgeMinutes", commonModelAttributeProvider.getDataAgeMinutes());
-        mav.addObject("buildVersion", commonModelAttributeProvider.getBuildVersion());
-
         mav.addObject("title", status.value() + " " + reason + " - Dimsum");
+        commonModelAttributeProvider.prepareErrorPage(mav.getModelMap(), principal);
 
         return mav;
     }

@@ -3,6 +3,7 @@ package ca.on.oicr.gsi.dimsum.controller.mvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
@@ -53,6 +54,15 @@ public class CommonModelAttributeProvider {
   @ModelAttribute("internalUser")
   public boolean isInternalUser(@AuthenticationPrincipal DimsumPrincipal principal) {
     return principal != null ? principal.isInternal() : false;
+  }
+
+  public void prepareErrorPage(ModelMap model, DimsumPrincipal principal) {
+    model.put("dataAgeMinutes", getDataAgeMinutes());
+    model.put("instanceName", getInstanceName());
+    model.put("buildVersion", getBuildVersion());
+    model.put("docsVersion", getDocsVersion());
+    model.put("bugReportUrl", getJiraLink());
+    model.put("internalUser", isInternalUser(principal));
   }
 
 }
