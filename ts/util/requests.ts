@@ -1,4 +1,7 @@
+import { showConfirmDialog, showErrorDialog } from "../component/dialog";
+
 const STATUS_NO_CONTENT = 204;
+const STATUS_FORBIDDEN = 403;
 
 function doPost(url: string, body: any, extraHeaders?: any) {
   const headers = extraHeaders || {};
@@ -32,6 +35,10 @@ export function post(url: string, body: any) {
               .then((data) => resolve(data))
               .catch(() => reject("Unknown error"));
           } else {
+            if (response.status === STATUS_FORBIDDEN) {
+              showSessionTimeoutError();
+              return;
+            }
             response
               .json()
               .then((errorJson) => reject(errorJson.message))
@@ -45,25 +52,42 @@ export function post(url: string, body: any) {
   );
 }
 
+function showSessionTimeoutError() {
+  showConfirmDialog("Error", "Request failed. Your session may have expired.", {
+    title: "Refresh",
+    handler() {
+      location.reload();
+    },
+  });
+}
+
 export function postDownload(url: string, body: any) {
   doPost(url, body, {
     Accept: "application/octet-stream",
   }).then((response) => {
-    const disposition = response.headers.get("Content-Disposition");
-    if (!disposition) {
-      throw new Error("Server did not set content disposition header");
+    if (response.ok) {
+      const disposition = response.headers.get("Content-Disposition");
+      if (!disposition) {
+        throw new Error("Server did not set content disposition header");
+      }
+      const regexResult = /filename=(.*)$/.exec(disposition);
+      if (!regexResult) {
+        throw new Error("Server did not send filename");
+      }
+      const filename = regexResult[1];
+      response.blob().then((blob) => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+      });
+    } else {
+      if (response.status === STATUS_FORBIDDEN) {
+        showSessionTimeoutError();
+      } else {
+        showErrorDialog("Unknown error.");
+      }
     }
-    const regexResult = /filename=(.*)$/.exec(disposition);
-    if (!regexResult) {
-      throw new Error("Server did not send filename");
-    }
-    const filename = regexResult[1];
-    response.blob().then((blob) => {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    });
   });
 }
 
