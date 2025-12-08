@@ -25,6 +25,7 @@ public class DonorAssayReport extends Report {
           Column.forString("Pipeline", DonorAssayReport::getProjectPipelines),
           Column.forString("Donor", kase -> kase.getDonor().getName()),
           Column.forString("External Name", kase -> kase.getDonor().getExternalName()),
+          Column.forString("Case ID", Case::getId),
           Column.forString("Assay", Case::getAssayName),
           Column.forString("Start Date", kase -> kase.getStartDate().toString()),
           Column.forString("Latest Activity", kase -> kase.getLatestActivityDate().toString()),
