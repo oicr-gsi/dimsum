@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+  xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 
 <head>
   <meta charset="UTF-8" />
@@ -44,7 +44,7 @@
         <a th:href="${bugReportUrl}" target="_blank" rel="noopener noreferrer"
           class="font-inter text-16 text-black hover:text-green-200 float-right pl-4 inline-block mt-2">report
           a problem</a>
-        <a th:href="'https://dimsum-docs.readthedocs.io/en/' + ${docsVersion} + '/' + ${internalUser ? '' : 'user_manual/external/'}"
+        <a th:href="'https://dimsum-docs.readthedocs.io/en/' + ${docsVersion} + '/' + ${internalUser != null && internalUser ? '' : 'user_manual/external/'}"
           target="_blank" rel="noopener noreferrer"
           class="font-inter text-16 text-black hover:text-green-200 float-right inline-block mt-2">
           help</a>
