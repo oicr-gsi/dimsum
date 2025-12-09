@@ -21,6 +21,8 @@ public class CommonModelAttributeProvider {
   private String buildVersion;
   @Value("${bugreport.url}")
   private String bugReportUrl;
+  @Value(value = "${bugreport.external.url:#{null}}")
+  private String externalBugReportUrl;
 
   @ModelAttribute("dataAgeMinutes")
   public long getDataAgeMinutes() {
@@ -47,8 +49,13 @@ public class CommonModelAttributeProvider {
   }
 
   @ModelAttribute("bugReportUrl")
-  public String getJiraLink() {
+  public String getBugReportUrl() {
     return bugReportUrl;
+  }
+
+  @ModelAttribute("externalBugReportUrl")
+  public String getExternalBugReportUrl() {
+    return externalBugReportUrl;
   }
 
   @ModelAttribute("internalUser")
@@ -61,7 +68,8 @@ public class CommonModelAttributeProvider {
     model.put("instanceName", getInstanceName());
     model.put("buildVersion", getBuildVersion());
     model.put("docsVersion", getDocsVersion());
-    model.put("bugReportUrl", getJiraLink());
+    model.put("bugReportUrl", getBugReportUrl());
+    model.put("externalBugReportUrl", getExternalBugReportUrl());
     model.put("internalUser", isInternalUser(principal));
   }
 
