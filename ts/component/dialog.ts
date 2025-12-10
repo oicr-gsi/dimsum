@@ -93,10 +93,7 @@ export function showAlertDialog(
   showDialog(
     title,
     (body) => {
-      const textElement = document.createElement("p");
-      textElement.className = "mb-2";
-      textElement.innerText = text;
-      body.appendChild(textElement);
+      addText(body, text);
       if (additionalContent) {
         body.appendChild(additionalContent);
       }
@@ -104,6 +101,21 @@ export function showAlertDialog(
     undefined,
     callback
   );
+}
+
+function addText(body: Node, text: string) {
+  const textElement = document.createElement("p");
+  textElement.className = "mb-2";
+  textElement.innerText = text;
+  body.appendChild(textElement);
+}
+
+export function showConfirmDialog(
+  title: string,
+  text: string,
+  action: FormAction
+) {
+  showDialog(title, (body) => addText(body, text), [action]);
 }
 
 export function showErrorDialog(text: string, additionalContent?: Node) {
