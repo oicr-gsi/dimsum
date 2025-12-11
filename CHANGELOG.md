@@ -7,6 +7,24 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.60.0] - 2025-12-11
+
+### Added
+
+* Case ID column to Donor Assay Report
+* Ability to configure a separate bug report URL for external users
+
+### Changed
+
+* The Log In button will now be focused automatically, so you can press enter to proceed
+
+### Fixed
+
+* Display issues with some error pages
+* A clear error message will be shown when page updates and downloads fail due to session timeout, with
+  the option to refresh
+
+
 ## [1.59.0] - 2025-10-30
 
 ### Changed
