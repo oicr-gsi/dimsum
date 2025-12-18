@@ -16,7 +16,7 @@ import { getSearchParams, updateUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
-import { makeCopyButton } from "./util/html-utils";
+import { makeCopyButton, getRequiredElementById } from "./util/html-utils";
 import { internalUser } from "./util/site-config";
 
 const tableContainerId = "tableContainer";
@@ -78,12 +78,15 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     break;
   }
   case "CASE_ID": {
+    const caseId = tableContainer.getAttribute("data-detail-value");
+    if (!caseId) {
+      throw new Error("Missing case ID value");
+    }
+    const copyButton = makeCopyButton(caseId);
+    const pageHeading = getRequiredElementById("pageHeading");
+    pageHeading.after(copyButton);
     if (internalUser) {
       // add QC Report button
-      const caseId = tableContainer.getAttribute("data-detail-value");
-      if (!caseId) {
-        throw new Error("Missing case ID value");
-      }
       const actionContainer = document.getElementById("pageActionsContainer"); // use same table container across all tables
       if (actionContainer === null) {
         throw Error(`Container ID "${actionContainer}" not found on page`);

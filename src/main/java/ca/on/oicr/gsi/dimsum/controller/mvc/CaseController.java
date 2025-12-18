@@ -43,7 +43,7 @@ public class CaseController {
     if (kase == null) {
       throw new NotFoundException("No data found for case: " + caseId);
     }
-    model.put("title", "Case Details");
+    model.put("title", String.format("%s  Case Details", caseId));
     model.put("detailType", CaseFilterKey.CASE_ID.name());
     model.put("detailValue", caseId);
     return "detail";
