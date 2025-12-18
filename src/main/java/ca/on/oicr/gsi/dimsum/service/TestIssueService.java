@@ -11,7 +11,7 @@ import ca.on.oicr.gsi.dimsum.data.IssueState;
  * maintain any issues. Most methods do nothing and return nothing.
  */
 @Service
-@ConditionalOnExpression("${testissues.enabled}")
+@ConditionalOnExpression("${testissues.enabled:false}")
 public class TestIssueService implements IssueTracker {
 
   @Override

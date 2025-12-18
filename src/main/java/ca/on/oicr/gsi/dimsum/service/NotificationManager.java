@@ -313,8 +313,7 @@ public class NotificationManager {
       throw new IllegalArgumentException(
           String.format("Unexpected metric category: %s", metricCategory));
     }
-    if (sample.getAssayIds() == null || sample.getAssayIds().isEmpty()) {
-      // no assay means no metrics, so all are available
+    if (sample.getMetrics() == null) {
       return true;
     }
     for (SampleMetric metric : sample.getMetrics()) {
