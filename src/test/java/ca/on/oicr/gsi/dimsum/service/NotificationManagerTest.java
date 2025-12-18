@@ -51,7 +51,7 @@ public class NotificationManagerTest {
     MockitoAnnotations.openMocks(this);
     sut = new NotificationManager(null);
     sut.setBaseUrl("https://example.com");
-    sut.setJiraService(jiraService);
+    sut.setIssueTracker(jiraService);
   }
 
   @Test

@@ -20,6 +20,21 @@ App config is in `/resources/application.yml`. The properties in this file can b
 using command-line parameters, system variables, or an external properties file. See the
 [README](/README.md) for more information on the external properties file.
 
+### Issue Trackers
+
+Dimsum has integration with Issue Trackers to create notifications for runs and run-libraries
+requiring QC. JIRA is currently the only real implementation of this, with configuration in the
+external properties file.
+
+For testing purposes, there is another implementation called `TestIssueService`. This does not
+connect to any real service, and does not actually maintain a list of issues, but will create
+notifications within Dimsum that show up on the Notifications page. Enable this by adding the
+following to your external properties file.
+
+```
+testissues.enabled=true
+```
+
 ## Debugging
 
 Example: Run the server with debugging enabled on port 8000 and wait for debugger connection before
