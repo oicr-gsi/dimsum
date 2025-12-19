@@ -461,7 +461,11 @@ function downloadSampleMetrics(
     if (runName) {
       options.runName = runName;
     }
-    postDownload(urls.rest.downloads.reports("sample-metrics"), options);
+    postDownload(
+      urls.rest.downloads.reports("sample-metrics"),
+      options,
+      "Generating report."
+    );
   };
   showDownloadOptionsDialog("sample-metrics", [], callback);
 }

@@ -9,12 +9,23 @@ interface FormAction {
   ) => void;
 }
 
+/**
+ * Creates and displays a dialog
+ *
+ * @param title
+ * @param makeBody function to add contents to the dialog
+ * @param closable whether to include an X button to dismiss the dialog
+ * @param actions buttons to include
+ * @param callback what to do after the dialog is closed
+ * @returns close function that can be used to dismiss the dialog
+ */
 function showDialog(
   title: string,
   makeBody: (body: Node) => void,
+  closable: boolean = true,
   actions?: FormAction[],
   callback?: (result?: any) => void
-) {
+): () => void {
   const dialog = document.createElement("dialog");
   dialog.className =
     "noprint text-black bg-white rounded-xl border-2 border-grey-200 drop-shadow-lg";
@@ -26,22 +37,29 @@ function showDialog(
   titleElement.innerText = title;
   const spacer = document.createElement("div");
   spacer.className = "flex-auto";
-  const icon = makeIcon("xmark");
-  icon.classList.add(
-    "fa-solid",
-    "fa-xmark",
-    "text-grey-200",
-    "hover:text-green-200",
-    "text-24",
-    "m-2",
-    "mx-4",
-    "cursor-pointer"
-  );
-  icon.addEventListener("click", () => {
-    dialog.close();
-    dialog.remove();
-  });
-  header.append(titleElement, spacer, icon);
+  header.append(titleElement, spacer);
+
+  if (closable) {
+    const icon = makeIcon("xmark");
+    icon.classList.add(
+      "fa-solid",
+      "fa-xmark",
+      "text-grey-200",
+      "hover:text-green-200",
+      "text-24",
+      "m-2",
+      "mx-4",
+      "cursor-pointer"
+    );
+    icon.addEventListener("click", () => {
+      dialog.close();
+      dialog.remove();
+    });
+    header.append(icon);
+  } else {
+    dialog.setAttribute("closedBy", "none");
+  }
+
   const body = document.createElement("div");
   body.className = "m-4 font-inter pb-7";
   const bodyFragment = document.createDocumentFragment();
@@ -82,6 +100,15 @@ function showDialog(
   }
   document.body.appendChild(dialog);
   dialog.showModal();
+
+  return () => {
+    dialog.close();
+    dialog.remove();
+  };
+}
+
+export function showWorkingDialog(text: string) {
+  return showDialog("Working...", (body) => addText(body, text), false);
 }
 
 export function showAlertDialog(
@@ -98,6 +125,7 @@ export function showAlertDialog(
         body.appendChild(additionalContent);
       }
     },
+    true,
     undefined,
     callback
   );
@@ -115,7 +143,7 @@ export function showConfirmDialog(
   text: string,
   action: FormAction
 ) {
-  showDialog(title, (body) => addText(body, text), [action]);
+  showDialog(title, (body) => addText(body, text), true, [action]);
 }
 
 export function showErrorDialog(text: string, additionalContent?: Node) {
@@ -266,6 +294,7 @@ export function showFormDialog(
       }
       body.appendChild(table);
     },
+    true,
     [
       {
         title: submitLabel,
