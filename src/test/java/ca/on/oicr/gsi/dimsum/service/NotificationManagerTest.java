@@ -372,8 +372,6 @@ public class NotificationManagerTest {
 
   private Sample makeSample(boolean metricAvailable, boolean qcDone, boolean dataReviewDone) {
     Sample sample = mock(Sample.class);
-    // when(sample.getAssayIds()).thenReturn(Collections.singleton(ASSAY_ID));
-    // when(sample.getMeanInsertSize()).thenReturn(metricAvailable ? BigDecimal.TEN : null);
     SampleMetric metric = mock(SampleMetric.class);
     when(metric.getName()).thenReturn("Mean Insert Size");
     when(metric.getThresholdType()).thenReturn(ThresholdType.GE);

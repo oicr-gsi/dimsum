@@ -314,6 +314,7 @@ public class NotificationManager {
           String.format("Unexpected metric category: %s", metricCategory));
     }
     if (sample.getMetrics() == null) {
+      // No metrics means no values to wait for, so all are available
       return true;
     }
     for (SampleMetric metric : sample.getMetrics()) {
