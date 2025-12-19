@@ -32,7 +32,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 @Service
 @ConditionalOnProperty(name = "jira.baseurl")
-public class JiraService {
+public class JiraService implements IssueTracker {
 
   @Value("${jira.transitions.close}")
   private String transitionClose;
@@ -75,10 +75,12 @@ public class JiraService {
     }
   }
 
+  @Override
   public Issue getIssueByKey(String key) {
     return rest.getIssueClient().getIssue(key).claim();
   }
 
+  @Override
   public Issue getIssueBySummary(String summary) {
     countRequest();
     Iterable<Issue> issues = rest.getSearchClient().searchJql(
@@ -93,6 +95,7 @@ public class JiraService {
     return null;
   }
 
+  @Override
   public Iterable<Issue> getOpenIssues(String summary) {
     final int pageSize = 50;
     List<Issue> issues = new ArrayList<>();
@@ -116,15 +119,18 @@ public class JiraService {
     return issues;
   }
 
+  @Override
   public void postComment(Issue issue, String message) {
     countRequest();
     rest.getIssueClient().addComment(issue.getCommentsUri(), Comment.valueOf(message)).claim();
   }
 
+  @Override
   public void closeIssue(Issue issue, String message) {
     closeIssue(issue, message, resolutionDone);
   }
 
+  @Override
   public void pauseIssue(Issue issue, String message) {
     closeIssue(issue, message, resolutionPaused);
   }
@@ -158,6 +164,7 @@ public class JiraService {
     rest.getIssueClient().transition(issue.getTransitionsUri(), input).claim();
   }
 
+  @Override
   public void reopenIssue(Issue issue, String message) {
     Resolution currentResolution = issue.getResolution();
     if (currentResolution == null) {
@@ -183,6 +190,7 @@ public class JiraService {
         "Transition '%s' not found for issue %s".formatted(transitionName, issue.getKey()));
   }
 
+  @Override
   public String createIssue(String summary, String description) {
     countRequest();
     Project project = rest.getProjectClient().getProject(projectNotification).claim();
@@ -209,6 +217,7 @@ public class JiraService {
         issueTypeName, project.getKey()));
   }
 
+  @Override
   public IssueState getIssueState(Issue issue) {
     Resolution resolution = issue.getResolution();
     if (resolution == null) {

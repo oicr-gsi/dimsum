@@ -15,11 +15,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.Metric;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
-import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.SampleMetric;
+import ca.on.oicr.gsi.cardea.data.ThresholdType;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
 import ca.on.oicr.gsi.dimsum.data.Notification;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
@@ -40,7 +40,7 @@ public class NotificationManager {
       Pattern.compile("^(.+)" + SUMMARY_SUFFIX_RUN_QC + "$");
 
   @Autowired(required = false)
-  private JiraService jiraService;
+  private IssueTracker issueTracker;
 
   @Value("${baseurl}")
   private String baseUrl;
@@ -62,8 +62,8 @@ public class NotificationManager {
     this.baseUrl = baseUrl;
   }
 
-  public void setJiraService(JiraService jiraService) {
-    this.jiraService = jiraService;
+  public void setIssueTracker(IssueTracker issueTracker) {
+    this.issueTracker = issueTracker;
   }
 
   private int getJiraErrors() {
@@ -84,25 +84,25 @@ public class NotificationManager {
   private List<Notification> updateOpenIssues(Map<String, RunAndLibraries> data,
       Map<Long, Assay> assaysById, Set<String> handledRunNames, Counter jiraErrorCounter) {
     List<Notification> newNotifications = new ArrayList<>();
-    if (jiraService == null) {
+    if (issueTracker == null) {
       return newNotifications;
     }
     Iterable<Issue> issues = null;
     try {
-      issues = jiraService.getOpenIssues(SUMMARY_SUFFIX_RUN_QC);
+      issues = issueTracker.getOpenIssues(SUMMARY_SUFFIX_RUN_QC);
     } catch (Exception e) {
       jiraErrorCounter.increment();
-      log.error("Error fetching JIRA issues", e);
+      log.error("Error fetching issues", e);
       return newNotifications;
     }
     for (Issue issue : issues) {
       String runName = parseRunNameFromSummary(issue);
       if (runName == null) {
         // Issue doesn't seem to match expected pattern; ignore
-        log.warn("Unable to parse run name from JIRA ticket: {}", issue.getSummary());
+        log.warn("Unable to parse run name from ticket: {}", issue.getSummary());
         continue;
       }
-      log.debug("Processing existing JIRA ticket for {}", runName);
+      log.debug("Processing existing ticket for {}", runName);
       RunAndLibraries runAndLibraries = data.get(runName);
       if (runAndLibraries == null) {
         log.warn("Orphaned notification - run not found: {}", runName);
@@ -133,24 +133,24 @@ public class NotificationManager {
     try {
       if (notification == null) {
         log.debug("Closing issue: {}", issue.getSummary());
-        jiraService.closeIssue(issue, "All sign-offs have been completed.");
+        issueTracker.closeIssue(issue, "All sign-offs have been completed.");
         return;
       }
-      IssueState issueState = jiraService.getIssueState(issue);
+      IssueState issueState = issueTracker.getIssueState(issue);
       IssueState notificationState = notification.getIssueState();
       if (issueState != notificationState) {
         switch (notificationState) {
           case OPEN:
             log.debug("Reopening issue: {}", issue.getSummary());
-            jiraService.reopenIssue(issue, notification.makeComment(baseUrl));
+            issueTracker.reopenIssue(issue, notification.makeComment(baseUrl));
             return;
           case PAUSED:
             log.debug("Pausing issue: {}", issue.getSummary());
-            jiraService.pauseIssue(issue, notification.makeComment(baseUrl));
+            issueTracker.pauseIssue(issue, notification.makeComment(baseUrl));
             return;
           case CLOSED:
             log.debug("Closing issue: {}", issue.getSummary());
-            jiraService.closeIssue(issue, notification.makeComment(baseUrl));
+            issueTracker.closeIssue(issue, notification.makeComment(baseUrl));
             return;
           default:
             throw new IllegalStateException(
@@ -158,17 +158,17 @@ public class NotificationManager {
         }
       }
       // Need to get by key because issue found via search doesn't include comments
-      Issue issueWithComments = jiraService.getIssueByKey(issue.getKey());
+      Issue issueWithComments = issueTracker.getIssueByKey(issue.getKey());
       RunQcCommentSummary issueSummary = RunQcCommentSummary.findLatest(issueWithComments);
       if (issueSummary == null || issueSummary.needsUpdate(notification)) {
         log.debug("Commenting update on issue: {}", issue.getSummary());
-        jiraService.postComment(issue, notification.makeComment(baseUrl));
+        issueTracker.postComment(issue, notification.makeComment(baseUrl));
       } else {
         log.debug("No update necessary for issue: {}", issue.getSummary());
       }
     } catch (Exception e) {
       jiraErrorCounter.increment();
-      log.error("Error updating JIRA issue %s".formatted(issue.getKey()), e);
+      log.error("Error updating issue %s".formatted(issue.getKey()), e);
     }
   }
 
@@ -182,7 +182,7 @@ public class NotificationManager {
         .map(x -> makeNotification(x, assaysById, false, null))
         .filter(Objects::nonNull)
         .forEach(x -> {
-          if (jiraService == null) {
+          if (issueTracker == null) {
             newNotifications.add(x);
             return;
           }
@@ -191,18 +191,19 @@ public class NotificationManager {
           String issueSummary = runName + SUMMARY_SUFFIX_RUN_QC;
           Issue issue = null;
           try {
-            issue = jiraService.getIssueBySummary(issueSummary);
+            issue = issueTracker.getIssueBySummary(issueSummary);
           } catch (Exception e) {
             jiraErrorCounter.increment();
-            log.error("Error searching for JIRA issue", e);
+            log.error("Error searching for issue", e);
             newNotifications.add(x);
             return;
           }
           if (issue == null) {
-            log.debug("Creating new JIRA ticket for {}", runName);
+            log.debug("Creating new ticket for {}", runName);
             try {
               String newIssueKey =
-                  jiraService.createIssue(issueSummary, x.makeComment(baseUrl, resolutionOverride));
+                  issueTracker.createIssue(issueSummary,
+                      x.makeComment(baseUrl, resolutionOverride));
               newNotifications.add(x.withIssueKey(newIssueKey));
             } catch (Exception e) {
               jiraErrorCounter.increment();
@@ -210,12 +211,12 @@ public class NotificationManager {
               newNotifications.add(x);
             }
           } else {
-            IssueState issueState = jiraService.getIssueState(issue);
+            IssueState issueState = issueTracker.getIssueState(issue);
             if (issueState != IssueState.OVERRIDDEN) {
               updateIssue(issue, x, jiraErrorCounter);
               newNotifications.add(x.withIssueKey(issue.getKey()));
             } else {
-              log.debug("Aborting update on overridden JIRA ticket {}", issue.getSummary());
+              log.debug("Aborting update on overridden ticket {}", issue.getSummary());
             }
           }
         });
@@ -312,81 +313,17 @@ public class NotificationManager {
       throw new IllegalArgumentException(
           String.format("Unexpected metric category: %s", metricCategory));
     }
-    if (sample.getAssayIds() == null || sample.getAssayIds().isEmpty()) {
-      // no assay means no metrics, so all are available
+    if (sample.getMetrics() == null) {
+      // No metrics means no values to wait for, so all are available
       return true;
     }
-    for (Long assayId : sample.getAssayIds()) {
-      Assay assay = assaysById.get(assayId);
-      List<MetricSubcategory> subcategories = assay.getMetricCategories().get(metricCategory);
-      if (subcategories == null) {
-        // no metrics defined, so all are available
-        return true;
-      }
-      for (MetricSubcategory subcategory : subcategories) {
-        if (subcategory.getLibraryDesignCode() != null
-            && !subcategory.getLibraryDesignCode().equals(sample.getLibraryDesignCode())) {
-          continue;
-        }
-        for (Metric metric : subcategory.getMetrics()) {
-          if (filter(metric.getNucleicAcidType(), sample.getNucleicAcidType())
-              || filter(metric.getTissueMaterial(), sample.getTissueMaterial())
-              || filter(metric.getTissueOrigin(), sample.getTissueOrigin())
-              || (!metric.isNegateTissueType()
-                  && filter(metric.getTissueType(), sample.getTissueType()))
-              || (metric.isNegateTissueType() && metric.getTissueType() != null
-                  && metric.getTissueType().equals(sample.getTissueType()))
-              || filter(metric.getContainerModel(), run.getContainerModel())
-              || filter(metric.getReadLength(), run.getReadLength())
-              || filter(metric.getReadLength2(), run.getReadLength2())) {
-            continue;
-          }
-          if (metricValueMissing(sample, metric)) {
-            return false;
-          }
-        }
+    for (SampleMetric metric : sample.getMetrics()) {
+      if ((Objects.equals("Sample Authenticated", metric.getName())
+          || metric.getThresholdType() != ThresholdType.BOOLEAN) && metric.getQcPassed() == null) {
+        return false;
       }
     }
     return true;
-  }
-
-  private <T> boolean filter(T criteria, T value) {
-    return criteria != null && !criteria.equals(value);
-  }
-
-  private boolean metricValueMissing(Sample sample, Metric metric) {
-    // Only check metrics from GSI-QC-ETL here, as they should be the only ones we need to wait on
-    switch (metric.getName()) {
-      case "Mean Insert Size":
-        return sample.getMeanInsertSize() == null;
-      case "Clusters Per Sample":
-      case "Pass Filter Clusters":
-      case "Total Clusters (Passed Filter)":
-      case "Pipeline Filtered Clusters":
-        return sample.getClustersPerSample() == null;
-      case "Duplication Rate":
-        return sample.getDuplicationRate() == null;
-      case "Mapped to Coding":
-        return sample.getMappedToCoding() == null;
-      case "rRNA Contamination":
-        return sample.getrRnaContamination() == null;
-      case "Mean Coverage Deduplicated":
-        return sample.getMeanCoverageDeduplicated() == null;
-      case "Coverage (Raw)":
-        return sample.getRawCoverage() == null;
-      case "On Target Reads":
-        return sample.getOnTargetReads() == null;
-      case "Lambda Methylation":
-        return sample.getLambdaMethylation() == null;
-      case "Lambda Clusters":
-        return sample.getLambdaClusters() == null;
-      case "pUC19 Methylation":
-        return sample.getPuc19Methylation() == null;
-      case "pUC19 Clusters":
-        return sample.getPuc19Clusters() == null;
-      default:
-        return false;
-    }
   }
 
 }

@@ -3,7 +3,6 @@ package ca.on.oicr.gsi.dimsum.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +24,8 @@ import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.SampleMetric;
+import ca.on.oicr.gsi.cardea.data.ThresholdType;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 
@@ -51,7 +52,7 @@ public class NotificationManagerTest {
     MockitoAnnotations.openMocks(this);
     sut = new NotificationManager(null);
     sut.setBaseUrl("https://example.com");
-    sut.setJiraService(jiraService);
+    sut.setIssueTracker(jiraService);
   }
 
   @Test
@@ -371,8 +372,11 @@ public class NotificationManagerTest {
 
   private Sample makeSample(boolean metricAvailable, boolean qcDone, boolean dataReviewDone) {
     Sample sample = mock(Sample.class);
-    when(sample.getAssayIds()).thenReturn(Collections.singleton(ASSAY_ID));
-    when(sample.getMeanInsertSize()).thenReturn(metricAvailable ? BigDecimal.TEN : null);
+    SampleMetric metric = mock(SampleMetric.class);
+    when(metric.getName()).thenReturn("Mean Insert Size");
+    when(metric.getThresholdType()).thenReturn(ThresholdType.GE);
+    when(metric.getQcPassed()).thenReturn(metricAvailable ? true : null);
+    when(sample.getMetrics()).thenReturn(Collections.singletonList(metric));
     when(sample.getQcDate()).thenReturn(qcDone ? arbitraryTimestamp : null);
     when(sample.getDataReviewDate()).thenReturn(dataReviewDone ? arbitraryTimestamp : null);
     return sample;
