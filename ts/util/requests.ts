@@ -1,4 +1,8 @@
-import { showConfirmDialog, showErrorDialog } from "../component/dialog";
+import {
+  showConfirmDialog,
+  showErrorDialog,
+  showWorkingDialog,
+} from "../component/dialog";
 
 const STATUS_NO_CONTENT = 204;
 const STATUS_FORBIDDEN = 403;
@@ -61,10 +65,12 @@ function showSessionTimeoutError() {
   });
 }
 
-export function postDownload(url: string, body: any) {
+export function postDownload(url: string, body: any, workingText: string) {
+  const closeDialog = showWorkingDialog(workingText);
   doPost(url, body, {
     Accept: "application/octet-stream",
   }).then((response) => {
+    closeDialog();
     if (response.ok) {
       const disposition = response.headers.get("Content-Disposition");
       if (!disposition) {

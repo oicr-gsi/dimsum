@@ -38,7 +38,7 @@ const TGL_TRACKING_SHEET = "tgl-tracking-sheet";
 
 function showDownloadDialog(items: ProjectSummary[]) {
   const reportOptions = new Map<string, string>([
-    ["TGL Tracking Sheet", TGL_TRACKING_SHEET]
+    ["TGL Tracking Sheet", TGL_TRACKING_SHEET],
   ]);
 
   const reportSelect = new DropdownField(
@@ -48,16 +48,15 @@ function showDownloadDialog(items: ProjectSummary[]) {
     true
   );
   showFormDialog("Download Project Data", [reportSelect], "Next", (result) => {
-  switch (result.report) {
-        case TGL_TRACKING_SHEET:
-          showDownloadOptionsDialogX(result.report, items);
-          break;
-        default:
-          throw new Error(`Invalid report: ${result.report}`);
-      }
+    switch (result.report) {
+      case TGL_TRACKING_SHEET:
+        showDownloadOptionsDialogX(result.report, items);
+        break;
+      default:
+        throw new Error(`Invalid report: ${result.report}`);
+    }
   });
 }
-
 
 function showDownloadOptionsDialogX(report: string, items: ProjectSummary[]) {
   const callback = (result: any) => {
@@ -67,12 +66,19 @@ function showDownloadOptionsDialogX(report: string, items: ProjectSummary[]) {
   showDownloadOptionsDialog(report, items, callback, undefined);
 }
 
-
-function downloadProjectReport(report: string, params: any, items: ProjectSummary[]) {
+function downloadProjectReport(
+  report: string,
+  params: any,
+  items: ProjectSummary[]
+) {
   if (items && items.length) {
     params.projects = items.map((project) => project.name).join(", ");
   }
-  postDownload(urls.rest.downloads.reports(report), params);
+  postDownload(
+    urls.rest.downloads.reports(report),
+    params,
+    "Generating report."
+  );
 }
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {

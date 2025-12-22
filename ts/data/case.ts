@@ -2159,7 +2159,11 @@ function showDownloadOptionsDialogX(report: string, items: Case[]) {
 
 function downloadCaseReport(report: string, params: any, items: Case[]) {
   params.caseIds = items.map((kase) => kase.id).join(", ");
-  postDownload(urls.rest.downloads.reports(report), params);
+  postDownload(
+    urls.rest.downloads.reports(report),
+    params,
+    "Generating report."
+  );
 }
 
 function showTatReportDialog(
@@ -2173,7 +2177,11 @@ function showTatReportDialog(
   const params = {
     filters: joinedFilters,
   };
-  postDownload(urls.rest.downloads.reports("case-tat-report"), params);
+  postDownload(
+    urls.rest.downloads.reports("case-tat-report"),
+    params,
+    "Generating report."
+  );
 }
 
 function showTatTrendPage(
