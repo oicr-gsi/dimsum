@@ -211,6 +211,10 @@ public class CaseService {
     return filterCases(getAuthorizedCases(null), filters);
   }
 
+  public Stream<ExternalCase> getExternalCaseStream(Collection<CaseFilter> filters) {
+    return getCaseStream(filters).map(ExternalCase::new);
+  }
+
   public List<Case> getCasesByIds(Set<String> caseIds) {
     return streamAuthorizedCases(null)
         .filter(kase -> caseIds.contains(kase.getId()))
