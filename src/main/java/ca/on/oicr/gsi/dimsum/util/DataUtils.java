@@ -11,6 +11,7 @@ import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.data.external.ExternalSample;
 
 public class DataUtils {
   public static final String TOP_UP_REASON = "Top-up Required";
@@ -32,6 +33,17 @@ public class DataUtils {
     }
     return isTrue(sample.getQcPassed()) && isTrue(sample.getDataReviewPassed())
         && isTrue(sample.getRun().getQcPassed()) && isTrue(sample.getRun().getDataReviewPassed());
+  }
+
+  public static boolean isPassed(ExternalSample sample) {
+    if (!isTrue(sample.qcPassed())) {
+      return false;
+    }
+    if (sample.run() == null) {
+      return true;
+    }
+    return isTrue(sample.qcPassed()) && isTrue(sample.dataReviewPassed())
+        && isTrue(sample.run().qcPassed()) && isTrue(sample.run().dataReviewPassed());
   }
 
   public static boolean passedOrTopUpConfirmed(Sample sample) {

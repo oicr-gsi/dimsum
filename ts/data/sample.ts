@@ -467,7 +467,7 @@ function downloadSampleMetrics(
       "Generating report."
     );
   };
-  showDownloadOptionsDialog("sample-metrics", [], callback);
+  showDownloadOptionsDialog(callback);
 }
 
 function qcInMiso(items: Sample[], category: MetricCategory) {

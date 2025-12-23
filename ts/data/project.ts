@@ -63,7 +63,7 @@ function showDownloadOptionsDialogX(report: string, items: ProjectSummary[]) {
     const options = result.formatOptions;
     downloadProjectReport(report, options, items);
   };
-  showDownloadOptionsDialog(report, items, callback, undefined);
+  showDownloadOptionsDialog(callback, undefined);
 }
 
 function downloadProjectReport(
@@ -108,7 +108,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
   ],
   bulkActions: [
     {
-      title: "Download",
+      title: "Download Selected",
       handler: showDownloadDialog,
     },
   ],

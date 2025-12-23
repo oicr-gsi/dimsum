@@ -219,9 +219,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   staticActions: [
     legendAction,
     {
-      title: "TAT Report",
-      handler: showTatReportDialog,
-      view: "internal",
+      title: "Download All",
+      handler: showDownloadAllDialog,
     },
     {
       title: "TAT Trend",
@@ -231,8 +230,8 @@ export const caseDefinition: TableDefinition<Case, Test> = {
   ],
   bulkActions: [
     {
-      title: "Download",
-      handler: showDownloadDialog,
+      title: "Download Selected",
+      handler: showDownloadSelectedDialog,
       view: "internal",
     },
     {
@@ -2102,13 +2101,13 @@ function hasDeliverable(kase: Case, deliverable: string) {
 
 const REPORT_FULL_DEPTH_SUMMARY = "full-depth-summary";
 const REPORT_DARE_INPUT_SHEET = "dare-input-sheet";
-const DONOR_ASSAY_REPORT = "donor-assay-report";
+const REPORT_DONOR_ASSAY = "donor-assay-report";
 
-function showDownloadDialog(items: Case[]) {
+function showDownloadSelectedDialog(items: Case[]) {
   const reportOptions = new Map<string, string>([
     ["Full-Depth Summary", REPORT_FULL_DEPTH_SUMMARY],
     ["DARE Input Sheet", REPORT_DARE_INPUT_SHEET],
-    ["Donor Assay Report", DONOR_ASSAY_REPORT],
+    ["Donor Assay Report", REPORT_DONOR_ASSAY],
   ]);
 
   const reportSelect = new DropdownField(
@@ -2121,7 +2120,7 @@ function showDownloadDialog(items: Case[]) {
     switch (result.report) {
       case REPORT_FULL_DEPTH_SUMMARY:
       case REPORT_DARE_INPUT_SHEET:
-      case DONOR_ASSAY_REPORT:
+      case REPORT_DONOR_ASSAY:
         showDownloadOptionsDialogX(result.report, items);
         break;
       default:
@@ -2154,7 +2153,7 @@ function showDownloadOptionsDialogX(report: string, items: Case[]) {
     }
     downloadCaseReport(report, options, items);
   };
-  showDownloadOptionsDialog(report, items, callback, additionalOptions);
+  showDownloadOptionsDialog(callback, additionalOptions);
 }
 
 function downloadCaseReport(report: string, params: any, items: Case[]) {
@@ -2166,22 +2165,41 @@ function downloadCaseReport(report: string, params: any, items: Case[]) {
   );
 }
 
-function showTatReportDialog(
+const REPORT_CASE_SUMMARY = "case-summary-report";
+const REPORT_CASE_TAT = "case-tat-report";
+
+function showDownloadAllDialog(
   filters: { key: string; value: string }[],
   baseFilter: { key: string; value: string } | undefined
 ) {
-  const joinedFilters = [...filters];
-  if (baseFilter !== undefined) {
-    joinedFilters.push(baseFilter);
+  const reportOptions = new Map<string, string>([
+    ["Case Summary", REPORT_CASE_SUMMARY],
+  ]);
+  if (internalUser) {
+    reportOptions.set("Case TAT Report", REPORT_CASE_TAT);
   }
-  const params = {
-    filters: joinedFilters,
-  };
-  postDownload(
-    urls.rest.downloads.reports("case-tat-report"),
-    params,
-    "Generating report."
+
+  const reportSelect = new DropdownField(
+    "Report",
+    reportOptions,
+    "report",
+    true
   );
+  showFormDialog("Download Case Data", [reportSelect], "Next", (result) => {
+    const callback = (finalResult: any) => {
+      const params = finalResult.formatOptions;
+      params.filters = [...filters];
+      if (baseFilter !== undefined) {
+        params.filters.push(baseFilter);
+      }
+      postDownload(
+        urls.rest.downloads.reports(result.report),
+        params,
+        "Generating report."
+      );
+    };
+    showDownloadOptionsDialog(callback);
+  });
 }
 
 function showTatTrendPage(

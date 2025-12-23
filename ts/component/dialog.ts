@@ -317,9 +317,7 @@ export function showFormDialog(
   );
 }
 
-export function showDownloadOptionsDialog<Type>(
-  report: string,
-  items: Type[],
+export function showDownloadOptionsDialog(
   callback: (result: any) => void,
   additionalFields?: FormField<any>[]
 ) {
