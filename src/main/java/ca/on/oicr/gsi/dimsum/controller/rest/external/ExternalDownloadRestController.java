@@ -34,7 +34,7 @@ public class ExternalDownloadRestController {
       case "case-summary-report":
         return CaseSummaryReport.INSTANCE;
       default:
-        throw new BadRequestException("Invalid report name");
+        throw new BadRequestException("Invalid report name: " + reportName);
     }
   }
 
