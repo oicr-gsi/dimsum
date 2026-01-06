@@ -56,6 +56,13 @@ export const caseFilters: FilterDefinition[] = [
     showExternal: true,
   },
   {
+    title: "Staged Release",
+    key: "STAGED_DELIVERABLE",
+    type: "dropdown",
+    values: siteConfig.deliverables.concat(["any"]),
+    showExternal: true,
+  },
+  {
     title: "Completed",
     key: "COMPLETED",
     type: "dropdown",

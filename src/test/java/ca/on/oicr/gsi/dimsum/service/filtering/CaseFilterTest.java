@@ -1497,6 +1497,19 @@ public class CaseFilterTest {
     testFilterCases(filter, Arrays.asList(28, 34));
   }
 
+  @org.junit.jupiter.api.Test
+  public void testPendingReleaseDeliverableFilter() {
+    CaseFilter filter =
+        new CaseFilter(CaseFilterKey.PENDING_RELEASE_DELIVERABLE, "Clinical Report");
+    testFilterCases(filter, Arrays.asList(27, 29));
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testStagedDeliverableFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.STAGED_DELIVERABLE, "Full Pipeline");
+    testFilterCases(filter, Arrays.asList(28));
+  }
+
   private static List<Case> getCasesFiltered(CaseFilter filter) {
     return cases.stream().filter(filter.casePredicate()).toList();
   }

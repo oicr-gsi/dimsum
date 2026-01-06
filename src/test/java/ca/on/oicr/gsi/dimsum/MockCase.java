@@ -364,12 +364,12 @@ public class MockCase {
 
   private static Case makeCase28() {
     final int caseNumber = 28;
-    // Case is completed
+    // Case is completed, but release staged
     Case kase = makeCase("PRO28_0001", "Single Test", "PRO28", "REQ28", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.STAGED,
         null);
     return kase;
   }
