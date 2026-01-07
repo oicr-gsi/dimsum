@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
@@ -132,11 +133,11 @@ public enum CaseFilterKey {
   },
   DELIVERABLE(string -> kase -> {
     for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
-        for (CaseRelease release : caseDeliverable.getReleases()) {
-            if (string.equalsIgnoreCase(release.getDeliverable())) {
-                return true;
-            }
+      for (CaseRelease release : caseDeliverable.getReleases()) {
+        if (string.equalsIgnoreCase(release.getDeliverable())) {
+          return true;
         }
+      }
     }
     return false;
 }),
@@ -149,6 +150,17 @@ public enum CaseFilterKey {
   COMPLETED_AFTER(string -> kase -> {
     LocalDate completionDate = DataUtils.getCompletionDate(kase);
     return completionDate != null && completionDate.isAfter(LocalDate.parse(string));
+  }),
+  STAGED_DELIVERABLE(string -> kase -> {
+    for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
+      for (CaseRelease release : caseDeliverable.getReleases()) {
+        if (("any".equalsIgnoreCase(string) || string.equalsIgnoreCase(release.getDeliverable()))
+            && release.getQcStatus() == ReleaseQcStatus.STAGED) {
+          return true;
+        }
+      }
+    }
+    return false;
   });
   // @formatter:on
 

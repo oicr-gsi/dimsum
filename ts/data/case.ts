@@ -1254,6 +1254,9 @@ export function getDeliverableQcStatus(qcStatus: CaseQc | null) {
       return internalUser ? qcStatuses.qc : qcStatuses.construction;
     }
   } else if (qcStatus.qcPassed) {
+    if (qcStatus.release === false) {
+      return qcStatuses.staged;
+    }
     return qcStatuses.passed;
   } else {
     return qcStatuses.failed;

@@ -9,6 +9,7 @@ enum qcStatusKeyEnum {
   "dataReview",
   "passed",
   "passedDifferentAssay",
+  "staged",
   "failed",
   "topUp",
   "na",
@@ -93,6 +94,14 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     cellStatus: null,
     priority: 7,
     showExternal: false,
+  },
+  staged: {
+    label: "Staged",
+    icon: "hard-drive",
+    qcComplete: true,
+    cellStatus: null,
+    priority: 7,
+    showExternal: true,
   },
   failed: {
     label: "Failed",
