@@ -7,6 +7,25 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.61.0] - 2026-01-08
+
+### Added
+
+* "Staged" release QC status
+* Dialog to indicate when reports are being generated
+* "Staged Release" case filter
+* Case ID to Case Details page title
+* Case Summary Report to both internal and external views
+
+### Changed
+
+* Reports are now grouped into "Download Selected" and "Download All" buttons to indicate which records will be included and whether selection is needed
+
+### Fixed
+
+* In notifications, run-libraries were counted as pending QC while certain metrics were still pending analysis
+
+
 ## [1.60.0] - 2025-12-11
 
 ### Added
