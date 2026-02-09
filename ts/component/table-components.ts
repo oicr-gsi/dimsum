@@ -144,6 +144,13 @@ export const caseFilters: FilterDefinition[] = [
     type: "date",
     showExternal: true,
   },
+  {
+    title: "Archival Status",
+    key: "ARCHIVAL_STATUS",
+    type: "dropdown",
+    values: ["Pending", "Started", "Paused", "Complete"],
+    showExternal: false,
+  },
 ];
 
 export const runLibraryFilters: FilterDefinition[] = [
