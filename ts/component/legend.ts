@@ -32,7 +32,7 @@ class Legend {
       "m-2",
       "mx-4",
       "relative",
-      "cursor-pointer"
+      "cursor-pointer",
     );
     icon.addEventListener("click", () => this.container.remove());
     header.appendChild(title);
@@ -44,9 +44,9 @@ class Legend {
     // populate legend based on type
     if (type === "qc") {
       Object.values(qcStatuses)
-        .filter((qcStatus) => qcStatus.showExternal)
+        .filter((qcStatus) => internalUser || qcStatus.showExternal)
         .forEach((qcStatus) =>
-          body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label))
+          body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label)),
         );
       if (internalUser) {
         body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
@@ -152,7 +152,7 @@ class Legend {
     return Math.min(
       Math.max(n, 0),
       // container width - window width
-      window.innerWidth - this.container.offsetWidth
+      window.innerWidth - this.container.offsetWidth,
     );
   }
   // clamp y-coord between 0 and window height
@@ -160,7 +160,7 @@ class Legend {
     return Math.min(
       Math.max(n, 0),
       // container height - window height
-      window.innerHeight - this.container.offsetHeight
+      window.innerHeight - this.container.offsetHeight,
     );
   }
 
