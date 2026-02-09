@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import ca.on.oicr.gsi.cardea.data.ArchivingStatus;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
@@ -371,6 +372,7 @@ public class MockCase {
     markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
     markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.STAGED,
         null);
+    when(kase.getArchivingStatus()).thenReturn(ArchivingStatus.STARTED);
     return kase;
   }
 
