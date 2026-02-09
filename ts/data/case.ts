@@ -40,6 +40,7 @@ import {
   getMetricNames,
   makeMetricDisplay,
   makeNotFoundIcon,
+  makeStatusIcon,
 } from "../util/metrics";
 import {
   CheckboxField,
@@ -190,6 +191,15 @@ export interface Case {
   releaseDaysSpent?: number;
   caseDaysSpent?: number;
   pauseDays?: number;
+  archivingStatus?:
+    | "PENDING"
+    | "STARTED"
+    | "PAUSED"
+    | "COMPLETE"
+    | "DELETED"
+    | "EXPIRED";
+  archivingDestination?: string;
+  archivingTtlDays?: number;
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
@@ -251,436 +261,461 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       view: "internal",
     },
   ],
-  generateColumns: () => [
-    ...makeBaseColumns(),
-    {
-      title: "Start Date",
-      sortType: "date",
-      addParentContents(kase, fragment) {
-        if (!kase.startDate) {
-          return;
-        }
-        const dateDiv = document.createElement("div");
-        dateDiv.appendChild(document.createTextNode(kase.startDate));
-        fragment.appendChild(dateDiv);
-
-        const targets = getTargets(kase);
-        if (targets) {
-          assertDefined(kase.caseDaysSpent);
-          if (caseComplete(kase)) {
-            addTextDiv(`Completed in ${kase.caseDaysSpent} days`, fragment);
+  generateColumns: () => {
+    const columns: ColumnDefinition<Case, Test>[] = [
+      ...makeBaseColumns(),
+      {
+        title: "Start Date",
+        sortType: "date",
+        addParentContents(kase, fragment) {
+          if (!kase.startDate) {
             return;
           }
+          const dateDiv = document.createElement("div");
+          dateDiv.appendChild(document.createTextNode(kase.startDate));
+          fragment.appendChild(dateDiv);
 
-          addTextDiv(`${kase.caseDaysSpent}d spent`, fragment);
-          const overdue = caseOverdue(kase, targets);
-          if (overdue) {
-            const overdueDiv = makeTextDivWithTooltip(
-              "OVERDUE",
-              `Case target: ${targets.caseDays} days`,
-            );
-            styleText(overdueDiv, "bold");
-            fragment.appendChild(overdueDiv);
-          } else if (targets.caseDays) {
-            const remainingDiv = makeTextDivWithTooltip(
-              `${targets.caseDays - kase.caseDaysSpent}d remain`,
-              `Case target: ${targets.caseDays} days`,
-            );
-            fragment.appendChild(remainingDiv);
-          }
-          if (!overdue) {
-            const overdueStep = getOverdueStep(kase, targets);
-            if (overdueStep) {
-              const behindDiv = makeTextDivWithTooltip(
-                "BEHIND SCHEDULE",
-                `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`,
+          const targets = getTargets(kase);
+          if (targets) {
+            assertDefined(kase.caseDaysSpent);
+            if (caseComplete(kase)) {
+              addTextDiv(`Completed in ${kase.caseDaysSpent} days`, fragment);
+              return;
+            }
+
+            addTextDiv(`${kase.caseDaysSpent}d spent`, fragment);
+            const overdue = caseOverdue(kase, targets);
+            if (overdue) {
+              const overdueDiv = makeTextDivWithTooltip(
+                "OVERDUE",
+                `Case target: ${targets.caseDays} days`,
               );
-              styleText(behindDiv, "error");
-              fragment.appendChild(behindDiv);
+              styleText(overdueDiv, "bold");
+              fragment.appendChild(overdueDiv);
+            } else if (targets.caseDays) {
+              const remainingDiv = makeTextDivWithTooltip(
+                `${targets.caseDays - kase.caseDaysSpent}d remain`,
+                `Case target: ${targets.caseDays} days`,
+              );
+              fragment.appendChild(remainingDiv);
+            }
+            if (!overdue) {
+              const overdueStep = getOverdueStep(kase, targets);
+              if (overdueStep) {
+                const behindDiv = makeTextDivWithTooltip(
+                  "BEHIND SCHEDULE",
+                  `${overdueStep.stepLabel} target: ${overdueStep.targetDays} days`,
+                );
+                styleText(behindDiv, "error");
+                fragment.appendChild(behindDiv);
+              }
             }
           }
-        }
-      },
-      getCellHighlight(kase) {
-        if (caseComplete(kase)) {
-          // Never show overdue/behind warning/error for completed cases
+        },
+        getCellHighlight(kase) {
+          if (caseComplete(kase)) {
+            // Never show overdue/behind warning/error for completed cases
+            return null;
+          }
+          const targets = getTargets(kase);
+          if (targets) {
+            if (caseOverdue(kase, targets)) {
+              return "error";
+            } else if (getOverdueStep(kase, targets)) {
+              return "warning";
+            }
+          }
           return null;
-        }
-        const targets = getTargets(kase);
-        if (targets) {
-          if (caseOverdue(kase, targets)) {
-            return "error";
-          } else if (getOverdueStep(kase, targets)) {
-            return "warning";
-          }
-        }
-        return null;
+        },
       },
-    },
-    {
-      title: "Receipt/Inspection",
-      addParentContents(kase, fragment) {
-        addSampleIcons(kase.assayId, kase.receipts, fragment);
-        if (samplePhasePendingWorkQcOrTransfer(kase.receipts)) {
-          if (
-            samplePhasePendingWork(kase.receipts) &&
-            !kase.requisition.paused
-          ) {
-            addConstructionIcon("receipt", fragment);
+      {
+        title: "Receipt/Inspection",
+        addParentContents(kase, fragment) {
+          addSampleIcons(kase.assayId, kase.receipts, fragment);
+          if (samplePhasePendingWorkQcOrTransfer(kase.receipts)) {
+            if (
+              samplePhasePendingWork(kase.receipts) &&
+              !kase.requisition.paused
+            ) {
+              addConstructionIcon("receipt", fragment);
+            }
+            if (!kase.requisition.stopped) {
+              const targets = getTargets(kase);
+              if (targets) {
+                assertDefined(kase.caseDaysSpent);
+                addTurnAroundTimeInfo(
+                  kase.caseDaysSpent,
+                  targets.receiptDays,
+                  fragment,
+                );
+              }
+            }
           }
-          if (!kase.requisition.stopped) {
+        },
+        getCellHighlight(kase) {
+          return getSamplePhaseHighlight(kase.requisition, kase.receipts);
+        },
+      },
+      {
+        title: "Test",
+        child: true,
+        addChildContents(test, kase, fragment) {
+          const testNameDiv = document.createElement("div");
+          testNameDiv.appendChild(document.createTextNode(test.name));
+          fragment.appendChild(testNameDiv);
+
+          if (test.groupId) {
+            const groupIdDiv = document.createElement("div");
+            groupIdDiv.appendChild(document.createTextNode(test.groupId));
+            const tooltipInstance = Tooltip.getInstance();
+            const addContents = (fragment: DocumentFragment) =>
+              fragment.appendChild(document.createTextNode("Group ID"));
+            tooltipInstance.addTarget(groupIdDiv, addContents);
+            fragment.appendChild(groupIdDiv);
+          }
+        },
+      },
+      {
+        title: "Extraction",
+        child: true,
+        addChildContents(test, kase, fragment) {
+          if (
+            handleNaSamplePhase(kase.requisition, test.extractions, fragment)
+          ) {
+            return;
+          }
+          if (!test.extractions.length && test.extractionSkipped) {
+            addNaText(fragment);
+            return;
+          }
+          addSampleIcons(
+            kase.assayId,
+            test.extractions,
+            fragment,
+            internalUser,
+          );
+          if (samplePhaseComplete(kase.receipts)) {
+            if (
+              samplePhasePendingWorkQcOrTransfer(test.extractions, internalUser)
+            ) {
+              if (
+                samplePhasePendingWork(test.extractions) &&
+                !kase.requisition.paused
+              ) {
+                if (test.extractions.length) {
+                  addSpace(fragment);
+                }
+                addConstructionIcon("extraction", fragment);
+              }
+              if (!kase.requisition.stopped) {
+                const targets = getTargets(kase);
+                if (targets) {
+                  assertDefined(kase.caseDaysSpent);
+                  addTurnAroundTimeInfo(
+                    kase.caseDaysSpent,
+                    targets.extractionDays,
+                    fragment,
+                  );
+                }
+              }
+            }
+          }
+        },
+        getCellHighlight(kase, test) {
+          test = assertNotNull(test);
+          if (!test.extractions.length && test.extractionSkipped) {
+            return "na";
+          }
+          return getSamplePhaseHighlight(
+            kase.requisition,
+            test.extractions,
+            internalUser,
+          );
+        },
+      },
+      {
+        title: "Library Preparation",
+        child: true,
+        addChildContents(test, kase, fragment) {
+          if (
+            handleNaSamplePhase(
+              kase.requisition,
+              test.libraryPreparations,
+              fragment,
+            )
+          ) {
+            return;
+          }
+          if (
+            !test.libraryPreparations.length &&
+            test.libraryPreparationSkipped
+          ) {
+            addNaText(fragment);
+            return;
+          }
+          addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
+          if (
+            test.extractionSkipped ||
+            samplePhaseComplete(test.extractions, internalUser)
+          ) {
+            if (samplePhasePendingWorkQcOrTransfer(test.libraryPreparations)) {
+              if (
+                samplePhasePendingWork(test.libraryPreparations) &&
+                !kase.requisition.paused
+              ) {
+                if (test.libraryPreparations.length) {
+                  addSpace(fragment);
+                }
+                addConstructionIcon("library preparation", fragment);
+              }
+              if (!kase.requisition.stopped) {
+                const targets = getTargets(kase);
+                if (targets) {
+                  assertDefined(kase.caseDaysSpent);
+                  addTurnAroundTimeInfo(
+                    kase.caseDaysSpent,
+                    targets.libraryPreparationDays,
+                    fragment,
+                  );
+                }
+              }
+            }
+          }
+        },
+        getCellHighlight(kase, test) {
+          test = assertNotNull(test);
+          if (
+            !test.libraryPreparations.length &&
+            test.libraryPreparationSkipped
+          ) {
+            return "na";
+          }
+          return getSamplePhaseHighlight(
+            kase.requisition,
+            test.libraryPreparations,
+          );
+        },
+      },
+      {
+        title: "Library Qualification",
+        child: true,
+        addChildContents(test, kase, fragment) {
+          if (
+            handleNaSamplePhase(
+              kase.requisition,
+              test.libraryQualifications,
+              fragment,
+            )
+          ) {
+            return;
+          }
+          if (
+            !test.libraryQualifications.length &&
+            test.libraryQualificationSkipped
+          ) {
+            addNaText(fragment);
+            return;
+          }
+          addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
+          if (
+            test.libraryPreparationSkipped ||
+            samplePhaseComplete(test.libraryPreparations)
+          ) {
+            if (
+              samplePhasePendingWorkQcOrTransfer(test.libraryQualifications)
+            ) {
+              if (
+                samplePhasePendingWork(test.libraryQualifications) &&
+                !kase.requisition.paused
+              ) {
+                if (test.libraryQualifications.length) {
+                  addSpace(fragment);
+                }
+                addConstructionIcon("library qualification", fragment);
+              }
+              if (!kase.requisition.stopped) {
+                const targets = getTargets(kase);
+                if (targets) {
+                  assertDefined(kase.caseDaysSpent);
+                  addTurnAroundTimeInfo(
+                    kase.caseDaysSpent,
+                    targets.libraryQualificationDays,
+                    fragment,
+                  );
+                }
+              }
+            }
+          }
+        },
+        getCellHighlight(kase, test) {
+          test = assertNotNull(test);
+          if (
+            !test.libraryQualifications.length &&
+            test.libraryQualificationSkipped
+          ) {
+            return "na";
+          }
+          return getSamplePhaseHighlight(
+            kase.requisition,
+            test.libraryQualifications,
+          );
+        },
+      },
+      {
+        title: "Full-Depth Sequencing",
+        child: true,
+        addChildContents(test, kase, fragment) {
+          if (
+            handleNaSamplePhase(
+              kase.requisition,
+              test.fullDepthSequencings,
+              fragment,
+            )
+          ) {
+            return;
+          }
+          addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
+          if (
+            test.libraryQualificationSkipped ||
+            samplePhaseComplete(test.libraryQualifications)
+          ) {
+            if (samplePhasePendingWorkQcOrTransfer(test.fullDepthSequencings)) {
+              if (
+                samplePhasePendingWork(test.fullDepthSequencings) &&
+                !kase.requisition.paused
+              ) {
+                if (test.fullDepthSequencings.length) {
+                  addSpace(fragment);
+                }
+                addConstructionIcon("full-depth sequencing", fragment);
+              }
+              if (!kase.requisition.stopped) {
+                const targets = getTargets(kase);
+                if (targets) {
+                  assertDefined(kase.caseDaysSpent);
+                  addTurnAroundTimeInfo(
+                    kase.caseDaysSpent,
+                    targets.fullDepthSequencingDays,
+                    fragment,
+                  );
+                }
+              }
+            }
+          }
+        },
+        getCellHighlight(kase, test) {
+          test = assertNotNull(test);
+          return getSamplePhaseHighlight(
+            kase.requisition,
+            test.fullDepthSequencings,
+          );
+        },
+      },
+      makeDeliverableTypePhaseColumn(
+        "Analysis Review",
+        true,
+        (kase, deliverableType) =>
+          kase.tests.every((test) =>
+            samplePhaseComplete(test.fullDepthSequencings),
+          ),
+        (targets) => targets.analysisReviewDays,
+        (deliverable) =>
+          getAnalysisReviewQcStatus(deliverable.analysisReviewQcStatus),
+        (deliverable) => deliverable.analysisReviewQcUser,
+        (deliverable) => deliverable.analysisReviewQcNote,
+      ),
+      makeDeliverableTypePhaseColumn(
+        "Release Approval",
+        false,
+        (kase, deliverableType) => {
+          if (
+            kase.deliverables.every(
+              (deliverable) => deliverable.analysisReviewSkipped,
+            )
+          ) {
+            return kase.tests.every((test) =>
+              samplePhaseComplete(test.fullDepthSequencings),
+            );
+          }
+          return kase.deliverables
+            .filter((x) => x.deliverableCategory == deliverableType)
+            .some((x) =>
+              caseQcComplete(
+                getAnalysisReviewQcStatus(x.analysisReviewQcStatus),
+              ),
+            );
+        },
+        (targets) => targets.releaseApprovalDays,
+        (deliverable) =>
+          getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus),
+        (deliverable) => deliverable.releaseApprovalQcUser,
+        (deliverable) => deliverable.releaseApprovalQcNote,
+      ),
+      {
+        title: "Release",
+        addParentContents(kase, fragment) {
+          const tooltipInstance = Tooltip.getInstance();
+          if (!kase.deliverables.length) {
+            addNoDeliverablesIcon(fragment, tooltipInstance);
+            return;
+          }
+          const anyPreviousComplete = kase.deliverables.some((deliverable) =>
+            caseQcComplete(
+              getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus),
+            ),
+          );
+          const anyQcSet = kase.deliverables
+            .flatMap((deliverable) => deliverable.releases)
+            .some((release) =>
+              caseQcComplete(getReleaseQcStatus(release.qcStatus)),
+            );
+          if (anyPreviousComplete || anyQcSet) {
+            addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
+          }
+          if (anyPreviousComplete && !caseComplete(kase)) {
             const targets = getTargets(kase);
             if (targets) {
               assertDefined(kase.caseDaysSpent);
               addTurnAroundTimeInfo(
                 kase.caseDaysSpent,
-                targets.receiptDays,
+                targets.releaseDays,
                 fragment,
               );
             }
           }
-        }
-      },
-      getCellHighlight(kase) {
-        return getSamplePhaseHighlight(kase.requisition, kase.receipts);
-      },
-    },
-    {
-      title: "Test",
-      child: true,
-      addChildContents(test, kase, fragment) {
-        const testNameDiv = document.createElement("div");
-        testNameDiv.appendChild(document.createTextNode(test.name));
-        fragment.appendChild(testNameDiv);
-
-        if (test.groupId) {
-          const groupIdDiv = document.createElement("div");
-          groupIdDiv.appendChild(document.createTextNode(test.groupId));
-          const tooltipInstance = Tooltip.getInstance();
-          const addContents = (fragment: DocumentFragment) =>
-            fragment.appendChild(document.createTextNode("Group ID"));
-          tooltipInstance.addTarget(groupIdDiv, addContents);
-          fragment.appendChild(groupIdDiv);
-        }
-      },
-    },
-    {
-      title: "Extraction",
-      child: true,
-      addChildContents(test, kase, fragment) {
-        if (handleNaSamplePhase(kase.requisition, test.extractions, fragment)) {
-          return;
-        }
-        if (!test.extractions.length && test.extractionSkipped) {
-          addNaText(fragment);
-          return;
-        }
-        addSampleIcons(kase.assayId, test.extractions, fragment, internalUser);
-        if (samplePhaseComplete(kase.receipts)) {
-          if (
-            samplePhasePendingWorkQcOrTransfer(test.extractions, internalUser)
+        },
+        getCellHighlight(kase) {
+          if (!kase.deliverables.length) {
+            return "error";
+          } else if (
+            kase.deliverables
+              .flatMap((deliverable) => deliverable.releases)
+              .map((release) => getReleaseQcStatus(release.qcStatus))
+              .some((qcStatus) => caseQcFailed(qcStatus))
           ) {
-            if (
-              samplePhasePendingWork(test.extractions) &&
-              !kase.requisition.paused
-            ) {
-              if (test.extractions.length) {
-                addSpace(fragment);
-              }
-              addConstructionIcon("extraction", fragment);
-            }
-            if (!kase.requisition.stopped) {
-              const targets = getTargets(kase);
-              if (targets) {
-                assertDefined(kase.caseDaysSpent);
-                addTurnAroundTimeInfo(
-                  kase.caseDaysSpent,
-                  targets.extractionDays,
-                  fragment,
-                );
-              }
-            }
+            return "error";
+          } else if (kase.requisition.paused || caseComplete(kase)) {
+            return null;
+          } else {
+            return "warning";
           }
-        }
+        },
       },
-      getCellHighlight(kase, test) {
-        test = assertNotNull(test);
-        if (!test.extractions.length && test.extractionSkipped) {
-          return "na";
-        }
-        return getSamplePhaseHighlight(
-          kase.requisition,
-          test.extractions,
-          internalUser,
-        );
-      },
-    },
-    {
-      title: "Library Preparation",
-      child: true,
-      addChildContents(test, kase, fragment) {
-        if (
-          handleNaSamplePhase(
-            kase.requisition,
-            test.libraryPreparations,
-            fragment,
-          )
-        ) {
-          return;
-        }
-        if (
-          !test.libraryPreparations.length &&
-          test.libraryPreparationSkipped
-        ) {
-          addNaText(fragment);
-          return;
-        }
-        addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
-        if (
-          test.extractionSkipped ||
-          samplePhaseComplete(test.extractions, internalUser)
-        ) {
-          if (samplePhasePendingWorkQcOrTransfer(test.libraryPreparations)) {
-            if (
-              samplePhasePendingWork(test.libraryPreparations) &&
-              !kase.requisition.paused
-            ) {
-              if (test.libraryPreparations.length) {
-                addSpace(fragment);
-              }
-              addConstructionIcon("library preparation", fragment);
-            }
-            if (!kase.requisition.stopped) {
-              const targets = getTargets(kase);
-              if (targets) {
-                assertDefined(kase.caseDaysSpent);
-                addTurnAroundTimeInfo(
-                  kase.caseDaysSpent,
-                  targets.libraryPreparationDays,
-                  fragment,
-                );
-              }
-            }
-          }
-        }
-      },
-      getCellHighlight(kase, test) {
-        test = assertNotNull(test);
-        if (
-          !test.libraryPreparations.length &&
-          test.libraryPreparationSkipped
-        ) {
-          return "na";
-        }
-        return getSamplePhaseHighlight(
-          kase.requisition,
-          test.libraryPreparations,
-        );
-      },
-    },
-    {
-      title: "Library Qualification",
-      child: true,
-      addChildContents(test, kase, fragment) {
-        if (
-          handleNaSamplePhase(
-            kase.requisition,
-            test.libraryQualifications,
-            fragment,
-          )
-        ) {
-          return;
-        }
-        if (
-          !test.libraryQualifications.length &&
-          test.libraryQualificationSkipped
-        ) {
-          addNaText(fragment);
-          return;
-        }
-        addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
-        if (
-          test.libraryPreparationSkipped ||
-          samplePhaseComplete(test.libraryPreparations)
-        ) {
-          if (samplePhasePendingWorkQcOrTransfer(test.libraryQualifications)) {
-            if (
-              samplePhasePendingWork(test.libraryQualifications) &&
-              !kase.requisition.paused
-            ) {
-              if (test.libraryQualifications.length) {
-                addSpace(fragment);
-              }
-              addConstructionIcon("library qualification", fragment);
-            }
-            if (!kase.requisition.stopped) {
-              const targets = getTargets(kase);
-              if (targets) {
-                assertDefined(kase.caseDaysSpent);
-                addTurnAroundTimeInfo(
-                  kase.caseDaysSpent,
-                  targets.libraryQualificationDays,
-                  fragment,
-                );
-              }
-            }
-          }
-        }
-      },
-      getCellHighlight(kase, test) {
-        test = assertNotNull(test);
-        if (
-          !test.libraryQualifications.length &&
-          test.libraryQualificationSkipped
-        ) {
-          return "na";
-        }
-        return getSamplePhaseHighlight(
-          kase.requisition,
-          test.libraryQualifications,
-        );
-      },
-    },
-    {
-      title: "Full-Depth Sequencing",
-      child: true,
-      addChildContents(test, kase, fragment) {
-        if (
-          handleNaSamplePhase(
-            kase.requisition,
-            test.fullDepthSequencings,
-            fragment,
-          )
-        ) {
-          return;
-        }
-        addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
-        if (
-          test.libraryQualificationSkipped ||
-          samplePhaseComplete(test.libraryQualifications)
-        ) {
-          if (samplePhasePendingWorkQcOrTransfer(test.fullDepthSequencings)) {
-            if (
-              samplePhasePendingWork(test.fullDepthSequencings) &&
-              !kase.requisition.paused
-            ) {
-              if (test.fullDepthSequencings.length) {
-                addSpace(fragment);
-              }
-              addConstructionIcon("full-depth sequencing", fragment);
-            }
-            if (!kase.requisition.stopped) {
-              const targets = getTargets(kase);
-              if (targets) {
-                assertDefined(kase.caseDaysSpent);
-                addTurnAroundTimeInfo(
-                  kase.caseDaysSpent,
-                  targets.fullDepthSequencingDays,
-                  fragment,
-                );
-              }
-            }
-          }
-        }
-      },
-      getCellHighlight(kase, test) {
-        test = assertNotNull(test);
-        return getSamplePhaseHighlight(
-          kase.requisition,
-          test.fullDepthSequencings,
-        );
-      },
-    },
-    makeDeliverableTypePhaseColumn(
-      "Analysis Review",
-      true,
-      (kase, deliverableType) =>
-        kase.tests.every((test) =>
-          samplePhaseComplete(test.fullDepthSequencings),
-        ),
-      (targets) => targets.analysisReviewDays,
-      (deliverable) =>
-        getAnalysisReviewQcStatus(deliverable.analysisReviewQcStatus),
-      (deliverable) => deliverable.analysisReviewQcUser,
-      (deliverable) => deliverable.analysisReviewQcNote,
-    ),
-    makeDeliverableTypePhaseColumn(
-      "Release Approval",
-      false,
-      (kase, deliverableType) => {
-        if (
-          kase.deliverables.every(
-            (deliverable) => deliverable.analysisReviewSkipped,
-          )
-        ) {
-          return kase.tests.every((test) =>
-            samplePhaseComplete(test.fullDepthSequencings),
-          );
-        }
-        return kase.deliverables
-          .filter((x) => x.deliverableCategory == deliverableType)
-          .some((x) =>
-            caseQcComplete(getAnalysisReviewQcStatus(x.analysisReviewQcStatus)),
-          );
-      },
-      (targets) => targets.releaseApprovalDays,
-      (deliverable) =>
-        getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus),
-      (deliverable) => deliverable.releaseApprovalQcUser,
-      (deliverable) => deliverable.releaseApprovalQcNote,
-    ),
-    {
-      title: "Release",
-      addParentContents(kase, fragment) {
-        const tooltipInstance = Tooltip.getInstance();
-        if (!kase.deliverables.length) {
-          addNoDeliverablesIcon(fragment, tooltipInstance);
-          return;
-        }
-        const anyPreviousComplete = kase.deliverables.some((deliverable) =>
-          caseQcComplete(
-            getReleaseApprovalQcStatus(deliverable.releaseApprovalQcStatus),
-          ),
-        );
-        const anyQcSet = kase.deliverables
-          .flatMap((deliverable) => deliverable.releases)
-          .some((release) =>
-            caseQcComplete(getReleaseQcStatus(release.qcStatus)),
-          );
-        if (anyPreviousComplete || anyQcSet) {
-          addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
-        }
-        if (anyPreviousComplete && !caseComplete(kase)) {
-          const targets = getTargets(kase);
-          if (targets) {
-            assertDefined(kase.caseDaysSpent);
-            addTurnAroundTimeInfo(
-              kase.caseDaysSpent,
-              targets.releaseDays,
-              fragment,
-            );
-          }
-        }
-      },
-      getCellHighlight(kase) {
-        if (!kase.deliverables.length) {
-          return "error";
-        } else if (
-          kase.deliverables
-            .flatMap((deliverable) => deliverable.releases)
-            .map((release) => getReleaseQcStatus(release.qcStatus))
-            .some((qcStatus) => caseQcFailed(qcStatus))
-        ) {
-          return "error";
-        } else if (kase.requisition.paused || caseComplete(kase)) {
-          return null;
-        } else {
-          return "warning";
-        }
-      },
-    },
-    makeLatestActivityColumn(),
-  ],
+      makeLatestActivityColumn(),
+    ];
+    if (internalUser) {
+      columns.splice(columns.length - 1, 0, {
+        title: "Archiving",
+        addParentContents(kase, fragment) {
+          addArchivingIcon(kase, fragment);
+        },
+        getCellHighlight(kase) {
+          return kase.archivingStatus === "COMPLETE" ? null : "warning";
+        },
+      });
+    }
+    return columns;
+  },
 };
 
 export const analysisReviewDefinition: TableDefinition<Case, void> = {
@@ -2204,6 +2239,52 @@ function hasDeliverable(kase: Case, deliverable: string) {
   return kase.deliverables
     .flatMap((deliverableType) => deliverableType.releases)
     .some((release) => release.deliverable === deliverable);
+}
+
+function addArchivingIcon(kase: Case, fragment: DocumentFragment) {
+  if (!kase.archivingStatus) {
+    return;
+  }
+  const [iconName, status] = getArchivingStatusIconAndLabel(kase);
+  const icon = makeIcon(iconName);
+
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(icon, (tooltip) => {
+    if (kase.archivingDestination) {
+      const destinationLabel = makeTextDiv(kase.archivingDestination);
+      destinationLabel.classList.add("font-bold");
+      tooltip.appendChild(destinationLabel);
+    }
+    tooltip.appendChild(makeTextDiv("Status: " + status));
+    if (kase.archivingTtlDays) {
+      tooltip.appendChild(
+        makeTextDiv(`Expires in ${kase.archivingTtlDays} days`),
+      );
+    }
+  });
+  fragment.appendChild(icon);
+}
+
+function getArchivingStatusIconAndLabel(kase: Case): [string, string] {
+  if (!kase.archivingStatus) {
+    throw new Error("Case has no archiving status");
+  }
+  switch (kase.archivingStatus) {
+    case "PENDING":
+      return ["right-left", "Pending"];
+    case "STARTED":
+      return ["upload", "Started"];
+    case "PAUSED":
+      return ["triangle-exclamation", "Paused"];
+    case "COMPLETE":
+      return ["check", "Complete"];
+    case "DELETED":
+      return ["trash", "Deleted"];
+    case "EXPIRED":
+      return ["trash", "Expired"];
+    default:
+      throw new Error("Unhandled archiving status: " + kase.archivingStatus);
+  }
 }
 
 const REPORT_FULL_DEPTH_SUMMARY = "full-depth-summary";

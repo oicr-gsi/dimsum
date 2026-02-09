@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import ca.on.oicr.gsi.cardea.data.AnalysisQcGroup;
+import ca.on.oicr.gsi.cardea.data.ArchivingStatus;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.Donor;
@@ -148,6 +149,21 @@ public class CacheUpdatedCase implements Case {
   @Override
   public boolean isStopped() {
     return baseCase.isStopped();
+  }
+
+  @Override
+  public ArchivingStatus getArchivingStatus() {
+    return baseCase.getArchivingStatus();
+  }
+
+  @Override
+  public String getArchivingDestination() {
+    return baseCase.getArchivingDestination();
+  }
+
+  @Override
+  public Integer getArchivingTtlDays() {
+    return baseCase.getArchivingTtlDays();
   }
 
 }
