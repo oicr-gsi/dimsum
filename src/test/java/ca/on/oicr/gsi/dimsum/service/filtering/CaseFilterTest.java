@@ -1511,8 +1511,8 @@ public class CaseFilterTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void testArchivalStatusFilter() {
-    CaseFilter filter = new CaseFilter(CaseFilterKey.ARCHIVAL_STATUS, "Started");
+  public void testArchivingStatusFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.ARCHIVING_STATUS, "Started");
     testFilterCases(filter, Arrays.asList(28));
   }
 

@@ -145,8 +145,8 @@ export const caseFilters: FilterDefinition[] = [
     showExternal: true,
   },
   {
-    title: "Archival Status",
-    key: "ARCHIVAL_STATUS",
+    title: "Archiving Status",
+    key: "ARCHIVING_STATUS",
     type: "dropdown",
     values: ["Pending", "Started", "Paused", "Complete"],
     showExternal: false,

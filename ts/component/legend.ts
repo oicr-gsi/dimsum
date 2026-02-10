@@ -50,9 +50,9 @@ class Legend {
         );
       if (internalUser) {
         body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
-        body.appendChild(makeLegendEntry("upload", "Archival started"));
+        body.appendChild(makeLegendEntry("upload", "Archiving started"));
         body.appendChild(
-          makeLegendEntry("triangle-exclamation", "Archival paused"),
+          makeLegendEntry("triangle-exclamation", "Archiving paused"),
         );
       }
     } else if (type === "gate") {

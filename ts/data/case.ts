@@ -185,7 +185,7 @@ export interface Case {
   releaseDaysSpent?: number;
   caseDaysSpent?: number;
   pauseDays?: number;
-  archivalStatus?: "PENDING" | "STARTED" | "PAUSED" | "COMPLETE";
+  archivingStatus?: "PENDING" | "STARTED" | "PAUSED" | "COMPLETE";
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
@@ -691,15 +691,15 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     ];
     if (internalUser) {
       columns.splice(columns.length - 1, 0, {
-        title: "Archival",
+        title: "Archiving",
         addParentContents(kase, fragment) {
-          const icon = getArchivalStatusIcon(kase);
+          const icon = getArchivingStatusIcon(kase);
           if (icon) {
             fragment.append(icon);
           }
         },
         getCellHighlight(kase) {
-          return kase.archivalStatus === "COMPLETE" ? null : "warning";
+          return kase.archivingStatus === "COMPLETE" ? null : "warning";
         },
       });
     }
@@ -2161,11 +2161,11 @@ function hasDeliverable(kase: Case, deliverable: string) {
     .some((release) => release.deliverable === deliverable);
 }
 
-function getArchivalStatusIcon(kase: Case) {
-  if (!kase.archivalStatus) {
+function getArchivingStatusIcon(kase: Case) {
+  if (!kase.archivingStatus) {
     return null;
   }
-  switch (kase.archivalStatus) {
+  switch (kase.archivingStatus) {
     case "PENDING":
       return makeStatusIcon("right-left", "Pending");
     case "STARTED":
@@ -2175,7 +2175,7 @@ function getArchivalStatusIcon(kase: Case) {
     case "COMPLETE":
       return makeStatusIcon("check", "Complete");
     default:
-      throw new Error("Unhandled archival status: " + kase.archivalStatus);
+      throw new Error("Unhandled archiving status: " + kase.archivingStatus);
   }
 }
 

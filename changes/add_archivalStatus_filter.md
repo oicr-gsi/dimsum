@@ -1,1 +1,1 @@
-Archival status case filter
+Archiving status case filter

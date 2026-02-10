@@ -1,1 +1,1 @@
-Archival column in the Cases list showing the archival status
+Archiving column in the Cases list showing the archiving status
