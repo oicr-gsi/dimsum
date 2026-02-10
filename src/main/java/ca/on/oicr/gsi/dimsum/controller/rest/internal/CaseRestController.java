@@ -62,49 +62,53 @@ public class CaseRestController {
 
   @PostMapping("/bulk-signoff")
   public @ResponseStatus(HttpStatus.NO_CONTENT) void postSignoffs(
-      @RequestBody NabuBulkSignoff data, @AuthenticationPrincipal DimsumPrincipal principal) {
+      @RequestBody List<NabuBulkSignoff> data, @AuthenticationPrincipal DimsumPrincipal principal) {
     if (nabuService == null) {
       throw new BadRequestException("Nabu integration is not enabled");
     }
-    if (data.getCaseIdentifiers() == null || data.getCaseIdentifiers().isEmpty()) {
-      throw new BadRequestException("No case IDs specified");
-    }
-    for (String caseId : data.getCaseIdentifiers()) {
-      Case kase = caseService.getCase(caseId);
-      if (kase == null) {
-        throw new BadRequestException("No case found with ID '%s'".formatted(caseId));
+    for (NabuBulkSignoff signoff : data) {
+      if (signoff.getCaseIdentifiers() == null || signoff.getCaseIdentifiers().isEmpty()) {
+        throw new BadRequestException("No case IDs specified");
       }
-    }
-    if (data.getDeliverableType() == null) {
-      throw new BadRequestException("Deliverable type not specified");
-    }
-    if (data.getSignoffStepName() == null) {
-      throw new BadRequestException("QC step not specified");
-    }
-    switch (data.getSignoffStepName()) {
-      case ANALYSIS_REVIEW:
-        validateQcStatus(data, AnalysisReviewQcStatus::of);
-        break;
-      case RELEASE_APPROVAL:
-        validateQcStatus(data, ReleaseApprovalQcStatus::of);
-        break;
-      case RELEASE:
-        validateQcStatus(data, ReleaseQcStatus::of);
-        break;
-      default:
-        throw new BadRequestException("QC step invalid or not specified");
-    }
-    if (data.getSignoffStepName() == NabuSignoffStep.RELEASE) {
-      if (data.getDeliverable() == null) {
-        throw new BadRequestException("Release deliverable not specified");
+      for (String caseId : signoff.getCaseIdentifiers()) {
+        Case kase = caseService.getCase(caseId);
+        if (kase == null) {
+          throw new BadRequestException("No case found with ID '%s'".formatted(caseId));
+        }
       }
-    } else {
-      if (data.getDeliverable() != null) {
-        throw new BadRequestException("Deliverable not applicable to selected QC step");
+      if (signoff.getDeliverableType() == null) {
+        throw new BadRequestException("Deliverable type not specified");
       }
+      if (signoff.getSignoffStepName() == null) {
+        throw new BadRequestException("QC step not specified");
+      }
+      switch (signoff.getSignoffStepName()) {
+        case ANALYSIS_REVIEW:
+          validateQcStatus(signoff, AnalysisReviewQcStatus::of);
+          break;
+        case RELEASE_APPROVAL:
+          validateQcStatus(signoff, ReleaseApprovalQcStatus::of);
+          break;
+        case RELEASE:
+          validateQcStatus(signoff, ReleaseQcStatus::of);
+          break;
+        default:
+          throw new BadRequestException("QC step invalid or not specified");
+      }
+      if (signoff.getSignoffStepName() == NabuSignoffStep.RELEASE) {
+        if (signoff.getDeliverable() == null) {
+          throw new BadRequestException("Release deliverable not specified");
+        }
+      } else {
+        if (signoff.getDeliverable() != null) {
+          throw new BadRequestException("Deliverable not applicable to selected QC step");
+        }
+      }
+      signoff.setUsername(principal.getDisplayName());
     }
-    data.setUsername(principal.getDisplayName());
-    nabuService.postSignoff(data);
+    for (NabuBulkSignoff signoff : data) {
+      nabuService.postSignoff(signoff);
+    }
   }
 
   private <T extends CaseQc> void validateQcStatus(NabuSignoff data,

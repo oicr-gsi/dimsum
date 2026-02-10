@@ -5,7 +5,7 @@ interface FormAction {
   title: string;
   handler: (
     resolve: (value: any) => void,
-    reject: (reason: string) => void
+    reject: (reason: string) => void,
   ) => void;
 }
 
@@ -24,7 +24,7 @@ function showDialog(
   makeBody: (body: Node) => void,
   closable: boolean = true,
   actions?: FormAction[],
-  callback?: (result?: any) => void
+  callback?: (result?: any) => void,
 ): () => void {
   const dialog = document.createElement("dialog");
   dialog.className =
@@ -49,7 +49,7 @@ function showDialog(
       "text-24",
       "m-2",
       "mx-4",
-      "cursor-pointer"
+      "cursor-pointer",
     );
     icon.addEventListener("click", () => {
       dialog.close();
@@ -84,8 +84,8 @@ function showDialog(
             dialog.close();
             dialog.remove();
             showErrorDialog(reason);
-          }
-        )
+          },
+        ),
       );
     }
     addActionButton(footer, "Cancel", () => {
@@ -115,7 +115,7 @@ export function showAlertDialog(
   title: string,
   text: string,
   additionalContent?: Node,
-  callback?: () => void
+  callback?: () => void,
 ) {
   showDialog(
     title,
@@ -127,7 +127,7 @@ export function showAlertDialog(
     },
     true,
     undefined,
-    callback
+    callback,
   );
 }
 
@@ -141,7 +141,7 @@ function addText(body: Node, text: string) {
 export function showConfirmDialog(
   title: string,
   text: string,
-  action: FormAction
+  action: FormAction,
 ) {
   showDialog(title, (body) => addText(body, text), true, [action]);
 }
@@ -214,6 +214,28 @@ export class TextField extends FormField<string> {
   }
 }
 
+export class CheckboxField extends FormField<boolean> {
+  input?: HTMLInputElement;
+  checked: boolean;
+
+  constructor(title: string, resultProperty: string, checked?: boolean) {
+    super(title, resultProperty, false);
+    this.checked = checked || false;
+  }
+
+  layoutInput(container: Node): void {
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = this.checked;
+    this.input = input;
+    container.appendChild(this.input);
+  }
+
+  getValue(): boolean | null {
+    return this.input ? this.input.checked : null;
+  }
+}
+
 export class DropdownField<FieldType> extends FormField<FieldType> {
   options: Map<string, FieldType | null>;
   selectedValue: FieldType | null = null;
@@ -226,7 +248,7 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
     resultProperty: string,
     required?: boolean,
     nullLabel?: string,
-    defaultLabel?: string
+    defaultLabel?: string,
   ) {
     super(title, resultProperty, required);
     this.options = options;
@@ -244,7 +266,7 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
       dropdownOptions.push(
         new BasicDropdownOption(nullText, () => {
           this.selectedValue = null;
-        })
+        }),
       );
     }
     for (let key of this.options.keys()) {
@@ -252,14 +274,14 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
         new BasicDropdownOption(key, () => {
           const value = this.options.get(key);
           this.selectedValue = value == null ? null : value;
-        })
+        }),
       );
     }
     const dropdown = new Dropdown(
       dropdownOptions,
       true,
       undefined,
-      this.defaultLabel || nullText
+      this.defaultLabel || nullText,
     );
     const element = dropdown.getContainerTag();
     element.classList.add("w-48");
@@ -275,7 +297,7 @@ export function showFormDialog(
   title: string,
   fields: FormField<any>[],
   submitLabel: string,
-  callback: (result: any) => void
+  callback: (result: any) => void,
 ) {
   showDialog(
     title,
@@ -313,13 +335,13 @@ export function showFormDialog(
         },
       },
     ],
-    callback
+    callback,
   );
 }
 
 export function showDownloadOptionsDialog(
   callback: (result: any) => void,
-  additionalFields?: FormField<any>[]
+  additionalFields?: FormField<any>[],
 ) {
   const formatOptions = new Map<string, any>([
     [
@@ -364,7 +386,7 @@ export function showDownloadOptionsDialog(
       "formatOptions",
       true,
       undefined,
-      "Excel"
+      "Excel",
     ),
   ];
   if (additionalFields) {
