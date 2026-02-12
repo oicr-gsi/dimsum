@@ -29,7 +29,7 @@ indicate that any partial results or failed deliverable have been delivered as r
    <img src="../../../../images/case_qc_dialog_1.png" alt="Case QC Dialog" width="400">
 
 4. In the next dialog, choose the QC status and enter a note if desired. If signing off the Release
-   QC step, you will also need to specify which deliverable you wish to sign off. Click "Submit"
+   QC step, you will also need to specify which deliverables you wish to sign off. Click "Submit"
    when you are done.
 
    <img src="../../../../images/case_qc_dialog_2.png" alt="Release QC Dialog" width="400">
