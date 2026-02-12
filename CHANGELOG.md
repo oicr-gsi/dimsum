@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.62.0] - 2026-02-12
+
+### Changed
+
+* It is now possible to sign off release for multiple deliverables at once
+
+
 ## [1.61.0] - 2026-01-08
 
 ### Added
