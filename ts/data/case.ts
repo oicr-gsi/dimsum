@@ -204,6 +204,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
     internalUser
       ? [
           {
+            columnTitle: "Requisition",
+            type: "text",
+          },
+          {
             columnTitle: "Urgency",
             type: "number",
           },

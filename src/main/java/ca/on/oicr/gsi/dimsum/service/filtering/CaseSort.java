@@ -134,6 +134,7 @@ public enum CaseSort {
       return calculateDaysRemaining(kase, targets.getCaseDays());
     }
   },
+  REQUISITION("Requisition", Comparator.comparing(kase -> kase.getRequisition().getName(), String.CASE_INSENSITIVE_ORDER)),
   ASSAY("Assay", Comparator.comparing(Case::getAssayName)),
   DONOR("Donor", Comparator.comparing(kase -> kase.getDonor().getName())),
   START_DATE("Start Date", Comparator.comparing(Case::getStartDate, Comparator.nullsLast(Comparator.naturalOrder()))),
