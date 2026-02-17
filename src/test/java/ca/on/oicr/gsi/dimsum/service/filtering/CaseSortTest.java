@@ -24,6 +24,11 @@ import ca.on.oicr.gsi.cardea.data.Test;
 
 public class CaseSortTest {
 
+  private static final String[] requistionsOrdered =
+      {"123", "Req A", "req b", "REQ C", "WGTS20260213"};
+  private static final String[] caseRequisitions = {requistionsOrdered[4], requistionsOrdered[0],
+      requistionsOrdered[3], requistionsOrdered[1], requistionsOrdered[2]};
+
   private static final String[] assaysOrdered = {"A", "B", "C", "D", "E"};
   private static final String[] caseAssays =
       {assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]};
@@ -40,6 +45,18 @@ public class CaseSortTest {
       {datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3], datesOrdered[0]};
 
   private static Map<Long, Assay> mockAssaysById = makeAssays();
+
+  @org.junit.jupiter.api.Test
+  public void testSortByRequisitionAscending() {
+    List<Case> cases = getCasesSorted(CaseSort.REQUISITION, false);
+    assertOrder(cases, kase -> kase.getRequisition().getName(), requistionsOrdered, false);
+  }
+
+  @org.junit.jupiter.api.Test
+  public void testSortByRequisitionDescending() {
+    List<Case> cases = getCasesSorted(CaseSort.REQUISITION, true);
+    assertOrder(cases, kase -> kase.getRequisition().getName(), requistionsOrdered, true);
+  }
 
   @org.junit.jupiter.api.Test
   public void testSortByAssayAscending() {
@@ -378,6 +395,9 @@ public class CaseSortTest {
 
   private static Case mockCase(int caseNumber) {
     Case kase = mock(Case.class);
+    Requisition requisition = mock(Requisition.class);
+    when(requisition.getName()).thenReturn(caseRequisitions[caseNumber]);
+    when(kase.getRequisition()).thenReturn(requisition);
     when(kase.getAssayName()).thenReturn(caseAssays[caseNumber]);
     Donor donor = mock(Donor.class);
     when(donor.getName()).thenReturn(caseDonors[caseNumber]);
