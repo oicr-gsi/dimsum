@@ -54,6 +54,9 @@ class Legend {
         body.appendChild(
           makeLegendEntry("triangle-exclamation", "Archiving paused"),
         );
+        body.appendChild(
+          makeLegendEntry("trash", "Data deleted/archive expired"),
+        );
       }
     } else if (type === "gate") {
       for (const gate of Object.keys(GATE_COLOR_MAPPING)) {

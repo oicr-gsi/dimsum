@@ -185,7 +185,15 @@ export interface Case {
   releaseDaysSpent?: number;
   caseDaysSpent?: number;
   pauseDays?: number;
-  archivingStatus?: "PENDING" | "STARTED" | "PAUSED" | "COMPLETE";
+  archivingStatus?:
+    | "PENDING"
+    | "STARTED"
+    | "PAUSED"
+    | "COMPLETE"
+    | "DELETED"
+    | "EXPIRED";
+  archivingDestination?: string;
+  archivingTtlDays?: number;
 }
 
 export const caseDefinition: TableDefinition<Case, Test> = {
@@ -693,10 +701,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       columns.splice(columns.length - 1, 0, {
         title: "Archiving",
         addParentContents(kase, fragment) {
-          const icon = getArchivingStatusIcon(kase);
-          if (icon) {
-            fragment.append(icon);
-          }
+          addArchivingIcon(kase, fragment);
         },
         getCellHighlight(kase) {
           return kase.archivingStatus === "COMPLETE" ? null : "warning";
@@ -2161,19 +2166,47 @@ function hasDeliverable(kase: Case, deliverable: string) {
     .some((release) => release.deliverable === deliverable);
 }
 
-function getArchivingStatusIcon(kase: Case) {
+function addArchivingIcon(kase: Case, fragment: DocumentFragment) {
   if (!kase.archivingStatus) {
-    return null;
+    return;
+  }
+  const [iconName, status] = getArchivingStatusIconAndLabel(kase);
+  const icon = makeIcon(iconName);
+
+  const tooltipInstance = Tooltip.getInstance();
+  tooltipInstance.addTarget(icon, (tooltip) => {
+    if (kase.archivingDestination) {
+      const destinationLabel = makeTextDiv(kase.archivingDestination);
+      destinationLabel.classList.add("font-bold");
+      tooltip.appendChild(destinationLabel);
+    }
+    tooltip.appendChild(makeTextDiv("Status: " + status));
+    if (kase.archivingTtlDays) {
+      tooltip.appendChild(
+        makeTextDiv(`Expires in ${kase.archivingTtlDays} days`),
+      );
+    }
+  });
+  fragment.appendChild(icon);
+}
+
+function getArchivingStatusIconAndLabel(kase: Case): [string, string] {
+  if (!kase.archivingStatus) {
+    throw new Error("Case has no archiving status");
   }
   switch (kase.archivingStatus) {
     case "PENDING":
-      return makeStatusIcon("right-left", "Pending");
+      return ["right-left", "Pending"];
     case "STARTED":
-      return makeStatusIcon("upload", "Started");
+      return ["upload", "Started"];
     case "PAUSED":
-      return makeStatusIcon("triangle-exclamation", "Paused");
+      return ["triangle-exclamation", "Paused"];
     case "COMPLETE":
-      return makeStatusIcon("check", "Complete");
+      return ["check", "Complete"];
+    case "DELETED":
+      return ["trash", "Deleted"];
+    case "EXPIRED":
+      return ["trash", "Expired"];
     default:
       throw new Error("Unhandled archiving status: " + kase.archivingStatus);
   }

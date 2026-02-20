@@ -156,4 +156,14 @@ public class CacheUpdatedCase implements Case {
     return baseCase.getArchivingStatus();
   }
 
+  @Override
+  public String getArchivingDestination() {
+    return baseCase.getArchivingDestination();
+  }
+
+  @Override
+  public Integer getArchivingTtlDays() {
+    return baseCase.getArchivingTtlDays();
+  }
+
 }
