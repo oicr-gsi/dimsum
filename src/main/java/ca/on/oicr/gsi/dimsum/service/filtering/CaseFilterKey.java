@@ -161,6 +161,12 @@ public enum CaseFilterKey {
       }
     }
     return false;
+  }),
+  ARCHIVING_STATUS(string -> kase -> {
+    if (kase.getArchivingStatus() == null) {
+      return false;
+    }
+    return Objects.equals(kase.getArchivingStatus().getLabel(), string);
   });
   // @formatter:on
 

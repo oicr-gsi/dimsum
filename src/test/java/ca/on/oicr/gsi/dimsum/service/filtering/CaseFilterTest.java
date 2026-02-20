@@ -1510,6 +1510,12 @@ public class CaseFilterTest {
     testFilterCases(filter, Arrays.asList(28));
   }
 
+  @org.junit.jupiter.api.Test
+  public void testArchivingStatusFilter() {
+    CaseFilter filter = new CaseFilter(CaseFilterKey.ARCHIVING_STATUS, "Started");
+    testFilterCases(filter, Arrays.asList(28));
+  }
+
   private static List<Case> getCasesFiltered(CaseFilter filter) {
     return cases.stream().filter(filter.casePredicate()).toList();
   }
