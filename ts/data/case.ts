@@ -46,13 +46,19 @@ import {
   DropdownField,
   FormField,
   showAlertDialog,
+  showConfirmDialog,
   showDownloadOptionsDialog,
   showErrorDialog,
   showFormDialog,
   TextField,
 } from "../component/dialog";
 import { post, postDownload } from "../util/requests";
-import { assertDefined, assertNotNull, nullIfUndefined } from "./data-utils";
+import {
+  assertDefined,
+  assertNotNull,
+  nullIfUndefined,
+  nullOrUndefined,
+} from "./data-utils";
 
 export interface Project {
   name: string;
@@ -1917,6 +1923,19 @@ export function getAnalysisMetricCellHighlight(
   return anyApplicable ? null : "na";
 }
 
+const nabuQcSteps = ["ANALYSIS_REVIEW", "RELEASE_APPROVAL", "RELEASE"] as const;
+type NabuQcStep = (typeof nabuQcSteps)[number];
+
+const nabuQcStepLabels: Record<NabuQcStep, string> = {
+  ANALYSIS_REVIEW: "Analysis Review",
+  RELEASE_APPROVAL: "Release Approval",
+  RELEASE: "Release",
+};
+
+const qcStepOptions = new Map<string, string>(
+  nabuQcSteps.map((step) => [nabuQcStepLabels[step], step]),
+);
+
 function showSignoffDialog(items: Case[]) {
   const commonDeliverableTypes = new Map<string, string>();
   items[0].deliverables
@@ -1936,23 +1955,6 @@ function showSignoffDialog(items: Case[]) {
     return;
   }
 
-  const nabuQcSteps = [
-    "ANALYSIS_REVIEW",
-    "RELEASE_APPROVAL",
-    "RELEASE",
-  ] as const;
-  type NabuQcStep = (typeof nabuQcSteps)[number];
-
-  const nabuQcStepLabels: Record<NabuQcStep, string> = {
-    ANALYSIS_REVIEW: "Analysis Review",
-    RELEASE_APPROVAL: "Release Approval",
-    RELEASE: "Release",
-  };
-
-  const qcStepOptions = new Map<string, string>(
-    nabuQcSteps.map((step) => [nabuQcStepLabels[step], step]),
-  );
-
   showFormDialog(
     "Case QC",
     [
@@ -1970,105 +1972,178 @@ function showSignoffDialog(items: Case[]) {
     ],
     "Next",
     (result1) => {
-      const statuses = getStatusesForStep(result1.signoffStepName);
-      const formFields: FormField<any>[] = [];
-      const commonDeliverables: string[] = [];
-      if (result1.signoffStepName === "RELEASE") {
-        items[0].deliverables
-          .filter(
-            (deliverable) =>
-              deliverable.deliverableCategory === result1.deliverableType,
-          )
-          .flatMap((deliverableType) => deliverableType.releases)
-          .map((release) => release.deliverable)
-          .filter((deliverable) =>
-            items.every((item) => hasDeliverable(item, deliverable)),
-          )
-          .forEach((deliverable) => commonDeliverables.push(deliverable));
-        if (!commonDeliverables.length) {
-          showErrorDialog(
-            `The selected cases have no ${result1.deliverableType} deliverable in common`,
+      if (result1.signoffStepName == "RELEASE_APPROVAL") {
+        const missingSignoffCount = countCasesMissingSignoffs(
+          items,
+          result1.deliverableType,
+        );
+        if (missingSignoffCount) {
+          showConfirmDialog(
+            "Warning",
+            `${missingSignoffCount} of the selected cases ${missingSignoffCount > 1 ? "are" : "is"} missing signoffs. Are you sure you wish to continue?`,
+            {
+              title: "Continue",
+              handler: (resolve, reject) => {
+                showSignoffDialog2(
+                  items,
+                  result1.signoffStepName,
+                  result1.deliverableType,
+                );
+                resolve();
+              },
+            },
           );
           return;
         }
-        commonDeliverables.forEach((deliverable) =>
-          formFields.push(
-            new CheckboxField(
-              deliverable,
-              deliverable,
-              commonDeliverables.length === 1,
-            ),
-          ),
-        );
       }
-      formFields.push(
-        new DropdownField(
-          "QC Status",
-          new Map<string, CaseQc | null>(
-            Object.values(statuses).map((status) => [status.label, status]),
-          ),
-          "qcStatus",
-          true,
-          undefined,
-          "Pending",
-        ),
-        new TextField("Note", "comment"),
+      showSignoffDialog2(
+        items,
+        result1.signoffStepName,
+        result1.deliverableType,
       );
+    },
+  );
+}
 
-      const qcStepLabel =
-        nabuQcStepLabels[result1.signoffStepName as NabuQcStep];
-      showFormDialog(
-        `${qcStepLabel} QC - ${result1.deliverableType}`,
-        formFields,
-        "Submit",
-        (result2) => {
-          let selectedDeliverables = null;
-          if (result1.signoffStepName === "RELEASE") {
-            selectedDeliverables = commonDeliverables.filter(
-              (deliverable) => result2[deliverable],
-            );
-            if (!selectedDeliverables.length) {
-              showErrorDialog("No deliverables selected.");
-              return;
-            }
-          } else {
-            selectedDeliverables = [null];
-          }
-          const caseIds = items.map((item) => item.id);
-          const data = selectedDeliverables.map((deliverable) => {
-            return {
-              caseIdentifiers: caseIds,
-              signoffStepName: result1.signoffStepName,
-              deliverableType: result1.deliverableType,
-              deliverable: deliverable,
-              qcPassed: result2.qcStatus.qcPassed,
-              release: result2.qcStatus.release,
-              comment: result2.comment || null,
-            };
-          });
-          post(urls.rest.cases.bulkSignoff, data)
-            .then(() => {
-              showAlertDialog(
-                "Success",
-                "Sign-off has been recorded in Nabu. Refreshing view.",
-                undefined,
-                () => window.location.reload(),
-              );
-            })
-            .catch((reason) => {
-              if (selectedDeliverables.length > 1) {
-                const extraParagraph = document.createElement("p");
-                extraParagraph.textContent =
-                  "It is possible that some of the signoffs were saved while others failed. Refreshing view.";
-                showAlertDialog("Error", reason, extraParagraph, () =>
-                  window.location.reload(),
-                );
-              } else {
-                showErrorDialog(reason);
-              }
-            });
-        },
+function countCasesMissingSignoffs(cases: Case[], deliverableType: string) {
+  const missingSignoffs = cases.filter((kase) => {
+    return (
+      kase.receipts.some(isQcMissing) ||
+      kase.tests.some((test) => {
+        return (
+          test.extractions.some(isQcMissing) ||
+          test.libraryPreparations.some(isQcMissing) ||
+          test.libraryQualifications.some(isQcMissing) ||
+          test.fullDepthSequencings.some(isQcMissing)
+        );
+      }) ||
+      kase.deliverables.some((deliverable) => {
+        return (
+          deliverable.deliverableCategory === deliverableType &&
+          nullOrUndefined(deliverable.analysisReviewQcStatus)
+        );
+      })
+    );
+  });
+  return missingSignoffs.length;
+}
+
+function isQcMissing(sample: Sample) {
+  if (nullOrUndefined(sample.qcUser)) {
+    return true;
+  }
+  if (sample.run) {
+    if (
+      nullOrUndefined(sample.dataReviewPassed) ||
+      nullOrUndefined(sample.run.qcPassed) ||
+      nullOrUndefined(sample.run.dataReviewPassed)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function showSignoffDialog2(
+  items: Case[],
+  signoffStepName: string,
+  deliverableType: string,
+) {
+  const statuses = getStatusesForStep(signoffStepName);
+  const formFields: FormField<any>[] = [];
+  const commonDeliverables: string[] = [];
+  if (signoffStepName === "RELEASE") {
+    items[0].deliverables
+      .filter(
+        (deliverable) => deliverable.deliverableCategory === deliverableType,
+      )
+      .flatMap((deliverableType) => deliverableType.releases)
+      .map((release) => release.deliverable)
+      .filter((deliverable) =>
+        items.every((item) => hasDeliverable(item, deliverable)),
+      )
+      .forEach((deliverable) => commonDeliverables.push(deliverable));
+    if (!commonDeliverables.length) {
+      showErrorDialog(
+        `The selected cases have no ${deliverableType} deliverable in common`,
       );
+      return;
+    }
+    commonDeliverables.forEach((deliverable) =>
+      formFields.push(
+        new CheckboxField(
+          deliverable,
+          deliverable,
+          commonDeliverables.length === 1,
+        ),
+      ),
+    );
+  }
+  formFields.push(
+    new DropdownField(
+      "QC Status",
+      new Map<string, CaseQc | null>(
+        Object.values(statuses).map((status) => [status.label, status]),
+      ),
+      "qcStatus",
+      true,
+      undefined,
+      "Pending",
+    ),
+    new TextField("Note", "comment"),
+  );
+
+  const qcStepLabel = nabuQcStepLabels[signoffStepName as NabuQcStep];
+  showFormDialog(
+    `${qcStepLabel} QC - ${deliverableType}`,
+    formFields,
+    "Submit",
+    (result2) => {
+      let selectedDeliverables = null;
+      if (signoffStepName === "RELEASE") {
+        selectedDeliverables = commonDeliverables.filter(
+          (deliverable) => result2[deliverable],
+        );
+        if (!selectedDeliverables.length) {
+          showErrorDialog("No deliverables selected.");
+          return;
+        }
+      } else {
+        selectedDeliverables = [null];
+      }
+      const caseIds = items.map((item) => item.id);
+      const data = selectedDeliverables.map((deliverable) => {
+        return {
+          caseIdentifiers: caseIds,
+          signoffStepName: signoffStepName,
+          deliverableType: deliverableType,
+          deliverable: deliverable,
+          qcPassed: result2.qcStatus.qcPassed,
+          release: result2.qcStatus.release,
+          comment: result2.comment || null,
+        };
+      });
+      post(urls.rest.cases.bulkSignoff, data)
+        .then(() => {
+          showAlertDialog(
+            "Success",
+            "Sign-off has been recorded in Nabu. Refreshing view.",
+            undefined,
+            () => window.location.reload(),
+          );
+        })
+        .catch((reason) => {
+          if (selectedDeliverables.length > 1) {
+            const extraParagraph = document.createElement("p");
+            extraParagraph.textContent =
+              "It is possible that some of the signoffs were saved while others failed. Refreshing view.";
+            showAlertDialog("Error", reason, extraParagraph, () =>
+              window.location.reload(),
+            );
+          } else {
+            showErrorDialog(reason);
+          }
+        });
     },
   );
 }
