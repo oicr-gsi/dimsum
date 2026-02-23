@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
@@ -254,7 +255,11 @@ public class CaseTatReport extends Report {
 
   private static String hasDeliverableCategory(RowData rowData, String deliverableCategory) {
     return rowData.kase().getDeliverables().stream().anyMatch(
-        deliverable -> Objects.equals(deliverable.getDeliverableCategory(), deliverableCategory))
+        deliverable -> {
+          return Objects.equals(deliverable.getDeliverableCategory(), deliverableCategory)
+              && deliverable.getReleases().stream().anyMatch(release -> release
+                  .getQcStatus() != ReleaseQcStatus.NOT_APPLICABLE);
+        })
             ? "YES"
             : "no";
   }
