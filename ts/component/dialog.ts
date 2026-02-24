@@ -4,7 +4,7 @@ import { BasicDropdownOption, Dropdown, DropdownOption } from "./dropdown";
 interface FormAction {
   title: string;
   handler: (
-    resolve: (value: any) => void,
+    resolve: (value?: any) => void,
     reject: (reason: string) => void,
   ) => void;
 }
