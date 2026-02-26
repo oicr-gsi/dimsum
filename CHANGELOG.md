@@ -7,6 +7,25 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.63.0] - 2026-02-26
+
+### Added
+
+* Option to sort cases by requisition
+* Archiving status case filter
+* Archiving column in the Cases list showing the archiving status
+
+### Changed
+
+* sequencing metrics will now show "Analysis Skipped" status instead of "Pending Analysis" when appropriate
+* The Case TAT Report will now show "no" for a deliverable category if all of its deliverables are marked with release status N/A
+* When adding release approval signoffs, a warning will be shown if any of the selected cases are missing signoffs for any earlier QC steps
+
+### Fixed
+
+* Some icons were missing from the legend dialog for internal users
+
+
 ## [1.62.0] - 2026-02-12
 
 ### Changed
