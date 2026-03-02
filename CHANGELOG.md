@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.63.1] - 2026-03-02
+
+### Fixed
+
+* When the units for a metric were K/M/B, the pass/fail status was not being calculated correctly, affecting whether the cell was shaded red to indicate a failure. Exception: "Min Clusters (PF)" metrics were working correctly.
+
+
 ## [1.63.0] - 2026-02-26
 
 ### Added
