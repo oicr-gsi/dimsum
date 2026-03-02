@@ -931,7 +931,7 @@ function addClustersPfContents(
   const perLaneMetrics = separatedMetrics[1];
   const tooltip = Tooltip.getInstance();
   const runDiv = document.createElement("div");
-  const divisorUnit = getDivisorUnit(metrics);
+  const divisorUnit = getDivisorUnit(metrics[0]);
 
   runDiv.innerText = formatMetricValue(
     sample.run.clustersPf,
@@ -988,13 +988,7 @@ function getClustersPfHighlight(
   const perRunMetrics = separatedMetrics[0];
   const perLaneMetrics = separatedMetrics[1];
 
-  const divisorUnit = getDivisorUnit(metrics);
-  const divisor = getDivisor(divisorUnit);
-
-  if (
-    perRunMetrics.length &&
-    anyFail(sample.run.clustersPf / divisor, perRunMetrics)
-  ) {
+  if (perRunMetrics.length && anyFail(sample.run.clustersPf, perRunMetrics)) {
     return "error";
   }
 
@@ -1005,7 +999,7 @@ function getClustersPfHighlight(
       const lane = sample.run.lanes[i];
       if (nullOrUndefined(lane.clustersPf)) {
         highlight = "warning";
-      } else if (anyFail(lane.clustersPf / divisor, perLaneMetrics)) {
+      } else if (anyFail(lane.clustersPf, perLaneMetrics)) {
         return "error";
       }
     }

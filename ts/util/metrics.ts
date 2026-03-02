@@ -5,7 +5,7 @@ import { siteConfig } from "./site-config";
 
 export function getMetricNames(
   category: MetricCategory,
-  assayIds: number[]
+  assayIds: number[],
 ): string[] {
   const assays = assayIds.filter(unique).map((assayId) => {
     if (!assayId) {
@@ -19,7 +19,7 @@ export function getMetricNames(
       (assay) =>
         assay.metricCategories &&
         assay.metricCategories[category] &&
-        assay.metricCategories[category].length
+        assay.metricCategories[category].length,
     )
     .flatMap((assay) => assay.metricCategories![category]);
 
@@ -34,7 +34,7 @@ export function getMetricNames(
       // get all metrics from all matching subcategories
       subcategories
         .filter((subcategory) => (subcategory.name || "") === subcategoryName)
-        .flatMap((subcategory) => subcategory.metrics)
+        .flatMap((subcategory) => subcategory.metrics),
     )
     .forEach((metrics) => {
       metrics.sort(byPriority).forEach((metric) => {
@@ -53,7 +53,7 @@ function unique(item: any, index: number, arr: any[]) {
 
 function byPriority(
   a: MetricSubcategory | Metric,
-  b: MetricSubcategory | Metric
+  b: MetricSubcategory | Metric,
 ) {
   const sortPriorityA = a.sortPriority || -1;
   const sortPriorityB = b.sortPriority || -1;
@@ -62,13 +62,13 @@ function byPriority(
 
 export function makeNotFoundIcon(
   prefix?: string,
-  tooltipAdditionalContents?: Node
+  tooltipAdditionalContents?: Node,
 ) {
   return makeStatusIcon(
     "question",
     "Not Found",
     prefix,
-    tooltipAdditionalContents
+    tooltipAdditionalContents,
   );
 }
 
@@ -76,7 +76,7 @@ export function makeStatusIcon(
   iconName: string,
   statusText: string,
   prefix?: string,
-  tooltipAdditionalContents?: Node
+  tooltipAdditionalContents?: Node,
 ) {
   const icon = makeIcon(iconName);
   let element: HTMLElement = icon;
@@ -102,7 +102,7 @@ export function makeMetricDisplay(
   metrics: Metric[],
   addTooltip: boolean,
   prefix?: string,
-  tooltipAdditionalContents?: Node
+  tooltipAdditionalContents?: Node,
 ): HTMLSpanElement {
   const displayValue = formatMetricValue(value, metrics);
   const div = document.createElement("div");
@@ -123,15 +123,15 @@ export function makeMetricDisplay(
 export function formatMetricValue(
   value: number,
   metrics: Metric[],
-  divisorUnit?: string | null
+  divisorUnit?: string | null,
 ) {
   const metricPlaces = Math.max(
     ...metrics.map((metric) =>
       Math.max(
         countDecimalPlaces(metric.minimum),
-        countDecimalPlaces(metric.maximum)
-      )
-    )
+        countDecimalPlaces(metric.maximum),
+      ),
+    ),
   );
   if (divisorUnit) {
     value = value / getDivisor(divisorUnit);
@@ -143,16 +143,15 @@ export function formatMetricValue(
   }
 }
 
-export function getDivisorUnit(metrics: Metric[]) {
-  if (metrics.some((metric) => metric.units && metric.units.startsWith("K"))) {
+export function getDivisorUnit(metric: Metric) {
+  if (!metric.units) {
+    return null;
+  }
+  if (metric.units.startsWith("K")) {
     return "K";
-  } else if (
-    metrics.some((metric) => metric.units && metric.units.startsWith("M"))
-  ) {
+  } else if (metric.units.startsWith("M")) {
     return "M";
-  } else if (
-    metrics.some((metric) => metric.units && metric.units.startsWith("B"))
-  ) {
+  } else if (metric.units.startsWith("B")) {
     return "B";
   }
   return null;
@@ -199,7 +198,7 @@ export function addMetricRequirementText(metrics: Metric[], container: Node) {
   const metricDiv = document.createElement("div");
   const requirements: Set<string> = new Set();
   metrics.forEach((metric) =>
-    requirements.add(getMetricRequirementText(metric))
+    requirements.add(getMetricRequirementText(metric)),
   );
   if (requirements.size === 1) {
     metricDiv.innerText = "Required: " + requirements.values().next().value;
@@ -234,7 +233,7 @@ export function getMetricRequirementText(metric: Metric) {
       break;
     case "BETWEEN":
       text = `Between ${formatThreshold(metric.minimum)} and ${formatThreshold(
-        metric.maximum
+        metric.maximum,
       )}`;
       break;
     default:
@@ -248,11 +247,17 @@ export function getMetricRequirementText(metric: Metric) {
 
 export function anyFail(value: number, metrics: Metric[]): boolean {
   for (let i = 0; i < metrics.length; i++) {
+    let compareValue = value;
+    const divisorUnit = getDivisorUnit(metrics[i]);
+    const divisor = getDivisor(divisorUnit);
+    if (divisor) {
+      compareValue = compareValue / divisor;
+    }
     switch (metrics[i].thresholdType) {
       case "LT": {
         const max = metrics[i].maximum;
         if (max !== undefined && max !== null) {
-          if (value >= max) {
+          if (compareValue >= max) {
             return true;
           }
         }
@@ -261,7 +266,7 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
       case "LE": {
         const max = metrics[i].maximum;
         if (max !== undefined && max !== null) {
-          if (value > max) {
+          if (compareValue > max) {
             return true;
           }
         }
@@ -270,7 +275,7 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
       case "GT": {
         const min = metrics[i].minimum;
         if (min !== undefined && min !== null) {
-          if (value <= min) {
+          if (compareValue <= min) {
             return true;
           }
         }
@@ -279,7 +284,7 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
       case "GE": {
         const min = metrics[i].minimum;
         if (min !== undefined && min !== null) {
-          if (value < min) {
+          if (compareValue < min) {
             return true;
           }
         }
@@ -288,13 +293,13 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
       case "BETWEEN": {
         const min = metrics[i].minimum;
         if (min !== undefined && min !== null) {
-          if (value < min) {
+          if (compareValue < min) {
             return true;
           }
         }
         const max = metrics[i].maximum;
         if (max !== undefined && max !== null) {
-          if (value > max) {
+          if (compareValue > max) {
             return true;
           }
         }
@@ -302,7 +307,7 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
       }
       default:
         throw new Error(
-          `Unexpected threshold type: ${metrics[i].thresholdType}`
+          `Unexpected threshold type: ${metrics[i].thresholdType}`,
         );
     }
   }
