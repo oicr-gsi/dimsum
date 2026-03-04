@@ -862,7 +862,11 @@ function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
           ),
         );
         fragment.appendChild(
-          makeNameDiv("Case Details", undefined, urls.dimsum.case(kase.id)),
+          makeNameDiv(
+            "Case Details",
+            undefined,
+            urls.dimsum.case(kase.id),
+            kase.id),
         );
       },
     },
