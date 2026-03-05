@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.64.0] - 2026-03-05
+
+### Added
+
+* Button to copy case ID beside "Case Details" text in Assay column on List pages
+
+
 ## [1.63.1] - 2026-03-02
 
 ### Fixed
