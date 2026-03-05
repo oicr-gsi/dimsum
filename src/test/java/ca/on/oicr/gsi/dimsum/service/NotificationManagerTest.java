@@ -28,6 +28,7 @@ import ca.on.oicr.gsi.cardea.data.SampleMetric;
 import ca.on.oicr.gsi.cardea.data.ThresholdType;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
 
 public class NotificationManagerTest {
 
@@ -90,8 +91,8 @@ public class NotificationManagerTest {
   @Test
   public void testReadyForLibraryQualificationQcAll() {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, false));
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, false));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
     assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
   }
 
@@ -99,8 +100,8 @@ public class NotificationManagerTest {
   public void testReadyForLibraryQualificationQcPartial() {
     // Still considered ready if ANY library is missing QC
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, true));
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, false));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
     assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
   }
 
@@ -108,8 +109,8 @@ public class NotificationManagerTest {
   public void testReadyForLibraryQualificationQcRun() {
     // Still considered ready if ONLY the run is missing QC
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, true));
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, true));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
     assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
   }
 
@@ -117,8 +118,8 @@ public class NotificationManagerTest {
   public void testNotReadyForLibraryQualificationQcPartial() {
     // Only consider ready if ALL libraries have metrics available
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, false));
-    runAndLibraries.getLibraryQualifications().add(makeSample(false, false));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(false, false));
     assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
   }
 
@@ -126,16 +127,16 @@ public class NotificationManagerTest {
   public void testNotReadyForLibraryQualificationQcDone() {
     // Only consider ready if a signoff is missing
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, true));
-    runAndLibraries.getLibraryQualifications().add(makeSample(true, true));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
     assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
   }
 
   @Test
   public void testReadyForFullDepthQcAll() {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, false));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
     assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -143,8 +144,8 @@ public class NotificationManagerTest {
   public void testReadyForFullDepthQcPartial() {
     // Still considered ready if ANY library is missing QC
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, true));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
     assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -152,8 +153,8 @@ public class NotificationManagerTest {
   public void testReadyForFullDepthQcRun() {
     // Still considered ready if ONLY the run is missing QC
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, true));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, true));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
     assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -161,8 +162,8 @@ public class NotificationManagerTest {
   public void testReadyForFullDepthQcPartialAvailable() {
     // Consider ready if ANY libraries has metrics available and requires QC
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, false));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(false, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
     assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -170,8 +171,8 @@ public class NotificationManagerTest {
   public void testReadyForFullDepthQcRunPartialAvailable() {
     // Still considered ready if ANY library has metrics available and ONLY the run is missing QC
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, true));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(false, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
     assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -179,8 +180,8 @@ public class NotificationManagerTest {
   public void testNotReadyForFullDepthQcDone() {
     // Only consider ready if a signoff is missing
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, true));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(true, true));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
     assertFalse(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -188,8 +189,8 @@ public class NotificationManagerTest {
   public void testNotReadyForFullDepthQcDoneRun() {
     // Only consider ready if a library has metrics available
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
-    runAndLibraries.getFullDepthSequencings().add(makeSample(false, false));
-    runAndLibraries.getFullDepthSequencings().add(makeSample(false, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
     assertFalse(sut.readyForFullDepthQc(runAndLibraries, assaysById));
   }
 
@@ -343,16 +344,16 @@ public class NotificationManagerTest {
     Map<String, RunAndLibraries> data = new HashMap<>();
     RunAndLibraries runAndLibraries = makeRunAndLibraries(runSignoffsDone);
     for (int i = 0; i < pendingAnalysisCount; i++) {
-      runAndLibraries.getFullDepthSequencings().add(makeSample(false, false, false));
+      runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false, false));
     }
     for (int i = 0; i < pendingQcCount; i++) {
-      runAndLibraries.getFullDepthSequencings().add(makeSample(true, false, false));
+      runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false, false));
     }
     for (int i = 0; i < pendingDataReviewCount; i++) {
-      runAndLibraries.getFullDepthSequencings().add(makeSample(true, true, false));
+      runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true, false));
     }
     for (int i = 0; i < doneCount; i++) {
-      runAndLibraries.getFullDepthSequencings().add(makeSample(true, true, true));
+      runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true, true));
     }
     data.put(runAndLibraries.getRun().getName(), runAndLibraries);
     return data;
@@ -366,12 +367,30 @@ public class NotificationManagerTest {
     return runAndLibraries;
   }
 
+  private SampleAndRelated makeRunLibrary(boolean metricsAvailable, boolean signoffsDone) {
+    return makeRunLibrary(metricsAvailable, signoffsDone, signoffsDone);
+  }
+
+  private SampleAndRelated makeRunLibrary(boolean metricsAvailable, boolean qcDone,
+      boolean signoffsDone) {
+    SampleAndRelated runLib = mock(SampleAndRelated.class);
+    Sample sample = makeSample(metricsAvailable, qcDone, signoffsDone);
+    mockSampleFields(sample, metricsAvailable, qcDone, qcDone);
+    return runLib;
+  }
+
   private Sample makeSample(boolean metricAvailable, boolean signoffsDone) {
     return makeSample(metricAvailable, signoffsDone, signoffsDone);
   }
 
   private Sample makeSample(boolean metricAvailable, boolean qcDone, boolean dataReviewDone) {
     Sample sample = mock(Sample.class);
+    mockSampleFields(sample, metricAvailable, qcDone, dataReviewDone);
+    return sample;
+  }
+
+  private void mockSampleFields(Sample sample, boolean metricAvailable, boolean qcDone,
+      boolean dataReviewDone) {
     SampleMetric metric = mock(SampleMetric.class);
     when(metric.getName()).thenReturn("Mean Insert Size");
     when(metric.getThresholdType()).thenReturn(ThresholdType.GE);
@@ -379,7 +398,6 @@ public class NotificationManagerTest {
     when(sample.getMetrics()).thenReturn(Collections.singletonList(metric));
     when(sample.getQcDate()).thenReturn(qcDone ? arbitraryTimestamp : null);
     when(sample.getDataReviewDate()).thenReturn(dataReviewDone ? arbitraryTimestamp : null);
-    return sample;
   }
 
   private Issue makeIssue(String code) {

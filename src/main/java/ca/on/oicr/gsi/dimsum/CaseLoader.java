@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -155,26 +154,23 @@ public class CaseLoader {
       for (Test test : kase.getTests()) {
         for (Sample sample : test.getLibraryQualifications()) {
           if (sample.getRun() != null) {
-            addRunLibrary(map, sample, RunAndLibraries.Builder::addLibraryQualification);
+            long runId = sample.getRun().getId();
+            RunAndLibraries.Builder runAndLibraries =
+                map.computeIfAbsent(runId, x -> new RunAndLibraries.Builder().run(sample.getRun()));
+            runAndLibraries.addLibraryQualification(sample, test.getLibraryQualifications());
           }
         }
         for (Sample sample : test.getFullDepthSequencings()) {
-          addRunLibrary(map, sample, RunAndLibraries.Builder::addFullDepthSequencing);
+          long runId = sample.getRun().getId();
+          RunAndLibraries.Builder runAndLibraries =
+              map.computeIfAbsent(runId, x -> new RunAndLibraries.Builder().run(sample.getRun()));
+          runAndLibraries.addFullDepthSequencing(sample, test.getFullDepthSequencings());
         }
       }
     }
     return map.values().stream()
         .map(RunAndLibraries.Builder::build)
         .collect(Collectors.toMap(x -> x.getRun().getName(), Function.identity()));
-  }
-
-  private void addRunLibrary(Map<Long, RunAndLibraries.Builder> map, Sample sample,
-      BiConsumer<RunAndLibraries.Builder, Sample> addSample) {
-    long runId = sample.getRun().getId();
-    if (!map.containsKey(runId)) {
-      map.put(runId, new RunAndLibraries.Builder().run(sample.getRun()));
-    }
-    addSample.accept(map.get(runId), sample);
   }
 
   @FunctionalInterface

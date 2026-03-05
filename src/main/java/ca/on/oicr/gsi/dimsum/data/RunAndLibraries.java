@@ -1,9 +1,11 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 
@@ -12,21 +14,25 @@ import ca.on.oicr.gsi.cardea.data.Sample;
  */
 public class RunAndLibraries {
 
-  private final Set<Sample> fullDepthSequencings;
-  private final Set<Sample> libraryQualifications;
+  private final Set<SampleAndRelated> fullDepthSequencings;
+  private final Set<SampleAndRelated> libraryQualifications;
   private final Run run;
 
   private RunAndLibraries(Builder builder) {
     this.run = requireNonNull(builder.run);
-    this.libraryQualifications = Collections.unmodifiableSet(builder.libraryQualifications);
-    this.fullDepthSequencings = Collections.unmodifiableSet(builder.fullDepthSequencings);
+    this.libraryQualifications = builder.libraryQualifications.values().stream()
+        .map(SampleAndRelated.Builder::build)
+        .collect(Collectors.toUnmodifiableSet());
+    this.fullDepthSequencings = builder.fullDepthSequencings.values().stream()
+        .map(SampleAndRelated.Builder::build)
+        .collect(Collectors.toUnmodifiableSet());
   }
 
-  public Set<Sample> getFullDepthSequencings() {
+  public Set<SampleAndRelated> getFullDepthSequencings() {
     return fullDepthSequencings;
   }
 
-  public Set<Sample> getLibraryQualifications() {
+  public Set<SampleAndRelated> getLibraryQualifications() {
     return libraryQualifications;
   }
 
@@ -36,17 +42,27 @@ public class RunAndLibraries {
 
   public static class Builder {
 
-    private Set<Sample> fullDepthSequencings = new HashSet<>();
-    private Set<Sample> libraryQualifications = new HashSet<>();
+    private Map<String, SampleAndRelated.Builder> fullDepthSequencings = new HashMap<>();
+    private Map<String, SampleAndRelated.Builder> libraryQualifications = new HashMap<>();
     private Run run;
 
-    public Builder addFullDepthSequencing(Sample sample) {
-      fullDepthSequencings.add(sample);
+    public Builder addFullDepthSequencing(Sample sample, Collection<Sample> relatedSamples) {
+      if (fullDepthSequencings.containsKey(sample.getId())) {
+        fullDepthSequencings.get(sample.getId()).addRelatedSamples(relatedSamples);
+      } else {
+        fullDepthSequencings.put(sample.getId(),
+            new SampleAndRelated.Builder(sample, relatedSamples));
+      }
       return this;
     }
 
-    public Builder addLibraryQualification(Sample sample) {
-      libraryQualifications.add(sample);
+    public Builder addLibraryQualification(Sample sample, Collection<Sample> relatedSamples) {
+      if (libraryQualifications.containsKey(sample.getId())) {
+        libraryQualifications.get(sample.getId()).addRelatedSamples(relatedSamples);
+      } else {
+        libraryQualifications.put(sample.getId(),
+            new SampleAndRelated.Builder(sample, relatedSamples));
+      }
       return this;
     }
 

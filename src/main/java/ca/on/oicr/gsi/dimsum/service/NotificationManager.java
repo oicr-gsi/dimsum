@@ -24,6 +24,7 @@ import ca.on.oicr.gsi.dimsum.data.IssueState;
 import ca.on.oicr.gsi.dimsum.data.Notification;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
 import ca.on.oicr.gsi.dimsum.data.RunQcCommentSummary;
+import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
 import ca.on.oicr.gsi.dimsum.service.filtering.NotificationSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import ca.on.oicr.gsi.dimsum.util.Counter;
@@ -225,29 +226,30 @@ public class NotificationManager {
 
   protected boolean readyForLibraryQualificationQc(RunAndLibraries runAndLibraries,
       Map<Long, Assay> assaysById) {
-    Set<Sample> libraries = runAndLibraries.getLibraryQualifications();
+    Set<SampleAndRelated> libraries = runAndLibraries.getLibraryQualifications();
     if (libraries.isEmpty()) {
       return false;
     }
     Run run = runAndLibraries.getRun();
     // "ready" if metrics for ALL libraries are available and ANY library or run sign-off is needed
-    return libraries.stream().allMatch(x -> metricsAvailable(x,
-        run, assaysById, MetricCategory.LIBRARY_QUALIFICATION))
+    return libraries.stream()
+        .allMatch(x -> metricsAvailable(x, run, assaysById, MetricCategory.LIBRARY_QUALIFICATION))
         && (libraries.stream().anyMatch(x -> x.getDataReviewDate() == null)
             || run.getDataReviewDate() == null);
   }
 
   protected boolean readyForFullDepthQc(RunAndLibraries runAndLibraries,
       Map<Long, Assay> assaysById) {
-    Set<Sample> libraries = runAndLibraries.getFullDepthSequencings();
+    Set<SampleAndRelated> libraries = runAndLibraries.getFullDepthSequencings();
     if (libraries.isEmpty()) {
       return false;
     }
     Run run = runAndLibraries.getRun();
     final MetricCategory category = MetricCategory.FULL_DEPTH_SEQUENCING;
     // "ready" if ANY library has metrics available AND ANY such library or the run needs sign-off
-    return libraries.stream().anyMatch(x -> metricsAvailable(x, run, assaysById, category)
-        && (x.getDataReviewDate() == null || run.getDataReviewDate() == null));
+    return libraries.stream()
+        .anyMatch(x -> metricsAvailable(x, run, assaysById, category)
+            && (x.getDataReviewDate() == null || run.getDataReviewDate() == null));
   }
 
   private Notification makeNotification(RunAndLibraries runAndLibraries,
@@ -274,10 +276,10 @@ public class NotificationManager {
     return new Notification(run, pendingAnalysis, pendingQc, pendingDataReview, issueKey);
   }
 
-  private void sortSamples(Set<Sample> samples, Run run, Map<Long, Assay> assaysById,
+  private void sortSamples(Set<SampleAndRelated> runLibs, Run run, Map<Long, Assay> assaysById,
       MetricCategory category, Set<Sample> pendingAnalysis, Set<Sample> pendingQc,
       Set<Sample> pendingDataReview) {
-    for (Sample sample : samples) {
+    for (SampleAndRelated sample : runLibs) {
       if (sample.getDataReviewDate() != null) {
         continue;
       } else if (!metricsAvailable(sample, run, assaysById, category)) {
