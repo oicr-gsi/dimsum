@@ -9,7 +9,7 @@ import {
   addTextDiv,
   getRequiredDataAttribute,
   getRequiredElementById,
-  makeCopyButton,
+  makeCopyNameButton,
   makeIcon,
   shadeElement,
 } from "./util/html-utils";
@@ -21,7 +21,7 @@ import { showAlertDialog } from "./component/dialog";
 
 const misoRunLink = getRequiredElementById("misoRunLink");
 const runName = getRequiredDataAttribute(misoRunLink, "data-run-name");
-const copyButton = makeCopyButton(runName);
+const copyButton = makeCopyNameButton(runName);
 misoRunLink.parentNode?.insertBefore(copyButton, misoRunLink);
 misoRunLink.setAttribute("href", urls.miso.run(runName));
 
@@ -35,7 +35,7 @@ makeDashiRunLinksTooltip(dashiRunLink, runName, libraryDesigns);
 function makeTable(
   headingId: string,
   containerId: string,
-  definition: TableDefinition<any, void>
+  definition: TableDefinition<any, void>,
 ) {
   new TableBuilder(definition, containerId, undefined, undefined, (data) => {
     if (!data || !data.length) {
@@ -60,8 +60,8 @@ makeTable(
   getLibraryQualificationsDefinition(
     urls.rest.runs.libraryQualifications(runName),
     false,
-    runName
-  )
+    runName,
+  ),
 );
 
 makeTable(
@@ -70,27 +70,27 @@ makeTable(
   getFullDepthSequencingsDefinition(
     urls.rest.runs.fullDepthSequencings(runName),
     false,
-    runName
-  )
+    runName,
+  ),
 );
 
 document.getElementById("omissionsInfo")?.addEventListener("click", () => {
   showAlertDialog(
     "Omissions",
-    "The libraries listed here were included in the run, but are not a part of any case."
+    "The libraries listed here were included in the run, but are not a part of any case.",
   );
 });
 
 makeTable(
   "omissionsHeading",
   "omissionsTableContainer",
-  getOmittedRunSamplesDefinition(urls.rest.runs.omissions(runName), false)
+  getOmittedRunSamplesDefinition(urls.rest.runs.omissions(runName), false),
 );
 
 function makeDashiRunLinksTooltip(
   element: HTMLElement,
   runName: string,
-  libraryDesigns: string[]
+  libraryDesigns: string[],
 ) {
   const tooltipInstance = Tooltip.getInstance();
   tooltipInstance.addTarget(element, (fragment) => {
@@ -100,7 +100,7 @@ function makeDashiRunLinksTooltip(
       addLinkDiv(
         fragment,
         "Single-Lane Targeted Sequencing",
-        urls.dashi.run.singleLaneTar(runName)
+        urls.dashi.run.singleLaneTar(runName),
       );
     }
     if (libraryDesigns.includes("WT")) {
@@ -108,7 +108,7 @@ function makeDashiRunLinksTooltip(
       addLinkDiv(
         fragment,
         "Single-Lane RNA-seq",
-        urls.dashi.run.singleLaneRna(runName)
+        urls.dashi.run.singleLaneRna(runName),
       );
     }
     if (
@@ -120,7 +120,7 @@ function makeDashiRunLinksTooltip(
       addLinkDiv(
         fragment,
         "Single-Lane WGS",
-        urls.dashi.run.singleLaneWgs(runName)
+        urls.dashi.run.singleLaneWgs(runName),
       );
     }
     if (libraryDesigns.includes("CM")) {
@@ -128,7 +128,7 @@ function makeDashiRunLinksTooltip(
       addLinkDiv(
         fragment,
         "Single-Lane cfMeDIP",
-        urls.dashi.run.singleLaneCfMeDip(runName)
+        urls.dashi.run.singleLaneCfMeDip(runName),
       );
     }
     if (!linksAdded) {

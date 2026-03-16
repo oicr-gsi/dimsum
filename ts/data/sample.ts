@@ -191,7 +191,13 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
           ? " (L" + sample.sequencingLane + ")"
           : "");
       fragment.appendChild(
-        makeNameDiv(name, urls.miso.sample(sample.id), undefined, sample.name),
+        makeNameDiv(
+          name,
+          urls.miso.sample(sample.id),
+          undefined,
+          sample.name,
+          sample.run && internalUser ? sample.id : undefined,
+        ),
       );
       if (includeRun && sample.run) {
         const runName = sample.run.name;

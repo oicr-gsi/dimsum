@@ -16,7 +16,11 @@ import { getSearchParams, updateUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
-import { makeCopyButton, getRequiredElementById } from "./util/html-utils";
+import {
+  makeCopyNameButton,
+  getRequiredElementById,
+  makeCopyIdButton,
+} from "./util/html-utils";
 import { internalUser } from "./util/site-config";
 
 const tableContainerId = "tableContainer";
@@ -35,13 +39,13 @@ const tables = [
   new Pair("Library Preparations", () => reload(libraryPreparationDefinition)),
   new Pair("Library Qualifications", () =>
     reload(
-      getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true)
-    )
+      getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true),
+    ),
   ),
   new Pair("Full Depth Sequencings", () =>
     reload(
-      getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
-    )
+      getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true),
+    ),
   ),
   new Pair("Analysis Reviews", () => reload(analysisReviewDefinition)),
   new Pair("Release Approvals", () => reload(releaseApprovalDefinition)),
@@ -59,7 +63,7 @@ function reload(definition: TableDefinition<any, any>) {
     definition,
     tableContainerId,
     getSearchParams(),
-    updateUrlParams
+    updateUrlParams,
   ).build();
 }
 
@@ -73,7 +77,7 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     if (requisitionName === null) {
       throw Error("requisition name data attribute missing");
     }
-    const copyButton = makeCopyButton(requisitionName);
+    const copyButton = makeCopyNameButton(requisitionName);
     pageHeading.parentNode?.appendChild(copyButton);
     break;
   }
@@ -82,7 +86,7 @@ switch (tableContainer.getAttribute("data-detail-type")) {
     if (!caseId) {
       throw new Error("Missing case ID value");
     }
-    const copyButton = makeCopyButton(caseId);
+    const copyButton = makeCopyIdButton(caseId);
     const pageHeading = getRequiredElementById("pageHeading");
     pageHeading.after(copyButton);
     if (internalUser) {
@@ -103,7 +107,7 @@ switch (tableContainer.getAttribute("data-detail-type")) {
         "font-medium",
         "text-12",
         "px-2",
-        "py-1"
+        "py-1",
       );
       button.innerText = "QC Report";
       button.onclick = (event) =>
