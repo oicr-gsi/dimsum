@@ -866,7 +866,8 @@ function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
             "Case Details",
             undefined,
             urls.dimsum.case(kase.id),
-            kase.id),
+            kase.id,
+          ),
         );
       },
     },
@@ -2019,7 +2020,7 @@ function showSignoffDialog(items: Case[]) {
         if (missingSignoffCount) {
           showConfirmDialog(
             "Warning",
-            `${missingSignoffCount} of the selected cases ${missingSignoffCount > 1 ? "are" : "is"} missing signoffs. Are you sure you wish to continue?`,
+            `${missingSignoffCount} of the selected cases ${missingSignoffCount > 1 ? "are" : "is"} missing signoffs (receipt to full-depth sequencing). Are you sure you wish to continue?`,
             {
               title: "Continue",
               handler: (resolve, reject) => {
@@ -2054,12 +2055,6 @@ function countCasesMissingSignoffs(cases: Case[], deliverableType: string) {
           test.libraryPreparations.some(isQcMissing) ||
           test.libraryQualifications.some(isQcMissing) ||
           test.fullDepthSequencings.some(isQcMissing)
-        );
-      }) ||
-      kase.deliverables.some((deliverable) => {
-        return (
-          deliverable.deliverableCategory === deliverableType &&
-          nullOrUndefined(deliverable.analysisReviewQcStatus)
         );
       })
     );
