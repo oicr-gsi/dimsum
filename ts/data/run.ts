@@ -21,6 +21,18 @@ export const runDefinition: TableDefinition<Run, void> = {
       autocompleteUrl: urls.rest.autocomplete.runNames,
       showExternal: false,
     },
+    {
+      title: "Completed After",
+      key: "COMPLETED_AFTER",
+      type: "date",
+      showExternal: false,
+    },
+    {
+      title: "Completed Before",
+      key: "COMPLETED_BEFORE",
+      type: "date",
+      showExternal: false,
+    },
   ],
   generateColumns(data) {
     return [
@@ -32,8 +44,8 @@ export const runDefinition: TableDefinition<Run, void> = {
               run.name,
               urls.miso.run(run.name),
               urls.dimsum.run(run.name),
-              run.name
-            )
+              run.name,
+            ),
           );
         },
         sortType: "text",
