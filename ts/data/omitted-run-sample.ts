@@ -20,7 +20,7 @@ export interface OmittedRunSample extends Qcable {
 
 export function getOmittedRunSamplesDefinition(
   queryUrl: string,
-  includeRun: boolean
+  includeRun: boolean,
 ): TableDefinition<OmittedRunSample, void> {
   const columns: ColumnDefinition<OmittedRunSample, void>[] = [
     {
@@ -36,7 +36,7 @@ export function getOmittedRunSamplesDefinition(
             status,
             sample.qcReason,
             sample.qcUser,
-            sample.qcNote
+            sample.qcNote,
           );
         });
         fragment.appendChild(icon);
@@ -52,7 +52,13 @@ export function getOmittedRunSamplesDefinition(
       addParentContents(sample, fragment) {
         const text = `${sample.name} (L${sample.sequencingLane})`;
         fragment.appendChild(
-          makeNameDiv(text, urls.miso.sample(sample.id), undefined, sample.name)
+          makeNameDiv(
+            text,
+            urls.miso.sample(sample.id),
+            undefined,
+            sample.name,
+            sample.id,
+          ),
         );
       },
     },
@@ -66,8 +72,8 @@ export function getOmittedRunSamplesDefinition(
             sample.runName,
             urls.miso.run(sample.runName),
             urls.dimsum.run(sample.runName),
-            sample.runName
-          )
+            sample.runName,
+          ),
         );
       },
     });
@@ -91,7 +97,7 @@ export function getOmittedRunSamplesDefinition(
           navigator.clipboard.writeText(text);
           showAlertDialog(
             "Copy Names",
-            "Library aliquot names copied to clipboard"
+            "Library aliquot names copied to clipboard",
           );
         },
       },

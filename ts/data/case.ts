@@ -866,6 +866,7 @@ function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
             "Case Details",
             undefined,
             urls.dimsum.case(kase.id),
+            undefined,
             kase.id,
           ),
         );
@@ -1599,6 +1600,9 @@ export function makeSampleTooltip(sample: Sample) {
     const sampleNameContainer = makeNameDiv(
       sample.name,
       urls.miso.sample(sample.id),
+      undefined,
+      sample.name,
+      sample.run && internalUser ? sample.id : undefined,
     );
     sampleNameContainer.classList.add("font-bold");
     topContainer.appendChild(sampleNameContainer);

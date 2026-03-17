@@ -8,7 +8,7 @@ export function addColumnHeader(
   firstColumn: boolean,
   addClass: string[] = [],
   bgColor: string = "bg-grey-300",
-  colspan?: number
+  colspan?: number,
 ) {
   const th = document.createElement("th");
   // combine classes into a single string
@@ -52,7 +52,7 @@ export function addLink(
   container: Node,
   text: string,
   url: string,
-  external?: boolean
+  external?: boolean,
 ) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
@@ -142,7 +142,8 @@ export function makeNameDiv(
   name: string,
   misoUrl?: string,
   dimsumUrl?: string,
-  copyText?: string
+  copyNameText?: string,
+  copyIdText?: string,
 ) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-1 items-center";
@@ -153,8 +154,13 @@ export function makeNameDiv(
     nameSpan.innerHTML = name;
     div.appendChild(nameSpan);
   }
-  if (copyText) {
-    const button = makeCopyButton(copyText);
+  if (copyNameText) {
+    const button = makeCopyNameButton(copyNameText);
+    button.classList.add("text-12");
+    div.appendChild(button);
+  }
+  if (copyIdText) {
+    const button = makeCopyIdButton(copyIdText);
     button.classList.add("text-12");
     div.appendChild(button);
   }
@@ -164,11 +170,23 @@ export function makeNameDiv(
   return div;
 }
 
-export function makeCopyButton(text: string): HTMLButtonElement {
+export function makeCopyNameButton(text: string): HTMLButtonElement {
+  return makeCopyButton(text, "copy", "Copy Name");
+}
+
+export function makeCopyIdButton(text: string): HTMLButtonElement {
+  return makeCopyButton(text, "id-badge", "Copy ID");
+}
+
+function makeCopyButton(
+  text: string,
+  icon: string,
+  tooltipText: string,
+): HTMLButtonElement {
   const button = document.createElement("button");
   button.type = "button";
-  button.title = "Copy Name";
-  button.className = "fa-solid fa-copy active:text-green-200";
+  button.title = tooltipText;
+  button.className = `fa-solid fa-${icon} active:text-green-200`;
   button.addEventListener("click", (event) => {
     navigator.clipboard.writeText(text);
   });
@@ -178,7 +196,7 @@ export function makeCopyButton(text: string): HTMLButtonElement {
 export function makeTextDivWithTooltip(
   text: string,
   tooltip: string,
-  addCopyButton = false
+  addCopyButton = false,
 ) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-1 items-center";
@@ -186,7 +204,7 @@ export function makeTextDivWithTooltip(
   textSpan.appendChild(document.createTextNode(text));
 
   if (addCopyButton) {
-    const copyButton = makeCopyButton(text);
+    const copyButton = makeCopyNameButton(text);
     copyButton.classList.add("text-12");
     div.appendChild(textSpan);
     div.appendChild(copyButton);
@@ -226,7 +244,7 @@ export function toTitleCase(text: string) {
 export function addActionButton(
   container: HTMLElement,
   title: string,
-  handler: () => void
+  handler: () => void,
 ) {
   const button = document.createElement("button");
   button.className =
@@ -246,7 +264,7 @@ export function getRequiredElementById(id: string): HTMLElement {
 
 export function getRequiredDataAttribute(
   element: HTMLElement,
-  attribute: string
+  attribute: string,
 ) {
   const value = element.getAttribute(attribute);
   if (!value) {
