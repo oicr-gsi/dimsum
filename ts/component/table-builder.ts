@@ -28,11 +28,11 @@ export interface ColumnDefinition<ParentType, ChildType> {
   addChildContents?: (
     object: ChildType,
     parent: ParentType,
-    fragment: DocumentFragment
+    fragment: DocumentFragment,
   ) => void;
   getCellHighlight?: (
     object: ParentType,
-    child: ChildType | null
+    child: ChildType | null,
   ) => CellStatus | null;
 }
 
@@ -58,7 +58,7 @@ export interface StaticAction {
   title: string;
   handler: (
     filters: { key: string; value: string }[],
-    baseFilter?: { key: string; value: string }
+    baseFilter?: { key: string; value: string },
   ) => void;
   view?: "internal" | "external"; // both if undefined
 }
@@ -77,7 +77,7 @@ export interface TableDefinition<ParentType, ChildType> {
   getSubheading?: (parent: ParentType) => string | null;
   getChildren?: (parent: ParentType) => ChildType[];
   generateColumns: (
-    data?: ParentType[]
+    data?: ParentType[],
   ) => ColumnDefinition<ParentType, ChildType>[];
   getRowHighlight?: (object: ParentType) => CellStatus | null;
   staticActions?: StaticAction[];
@@ -108,7 +108,7 @@ class AcceptedFilter {
       "text-black",
       "cursor-pointer",
       "ml-2",
-      "hover:text-green-200"
+      "hover:text-green-200",
     );
     destroyFilterIcon.onclick = () => {
       this.valid = false;
@@ -133,6 +133,8 @@ export class TableBuilder<ParentType, ChildType> {
   columns: ColumnDefinition<ParentType, ChildType>[];
   sortColumn?: string;
   sortDescending: boolean;
+  staticActions: StaticAction[];
+  bulkActions: BulkAction<ParentType>[];
   pageSize: number = 50;
   pageNumber: number = 1;
   totalCount: number = 0;
@@ -155,7 +157,7 @@ export class TableBuilder<ParentType, ChildType> {
     containerId: string,
     filterParams?: Array<Pair<string, string>>,
     onFilterChange?: (key: string, value: string, add: boolean) => void,
-    onLoad?: (data: ParentType[]) => boolean
+    onLoad?: (data: ParentType[]) => boolean,
   ) {
     this.definition = definition;
     let defaultSort = null;
@@ -181,6 +183,14 @@ export class TableBuilder<ParentType, ChildType> {
     this.onLoad = onLoad;
     this.container = container;
     this.columns = definition.generateColumns();
+    this.staticActions = !definition.staticActions
+      ? []
+      : definition.staticActions.filter((action) =>
+          this.showAction(action.view),
+        );
+    this.bulkActions = !definition.bulkActions
+      ? []
+      : definition.bulkActions.filter((action) => this.showAction(action.view));
     document.addEventListener("keydown", (event: KeyboardEvent) => {
       if (event.key === "Shift") {
         this.isShiftKeyPressed = true;
@@ -207,7 +217,7 @@ export class TableBuilder<ParentType, ChildType> {
   public replaceFilters(filters: Array<Pair<string, string>>) {
     filters.forEach((filter) => {
       this.acceptedFilters = this.acceptedFilters.filter(
-        (accepted) => accepted.key !== filter.key
+        (accepted) => accepted.key !== filter.key,
       );
       if (filter.value) {
         this.addAcceptedFilter(filter.key, filter.value);
@@ -225,7 +235,7 @@ export class TableBuilder<ParentType, ChildType> {
           this.reload();
         };
         this.acceptedFilters.push(
-          new AcceptedFilter(f.title, key, value, onRemove)
+          new AcceptedFilter(f.title, key, value, onRemove),
         );
       }
     });
@@ -236,7 +246,7 @@ export class TableBuilder<ParentType, ChildType> {
       this.addAcceptedFilter(key, value);
     } else {
       this.acceptedFilters = this.acceptedFilters.filter(
-        (filter) => filter.key !== key || filter.value !== value
+        (filter) => filter.key !== key || filter.value !== value,
       );
     }
   }
@@ -265,7 +275,7 @@ export class TableBuilder<ParentType, ChildType> {
     }
     this.topSelectionCountElement = document.createElement("span");
     this.addSelectionCount(topControlsContainer, this.topSelectionCountElement);
-    if (this.definition.bulkActions || this.definition.staticActions) {
+    if (this.bulkActions.length || this.staticActions.length) {
       this.addActionButtons(topControlsContainer);
     }
     if (!this.definition.disablePageControls) {
@@ -291,7 +301,7 @@ export class TableBuilder<ParentType, ChildType> {
       "border-grey-200",
       "border-2",
       "rounded-xl",
-      "overflow-hidden"
+      "overflow-hidden",
     );
 
     tableContainer.appendChild(this.table);
@@ -301,9 +311,9 @@ export class TableBuilder<ParentType, ChildType> {
     this.bottomSelectionCountElement = document.createElement("span");
     this.addSelectionCount(
       bottomControlsContainer,
-      this.bottomSelectionCountElement
+      this.bottomSelectionCountElement,
     );
-    if (this.definition.bulkActions || this.definition.staticActions) {
+    if (this.bulkActions.length || this.staticActions.length) {
       bottomControlsContainer.className =
         "flex justify-end mt-4 items-top space-x-2";
       this.addActionButtons(bottomControlsContainer);
@@ -342,32 +352,24 @@ export class TableBuilder<ParentType, ChildType> {
   }
 
   private addActionButtons(container: HTMLElement) {
-    if (this.definition.bulkActions) {
-      this.definition.bulkActions.forEach((action) => {
-        if (this.showAction(action.view)) {
-          addActionButton(container, action.title, () => {
-            if (!this.selectedItems.size) {
-              showErrorDialog("No items selected");
-              return;
-            }
-            action.handler(Array.from(this.selectedItems));
-          });
+    this.bulkActions.forEach((action) => {
+      addActionButton(container, action.title, () => {
+        if (!this.selectedItems.size) {
+          showErrorDialog("No items selected");
+          return;
         }
+        action.handler(Array.from(this.selectedItems));
       });
-    }
-    if (this.definition.staticActions) {
-      this.definition.staticActions.forEach((action) => {
-        if (this.showAction(action.view)) {
-          addActionButton(container, action.title, () => {
-            const baseFilter =
-              this.baseFilterKey && this.baseFilterValue
-                ? { key: this.baseFilterKey, value: this.baseFilterValue }
-                : undefined;
-            action.handler(this.acceptedFilters, baseFilter);
-          });
-        }
+    });
+    this.staticActions.forEach((action) => {
+      addActionButton(container, action.title, () => {
+        const baseFilter =
+          this.baseFilterKey && this.baseFilterValue
+            ? { key: this.baseFilterKey, value: this.baseFilterValue }
+            : undefined;
+        action.handler(this.acceptedFilters, baseFilter);
       });
-    }
+    });
   }
 
   private showAction(view?: "internal" | "external") {
@@ -394,10 +396,10 @@ export class TableBuilder<ParentType, ChildType> {
       .filter((column) => column.sortType)
       .forEach((column) => {
         dropdownOptions.push(
-          this.addSortOption(column.title, column.sortType, false)
+          this.addSortOption(column.title, column.sortType, false),
         );
         dropdownOptions.push(
-          this.addSortOption(column.title, column.sortType, true)
+          this.addSortOption(column.title, column.sortType, true),
         );
       });
     if (this.definition.getNonColumnSorting) {
@@ -406,15 +408,15 @@ export class TableBuilder<ParentType, ChildType> {
           this.addSortOption(
             nonColumnSort.columnTitle,
             nonColumnSort.type,
-            false
-          )
+            false,
+          ),
         );
         dropdownOptions.push(
           this.addSortOption(
             nonColumnSort.columnTitle,
             nonColumnSort.type,
-            true
-          )
+            true,
+          ),
         );
       }
     }
@@ -431,7 +433,7 @@ export class TableBuilder<ParentType, ChildType> {
       dropdownOptions,
       true,
       undefined,
-      defaultOption
+      defaultOption,
     );
     sortContainer.appendChild(sortDropdown.getContainerTag());
   }
@@ -439,7 +441,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addSortOption(
     title: string,
     sortType: SortType | undefined,
-    descending: boolean
+    descending: boolean,
   ) {
     const label = title + " - " + this.getSortDescriptor(sortType, descending);
 
@@ -452,7 +454,7 @@ export class TableBuilder<ParentType, ChildType> {
 
   private getSortDescriptor(
     sortType: SortType | undefined,
-    descending: boolean
+    descending: boolean,
   ) {
     switch (sortType) {
       case "date":
@@ -494,17 +496,17 @@ export class TableBuilder<ParentType, ChildType> {
         switch (filter.type) {
           case "dropdown":
             filterOptions.push(
-              this.makeDropdownFilter(filter, filterContainer)
+              this.makeDropdownFilter(filter, filterContainer),
             );
             break;
           case "text":
             filterOptions.push(
-              this.makeTextInputFilter(filter, filterContainer)
+              this.makeTextInputFilter(filter, filterContainer),
             );
             break;
           case "date":
             filterOptions.push(
-              this.makeDateInputFilter(filter, filterContainer)
+              this.makeDateInputFilter(filter, filterContainer),
             );
             break;
           default:
@@ -516,14 +518,14 @@ export class TableBuilder<ParentType, ChildType> {
       filterOptions,
       false,
       undefined,
-      "+ filter"
+      "+ filter",
     );
     filterContainer.appendChild(addFilterDropdown.getContainerTag());
   }
 
   private makeDateInputFilter(
     filter: FilterDefinition,
-    filterContainer: HTMLElement
+    filterContainer: HTMLElement,
   ): DropdownOption {
     return new BasicDropdownOption(filter.title, () => {
       const dateInput = new DateInput(filter.title, (value: string) => {
@@ -537,11 +539,11 @@ export class TableBuilder<ParentType, ChildType> {
             filter.title,
             filter.key,
             value,
-            onRemove
+            onRemove,
           );
           filterContainer.insertBefore(
             filterLabel.element,
-            filterContainer.lastChild
+            filterContainer.lastChild,
           );
           this.acceptedFilters.push(filterLabel);
           // update params
@@ -553,14 +555,14 @@ export class TableBuilder<ParentType, ChildType> {
       });
       filterContainer.insertBefore(
         dateInput.getElement(),
-        filterContainer.lastChild
+        filterContainer.lastChild,
       );
     });
   }
 
   private makeDropdownFilter(
     filter: FilterDefinition,
-    filterContainer: HTMLElement
+    filterContainer: HTMLElement,
   ) {
     if (!filter.values || !filter.values.length) {
       throw new Error(`Dropdown filter ${filter.key} has no dropdown options`);
@@ -579,12 +581,12 @@ export class TableBuilder<ParentType, ChildType> {
             filter.title,
             filter.key,
             value,
-            onRemove
+            onRemove,
           );
           // add filter label to the menu bar
           filterContainer.insertBefore(
             filterLabel.element,
-            filterContainer.lastChild
+            filterContainer.lastChild,
           );
           this.acceptedFilters.push(filterLabel);
           // update params
@@ -592,7 +594,7 @@ export class TableBuilder<ParentType, ChildType> {
             this.onFilterChange(filter.key, value, true);
           }
           this.reload(true); // apply new filter
-        })
+        }),
     );
     // add filter (& its submenu) to the parent filter menu
     return new BasicDropdownOption(filter.title, () => {
@@ -601,18 +603,18 @@ export class TableBuilder<ParentType, ChildType> {
         true,
         filter.title,
         undefined,
-        true
+        true,
       );
       filterContainer.insertBefore(
         filterSuboptionsDropdown.getContainerTag(),
-        filterContainer.lastChild
+        filterContainer.lastChild,
       );
     });
   }
 
   private makeTextInputFilter(
     filter: FilterDefinition,
-    filterContainer: HTMLElement
+    filterContainer: HTMLElement,
   ) {
     const onClose = (values: string[]) => {
       values.forEach((value) => {
@@ -626,11 +628,11 @@ export class TableBuilder<ParentType, ChildType> {
           filter.title,
           filter.key,
           value,
-          onRemove
+          onRemove,
         );
         filterContainer.insertBefore(
           filterLabel.element,
-          filterContainer.lastChild
+          filterContainer.lastChild,
         );
         this.acceptedFilters.push(filterLabel);
         // update params
@@ -643,17 +645,17 @@ export class TableBuilder<ParentType, ChildType> {
     return new BasicDropdownOption(filter.title, () => {
       if (!filter.autocompleteUrl) {
         throw new Error(
-          `Text input filter ${filter.title} has no autocomplete rest URL`
+          `Text input filter ${filter.title} has no autocomplete rest URL`,
         );
       }
       const filterTextInput = new TextInput(
         filter.title,
         onClose,
-        filter.autocompleteUrl
+        filter.autocompleteUrl,
       );
       filterContainer.insertBefore(
         filterTextInput.getContainerTag(),
-        filterContainer.lastChild
+        filterContainer.lastChild,
       );
     });
   }
@@ -676,13 +678,13 @@ export class TableBuilder<ParentType, ChildType> {
           // keep current top item in view
           this.pageNumber = Math.floor(topItemNumber / pageSize) + 1;
           this.reload();
-        })
+        }),
     );
     const pageSizeSelectDropdown = new Dropdown(
       pageSizeOptions,
       true,
       "Items per page",
-      this.pageSize.toString()
+      this.pageSize.toString(),
     );
     pagingContainer.appendChild(pageSizeSelectDropdown.getContainerTag());
 
@@ -698,7 +700,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addPageButton(container: HTMLElement, forward: boolean) {
     const button = addIconButton(
       container,
-      forward ? "angle-right" : "angle-left"
+      forward ? "angle-right" : "angle-left",
     );
     button.disabled = true;
     const step = forward ? 1 : -1;
@@ -736,7 +738,7 @@ export class TableBuilder<ParentType, ChildType> {
         throw new Error("Table head (thead) is not defined");
       }
       const row = this.thead.insertRow();
-      if (isParent && this.definition.bulkActions) {
+      if (isParent && this.bulkActions.length) {
         // add a blank header cell for alignment
         const th = document.createElement("th");
         th.className = "p-4 bg-grey-300";
@@ -754,17 +756,17 @@ export class TableBuilder<ParentType, ChildType> {
           false,
           undefined,
           "bg-grey-300",
-          parentHeader.colspan
+          parentHeader.colspan,
         );
       });
     }
     // create child or single row headers
     const row = addHeaderRow(false);
-    if (this.definition.bulkActions) {
+    if (this.bulkActions.length) {
       this.addSelectAllHeader(row);
     }
     this.columns.forEach((column, i) => {
-      const isFirstColumn = i === 0 && !this.definition.bulkActions;
+      const isFirstColumn = i === 0 && !this.bulkActions.length;
       const isChildHeader = !!this.definition.parentHeaders;
       const combinedClass = isChildHeader ? ["text-black"] : ["text-white"];
       if (column.headingClass) {
@@ -798,7 +800,7 @@ export class TableBuilder<ParentType, ChildType> {
     const rowSelects = this.container.getElementsByClassName("row-select");
     Array.prototype.forEach.call(
       rowSelects,
-      (rowSelect) => (rowSelect.checked = select)
+      (rowSelect) => (rowSelect.checked = select),
     );
     this.updateSelectionCount();
   }
@@ -848,7 +850,7 @@ export class TableBuilder<ParentType, ChildType> {
       this.pageNumber = 1;
     }
     this.acceptedFilters = this.acceptedFilters.filter(
-      (filter) => filter.valid
+      (filter) => filter.valid,
     );
     try {
       const data = await post(this.definition.queryUrl, {
@@ -868,7 +870,7 @@ export class TableBuilder<ParentType, ChildType> {
       this.triggerOnLoad(data.items);
     } catch (reason) {
       showErrorDialog(
-        "Error reloading table - " + (reason || "Unexpected error")
+        "Error reloading table - " + (reason || "Unexpected error"),
       );
     }
   }
@@ -898,7 +900,7 @@ export class TableBuilder<ParentType, ChildType> {
       const pageStart = this.pageSize * (this.pageNumber - 1) + 1;
       const pageEnd = Math.min(
         this.pageSize * this.pageNumber,
-        data.filteredCount
+        data.filteredCount,
       );
       let pageDescriptionText = `${pageStart}-${pageEnd} of ${data.filteredCount}`;
       if (data.filteredCount < data.totalCount) {
@@ -915,7 +917,7 @@ export class TableBuilder<ParentType, ChildType> {
     const th = row.insertCell();
     th.className =
       "p-3 border-grey-200 border-t-1 text-left align-text-top font-semibold bg-grey-100";
-    th.colSpan = this.columns.length + (this.definition.bulkActions ? 1 : 0);
+    th.colSpan = this.columns.length + (this.bulkActions.length ? 1 : 0);
     // Null heading should always be first and not display anything, but if it's later for some
     // reason, call it "Other"
     th.appendChild(document.createTextNode(text || "Other"));
@@ -924,7 +926,7 @@ export class TableBuilder<ParentType, ChildType> {
   private addDataRow(
     table: HTMLTableElement,
     parent: ParentType,
-    rowIndex: number
+    rowIndex: number,
   ) {
     let children: ChildType[] = [];
     if (this.definition.getChildren) {
@@ -934,7 +936,7 @@ export class TableBuilder<ParentType, ChildType> {
     const tbody = table.createTBody();
     tbody.classList.add("nobreak");
     const tr = this.addBodyRow(tbody, parent);
-    if (this.definition.bulkActions) {
+    if (this.bulkActions.length) {
       this.addRowSelectCell(tr, parent, children, rowIndex);
     }
     this.columns.forEach((column, i) => {
@@ -942,14 +944,14 @@ export class TableBuilder<ParentType, ChildType> {
         if (children.length) {
           this.addChildCell(tr, column, children[0], parent, i);
         } else {
-          const td = makeCell(tr, i == 0 && !this.definition.bulkActions);
+          const td = makeCell(tr, i == 0 && !this.bulkActions.length);
           td.classList.add("font-bold");
           shadeElement(
             td,
-            this.definition.noChildrenWarning ? "warning" : "na"
+            this.definition.noChildrenWarning ? "warning" : "na",
           );
           td.appendChild(
-            document.createTextNode(this.definition.noChildrenWarning || "N/A")
+            document.createTextNode(this.definition.noChildrenWarning || "N/A"),
           );
         }
       } else {
@@ -985,7 +987,7 @@ export class TableBuilder<ParentType, ChildType> {
     const tbody = table.createTBody();
     const row = tbody.insertRow();
     const cell = makeCell(row, true);
-    cell.colSpan = this.columns.length + (this.definition.bulkActions ? 1 : 0);
+    cell.colSpan = this.columns.length + (this.bulkActions.length ? 1 : 0);
     cell.classList.add("bg-grey-100", "font-bold");
     cell.appendChild(document.createTextNode("NO DATA"));
   }
@@ -994,7 +996,7 @@ export class TableBuilder<ParentType, ChildType> {
     tr: HTMLTableRowElement,
     item: ParentType,
     children: ChildType[],
-    rowIndex: number
+    rowIndex: number,
   ) {
     const td = makeCell(tr, true);
     const checkbox = document.createElement("input");
@@ -1008,7 +1010,7 @@ export class TableBuilder<ParentType, ChildType> {
         this.toggleRange(
           this.lastClickedRowIndex,
           currentRowIndex,
-          checkbox.checked
+          checkbox.checked,
         );
       } else {
         if (checkbox.checked) {
@@ -1033,7 +1035,7 @@ export class TableBuilder<ParentType, ChildType> {
   private toggleRange(
     startIndex: number,
     endIndex: number,
-    isSelected: boolean
+    isSelected: boolean,
   ) {
     const [minIndex, maxIndex] = [
       Math.min(startIndex, endIndex),
@@ -1077,14 +1079,14 @@ export class TableBuilder<ParentType, ChildType> {
     column: ColumnDefinition<ParentType, ChildType>,
     parent: ParentType,
     children: ChildType[],
-    index: number
+    index: number,
   ) {
     if (!column.addParentContents) {
       throw new Error(
-        `Column "${column.title}" specified as parent, but doesn't define addParentContents`
+        `Column "${column.title}" specified as parent, but doesn't define addParentContents`,
       );
     }
-    const td = makeCell(tr, index == 0 && !this.definition.bulkActions);
+    const td = makeCell(tr, index == 0 && !this.bulkActions.length);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, null));
     }
@@ -1101,14 +1103,14 @@ export class TableBuilder<ParentType, ChildType> {
     column: ColumnDefinition<ParentType, ChildType>,
     child: ChildType,
     parent: ParentType,
-    index: number
+    index: number,
   ) {
     if (!column.addChildContents) {
       throw new Error(
-        `Column "${column.title}" specified as child, but doesn't define getChildContents`
+        `Column "${column.title}" specified as child, but doesn't define getChildContents`,
       );
     }
-    const td = makeCell(tr, index == 0 && !this.definition.bulkActions);
+    const td = makeCell(tr, index == 0 && !this.bulkActions.length);
     if (column.getCellHighlight) {
       shadeElement(td, column.getCellHighlight(parent, child));
     }
