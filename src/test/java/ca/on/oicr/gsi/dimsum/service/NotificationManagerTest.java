@@ -23,7 +23,6 @@ import ca.on.oicr.gsi.cardea.data.Metric;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
 import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.SampleMetric;
 import ca.on.oicr.gsi.cardea.data.ThresholdType;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
@@ -58,33 +57,33 @@ public class NotificationManagerTest {
 
   @Test
   public void testLibraryQualificationMetricsAvailable() {
-    assertTrue(sut.metricsAvailable(makeSample(true, false), pendingQcRun, assaysById,
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, false), pendingQcRun, assaysById,
         MetricCategory.LIBRARY_QUALIFICATION));
-    assertTrue(sut.metricsAvailable(makeSample(true, true), pendingQcRun, assaysById,
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, true), pendingQcRun, assaysById,
         MetricCategory.LIBRARY_QUALIFICATION));
   }
 
   @Test
   public void testLibraryQualificationMetricsNotAvailable() {
-    assertFalse(sut.metricsAvailable(makeSample(false, false), pendingQcRun, assaysById,
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, false), pendingQcRun, assaysById,
         MetricCategory.LIBRARY_QUALIFICATION));
-    assertFalse(sut.metricsAvailable(makeSample(false, true), pendingQcRun, assaysById,
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, true), pendingQcRun, assaysById,
         MetricCategory.LIBRARY_QUALIFICATION));
   }
 
   @Test
   public void testFullDepthMetricsAvailable() {
-    assertTrue(sut.metricsAvailable(makeSample(true, false), pendingQcRun, assaysById,
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, false), pendingQcRun, assaysById,
         MetricCategory.FULL_DEPTH_SEQUENCING));
-    assertTrue(sut.metricsAvailable(makeSample(true, true), pendingQcRun, assaysById,
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, true), pendingQcRun, assaysById,
         MetricCategory.FULL_DEPTH_SEQUENCING));
   }
 
   @Test
   public void testFullDepthMetricsNotAvailable() {
-    assertFalse(sut.metricsAvailable(makeSample(false, false), pendingQcRun, assaysById,
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, false), pendingQcRun, assaysById,
         MetricCategory.FULL_DEPTH_SEQUENCING));
-    assertFalse(sut.metricsAvailable(makeSample(false, true), pendingQcRun, assaysById,
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, true), pendingQcRun, assaysById,
         MetricCategory.FULL_DEPTH_SEQUENCING));
   }
 
@@ -374,30 +373,14 @@ public class NotificationManagerTest {
   private SampleAndRelated makeRunLibrary(boolean metricsAvailable, boolean qcDone,
       boolean signoffsDone) {
     SampleAndRelated runLib = mock(SampleAndRelated.class);
-    Sample sample = makeSample(metricsAvailable, qcDone, signoffsDone);
-    mockSampleFields(sample, metricsAvailable, qcDone, qcDone);
-    return runLib;
-  }
-
-  private Sample makeSample(boolean metricAvailable, boolean signoffsDone) {
-    return makeSample(metricAvailable, signoffsDone, signoffsDone);
-  }
-
-  private Sample makeSample(boolean metricAvailable, boolean qcDone, boolean dataReviewDone) {
-    Sample sample = mock(Sample.class);
-    mockSampleFields(sample, metricAvailable, qcDone, dataReviewDone);
-    return sample;
-  }
-
-  private void mockSampleFields(Sample sample, boolean metricAvailable, boolean qcDone,
-      boolean dataReviewDone) {
     SampleMetric metric = mock(SampleMetric.class);
     when(metric.getName()).thenReturn("Mean Insert Size");
     when(metric.getThresholdType()).thenReturn(ThresholdType.GE);
-    when(metric.getQcPassed()).thenReturn(metricAvailable ? true : null);
-    when(sample.getMetrics()).thenReturn(Collections.singletonList(metric));
-    when(sample.getQcDate()).thenReturn(qcDone ? arbitraryTimestamp : null);
-    when(sample.getDataReviewDate()).thenReturn(dataReviewDone ? arbitraryTimestamp : null);
+    when(metric.getQcPassed()).thenReturn(metricsAvailable ? true : null);
+    when(runLib.getMetrics()).thenReturn(Collections.singletonList(metric));
+    when(runLib.getQcDate()).thenReturn(qcDone ? arbitraryTimestamp : null);
+    when(runLib.getDataReviewDate()).thenReturn(signoffsDone ? arbitraryTimestamp : null);
+    return runLib;
   }
 
   private Issue makeIssue(String code) {
