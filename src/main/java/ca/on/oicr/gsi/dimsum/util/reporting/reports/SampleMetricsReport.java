@@ -1,5 +1,6 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +12,7 @@ import ca.on.oicr.gsi.cardea.data.SampleMetric;
 import ca.on.oicr.gsi.cardea.data.SampleMetric.MetricLevel;
 import ca.on.oicr.gsi.cardea.data.ThresholdType;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
+import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
@@ -51,9 +53,13 @@ public class SampleMetricsReport extends Report {
           } else {
             // Looking up based on run
             if (Objects.equals(category, MetricCategory.LIBRARY_QUALIFICATION.name())) {
-              return caseService.getLibraryQualificationsForRun(runName, filters);
+              List<SampleAndRelated> original =
+                  caseService.getLibraryQualificationsForRun(runName, filters);
+              return new ArrayList<Sample>(original);
             } else if (Objects.equals(category, MetricCategory.FULL_DEPTH_SEQUENCING.name())) {
-              return caseService.getFullDepthSequencingsForRun(runName, filters);
+              List<SampleAndRelated> original =
+                  caseService.getFullDepthSequencingsForRun(runName, filters);
+              return new ArrayList<Sample>(original);
             } else {
               throw new BadRequestException("Invalid category: " + category);
             }

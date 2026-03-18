@@ -82,6 +82,16 @@ export interface SampleMetric {
   // units: string | null;
 }
 
+export interface RelatedSample {
+  id: string;
+  name: string;
+  qcPassed: boolean | null;
+  qcReason: string | null;
+  runName: string;
+  runQcPassed: boolean | null;
+  sequencingLane: string;
+}
+
 export interface Sample extends Qcable {
   id: string;
   name: string;
@@ -130,6 +140,7 @@ export interface Sample extends Qcable {
   peReads?: number | null;
   metrics: SampleMetric[];
   analysisSkipped?: boolean | null;
+  relatedSamples?: RelatedSample[];
 }
 
 interface MisoRunLibraryMetric {
@@ -190,31 +201,96 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
         (!includeRun && sample.sequencingLane
           ? " (L" + sample.sequencingLane + ")"
           : "");
-      fragment.appendChild(
-        makeNameDiv(
-          name,
-          urls.miso.sample(sample.id),
-          undefined,
-          sample.name,
-          sample.run && internalUser ? sample.id : undefined,
-        ),
+      const nameDiv = makeNameDiv(
+        name,
+        urls.miso.sample(sample.id),
+        undefined,
+        sample.name,
+        sample.run && internalUser ? sample.id : undefined,
       );
+      if (sample.relatedSamples && sample.relatedSamples.length) {
+        const relatedSamples = sample.relatedSamples;
+        Tooltip.getInstance().addTarget(nameDiv, (fragment) => {
+          relatedSamples.sort((a, b) => {
+            // sort samples on same run to the top
+            if (a.runName === sample.run?.name) {
+              return b.runName === a.runName ? 0 : -1;
+            } else if (b.runName === sample.run?.name) {
+              return 1;
+            }
+            return (
+              a.runName.localeCompare(b.runName) ||
+              a.name.localeCompare(b.name) ||
+              a.sequencingLane.localeCompare(b.sequencingLane)
+            );
+          });
+          const headingDiv = makeTextDiv("Related:");
+          headingDiv.classList.add("font-bold");
+          fragment.append(headingDiv);
+          let runName = null;
+          for (const related of relatedSamples) {
+            if (related.runName !== runName) {
+              runName = related.runName;
+              let runNameDiv;
+              if (runName === sample.run?.name) {
+                runNameDiv = makeNameDiv("This Run");
+                runNameDiv.classList.add("font-bold");
+              } else {
+                runNameDiv = makeNameDiv(
+                  runName,
+                  undefined,
+                  urls.dimsum.run(runName),
+                );
+              }
+              const runStatus = getRelatedQcStatus(related.runQcPassed);
+              runNameDiv.prepend(makeIcon(runStatus.icon));
+              fragment.appendChild(runNameDiv);
+            }
+            const sampleNameDiv = makeNameDiv(
+              `${related.name} (L${related.sequencingLane})`,
+            );
+            sampleNameDiv.classList.add("ml-4");
+            const sampleStatus = getRelatedQcStatus(
+              related.qcPassed,
+              related.qcReason,
+            );
+            sampleNameDiv.prepend(makeIcon(sampleStatus.icon));
+            fragment.appendChild(sampleNameDiv);
+          }
+        });
+      }
+      fragment.appendChild(nameDiv);
+
       if (includeRun && sample.run) {
         const runName = sample.run.name;
-        fragment.appendChild(
-          makeNameDiv(
-            sample.sequencingLane
-              ? runName + " (L" + sample.sequencingLane + ")"
-              : runName,
-            urls.miso.run(runName),
-            internalUser ? urls.dimsum.run(runName) : undefined,
-            runName,
-          ),
+        const nameDiv = makeNameDiv(
+          sample.sequencingLane
+            ? runName + " (L" + sample.sequencingLane + ")"
+            : runName,
+          urls.miso.run(runName),
+          internalUser ? urls.dimsum.run(runName) : undefined,
+          runName,
         );
+        fragment.appendChild(nameDiv);
       }
     },
     sortType: "text",
   };
+}
+
+function getRelatedQcStatus(
+  qcPassed: boolean | null,
+  qcReason?: string | null,
+) {
+  if (qcPassed === false) {
+    return qcStatuses.failed;
+  } else if (qcPassed === true) {
+    return qcStatuses.passed;
+  } else if (qcReason === "Top-up Required") {
+    return qcStatuses.topUp;
+  } else {
+    return qcStatuses.qc;
+  }
 }
 
 const tissueAttributesColumn: ColumnDefinition<Sample, void> = {

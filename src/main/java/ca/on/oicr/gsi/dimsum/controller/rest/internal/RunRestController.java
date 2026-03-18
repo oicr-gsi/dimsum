@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.OmittedRunSampleSort;
@@ -40,7 +40,7 @@ public class RunRestController {
   }
 
   @PostMapping("/{runName}/library-qualifications")
-  public TableData<Sample> getLibraryQualifications(@PathVariable String runName,
+  public TableData<SampleAndRelated> getLibraryQualifications(@PathVariable String runName,
       @RequestBody DataQuery query) {
     checkRunExists(runName);
     SampleSort sort = parseSort(query, SampleSort::getByLabel);
@@ -51,7 +51,7 @@ public class RunRestController {
   }
 
   @PostMapping("/{runName}/full-depth-sequencings")
-  public TableData<Sample> getFullDepthSequencings(@PathVariable String runName,
+  public TableData<SampleAndRelated> getFullDepthSequencings(@PathVariable String runName,
       @RequestBody DataQuery query) {
     checkRunExists(runName);
     SampleSort sort = parseSort(query, SampleSort::getByLabel);

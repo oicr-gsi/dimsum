@@ -12,6 +12,7 @@ import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.SampleImpl;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
 import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
@@ -154,7 +155,11 @@ public class CaseServiceTest {
   private void addSample(Collection<Sample> collection, String name) {
     // Not using mocks because we're kind-of testing hashcode for distinct filters here too
 
-    collection.add(new Sample.Builder().id(name).name(name).donor(mock(Donor.class)).project("PROJ")
+    collection.add(new SampleImpl.Builder()
+        .id(name)
+        .name(name)
+        .donor(mock(Donor.class))
+        .project("PROJ")
         .tissueOrigin("To").tissueType("T")
         .createdDate(LocalDate.now())
         .metrics(new ArrayList<>()).build());
