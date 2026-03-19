@@ -7,6 +7,25 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.65.0] - 2026-03-19
+
+### Added
+
+* Copy ID button for run-libraries on the Library Qualifications, Full-Depth Sequencings, and Omissions lists, and in tooltips on the Cases list (internal view only)
+* Completed before and after date filters on the Runs list
+* Copy name button for sample names in tooltips on the Cases list
+* Tooltip on run-library names on the Run Details page, inluding list of related run-libraries
+
+### Changed
+
+* Buttons for copying case IDs are now "Copy ID" buttons instead of "Copy Name"
+* The warning for missing QCs when signing off release approval no longer includes analysis review sign-off
+
+### Fixed
+
+* Checkboxes were included in some tables even when there was no use for them (external view only)
+
+
 ## [1.64.0] - 2026-03-05
 
 ### Added
