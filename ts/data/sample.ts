@@ -238,23 +238,32 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
               } else {
                 runNameDiv = makeNameDiv(
                   runName,
-                  undefined,
+                  urls.miso.run(runName),
                   urls.dimsum.run(runName),
+                  runName,
                 );
               }
               const runStatus = getRelatedQcStatus(related.runQcPassed);
-              runNameDiv.prepend(makeIcon(runStatus.icon));
+              const runStatusIcon = makeIcon(runStatus.icon);
+              runStatusIcon.title = "Status: " + runStatus.label;
+              runNameDiv.prepend(runStatusIcon);
               fragment.appendChild(runNameDiv);
             }
             const sampleNameDiv = makeNameDiv(
               `${related.name} (L${related.sequencingLane})`,
+              urls.miso.sample(related.id),
+              undefined,
+              related.name,
+              related.id,
             );
             sampleNameDiv.classList.add("ml-4");
             const sampleStatus = getRelatedQcStatus(
               related.qcPassed,
               related.qcReason,
             );
-            sampleNameDiv.prepend(makeIcon(sampleStatus.icon));
+            const sampleStatusIcon = makeIcon(sampleStatus.icon);
+            sampleStatusIcon.title = "Status: " + sampleStatus.label;
+            sampleNameDiv.prepend(sampleStatusIcon);
             fragment.appendChild(sampleNameDiv);
           }
         });
