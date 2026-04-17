@@ -197,7 +197,8 @@ export interface Case {
     | "PAUSED"
     | "COMPLETE"
     | "DELETED"
-    | "EXPIRED";
+    | "EXPIRED"
+    | "NOT_APPLICABLE";
   archivingDestination?: string;
   archivingTtlDays?: number;
 }
@@ -710,7 +711,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           addArchivingIcon(kase, fragment);
         },
         getCellHighlight(kase) {
-          return kase.archivingStatus === "COMPLETE" ? null : "warning";
+          return kase.archivingStatus === "COMPLETE" ||
+            kase.archivingStatus === "NOT_APPLICABLE"
+            ? null
+            : "warning";
         },
       });
     }
@@ -2285,6 +2289,8 @@ function getArchivingStatusIconAndLabel(kase: Case): [string, string] {
       return ["trash", "Deleted"];
     case "EXPIRED":
       return ["trash", "Expired"];
+    case "NOT_APPLICABLE":
+      return ["ban", "Not applicable"];
     default:
       throw new Error("Unhandled archiving status: " + kase.archivingStatus);
   }
