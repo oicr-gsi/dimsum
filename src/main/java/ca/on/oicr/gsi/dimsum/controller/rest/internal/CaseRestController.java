@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
 import static ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.function.BiFunction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.cardea.data.Case;
@@ -62,7 +64,8 @@ public class CaseRestController {
 
   @PostMapping("/bulk-signoff")
   public @ResponseStatus(HttpStatus.NO_CONTENT) void postSignoffs(
-      @RequestBody List<NabuBulkSignoff> data, @AuthenticationPrincipal DimsumPrincipal principal) {
+      @RequestParam(required = false) Boolean assignment, @RequestBody List<NabuBulkSignoff> data,
+      @AuthenticationPrincipal DimsumPrincipal principal) throws IOException {
     if (nabuService == null) {
       throw new BadRequestException("Nabu integration is not enabled");
     }
@@ -106,8 +109,12 @@ public class CaseRestController {
       }
       signoff.setUsername(principal.getDisplayName());
     }
-    for (NabuBulkSignoff signoff : data) {
-      nabuService.postSignoff(signoff);
+    if (Boolean.TRUE.equals(assignment)) {
+      caseService.cacheReleaseAssignments(data);
+    } else {
+      for (NabuBulkSignoff signoff : data) {
+        nabuService.postSignoff(signoff);
+      }
     }
   }
 

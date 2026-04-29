@@ -9,10 +9,12 @@ public class CacheUpdatedRelease implements CaseRelease {
 
   private final CaseRelease baseRelease;
   private final CachedSignoff cachedSignoff;
+  private final String assignee;
 
-  public CacheUpdatedRelease(CaseRelease baseRelease, NabuSavedSignoff signoff) {
+  public CacheUpdatedRelease(CaseRelease baseRelease, NabuSavedSignoff signoff, String assignee) {
     this.baseRelease = requireNonNull(baseRelease);
-    this.cachedSignoff = new CachedSignoff(requireNonNull(signoff));
+    this.cachedSignoff = signoff == null ? null : new CachedSignoff(requireNonNull(signoff));
+    this.assignee = assignee;
   }
 
   @Override
@@ -22,22 +24,42 @@ public class CacheUpdatedRelease implements CaseRelease {
 
   @Override
   public LocalDate getQcDate() {
-    return cachedSignoff.getQcDate();
+    if (cachedSignoff != null) {
+      return cachedSignoff.getQcDate();
+    } else {
+      return baseRelease.getQcDate();
+    }
   }
 
   @Override
   public String getQcNote() {
-    return cachedSignoff.getQcNote();
+    if (cachedSignoff != null) {
+      return cachedSignoff.getQcNote();
+    } else {
+      return baseRelease.getQcNote();
+    }
   }
 
   @Override
   public ReleaseQcStatus getQcStatus() {
-    return (ReleaseQcStatus) cachedSignoff.getQcStatus();
+    if (cachedSignoff != null) {
+      return (ReleaseQcStatus) cachedSignoff.getQcStatus();
+    } else {
+      return baseRelease.getQcStatus();
+    }
   }
 
   @Override
   public String getQcUser() {
-    return cachedSignoff.getQcUser();
+    if (cachedSignoff != null) {
+      return cachedSignoff.getQcUser();
+    } else {
+      return baseRelease.getQcUser();
+    }
+  }
+
+  public String getAssignee() {
+    return assignee;
   }
 
 }

@@ -1,5 +1,7 @@
 package ca.on.oicr.gsi.dimsum.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -24,8 +26,13 @@ import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
@@ -44,7 +51,9 @@ import ca.on.oicr.gsi.dimsum.FrontEndConfig;
 import ca.on.oicr.gsi.dimsum.controller.UnauthorizedException;
 import ca.on.oicr.gsi.dimsum.data.CacheUpdatedCase;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.NabuBulkSignoff;
 import ca.on.oicr.gsi.dimsum.data.NabuSavedSignoff;
+import ca.on.oicr.gsi.dimsum.data.NabuSignoff.NabuSignoffStep;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryField;
 import ca.on.oicr.gsi.dimsum.data.ProjectSummaryRow;
@@ -78,6 +87,7 @@ import ca.on.oicr.gsi.dimsum.service.filtering.TestTableViewSort;
 import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Service providing access to cases and related data. All public methods must include
@@ -91,8 +101,12 @@ public class CaseService {
 
   // overlap to maintain signoffs that may have been completed during data refresh
   private static final int CACHE_OVERLAP_MINUTES = 10;
+  private static final String ASSIGNMENT_FILE = "assignments.json";
 
   private static final Logger log = LoggerFactory.getLogger(CaseService.class);
+
+  @Value("${datadirectory}")
+  private String dataDirectory;
 
   @Autowired
   private CaseLoader dataLoader;
@@ -106,14 +120,22 @@ public class CaseService {
   @Autowired
   private SecurityManager securityManager;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   private CaseData caseData;
 
-  // Note: Any access of cachedSignoffsByCaseId should synchronize on cachedSignoffsByCaseId to
+  // Note: Any access of cached data should synchronize on cachedSignoffsByCaseId to
   // ensure updates are never missed before/during/after refresh
   private Map<String, List<NabuSavedSignoff>> cachedSignoffsByCaseId = new HashMap<>();
+  // Assignments by Case ID, deliverable category, and deliverable. Final value is assignee name
+  private Map<String, Map<String, Map<String, String>>> cachedReleaseAssignments = new HashMap<>();
+  private boolean assignmentsChanged = false;
+  private int assignmentsCount = 0;
   private List<Case> cacheUpdatedCases;
 
   private int refreshFailures = 0;
+  private int assignmentDumpFailures = 0;
 
   public CaseService(@Autowired MeterRegistry meterRegistry) {
     if (meterRegistry != null) {
@@ -122,7 +144,17 @@ public class CaseService {
           .register(meterRegistry);
       Gauge.builder("case_data_age_seconds", () -> this.getDataAge().toSeconds())
           .description("Time since case data was refreshed").register(meterRegistry);
+      Gauge.builder("assignment_dump_failures", this::getAssignmentDumpFailures)
+          .description("Number of consecutive failures to write assignments to file")
+          .register(meterRegistry);
+      Gauge.builder("assignment_count", this::getAssignmentsCount)
+          .description("Number of assignments being tracked")
+          .register(meterRegistry);
     }
+  }
+
+  protected void setDataDirectory(String dataDirectory) {
+    this.dataDirectory = dataDirectory;
   }
 
   protected void setSecurityManager(SecurityManager securityManager) {
@@ -134,8 +166,20 @@ public class CaseService {
     refreshCacheUpdatedCases();
   }
 
+  protected void setObjectMapper(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
+
   private int getRefreshFailures() {
     return refreshFailures;
+  }
+
+  private int getAssignmentDumpFailures() {
+    return assignmentDumpFailures;
+  }
+
+  private int getAssignmentsCount() {
+    return assignmentsCount;
   }
 
   public Duration getDataAge() {
@@ -1058,9 +1102,110 @@ public class CaseService {
         }
         cachedSignoffs.add(signoff);
         cachedSignoffsByCaseId.put(signoff.getCaseIdentifier(), cachedSignoffs);
+        // Assignment overrides pending, so remove assignment if status is explicitly set to pending
+        // after assignment
+        if (signoff.getQcPassed() == null && signoff.getRelease() == null) {
+          Map<String, Map<String, String>> caseAssignments =
+              cachedReleaseAssignments.get(signoff.getCaseIdentifier());
+          if (caseAssignments != null) {
+            Map<String, String> categoryAssignments =
+                caseAssignments.get(signoff.getDeliverableType());
+            if (categoryAssignments != null) {
+              categoryAssignments.remove(signoff.getDeliverable());
+              assignmentsChanged = true;
+            }
+          }
+        }
       }
       refreshCacheUpdatedCases();
     }
+  }
+
+  public void cacheReleaseAssignments(Collection<NabuBulkSignoff> signoffs) throws IOException {
+    authorizeInternalOnly();
+    synchronized (cachedSignoffsByCaseId) {
+      Map<String, Map<String, Map<String, String>>> previousAssignmentsByCaseId = new HashMap<>();
+      for (NabuBulkSignoff signoff : signoffs) {
+        for (String caseId : signoff.getCaseIdentifiers()) {
+          Map<String, Map<String, String>> caseAssignments =
+              cachedReleaseAssignments.computeIfAbsent(caseId, (x) -> new HashMap<>());
+          Map<String, String> categoryAssignments =
+              caseAssignments.computeIfAbsent(signoff.getDeliverableType(), (x) -> new HashMap<>());
+
+          // remember previous value in-case we need to cancel
+          Map<String, Map<String, String>> previousCategories =
+              previousAssignmentsByCaseId.computeIfAbsent(caseId, (x) -> new HashMap<>());
+          Map<String, String> previousReleases = previousCategories
+              .computeIfAbsent(signoff.getDeliverableType(), (x) -> new HashMap<>());
+          previousReleases.put(signoff.getDeliverable(),
+              categoryAssignments.get(signoff.getDeliverable()));
+
+          categoryAssignments.put(signoff.getDeliverable(), signoff.getUsername());
+        }
+      }
+      assignmentsChanged = true;
+      try {
+        dumpAssignments();
+      } catch (IOException e) {
+        // fail/undo assignments
+        for (String caseId : previousAssignmentsByCaseId.keySet()) {
+          Map<String, Map<String, String>> previousAssignmentsByCategory =
+              previousAssignmentsByCaseId.get(caseId);
+          for (String category : previousAssignmentsByCategory.keySet()) {
+            Map<String, String> previousAssignmentsByDeliverable =
+                previousAssignmentsByCategory.get(category);
+            for (String deliverable : previousAssignmentsByDeliverable.keySet()) {
+              cachedReleaseAssignments.get(caseId).get(category).put(deliverable,
+                  previousAssignmentsByDeliverable.get(deliverable));
+            }
+          }
+        }
+        assignmentDumpFailures++;
+        throw e;
+      }
+      if (caseData != null) {
+        refreshCacheUpdatedCases();
+      }
+    }
+  }
+
+  @PostConstruct
+  private void loadAssignments() throws StreamReadException, DatabindException, IOException {
+    File file = new File(dataDirectory, ASSIGNMENT_FILE);
+    if (file.exists()) {
+      synchronized (cachedSignoffsByCaseId) {
+        cachedReleaseAssignments = objectMapper.readValue(file,
+            new TypeReference<Map<String, Map<String, Map<String, String>>>>() {});
+        assignmentsChanged = false;
+        updateAssignmentsCount();
+      }
+    }
+  }
+
+  private void dumpAssignments() throws IOException {
+    if (!assignmentsChanged) {
+      return;
+    }
+    File file = new File(dataDirectory, ASSIGNMENT_FILE);
+    log.debug("Writing release assignments to " + file.getAbsolutePath());
+    objectMapper.writeValue(file, cachedReleaseAssignments);
+    assignmentsChanged = false;
+    updateAssignmentsCount();
+  }
+
+  private void tryDumpAssignments() {
+    try {
+      dumpAssignments();
+    } catch (IOException e) {
+      assignmentDumpFailures++;
+      log.error("Error dumping release assignments to file", e);
+    }
+  }
+
+  private void updateAssignmentsCount() {
+    assignmentsCount = cachedReleaseAssignments.values().stream()
+        .flatMap(byCategory -> byCategory.values().stream())
+        .mapToInt(byDeliverable -> byDeliverable.size()).sum();
   }
 
   private void refreshCacheUpdatedCases() {
@@ -1068,11 +1213,17 @@ public class CaseService {
       removeExpiredCachedSignoffs();
 
       cacheUpdatedCases = caseData.getCases().stream()
-          .map(kase -> cachedSignoffsByCaseId.keySet().contains(kase.getId())
-              ? makeCacheUpdatedCase(kase, cachedSignoffsByCaseId.get(kase.getId()))
-              : kase)
+          .map(kase -> {
+            List<NabuSavedSignoff> signoffs = cachedSignoffsByCaseId.get(kase.getId());
+            Map<String, Map<String, String>> assignments =
+                updateAndGetCaseAssignments(kase, signoffs);
+            return signoffs != null || assignments != null
+                ? makeCacheUpdatedCase(kase, signoffs, assignments)
+                : kase;
+          })
           .collect(
               Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+      tryDumpAssignments();
     }
   }
 
@@ -1089,10 +1240,99 @@ public class CaseService {
     }
   }
 
-  private Case makeCacheUpdatedCase(Case kase, Collection<NabuSavedSignoff> signoffs) {
+  private Map<String, Map<String, String>> updateAndGetCaseAssignments(Case kase,
+      List<NabuSavedSignoff> cachedCaseSignoffs) {
+    Map<String, Map<String, String>> caseAssignments = cachedReleaseAssignments.get(kase.getId());
+    if (caseAssignments == null) {
+      return null;
+    }
+    for (CaseDeliverable category : kase.getDeliverables()) {
+      Map<String, String> categoryAssignments =
+          caseAssignments.get(category.getDeliverableCategory());
+      if (categoryAssignments == null) {
+        continue;
+      }
+      for (CaseRelease release : category.getReleases()) {
+        if (!categoryAssignments.containsKey(release.getDeliverable())) {
+          continue;
+        }
+        if (release.getQcStatus() != null && !release.getQcStatus().isPending()) {
+          categoryAssignments.remove(release.getDeliverable());
+        } else if (cachedCaseSignoffs != null && cachedCaseSignoffs.stream()
+            .anyMatch(signoff -> signoff.getSignoffStepName() == NabuSignoffStep.RELEASE
+                && Objects.equals(signoff.getDeliverableType(), category.getDeliverableCategory())
+                && Objects.equals(signoff.getDeliverable(), release.getDeliverable())
+                && (signoff.getQcPassed() != null || signoff.getRelease() != null))) {
+          categoryAssignments.remove(release.getDeliverable());
+          assignmentsChanged = true;
+        }
+      }
+      if (categoryAssignments.isEmpty()) {
+        caseAssignments.remove(category.getDeliverableCategory());
+      }
+    }
+    if (caseAssignments.isEmpty()) {
+      cachedReleaseAssignments.remove(kase.getId());
+    }
+    return caseAssignments;
+  }
+
+  @Scheduled(cron = "0 0 0 * * *") // midnight every day
+  private void cleanUpCachedReleaseAssignments() {
+    synchronized (cachedSignoffsByCaseId) {
+      Iterator<Map.Entry<String, Map<String, Map<String, String>>>> caseIterator =
+          cachedReleaseAssignments.entrySet().iterator();
+      while (caseIterator.hasNext()) {
+        Map.Entry<String, Map<String, Map<String, String>>> caseAssignments = caseIterator.next();
+        Case kase = getCase(caseAssignments.getKey());
+        if (kase == null) {
+          caseIterator.remove();
+          assignmentsChanged = true;
+          continue;
+        }
+        Iterator<Map.Entry<String, Map<String, String>>> categoryIterator =
+            caseAssignments.getValue().entrySet().iterator();
+        while (categoryIterator.hasNext()) {
+          Map.Entry<String, Map<String, String>> categoryAssignments = categoryIterator.next();
+          CaseDeliverable caseDeliverable = kase.getDeliverables().stream()
+              .filter(x -> Objects.equals(x.getDeliverableCategory(), categoryAssignments.getKey()))
+              .findFirst().orElse(null);
+          if (caseDeliverable == null) {
+            categoryIterator.remove();
+            assignmentsChanged = true;
+            continue;
+          }
+          Iterator<Map.Entry<String, String>> deliverableIterator =
+              categoryAssignments.getValue().entrySet().iterator();
+          while (deliverableIterator.hasNext()) {
+            Map.Entry<String, String> deliverableAssignment = deliverableIterator.next();
+            if (caseDeliverable.getReleases().stream().noneMatch(
+                x -> Objects.equals(x.getDeliverable(), deliverableAssignment.getKey()))) {
+              deliverableIterator.remove();
+              assignmentsChanged = true;
+              continue;
+            }
+          }
+          if (categoryAssignments.getValue().isEmpty()) {
+            categoryIterator.remove();
+          }
+        }
+        if (caseAssignments.getValue().isEmpty()) {
+          caseIterator.remove();
+        }
+      }
+    }
+    tryDumpAssignments();
+  }
+
+  private Case makeCacheUpdatedCase(Case kase, Collection<NabuSavedSignoff> signoffs,
+      Map<String, Map<String, String>> releaseAssignments) {
     Case result = kase;
+    if (signoffs == null) {
+      return new CacheUpdatedCase(kase, null, releaseAssignments);
+    }
     for (NabuSavedSignoff signoff : signoffs) {
-      result = new CacheUpdatedCase(result, signoff);
+      result = new CacheUpdatedCase(result, signoff, releaseAssignments);
     }
     return result;
   }

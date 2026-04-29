@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import ca.on.oicr.gsi.cardea.data.AnalysisQcGroup;
@@ -22,13 +23,19 @@ public class CacheUpdatedCase implements Case {
   private final Case baseCase;
   private final List<CaseDeliverable> cacheUpdatedDeliverables;
 
-  public CacheUpdatedCase(Case baseCase, NabuSavedSignoff signoff) {
+  public CacheUpdatedCase(Case baseCase, NabuSavedSignoff signoff,
+      Map<String, Map<String, String>> releaseAssignments) {
     this.baseCase = requireNonNull(baseCase);
-    requireNonNull(signoff);
     List<CaseDeliverable> deliverables = new ArrayList<>();
     for (CaseDeliverable original : baseCase.getDeliverables()) {
-      if (Objects.equals(original.getDeliverableCategory(), signoff.getDeliverableType())) {
-        deliverables.add(new CacheUpdatedCaseDeliverable(original, signoff));
+      NabuSavedSignoff categorySignoff = signoff != null
+          && Objects.equals(original.getDeliverableCategory(), signoff.getDeliverableType())
+              ? signoff
+              : null;
+      Map<String, String> categoryAssignments =
+          releaseAssignments.get(original.getDeliverableCategory());
+      if (categorySignoff != null || categoryAssignments != null) {
+        deliverables.add(new CacheUpdatedCaseDeliverable(original, signoff, categoryAssignments));
       } else {
         deliverables.add(original);
       }
