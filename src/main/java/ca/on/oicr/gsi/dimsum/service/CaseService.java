@@ -1321,8 +1321,8 @@ public class CaseService {
           caseIterator.remove();
         }
       }
+      tryDumpAssignments();
     }
-    tryDumpAssignments();
   }
 
   private Case makeCacheUpdatedCase(Case kase, Collection<NabuSavedSignoff> signoffs,
