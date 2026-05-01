@@ -35,7 +35,8 @@ public class CacheUpdatedCase implements Case {
       Map<String, String> categoryAssignments =
           releaseAssignments.get(original.getDeliverableCategory());
       if (categorySignoff != null || categoryAssignments != null) {
-        deliverables.add(new CacheUpdatedCaseDeliverable(original, signoff, categoryAssignments));
+        deliverables
+            .add(new CacheUpdatedCaseDeliverable(original, categorySignoff, categoryAssignments));
       } else {
         deliverables.add(original);
       }
