@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.66.0] - 2026-05-05
+
+### Added
+
+* Signoff option to self-assign a release
+* 'Not applicable' archiving status
+
+### Changed
+
+* MISO links, copy name and ID buttons, and status tooltips within the related run-library tooltips
+
+
 ## [1.65.0] - 2026-03-19
 
 ### Added
