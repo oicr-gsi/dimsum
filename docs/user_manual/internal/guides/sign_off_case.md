@@ -36,3 +36,11 @@ indicate that any partial results or failed deliverable have been delivered as r
 
 5. Another dialog should confirm that your sign-offs were saved successfully. Once you close the
    dialog, the page will refresh to show the updated cases.
+
+## Assigning Releases
+
+Releases may be assigned before they are completed. This clarifies that someone is (or will be)
+working on the release so that another person doesn't begin working on the same thing, duplicating
+the work and possibly interfering. Assignment works the same as sign-off - simply select "Assigned"
+for the QC Status and the release will be assigned to you. This option is only available for
+release QC. To clear the assignment, set any other QC Status.

@@ -13,6 +13,7 @@ enum qcStatusKeyEnum {
   "failed",
   "topUp",
   "na",
+  "assigned",
 }
 
 type QcStatusKey = keyof typeof qcStatusKeyEnum;
@@ -126,6 +127,14 @@ export const qcStatuses: Record<QcStatusKey, QcStatus> = {
     cellStatus: null,
     priority: 8,
     showExternal: true,
+  },
+  assigned: {
+    label: "Assigned",
+    icon: "user",
+    qcComplete: false,
+    cellStatus: "warning",
+    priority: 8,
+    showExternal: false,
   },
 };
 

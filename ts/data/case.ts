@@ -133,6 +133,7 @@ export interface CaseRelease {
   qcUser?: string | null;
   qcDate: string | null;
   qcNote?: string | null;
+  assignee?: string | null;
 }
 
 export interface CaseQc {
@@ -667,8 +668,10 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           );
           const anyQcSet = kase.deliverables
             .flatMap((deliverable) => deliverable.releases)
-            .some((release) =>
-              caseQcComplete(getReleaseQcStatus(release.qcStatus)),
+            .some(
+              (release) =>
+                caseQcComplete(getReleaseQcStatus(release.qcStatus)) ||
+                release.assignee,
             );
           if (anyPreviousComplete || anyQcSet) {
             addReleaseIcons(kase.deliverables, fragment, tooltipInstance);
@@ -1739,8 +1742,16 @@ function addReleaseIcons(
 ) {
   deliverables.forEach((deliverable, i) => {
     deliverable.releases.forEach((release, j) => {
-      const caseQcStatus = getReleaseQcStatus(release.qcStatus);
-      const status = getDeliverableQcStatus(caseQcStatus);
+      let status: QcStatus;
+      let qcLabel: string | null = null;
+      if (release.assignee) {
+        status = qcStatuses.assigned;
+        qcLabel = qcStatuses.assigned.label;
+      } else {
+        const caseQcStatus = getReleaseQcStatus(release.qcStatus);
+        status = getDeliverableQcStatus(caseQcStatus);
+        qcLabel = caseQcStatus?.label || null;
+      }
       const icon = makeIcon(status.icon);
       tooltipInstance.addTarget(icon, (tooltip) => {
         let deliverableLabel = deliverable.deliverableCategory;
@@ -1753,8 +1764,8 @@ function addReleaseIcons(
         addStatusTooltipText(
           tooltip,
           status,
-          caseQcStatus?.label || null,
-          release.qcUser,
+          qcLabel,
+          release.assignee || release.qcUser,
           release.qcNote,
         );
       });
@@ -2121,14 +2132,18 @@ function showSignoffDialog2(
       ),
     );
   }
+  const qcStatusOptions = new Map<string, CaseQc | null>(
+    Object.values(statuses).map((status) => [status.label, status]),
+  );
+  if (signoffStepName === "RELEASE") {
+    qcStatusOptions.set("Assigned", null);
+  }
   formFields.push(
     new DropdownField(
       "QC Status",
-      new Map<string, CaseQc | null>(
-        Object.values(statuses).map((status) => [status.label, status]),
-      ),
+      qcStatusOptions,
       "qcStatus",
-      true,
+      false,
       undefined,
       "Pending",
     ),
@@ -2160,16 +2175,16 @@ function showSignoffDialog2(
           signoffStepName: signoffStepName,
           deliverableType: deliverableType,
           deliverable: deliverable,
-          qcPassed: result2.qcStatus.qcPassed,
-          release: result2.qcStatus.release,
+          qcPassed: result2.qcStatus?.qcPassed,
+          release: result2.qcStatus?.release,
           comment: result2.comment || null,
         };
       });
-      post(urls.rest.cases.bulkSignoff, data)
+      post(urls.rest.cases.bulkSignoff(result2.qcStatus === null), data)
         .then(() => {
           showAlertDialog(
             "Success",
-            "Sign-off has been recorded in Nabu. Refreshing view.",
+            "Sign-off has been recorded. Refreshing view.",
             undefined,
             () => window.location.reload(),
           );

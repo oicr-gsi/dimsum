@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
@@ -18,35 +19,56 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   private final CachedSignoff cachedReleaseApprovalSignoff;
   private final List<CaseRelease> cachedReleases;
 
-  public CacheUpdatedCaseDeliverable(CaseDeliverable baseDeliverable, NabuSavedSignoff signoff) {
+  public CacheUpdatedCaseDeliverable(CaseDeliverable baseDeliverable, NabuSavedSignoff signoff,
+      Map<String, String> releaseAssignments) {
     this.baseDeliverable = requireNonNull(baseDeliverable);
-    switch (signoff.getSignoffStepName()) {
-      case ANALYSIS_REVIEW:
-        this.cachedAnalysisReviewSignoff = new CachedSignoff(signoff);
-        this.cachedReleaseApprovalSignoff = null;
-        this.cachedReleases = null;
-        break;
-      case RELEASE_APPROVAL:
-        this.cachedAnalysisReviewSignoff = null;
-        this.cachedReleaseApprovalSignoff = new CachedSignoff(signoff);
-        this.cachedReleases = null;
-        break;
-      case RELEASE:
-        this.cachedAnalysisReviewSignoff = null;
-        this.cachedReleaseApprovalSignoff = null;
-        List<CaseRelease> releases = new ArrayList<>();
-        for (CaseRelease release : baseDeliverable.getReleases()) {
-          if (Objects.equals(release.getDeliverable(), signoff.getDeliverable())) {
-            releases.add(new CacheUpdatedRelease(release, signoff));
-          } else {
-            releases.add(release);
-          }
+    if (signoff == null) {
+      this.cachedAnalysisReviewSignoff = null;
+      this.cachedReleaseApprovalSignoff = null;
+      List<CaseRelease> releases = new ArrayList<>();
+      for (CaseRelease release : baseDeliverable.getReleases()) {
+        String releaseAssignee = releaseAssignments.get(release.getDeliverable());
+        if (releaseAssignee != null) {
+          releases.add(new CacheUpdatedRelease(release, null, releaseAssignee));
+        } else {
+          releases.add(release);
         }
-        this.cachedReleases = Collections.unmodifiableList(releases);
-        break;
-      default:
-        throw new IllegalArgumentException(
-            "Invalid signoff step: %s".formatted(signoff.getSignoffStepName()));
+      }
+      this.cachedReleases = Collections.unmodifiableList(releases);
+    } else {
+      switch (signoff.getSignoffStepName()) {
+        case ANALYSIS_REVIEW:
+          this.cachedAnalysisReviewSignoff = new CachedSignoff(signoff);
+          this.cachedReleaseApprovalSignoff = null;
+          this.cachedReleases = null;
+          break;
+        case RELEASE_APPROVAL:
+          this.cachedAnalysisReviewSignoff = null;
+          this.cachedReleaseApprovalSignoff = new CachedSignoff(signoff);
+          this.cachedReleases = null;
+          break;
+        case RELEASE:
+          this.cachedAnalysisReviewSignoff = null;
+          this.cachedReleaseApprovalSignoff = null;
+          List<CaseRelease> releases = new ArrayList<>();
+          for (CaseRelease release : baseDeliverable.getReleases()) {
+            NabuSavedSignoff releaseSignoff =
+                Objects.equals(release.getDeliverable(), signoff.getDeliverable()) ? signoff : null;
+            String releaseAssignee =
+                releaseAssignments == null ? null
+                    : releaseAssignments.get(release.getDeliverable());
+            if (releaseSignoff != null || releaseAssignee != null) {
+              releases.add(new CacheUpdatedRelease(release, signoff, releaseAssignee));
+            } else {
+              releases.add(release);
+            }
+          }
+          this.cachedReleases = Collections.unmodifiableList(releases);
+          break;
+        default:
+          throw new IllegalArgumentException(
+              "Invalid signoff step: %s".formatted(signoff.getSignoffStepName()));
+      }
     }
   }
 

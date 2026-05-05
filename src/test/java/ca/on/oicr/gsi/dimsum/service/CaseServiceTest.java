@@ -2,19 +2,29 @@ package ca.on.oicr.gsi.dimsum.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.SampleImpl;
 import ca.on.oicr.gsi.cardea.data.Test;
+import ca.on.oicr.gsi.dimsum.data.CacheUpdatedCase;
+import ca.on.oicr.gsi.dimsum.data.CacheUpdatedRelease;
 import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.NabuBulkSignoff;
+import ca.on.oicr.gsi.dimsum.data.NabuSignoff.NabuSignoffStep;
 import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
@@ -23,6 +33,10 @@ import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 
 public class CaseServiceTest {
 
+  private static final String DELIVERABLE_CATEGORY_RESEARCH = "Research";
+  private static final String DELIVERABLE_FASTQ = "FastQ";
+  private static final String DELIVERABLE_REPORT = "Report";
+
   private CaseService sut;
   private CaseData caseData;
   private SecurityManager securityManager;
@@ -30,16 +44,24 @@ public class CaseServiceTest {
   @BeforeEach
   public void setup() {
     sut = new CaseService(null);
-    caseData = mock(CaseData.class);
-    when(caseData.getCases()).thenReturn(new ArrayList<>());
-    addCase(caseData, 1, 1);
-    addCase(caseData, 2, 2);
-    when(caseData.getTimestamp()).thenReturn(ZonedDateTime.now());
-    sut.setCaseData(caseData);
+    File datadir = new File(System.getProperty("basedir"), "/target/test-data");
+    if (!datadir.exists()) {
+      datadir.mkdir();
+    }
+    sut.setDataDirectory(datadir.getAbsolutePath());
     securityManager = mock(SecurityManager.class);
     DimsumPrincipal principal = makeInternalPrincipal();
     when(securityManager.getPrincipal()).thenReturn(principal);
     sut.setSecurityManager(securityManager);
+    sut.setObjectMapper(new ObjectMapper());
+    caseData = mock(CaseData.class);
+    when(caseData.getCases()).thenReturn(new ArrayList<>());
+    Case case1 = addCase(caseData, 1, 1);
+    addDeliverables(case1, DELIVERABLE_CATEGORY_RESEARCH, DELIVERABLE_FASTQ, DELIVERABLE_REPORT);
+    Case case2 = addCase(caseData, 2, 2);
+    addDeliverables(case2, DELIVERABLE_CATEGORY_RESEARCH, DELIVERABLE_FASTQ, DELIVERABLE_REPORT);
+    when(caseData.getTimestamp()).thenReturn(ZonedDateTime.now());
+    sut.setCaseData(caseData);
   }
 
   @org.junit.jupiter.api.Test
@@ -103,6 +125,30 @@ public class CaseServiceTest {
         "2B-E2");
   }
 
+  @org.junit.jupiter.api.Test
+  public void testCacheReleaseAssignments() throws Exception {
+    final String caseId = "R1_C1";
+    final String user = "Test User";
+    NabuBulkSignoff signoff = mock(NabuBulkSignoff.class);
+    when(signoff.getCaseIdentifiers()).thenReturn(Collections.singletonList(caseId));
+    when(signoff.getSignoffStepName()).thenReturn(NabuSignoffStep.RELEASE);
+    when(signoff.getDeliverableType()).thenReturn(DELIVERABLE_CATEGORY_RESEARCH);
+    when(signoff.getDeliverable()).thenReturn(DELIVERABLE_REPORT);
+    when(signoff.getQcPassed()).thenReturn(null);
+    when(signoff.getRelease()).thenReturn(null);
+    when(signoff.getUsername()).thenReturn(user);
+    List<NabuBulkSignoff> signoffs = Collections.singletonList(signoff);
+    sut.cacheReleaseAssignments(signoffs);
+    Case kase = sut.getCase(caseId);
+    assertInstanceOf(CacheUpdatedCase.class, kase);
+    CaseRelease release = kase.getDeliverables().get(0).getReleases().stream()
+        .filter(x -> Objects.equals(DELIVERABLE_REPORT, x.getDeliverable())).findFirst()
+        .orElse(null);
+    assertInstanceOf(CacheUpdatedRelease.class, release);
+    CacheUpdatedRelease assignedRelease = (CacheUpdatedRelease) release;
+    assertEquals(user, assignedRelease.getAssignee());
+  }
+
   private void assertContainsSamples(TableData<Sample> data, String... sampleNames) {
     assertNotNull(data);
     assertEquals(sampleNames.length, data.getTotalCount());
@@ -114,8 +160,9 @@ public class CaseServiceTest {
     }
   }
 
-  private void addCase(CaseData data, int caseNumber, int requisitionNumber) {
+  private Case addCase(CaseData data, int caseNumber, int requisitionNumber) {
     Case kase = mock(Case.class);
+    when(kase.getId()).thenReturn("R%d_C%d".formatted(requisitionNumber, caseNumber));
     when(kase.getLatestActivityDate()).thenReturn(LocalDate.now().minusDays(caseNumber));
     when(kase.getReceipts()).thenReturn(new ArrayList<>());
     addSample(kase.getReceipts(), makeSampleName(caseNumber, "N", "A", 1));
@@ -124,7 +171,9 @@ public class CaseServiceTest {
     addTest(kase, caseNumber, "A");
     addTest(kase, caseNumber, "B");
     when(kase.getRequisition()).thenReturn(makeRequisition(requisitionNumber));
+    when(kase.getDeliverables()).thenReturn(new ArrayList<>());
     data.getCases().add(kase);
+    return kase;
   }
 
   private void addTest(Case kase, int caseNumber, String testLetter) {
@@ -163,6 +212,18 @@ public class CaseServiceTest {
         .tissueOrigin("To").tissueType("T")
         .createdDate(LocalDate.now())
         .metrics(new ArrayList<>()).build());
+  }
+
+  private void addDeliverables(Case kase, String deliverableCategory, String... deliverables) {
+    CaseDeliverable category = mock(CaseDeliverable.class);
+    when(category.getDeliverableCategory()).thenReturn(deliverableCategory);
+    when(category.getReleases()).thenReturn(new ArrayList<>());
+    for (String deliverable : deliverables) {
+      CaseRelease release = mock(CaseRelease.class);
+      when(release.getDeliverable()).thenReturn(deliverable);
+      category.getReleases().add(release);
+    }
+    kase.getDeliverables().add(category);
   }
 
   private Requisition makeRequisition(int requisitionNumber) {

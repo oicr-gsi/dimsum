@@ -22,7 +22,8 @@ export const urls = {
   },
   rest: {
     cases: {
-      bulkSignoff: `${getRestBaseUrl()}/cases/bulk-signoff`,
+      bulkSignoff: (assignment: boolean) =>
+        `${getRestBaseUrl()}/cases/bulk-signoff?assignment=${assignment}`,
       get: (caseId: string) => `${getRestBaseUrl()}/cases/${caseId}`,
       list: `${getRestBaseUrl()}/cases`,
     },
@@ -44,7 +45,7 @@ export const urls = {
     autocomplete: {
       assayNames: `${getRestBaseUrl(true)}/autocomplete/assay-names`,
       requisitionNames: `${getRestBaseUrl(
-        true
+        true,
       )}/autocomplete/requisition-names`,
       projectNames: `${getRestBaseUrl(true)}/autocomplete/project-names`,
       donorNames: `${getRestBaseUrl(true)}/autocomplete/donor-names`,
@@ -190,7 +191,7 @@ export function updateUrlParams(key: string, value: string, add?: boolean) {
     nextState,
     nextTitle,
     getBaseUrl() +
-      (add ? appendUrlParam(key, value) : removeUrlParam(key, value))
+      (add ? appendUrlParam(key, value) : removeUrlParam(key, value)),
   );
 }
 
