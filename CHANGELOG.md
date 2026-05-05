@@ -7,6 +7,13 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.66.1] - 2026-05-05
+
+### Fixed
+
+* When marking case signoffs, the signoff was saved sucessfully, but an "unexpected error" was shown and the signoff would not appear in Dimsum until the next refresh
+
+
 ## [1.66.0] - 2026-05-05
 
 ### Added
