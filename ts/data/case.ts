@@ -715,6 +715,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
         },
         getCellHighlight(kase) {
           return kase.archivingStatus === "COMPLETE" ||
+            kase.archivingStatus === "DELETED" ||
             kase.archivingStatus === "NOT_APPLICABLE"
             ? null
             : "warning";
