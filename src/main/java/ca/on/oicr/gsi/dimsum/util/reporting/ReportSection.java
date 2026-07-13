@@ -10,14 +10,14 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public abstract class ReportSection<T> {
 
@@ -75,10 +75,10 @@ public abstract class ReportSection<T> {
     }
 
     @Override
-    public void writeJson(ArrayNode arrayNode, List<T> objects, ObjectMapper objectMapper) {
+    public void writeJson(ArrayNode arrayNode, List<T> objects, JsonMapper jsonMapper) {
       List<Column<T>> columns = getColumns(objects);
       for (T object : objects) {
-        ObjectNode objectNode = objectMapper.createObjectNode();
+        ObjectNode objectNode = jsonMapper.createObjectNode();
         for (Column<T> column : columns) {
           String value = column.getDelimitedColumnString(",", object).replaceAll("\"", "");
           objectNode.put(column.getTitle(), value);
@@ -132,13 +132,13 @@ public abstract class ReportSection<T> {
   protected abstract void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
       boolean includeHeaders);
 
-  public void createJson(ArrayNode json, CaseService caseService, ObjectMapper objectMapper,
+  public void createJson(ArrayNode json, CaseService caseService, JsonMapper jsonMapper,
       JsonNode parameters) {
     List<T> objects = getData(caseService, parameters);
-    writeJson(json, objects, objectMapper);
+    writeJson(json, objects, jsonMapper);
   }
 
-  protected abstract void writeJson(ArrayNode json, List<T> objects, ObjectMapper objectMapper);
+  protected abstract void writeJson(ArrayNode json, List<T> objects, JsonMapper jsonMapper);
 
   /**
    * Fetches data from the CaseService based on parameters provided

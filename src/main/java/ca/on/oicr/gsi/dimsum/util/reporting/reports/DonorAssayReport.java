@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
@@ -16,6 +15,7 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
+import tools.jackson.databind.JsonNode;
 
 public class DonorAssayReport extends Report {
 

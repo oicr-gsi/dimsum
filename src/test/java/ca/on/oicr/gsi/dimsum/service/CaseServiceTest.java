@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
@@ -30,6 +29,7 @@ import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
+import tools.jackson.databind.json.JsonMapper;
 
 public class CaseServiceTest {
 
@@ -53,7 +53,7 @@ public class CaseServiceTest {
     DimsumPrincipal principal = makeInternalPrincipal();
     when(securityManager.getPrincipal()).thenReturn(principal);
     sut.setSecurityManager(securityManager);
-    sut.setObjectMapper(new ObjectMapper());
+    sut.setJsonMapper(new JsonMapper());
     caseData = mock(CaseData.class);
     when(caseData.getCases()).thenReturn(new ArrayList<>());
     Case case1 = addCase(caseData, 1, 1);

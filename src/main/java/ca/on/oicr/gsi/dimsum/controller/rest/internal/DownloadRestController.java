@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.ControllerUtils;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
@@ -21,6 +19,8 @@ import ca.on.oicr.gsi.dimsum.util.reporting.reports.DonorAssayReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.SampleMetricsReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @RestController
 @RequestMapping("/rest/internal/downloads")
@@ -30,7 +30,7 @@ public class DownloadRestController {
   private CaseService caseService;
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @PostMapping("/reports/{reportName}")
   public HttpEntity<byte[]> generateReport(@PathVariable String reportName,
@@ -42,7 +42,7 @@ public class DownloadRestController {
   @PostMapping("/reports/{reportName}/data")
   public JsonNode getReportData(@PathVariable String reportName, @RequestBody JsonNode parameters) {
     Report report = getReport(reportName);
-    return report.getData(caseService, parameters, objectMapper); // Return JSON directly
+    return report.getData(caseService, parameters, jsonMapper); // Return JSON directly
   }
 
   private static Report getReport(String reportName) {

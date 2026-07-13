@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 
 public abstract class Report {
 
@@ -84,10 +84,10 @@ public abstract class Report {
     return sb.toString().getBytes();
   }
 
-  public JsonNode getData(CaseService caseService, JsonNode parameters, ObjectMapper objectMapper) {
-    ArrayNode arrayNode = objectMapper.createArrayNode();
+  public JsonNode getData(CaseService caseService, JsonNode parameters, JsonMapper jsonMapper) {
+    ArrayNode arrayNode = jsonMapper.createArrayNode();
     // This does not support multiple sections
-    sections.get(0).createJson(arrayNode, caseService, objectMapper, parameters);
+    sections.get(0).createJson(arrayNode, caseService, jsonMapper, parameters);
     return arrayNode;
   }
 }
