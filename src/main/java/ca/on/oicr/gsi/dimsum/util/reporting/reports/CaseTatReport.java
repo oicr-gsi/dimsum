@@ -27,7 +27,7 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.DynamicTableReportSection;
-import tools.jackson.databind.JsonNode;;
+import tools.jackson.databind.JsonNode;
 
 public class CaseTatReport extends Report {
 
