@@ -11,7 +11,7 @@ spring:
   autoconfigure:
     exclude:
       # Disable UserDetailsServiceAutoConfiguration to prevent auto-creation of a test user
-      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+      - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   security:
     saml2:
       relyingparty:
@@ -20,13 +20,15 @@ spring:
             signing.credentials:
               - private-key-location: file://${saml.spkey}
                 certificate-location: file://${saml.spcert}
-            identityprovider:
+            assertingparty:
               entity-id: ${saml.idpid}
+              metadata-uri: ${saml.idpmetadataurl}
               verification.credentials:
                 - certificate-location: file://${saml.idpcertificate}
-              singlesignon.url: ${saml.ssourl}
-            assertingparty:
-              metadata-uri: ${saml.idpmetadataurl}
+              sso.url: ${saml.ssourl}
+            singlelogout:
+              url: "{baseUrl}/logout/saml2/slo"
+              binding: POST
 
 build:
   version: "@project.version@"

@@ -299,8 +299,8 @@ public class SampleAndRelated implements Sample {
   }
 
   @Override
-  public BigDecimal getrRnaContamination() {
-    return sample.getrRnaContamination();
+  public BigDecimal getRrnaContamination() {
+    return sample.getRrnaContamination();
   }
 
   public Set<RelatedSample> getRelatedSamples() {

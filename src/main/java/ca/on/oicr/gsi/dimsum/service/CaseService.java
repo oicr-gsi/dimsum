@@ -29,10 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
@@ -88,6 +84,9 @@ import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Service providing access to cases and related data. All public methods must include
@@ -121,7 +120,7 @@ public class CaseService {
   private SecurityManager securityManager;
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   private CaseData caseData;
 
@@ -166,8 +165,8 @@ public class CaseService {
     refreshCacheUpdatedCases();
   }
 
-  protected void setObjectMapper(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
+  protected void setJsonMapper(JsonMapper jsonMapper) {
+    this.jsonMapper = jsonMapper;
   }
 
   private int getRefreshFailures() {
@@ -1146,7 +1145,7 @@ public class CaseService {
       assignmentsChanged = true;
       try {
         dumpAssignments();
-      } catch (IOException e) {
+      } catch (JacksonException e) {
         // fail/undo assignments
         for (String caseId : previousAssignmentsByCaseId.keySet()) {
           Map<String, Map<String, String>> previousAssignmentsByCategory =
@@ -1170,11 +1169,11 @@ public class CaseService {
   }
 
   @PostConstruct
-  private void loadAssignments() throws StreamReadException, DatabindException, IOException {
+  private void loadAssignments() {
     File file = new File(dataDirectory, ASSIGNMENT_FILE);
     if (file.exists()) {
       synchronized (cachedSignoffsByCaseId) {
-        cachedReleaseAssignments = objectMapper.readValue(file,
+        cachedReleaseAssignments = jsonMapper.readValue(file,
             new TypeReference<Map<String, Map<String, Map<String, String>>>>() {});
         assignmentsChanged = false;
         updateAssignmentsCount();
@@ -1182,13 +1181,13 @@ public class CaseService {
     }
   }
 
-  private void dumpAssignments() throws IOException {
+  private void dumpAssignments() throws JacksonException {
     if (!assignmentsChanged) {
       return;
     }
     File file = new File(dataDirectory, ASSIGNMENT_FILE);
     log.debug("Writing release assignments to " + file.getAbsolutePath());
-    objectMapper.writeValue(file, cachedReleaseAssignments);
+    jsonMapper.writeValue(file, cachedReleaseAssignments);
     assignmentsChanged = false;
     updateAssignmentsCount();
   }
@@ -1196,7 +1195,7 @@ public class CaseService {
   private void tryDumpAssignments() {
     try {
       dumpAssignments();
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       assignmentDumpFailures++;
       log.error("Error dumping release assignments to file", e);
     }

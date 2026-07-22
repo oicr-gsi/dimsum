@@ -17,9 +17,13 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.saml2.provider.service.authentication.OpenSaml4AuthenticationProvider;
-import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticatedPrincipal;
+import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider;
+import org.springframework.security.saml2.provider.service.authentication.OpenSaml5AuthenticationProvider.ResponseAuthenticationConverter;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AssertionAuthentication;
 import org.springframework.security.saml2.provider.service.authentication.Saml2Authentication;
+import org.springframework.security.saml2.provider.service.authentication.Saml2AuthenticationToken;
+import org.springframework.security.saml2.provider.service.authentication.Saml2ResponseAssertionAccessor;
+import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.web.SecurityFilterChain;
 import jakarta.servlet.DispatcherType;
 
@@ -80,18 +84,20 @@ public class SecurityConfiguration {
         .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/error"));
   }
 
-  private OpenSaml4AuthenticationProvider makeAuthenticationProvider() {
-    OpenSaml4AuthenticationProvider provider = new OpenSaml4AuthenticationProvider();
+  private OpenSaml5AuthenticationProvider makeAuthenticationProvider() {
+    OpenSaml5AuthenticationProvider provider = new OpenSaml5AuthenticationProvider();
     provider.setResponseAuthenticationConverter(token -> {
-      Saml2Authentication auth = OpenSaml4AuthenticationProvider
-          .createDefaultResponseAuthenticationConverter().convert(token);
-      Saml2AuthenticatedPrincipal samlPrincipal = (Saml2AuthenticatedPrincipal) auth.getPrincipal();
-      log.debug("Principal {} attributes: {}", samlPrincipal.getName(),
-          samlPrincipal.getAttributes());
+      Saml2AuthenticationToken authenticationToken = token.getToken();
+      RelyingPartyRegistration registration = authenticationToken.getRelyingPartyRegistration();
+      Saml2Authentication auth = new ResponseAuthenticationConverter().convert(token);
+      Saml2ResponseAssertionAccessor assertionAccessor =
+          (Saml2ResponseAssertionAccessor) auth.getCredentials();
+      log.debug("Assertion nameId: {}, attributes: {}", assertionAccessor.getNameId(),
+          assertionAccessor.getAttributes());
 
       boolean internal = false;
       List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-      List<Object> roles = samlPrincipal.getAttributes().get(SAML_ROLES_ATTRIBUTE);
+      List<Object> roles = assertionAccessor.getAttributes().get(SAML_ROLES_ATTRIBUTE);
       if (roles != null) {
         for (Object role : roles) {
           if (Objects.equals(role, SAML_ROLE_INTERNAL)) {
@@ -103,20 +109,20 @@ public class SecurityConfiguration {
         }
       }
       log.debug("Authorities mapped: {}", grantedAuthorities);
-      DimsumSamlPrincipal dimsumPrincipal = new DimsumSamlPrincipal(samlPrincipal,
-          getDisplayName(samlPrincipal), internal, getProjects(samlPrincipal));
+      DimsumSamlPrincipal dimsumPrincipal = new DimsumSamlPrincipal(assertionAccessor,
+          getDisplayName(assertionAccessor), internal, getProjects(assertionAccessor));
       log.debug("DimsumSamlPrincipal name='%s', displayName='%s', internal=%s, projects=%s"
           .formatted(dimsumPrincipal.getName(), dimsumPrincipal.getDisplayName(),
               Boolean.toString(dimsumPrincipal.isInternal()), dimsumPrincipal.getProjects()));
-
-      return new Saml2Authentication(dimsumPrincipal, auth.getSaml2Response(), grantedAuthorities);
+      return new Saml2AssertionAuthentication(dimsumPrincipal, assertionAccessor,
+          grantedAuthorities, registration.getRegistrationId());
     });
     return provider;
   }
 
-  private String getDisplayName(Saml2AuthenticatedPrincipal principal) {
-    String firstName = principal.getFirstAttribute(samlFirstNameAttribute);
-    String lastName = principal.getFirstAttribute(samlLastNameAttribute);
+  private String getDisplayName(Saml2ResponseAssertionAccessor assertionAccessor) {
+    String firstName = assertionAccessor.getFirstAttribute(samlFirstNameAttribute);
+    String lastName = assertionAccessor.getFirstAttribute(samlLastNameAttribute);
     if (firstName == null || lastName == null) {
       String errorMessage =
           "Null first or last name detected for principal. Attributes may not be configured correctly.";
@@ -127,8 +133,8 @@ public class SecurityConfiguration {
     return firstName + " " + lastName;
   }
 
-  private Set<String> getProjects(Saml2AuthenticatedPrincipal principal) {
-    List<Object> projectValues = principal.getAttribute(samlProjectsAttribute);
+  private Set<String> getProjects(Saml2ResponseAssertionAccessor assertionAccessor) {
+    List<Object> projectValues = assertionAccessor.getAttribute(samlProjectsAttribute);
     if (projectValues == null) {
       return Collections.emptySet();
     }

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.0</version>
+    <version>4.1.0</version>
     <relativePath />
     <!-- lookup parent from repository -->
   </parent>
@@ -43,8 +43,12 @@
       <url>https://artifacts.oicr.on.ca/artifactory/gsi-release/</url>
     </repository>
     <repository>
-      <id>shibboleth</id>
-      <url>https://build.shibboleth.net/nexus/content/repositories/releases/</url>
+      <id>shibboleth-releases</id>
+      <name>Shibboleth Releases Repository</name>
+      <url>https://build.shibboleth.net/maven/releases/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
@@ -53,12 +57,6 @@
       <groupId>ca.on.oicr.gsi</groupId>
       <artifactId>jira-rest-java-client-core</artifactId>
       <version>6.0.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <!-- Needed by jira-rest-java-client-core (scope:provided) -->
@@ -92,7 +90,11 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <artifactId>spring-boot-starter-json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -105,11 +107,15 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-saml2</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
@@ -127,7 +133,7 @@
     <dependency>
       <groupId>ca.on.oicr.gsi.cardea</groupId>
       <artifactId>cardea-data</artifactId>
-      <version>1.32.0</version>
+      <version>1.33.0</version>
     </dependency>
   </dependencies>
 
@@ -136,9 +142,6 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <executable>true</executable>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

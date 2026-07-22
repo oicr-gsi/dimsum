@@ -11,8 +11,6 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
@@ -23,6 +21,8 @@ import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
 import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * This class contains configuration needed on the front-end and is served as a JavaScript file by
@@ -60,13 +60,13 @@ public class FrontEndConfig {
   private List<String> completedGates =
       Stream.of(CompletedGate.values()).map(CompletedGate::getLabel).toList();
 
-  public FrontEndConfig(ObjectMapper objectMapper) {
+  public FrontEndConfig(JsonMapper jsonMapper) {
     this.analysisReviewQcStatuses =
-        mapCaseQcs(AnalysisReviewQcStatus.values(), AnalysisReviewQcStatus::name, objectMapper);
+        mapCaseQcs(AnalysisReviewQcStatus.values(), AnalysisReviewQcStatus::name, jsonMapper);
     this.releaseApprovalQcStatuses =
-        mapCaseQcs(ReleaseApprovalQcStatus.values(), ReleaseApprovalQcStatus::name, objectMapper);
+        mapCaseQcs(ReleaseApprovalQcStatus.values(), ReleaseApprovalQcStatus::name, jsonMapper);
     this.releaseQcStatuses =
-        mapCaseQcs(ReleaseQcStatus.values(), ReleaseQcStatus::name, objectMapper);
+        mapCaseQcs(ReleaseQcStatus.values(), ReleaseQcStatus::name, jsonMapper);
   }
 
   public String getMisoUrl() {
@@ -167,8 +167,8 @@ public class FrontEndConfig {
     this.deliverables = deliverables;
   }
 
-  private static ObjectNode toDto(ObjectMapper objectMapper, String name, CaseQc qc) {
-    ObjectNode node = objectMapper.createObjectNode();
+  private static ObjectNode toDto(JsonMapper jsonMapper, String name, CaseQc qc) {
+    ObjectNode node = jsonMapper.createObjectNode();
     node.put("name", name);
     node.put("label", qc.getLabel());
     node.put("qcPassed", qc.getQcPassed());
@@ -177,11 +177,11 @@ public class FrontEndConfig {
   }
 
   private static <T extends CaseQc> Map<String, ObjectNode> mapCaseQcs(T[] values,
-      Function<T, String> getName, ObjectMapper mapper) {
+      Function<T, String> getName, JsonMapper jsonMapper) {
     Map<String, ObjectNode> map = new TreeMap<>();
     for (T value : values) {
       String name = getName.apply(value);
-      map.put(name, toDto(mapper, name, value));
+      map.put(name, toDto(jsonMapper, name, value));
     }
     return map;
   }

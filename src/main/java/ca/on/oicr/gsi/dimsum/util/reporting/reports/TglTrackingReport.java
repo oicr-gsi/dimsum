@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Metric;
@@ -25,6 +24,7 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
+import tools.jackson.databind.JsonNode;
 
 public class TglTrackingReport extends Report {
 
@@ -95,7 +95,8 @@ public class TglTrackingReport extends Report {
                       .collect(Collectors.joining(", "))),
               Column.forDecimal("Coverage Required", TglTrackingReport::getCoverageRequired),
               Column.forDecimal("Coverage Achieved", TglTrackingReport::getCoverageAchieved),
-              Column.forString("MOH Data Released", x -> CompletedGate.RELEASE.qualifyCase(x.getCase(), "MOH") ? "Yes" : null),
+              Column.forString("MOH Data Released",
+                  x -> CompletedGate.RELEASE.qualifyCase(x.getCase(), "MOH") ? "Yes" : null),
               Column.forString("Case Status", x -> getCaseStatus(x.getCase())))) {
 
         @Override

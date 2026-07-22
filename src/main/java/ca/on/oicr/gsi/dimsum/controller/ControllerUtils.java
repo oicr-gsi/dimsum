@@ -5,10 +5,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportFormat;
+import tools.jackson.databind.JsonNode;
 
 public class ControllerUtils {
 

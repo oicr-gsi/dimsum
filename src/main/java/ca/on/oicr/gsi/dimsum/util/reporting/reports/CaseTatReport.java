@@ -11,7 +11,6 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.fasterxml.jackson.databind.JsonNode;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
@@ -27,7 +26,8 @@ import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
-import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.DynamicTableReportSection;;
+import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.DynamicTableReportSection;
+import tools.jackson.databind.JsonNode;
 
 public class CaseTatReport extends Report {
 
