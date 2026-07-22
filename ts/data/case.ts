@@ -838,7 +838,11 @@ function makeBaseColumns<ChildType>(): ColumnDefinition<Case, ChildType>[] {
       sortType: "text",
       addParentContents(kase, fragment) {
         const assay = siteConfig.assaysById[kase.assayId];
-        const assayDiv = makeNameDiv(assay.name, urls.miso.assay(kase.assayId));
+        const assayDisplayName = assay.name + " v" + assay.version;
+        const assayDiv = makeNameDiv(
+          assayDisplayName,
+          urls.miso.assay(kase.assayId),
+        );
 
         fragment.appendChild(assayDiv);
 
