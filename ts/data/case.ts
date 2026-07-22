@@ -333,7 +333,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
       {
         title: "Receipt/Inspection",
         addParentContents(kase, fragment) {
-          addSampleIcons(kase.assayId, kase.receipts, fragment);
+          addSampleIcons(
+            kase.assayId,
+            kase.requisition.id,
+            kase.receipts,
+            fragment,
+          );
           if (samplePhasePendingWorkQcOrTransfer(kase.receipts)) {
             if (
               samplePhasePendingWork(kase.receipts) &&
@@ -392,6 +397,7 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           }
           addSampleIcons(
             kase.assayId,
+            kase.requisition.id,
             test.extractions,
             fragment,
             internalUser,
@@ -455,7 +461,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
             addNaText(fragment);
             return;
           }
-          addSampleIcons(kase.assayId, test.libraryPreparations, fragment);
+          addSampleIcons(
+            kase.assayId,
+            kase.requisition.id,
+            test.libraryPreparations,
+            fragment,
+          );
           if (
             test.extractionSkipped ||
             samplePhaseComplete(test.extractions, internalUser)
@@ -518,7 +529,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
             addNaText(fragment);
             return;
           }
-          addSampleIcons(kase.assayId, test.libraryQualifications, fragment);
+          addSampleIcons(
+            kase.assayId,
+            kase.requisition.id,
+            test.libraryQualifications,
+            fragment,
+          );
           if (
             test.libraryPreparationSkipped ||
             samplePhaseComplete(test.libraryPreparations)
@@ -576,7 +592,12 @@ export const caseDefinition: TableDefinition<Case, Test> = {
           ) {
             return;
           }
-          addSampleIcons(kase.assayId, test.fullDepthSequencings, fragment);
+          addSampleIcons(
+            kase.assayId,
+            kase.requisition.id,
+            test.fullDepthSequencings,
+            fragment,
+          );
           if (
             test.libraryQualificationSkipped ||
             samplePhaseComplete(test.libraryQualifications)
@@ -1534,6 +1555,7 @@ export function addConstructionIcon(phase: string, fragment: DocumentFragment) {
 
 export function addSampleIcons(
   assayId: number,
+  caseRequisitionId: number,
   samples: Sample[],
   fragment: DocumentFragment,
   transferRequired: boolean = false,
@@ -1565,7 +1587,8 @@ export function addSampleIcons(
     }
     const icon = makeIcon(status.icon);
     const tooltipInstance = Tooltip.getInstance();
-    tooltipInstance.addTarget(icon, makeSampleTooltip(sample));
+    const supplemental = sample.requisitionId != caseRequisitionId;
+    tooltipInstance.addTarget(icon, makeSampleTooltip(sample, supplemental));
     fragment.appendChild(icon);
     if (i < samples.length - 1) {
       addSpace(fragment);
@@ -1573,13 +1596,18 @@ export function addSampleIcons(
   });
 }
 
-export function makeSampleTooltip(sample: Sample) {
+export function makeSampleTooltip(sample: Sample, supplemental: boolean) {
   return (fragment: DocumentFragment) => {
     const topContainer = document.createElement("div");
     topContainer.className = "flex flex-col space-y-1 text-black";
     const bottomContainer = document.createElement("div");
     bottomContainer.className =
       "grid grid-cols-2 grid-flow-row gap-y-1 font-inter font-medium font-14 text-black mt-3";
+    if (supplemental) {
+      const supplementalDiv = makeTextDiv("Supplemental");
+      supplementalDiv.classList.add("font-bold");
+      topContainer.appendChild(supplementalDiv);
+    }
     // sample run links
     if (sample.run) {
       const runNameContainer = makeNameDiv(
