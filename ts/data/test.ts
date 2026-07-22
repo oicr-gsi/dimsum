@@ -57,8 +57,8 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
             makeNameDiv(
               project.name,
               urls.miso.project(project.name),
-              urls.dimsum.project(project.name)
-            )
+              urls.dimsum.project(project.name),
+            ),
           );
 
           const pipelineDiv = document.createElement("div");
@@ -75,22 +75,22 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           makeNameDiv(
             testTableView.donor.name,
             urls.miso.sample(testTableView.donor.id),
-            urls.dimsum.donor(testTableView.donor.name)
-          )
+            urls.dimsum.donor(testTableView.donor.name),
+          ),
         );
         fragment.appendChild(
           makeTextDivWithTooltip(
             testTableView.donor.externalName,
-            "External Name"
-          )
+            "External Name",
+          ),
         );
 
         const tumourDetailDiv = document.createElement("div");
         tumourDetailDiv.appendChild(
           document.createTextNode(
             `${testTableView.tissueOrigin} ${testTableView.tissueType}` +
-              (testTableView.timepoint ? " " + testTableView.timepoint : "")
-          )
+              (testTableView.timepoint ? " " + testTableView.timepoint : ""),
+          ),
         );
         const addContents = (fragment: DocumentFragment) => {
           addTextDiv(`Tissue Origin: ${testTableView.tissueOrigin}`, fragment);
@@ -117,7 +117,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         if (requisition.stopped) {
           const stoppedDiv = makeTextDivWithTooltip(
             "CASE STOPPED",
-            `Stop reason: ${requisition.stopReason || "Unspecified"}`
+            `Stop reason: ${requisition.stopReason || "Unspecified"}`,
           );
           styleText(stoppedDiv, "error");
           fragment.appendChild(stoppedDiv);
@@ -126,7 +126,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         addLink(
           requisitionDiv,
           requisition.name,
-          urls.dimsum.requisition(requisition.id)
+          urls.dimsum.requisition(requisition.id),
         );
         addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
         fragment.appendChild(requisitionDiv);
@@ -143,11 +143,11 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         if (testTableView.test.groupId) {
           const groupIdDiv = document.createElement("div");
           groupIdDiv.appendChild(
-            document.createTextNode(testTableView.test.groupId)
+            document.createTextNode(testTableView.test.groupId),
           );
           const tooltipInstance = Tooltip.getInstance();
           tooltipInstance.addTarget(groupIdDiv, (fragment) =>
-            fragment.appendChild(document.createTextNode("Group ID"))
+            fragment.appendChild(document.createTextNode("Group ID")),
           );
           fragment.appendChild(groupIdDiv);
         }
@@ -160,7 +160,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           handleNaSamplePhase(
             testTableView.requisition,
             testTableView.test.extractions,
-            fragment
+            fragment,
           )
         ) {
           return;
@@ -174,9 +174,10 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         }
         addSampleIcons(
           testTableView.assayId,
+          testTableView.requisition.id,
           testTableView.test.extractions,
           fragment,
-          true
+          true,
         );
         if (
           samplePhaseComplete(testTableView.receipts) &&
@@ -199,7 +200,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         return getSamplePhaseHighlight(
           testTableView.requisition,
           testTableView.test.extractions,
-          true
+          true,
         );
       },
     },
@@ -210,7 +211,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           handleNaSamplePhase(
             testTableView.requisition,
             testTableView.test.libraryPreparations,
-            fragment
+            fragment,
           )
         ) {
           return;
@@ -224,8 +225,9 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         }
         addSampleIcons(
           testTableView.assayId,
+          testTableView.requisition.id,
           testTableView.test.libraryPreparations,
-          fragment
+          fragment,
         );
         if (
           samplePhaseComplete(testTableView.test.extractions, true) &&
@@ -247,7 +249,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         }
         return getSamplePhaseHighlight(
           testTableView.requisition,
-          testTableView.test.libraryPreparations
+          testTableView.test.libraryPreparations,
         );
       },
     },
@@ -258,15 +260,16 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           handleNaSamplePhase(
             testTableView.requisition,
             testTableView.test.libraryQualifications,
-            fragment
+            fragment,
           )
         ) {
           return;
         }
         addSampleIcons(
           testTableView.assayId,
+          testTableView.requisition.id,
           testTableView.test.libraryQualifications,
-          fragment
+          fragment,
         );
         if (
           samplePhaseComplete(testTableView.test.libraryPreparations) &&
@@ -282,7 +285,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         testTableView.test = assertNotNull(testTableView.test);
         return getSamplePhaseHighlight(
           testTableView.requisition,
-          testTableView.test.libraryQualifications
+          testTableView.test.libraryQualifications,
         );
       },
     },
@@ -293,15 +296,16 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           handleNaSamplePhase(
             testTableView.requisition,
             testTableView.test.fullDepthSequencings,
-            fragment
+            fragment,
           )
         ) {
           return;
         }
         addSampleIcons(
           testTableView.assayId,
+          testTableView.requisition.id,
           testTableView.test.fullDepthSequencings,
-          fragment
+          fragment,
         );
         if (
           samplePhaseComplete(testTableView.test.libraryQualifications) &&
@@ -317,7 +321,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
         testTableView.test = assertNotNull(testTableView.test);
         return getSamplePhaseHighlight(
           testTableView.requisition,
-          testTableView.test.fullDepthSequencings
+          testTableView.test.fullDepthSequencings,
         );
       },
     },
@@ -326,7 +330,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       sortType: "date",
       addParentContents(testTableView, fragment) {
         fragment.appendChild(
-          document.createTextNode(testTableView.latestActivityDate)
+          document.createTextNode(testTableView.latestActivityDate),
         );
       },
     },
