@@ -137,6 +137,7 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * External view of Requisition, Donor, and Case Detail pages
 * External view of QC Dashboard
 * External view of Projects list page
+* External view of Project Details page
 
 ### Changed
 
