@@ -72,8 +72,9 @@ public class SampleMetricsReport extends Report {
               .flatMap(sample -> sample.getMetrics().stream()
                   // Exclude boolean metrics (no value)
                   .filter(metric -> metric.getThresholdType() != ThresholdType.BOOLEAN)
-                  // Exclude run/lane-level metrics (multiple values)
-                  .filter(metric -> metric.getMetricLevel() == MetricLevel.SAMPLE)
+                  // Exclude lane-level metrics (multiple values)
+                  .filter(metric -> metric.getMetricLevel() == MetricLevel.SAMPLE
+                      || metric.getMetricLevel() == MetricLevel.RUN)
                   .map(SampleMetric::getName))
               .distinct()
               .map(metricName -> makeMetricColumn(metricName));

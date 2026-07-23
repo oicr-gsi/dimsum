@@ -758,9 +758,11 @@ export function getSampleMetricCellHighlight(
     return null;
   }
 
-  // TODO: handle run and lane level metrics (not populated at time of writing)
+  // TODO: handle lane level metrics (not populated at time of writing)
   const sampleMetric = sample.metrics.find(
-    (metric) => metric.name === metricName && metric.metricLevel == "SAMPLE",
+    (metric) =>
+      metric.name === metricName &&
+      (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
   );
   // handle metrics that may be preliminary
   const preliminary = sampleMetric
@@ -869,9 +871,11 @@ export function addMetricValueContents(
     addTextDiv("Manual check required", fragment);
     return;
   }
-  // TODO: handle run and lane level metrics (not populated at time of writing)
+  // TODO: handle lane level metrics (not populated at time of writing)
   const sampleMetric = sample.metrics.find(
-    (metric) => metric.name === metricName && metric.metricLevel == "SAMPLE",
+    (metric) =>
+      metric.name === metricName &&
+      (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
   );
   const value = sampleMetric
     ? sampleMetric.value
