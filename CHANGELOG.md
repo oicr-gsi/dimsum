@@ -7,6 +7,18 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.67.0] - 2026-07-23
+
+### Changed
+
+* The assay version is now included in the Assay column of the Cases table
+* Tooltips now include "Supplemental" at the top for supplemental items
+
+### Fixed
+
+* "Deleted" archiving status was wrongly being highlighted yellow (incomplete/warning)
+
+
 ## [1.66.1] - 2026-05-05
 
 ### Fixed
