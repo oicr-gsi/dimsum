@@ -871,7 +871,7 @@ export function addMetricValueContents(
     addTextDiv("Manual check required", fragment);
     return;
   }
-  // TODO: handle lane level metrics (not populated at time of writing)
+  // TODO: handle lane level metrics and run level metrics with multiple values
   const sampleMetric = sample.metrics.find(
     (metric) =>
       metric.name === metricName &&
