@@ -758,7 +758,7 @@ export function getSampleMetricCellHighlight(
     return null;
   }
 
-  // TODO: handle lane level metrics (not populated at time of writing)
+  // TODO: handle lane level metrics
   const sampleMetric = sample.metrics.find(
     (metric) =>
       metric.name === metricName &&
