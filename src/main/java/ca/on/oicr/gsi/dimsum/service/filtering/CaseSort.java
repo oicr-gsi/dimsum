@@ -1,13 +1,13 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.AssayTargets;
+import ca.on.oicr.gsi.cardea.data.Case;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.AssayTargets;
-import ca.on.oicr.gsi.cardea.data.Case;
 
 public enum CaseSort {
 
@@ -27,10 +27,10 @@ public enum CaseSort {
         } else if (isInactive(b)) {
           return 1;
         }
-        
+
         AssayTargets aTargets = assaysById.get(a.getAssayId()).getTargets();
         AssayTargets bTargets = assaysById.get(b.getAssayId()).getTargets();
-        
+
         // Whichever case is further overdue is more urgent
         int aCaseOverdue = calculateCaseDaysOverdue(a, aTargets);
         int bCaseOverdue = calculateCaseDaysOverdue(b, bTargets);
@@ -58,8 +58,7 @@ public enum CaseSort {
     }
 
     private static boolean isInactive(Case kase) {
-      return kase.getRequisition().isPaused()
-          || CompletedGate.RELEASE.qualifyCase(kase, null);
+      return kase.getRequisition().isPaused() || CompletedGate.RELEASE.qualifyCase(kase, null);
     }
 
     private static int calculateCaseDaysOverdue(Case kase, AssayTargets targets) {
@@ -75,15 +74,20 @@ public enum CaseSort {
         return kase.getCaseDaysSpent() - targets.getReceiptDays();
       } else if (isStepBehind(targets.getExtractionDays(), kase, CompletedGate.EXTRACTION)) {
         return kase.getCaseDaysSpent() - targets.getExtractionDays();
-      } else if (isStepBehind(targets.getLibraryPreparationDays(), kase, CompletedGate.LIBRARY_PREPARATION)) {
+      } else if (isStepBehind(
+          targets.getLibraryPreparationDays(), kase, CompletedGate.LIBRARY_PREPARATION)) {
         return kase.getCaseDaysSpent() - targets.getLibraryPreparationDays();
-      } else if (isStepBehind(targets.getLibraryQualificationDays(), kase, CompletedGate.LIBRARY_QUALIFICATION)) {
+      } else if (isStepBehind(
+          targets.getLibraryQualificationDays(), kase, CompletedGate.LIBRARY_QUALIFICATION)) {
         return kase.getCaseDaysSpent() - targets.getLibraryQualificationDays();
-      } else if (isStepBehind(targets.getFullDepthSequencingDays(), kase, CompletedGate.FULL_DEPTH_SEQUENCING)) {
+      } else if (isStepBehind(
+          targets.getFullDepthSequencingDays(), kase, CompletedGate.FULL_DEPTH_SEQUENCING)) {
         return kase.getCaseDaysSpent() - targets.getFullDepthSequencingDays();
-      } else if (isStepBehind(targets.getAnalysisReviewDays(), kase, CompletedGate.ANALYSIS_REVIEW)) {
+      } else if (isStepBehind(
+          targets.getAnalysisReviewDays(), kase, CompletedGate.ANALYSIS_REVIEW)) {
         return kase.getCaseDaysSpent() - targets.getAnalysisReviewDays();
-      } else if (isStepBehind(targets.getReleaseApprovalDays(), kase, CompletedGate.RELEASE_APPROVAL)) {
+      } else if (isStepBehind(
+          targets.getReleaseApprovalDays(), kase, CompletedGate.RELEASE_APPROVAL)) {
         return kase.getCaseDaysSpent() - targets.getReleaseApprovalDays();
       } else if (isStepBehind(targets.getReleaseDays(), kase, CompletedGate.RELEASE)) {
         return kase.getCaseDaysSpent() - targets.getReleaseDays();
@@ -92,7 +96,8 @@ public enum CaseSort {
     }
 
     private static boolean isStepBehind(Integer target, Case kase, CompletedGate completedGate) {
-      return target != null && kase.getCaseDaysSpent() > target
+      return target != null
+          && kase.getCaseDaysSpent() > target
           && (!kase.getRequisition().isStopped() || !completedGate.isStoppable())
           && !completedGate.qualifyCase(kase, null);
     }
@@ -122,7 +127,7 @@ public enum CaseSort {
       }
     }
 
-     private static int calculateDaysRemaining(Case kase, Integer target) {
+    private static int calculateDaysRemaining(Case kase, Integer target) {
       if (target == null) {
         return 1000000;
       }
@@ -134,15 +139,23 @@ public enum CaseSort {
       return calculateDaysRemaining(kase, targets.getCaseDays());
     }
   },
-  REQUISITION("Requisition", Comparator.comparing(kase -> kase.getRequisition().getName(), String.CASE_INSENSITIVE_ORDER)),
+  REQUISITION(
+      "Requisition",
+      Comparator.comparing(kase -> kase.getRequisition().getName(), String.CASE_INSENSITIVE_ORDER)),
   ASSAY("Assay", Comparator.comparing(Case::getAssayName)),
   DONOR("Donor", Comparator.comparing(kase -> kase.getDonor().getName())),
-  START_DATE("Start Date", Comparator.comparing(Case::getStartDate, Comparator.nullsLast(Comparator.naturalOrder()))),
-  LAST_ACTIVITY("Latest Activity", Comparator.comparing(Case::getLatestActivityDate, Comparator.nullsLast(Comparator.naturalOrder())));
+  START_DATE(
+      "Start Date",
+      Comparator.comparing(Case::getStartDate, Comparator.nullsLast(Comparator.naturalOrder()))),
+  LAST_ACTIVITY(
+      "Latest Activity",
+      Comparator.comparing(
+          Case::getLatestActivityDate, Comparator.nullsLast(Comparator.naturalOrder())));
   // @formatter:on
 
-  private static final Map<String, CaseSort> map = Stream.of(CaseSort.values())
-      .collect(Collectors.toMap(CaseSort::getLabel, Function.identity()));
+  private static final Map<String, CaseSort> map =
+      Stream.of(CaseSort.values())
+          .collect(Collectors.toMap(CaseSort::getLabel, Function.identity()));
 
   public static CaseSort getByLabel(String label) {
     return map.get(label);
@@ -175,5 +188,4 @@ public enum CaseSort {
   public boolean allowExternal() {
     return allowExternal;
   }
-
 }

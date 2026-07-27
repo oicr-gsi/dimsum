@@ -3,11 +3,7 @@ import { post } from "./util/requests";
 import { getRequiredElementById } from "./util/html-utils";
 import { toggleLegend } from "./component/legend";
 import { getColorForGate } from "./util/color-mapping";
-import {
-  TableDefinition,
-  TableBuilder,
-  ColumnDefinition,
-} from "./component/table-builder";
+import { TableDefinition, TableBuilder, ColumnDefinition } from "./component/table-builder";
 import { urls } from "./util/urls";
 import { siteConfig } from "./util/site-config";
 
@@ -48,10 +44,7 @@ const COLUMN_NAMES = {
   FD_COMPLETED: "Full-Depth (FD) Completed",
 };
 
-function getCompletionColumnName(
-  deliverableCategory: string,
-  gate: string
-): string {
+function getCompletionColumnName(deliverableCategory: string, gate: string): string {
   return `${deliverableCategory} ${gate} Completed`.trim();
 }
 
@@ -83,11 +76,7 @@ interface GroupDays {
   [group: string]: number[];
 }
 
-function getCompletedDateAndDays(
-  row: any,
-  gate: string,
-  deliverableCategory: string
-) {
+function getCompletedDateAndDays(row: any, gate: string, deliverableCategory: string) {
   let completedDate: Date | null = null;
   let days: number = 0;
 
@@ -123,9 +112,7 @@ function getCompletedDateAndDays(
       days = row[COLUMN_NAMES.FD_DAYS] ?? 0;
       break;
     case "Full Test":
-      completedDate = row[
-        getCompletionColumnName(deliverableCategory, "Release")
-      ]
+      completedDate = row[getCompletionColumnName(deliverableCategory, "Release")]
         ? new Date(row[getCompletionColumnName(deliverableCategory, "Release")])
         : null;
       days = row[getDaysColumnName(deliverableCategory, "Total")] ?? 0;
@@ -153,9 +140,7 @@ function getGroup(date: Date, selectedGrouping: string): string {
     fiscalYear = year - 1; // previous fiscal year
     fiscalQuarter = 4; // last quarter
   }
-  const fiscalYearString = `FY${fiscalYear}/${String(fiscalYear + 1).slice(
-    -2
-  )}`;
+  const fiscalYearString = `FY${fiscalYear}/${String(fiscalYear + 1).slice(-2)}`;
   switch (selectedGrouping) {
     case "week":
       return getWeek(date);
@@ -174,11 +159,9 @@ function selectAllGates(onUpdate: () => void) {
   const selectAllCheckboxId = "selectAllGates";
   const checkboxesContainerId = "gatesCheckboxes";
 
-  const selectAllCheckbox = getRequiredElementById(
-    selectAllCheckboxId
-  ) as HTMLInputElement;
+  const selectAllCheckbox = getRequiredElementById(selectAllCheckboxId) as HTMLInputElement;
   const checkboxes = document.querySelectorAll<HTMLInputElement>(
-    `#${checkboxesContainerId} input[type='checkbox']:not(#${selectAllCheckboxId})`
+    `#${checkboxesContainerId} input[type='checkbox']:not(#${selectAllCheckboxId})`,
   );
   selectAllCheckbox.addEventListener("change", () => {
     const isChecked = selectAllCheckbox.checked;
@@ -200,15 +183,14 @@ function groupData(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  deliverableCategory: string
+  deliverableCategory: string,
 ): AssayGroups {
   const assayGroups: AssayGroups = {};
 
   jsonData.forEach((row: any) => {
     const assay = row[COLUMN_NAMES.ASSAY];
     const caseId = row[COLUMN_NAMES.CASE_ID];
-    const caseCompletedDate =
-      row[getCompletionColumnName(deliverableCategory, "Release")];
+    const caseCompletedDate = row[getCompletionColumnName(deliverableCategory, "Release")];
 
     // skip if case completed date is missing
     if (!caseCompletedDate) {
@@ -219,11 +201,7 @@ function groupData(
         assayGroups[assay] = {};
       }
       selectedGates.forEach((gate) => {
-        const { completedDate, days } = getCompletedDateAndDays(
-          row,
-          gate,
-          deliverableCategory
-        );
+        const { completedDate, days } = getCompletedDateAndDays(row, gate, deliverableCategory);
         if (!completedDate) {
           return;
         }
@@ -245,15 +223,13 @@ function groupData(
 function getWeek(date: Date): string {
   const onejan = new Date(date.getFullYear(), 0, 1);
   const week = Math.ceil(
-    ((date.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7
+    ((date.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7,
   );
   return `${date.getFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
 function getColorByGate(): boolean {
-  const toggleColors = getRequiredElementById(
-    "toggleColors"
-  ) as HTMLInputElement;
+  const toggleColors = getRequiredElementById("toggleColors") as HTMLInputElement;
   return toggleColors.checked;
 }
 
@@ -271,16 +247,13 @@ function getCaseCount(groups: any[]): { [key: string]: number } {
 function calcMedian(arr: number[]): number {
   const sorted = arr.slice().sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 function parseDateValue(timeRange: string | undefined): number {
   if (!timeRange) return 0;
   if (timeRange.includes("FY") && timeRange.includes("Q")) {
-    const [fiscalYearStart, fiscalYearEnd, quarter] =
-      timeRange.match(/\d+/g) ?? [];
+    const [fiscalYearStart, fiscalYearEnd, quarter] = timeRange.match(/\d+/g) ?? [];
     const fiscalYear =
       parseInt(fiscalYearStart ?? "0", 10) * 10000 +
       parseInt(fiscalYearEnd ?? "0", 10) * 100 +
@@ -307,13 +280,13 @@ function plotData(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDeliverableCategory: string
+  selectedDeliverableCategory: string,
 ): { newPlot: Partial<Plotly.PlotData>[]; layout: Partial<Plotly.Layout> } {
   const assayGroups = groupData(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDeliverableCategory
+    selectedDeliverableCategory,
   );
   const newPlot: Partial<Plotly.PlotData>[] = [];
   const assayColors: { [assay: string]: string } = {};
@@ -396,7 +369,7 @@ function newPlot(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
-  selectedDeliverableCategory: string
+  selectedDeliverableCategory: string,
 ) {
   const plotContainer = getRequiredElementById("plotContainer");
   plotContainer.textContent = "";
@@ -405,7 +378,7 @@ function newPlot(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDeliverableCategory
+    selectedDeliverableCategory,
   );
   Plotly.newPlot("plotContainer", newPlot, layout);
 
@@ -421,13 +394,13 @@ function updatePlot(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
-  selectedDeliverableCategory: string
+  selectedDeliverableCategory: string,
 ) {
   const { newPlot, layout } = plotData(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDeliverableCategory
+    selectedDeliverableCategory,
   );
   Plotly.react("plotContainer", newPlot, layout);
 }
@@ -436,14 +409,9 @@ function updatePlotWithLegend(
   selectedGrouping: string,
   jsonData: any[],
   selectedGates: string[],
-  selectedDeliverableCategory: string
+  selectedDeliverableCategory: string,
 ) {
-  updatePlot(
-    selectedGrouping,
-    jsonData,
-    selectedGates,
-    selectedDeliverableCategory
-  );
+  updatePlot(selectedGrouping, jsonData, selectedGates, selectedDeliverableCategory);
   const legendButton = document.getElementById("legendButton");
   if (getColorByGate()) {
     // show the Legend button
@@ -466,14 +434,14 @@ function updateMetricsTable(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDeliverableCategory: string
+  selectedDeliverableCategory: string,
 ) {
   // build the table data and get the time ranges from the metrics
   const { tableData, timeRanges } = buildTableFromMetrics(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDeliverableCategory
+    selectedDeliverableCategory,
   );
   const sortedTimeRanges = sortTimeRanges(timeRanges);
   const dynamicColumns = generateDynamicColumns(sortedTimeRanges);
@@ -484,7 +452,7 @@ function updateMetricsTable(
     sortedTimeRanges.map((timeRange) => ({
       title: timeRange,
       colspan: 3,
-    }))
+    })),
   );
   const caseTatTableDefinition: TableDefinition<AssayMetrics, void> = {
     generateColumns: () => dynamicColumns,
@@ -499,9 +467,7 @@ function updateMetricsTable(
   tableBuilder.build(tableData);
 }
 
-function generateDynamicColumns(
-  timeRanges: string[]
-): ColumnDefinition<AssayMetrics, void>[] {
+function generateDynamicColumns(timeRanges: string[]): ColumnDefinition<AssayMetrics, void>[] {
   const dynamicColumns: ColumnDefinition<AssayMetrics, void>[] = [];
   dynamicColumns.push({
     title: "Assay",
@@ -520,58 +486,37 @@ function generateDynamicColumns(
   timeRanges.forEach((timeRangeLabel) => {
     dynamicColumns.push({
       title: `Mean Days`,
-      addParentContents(
-        assayMetrics: AssayMetrics,
-        fragment: DocumentFragment
-      ) {
-        const timeRangeData = assayMetrics.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
+      addParentContents(assayMetrics: AssayMetrics, fragment: DocumentFragment) {
+        const timeRangeData = assayMetrics.timeRanges.find((tr) => tr.group === timeRangeLabel);
         const value = timeRangeData?.avgDays || NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
-        const timeRangeData = assayMetrics.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
+        const timeRangeData = assayMetrics.timeRanges.find((tr) => tr.group === timeRangeLabel);
         return timeRangeData ? null : "na";
       },
     });
     dynamicColumns.push({
       title: `Median Days`,
-      addParentContents(
-        assayMetrics: AssayMetrics,
-        fragment: DocumentFragment
-      ) {
-        const timeRangeData = assayMetrics.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
+      addParentContents(assayMetrics: AssayMetrics, fragment: DocumentFragment) {
+        const timeRangeData = assayMetrics.timeRanges.find((tr) => tr.group === timeRangeLabel);
         const value = timeRangeData?.medianDays || NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
-        const timeRangeData = assayMetrics.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
+        const timeRangeData = assayMetrics.timeRanges.find((tr) => tr.group === timeRangeLabel);
         return timeRangeData ? null : "na";
       },
     });
     dynamicColumns.push({
       title: `Test Count`,
-      addParentContents(
-        assayMetrics: AssayMetrics,
-        fragment: DocumentFragment
-      ) {
-        const timeRangeData = assayMetrics.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
+      addParentContents(assayMetrics: AssayMetrics, fragment: DocumentFragment) {
+        const timeRangeData = assayMetrics.timeRanges.find((tr) => tr.group === timeRangeLabel);
         const value = timeRangeData?.caseCount || NOT_AVAILABLE;
         fragment.appendChild(document.createTextNode(value));
       },
       getCellHighlight(assayMetrics) {
-        const timeRangeData = assayMetrics.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
+        const timeRangeData = assayMetrics.timeRanges.find((tr) => tr.group === timeRangeLabel);
         return timeRangeData ? null : "na";
       },
     });
@@ -583,13 +528,13 @@ function buildTableFromMetrics(
   jsonData: any[],
   selectedGrouping: string,
   selectedGates: string[],
-  selectedDeliverableCategory: string
+  selectedDeliverableCategory: string,
 ) {
   const groupedData = groupData(
     jsonData,
     selectedGrouping,
     selectedGates,
-    selectedDeliverableCategory
+    selectedDeliverableCategory,
   );
   const tableData: AssayMetrics[] = [];
   const timeRanges: string[] = [];
@@ -646,34 +591,32 @@ function parseUrlParams(): { key: string; value: string }[] {
 
 function getSelectedGates(): string[] {
   const gatesCheckboxes = document.querySelectorAll<HTMLInputElement>(
-    "#gatesCheckboxes input[type='checkbox']:checked"
+    "#gatesCheckboxes input[type='checkbox']:checked",
   );
   return Array.from(gatesCheckboxes).map((checkbox) => checkbox.value);
 }
 
 function getSelectedGrouping(): string {
   const selectedButton = document.querySelector<HTMLButtonElement>(
-    "#groupingButtons button.active"
+    "#groupingButtons button.active",
   );
   return selectedButton ? selectedButton.dataset.grouping! : "fiscalQuarter";
 }
 
 function getSelectedDeliverableCategory(): string {
   const deliverableCategorySelect = getRequiredElementById(
-    "deliverableCategorySelect"
+    "deliverableCategorySelect",
   ) as HTMLSelectElement;
   return deliverableCategorySelect.value;
 }
 
 function addDeliverableCategoryOptions() {
   const deliverableCategorySelect = getRequiredElementById(
-    "deliverableCategorySelect"
+    "deliverableCategorySelect",
   ) as HTMLSelectElement;
   deliverableCategorySelect.innerHTML = "";
   siteConfig.deliverableCategories.forEach((category) =>
-    deliverableCategorySelect.options.add(
-      makeDeliverableCategoryOption(category)
-    )
+    deliverableCategorySelect.options.add(makeDeliverableCategoryOption(category)),
   );
   const allOption = makeDeliverableCategoryOption("ALL");
   allOption.selected = true;
@@ -700,13 +643,13 @@ window.addEventListener("load", () => {
         getSelectedGrouping(),
         jsonData,
         getSelectedGates(),
-        getSelectedDeliverableCategory()
+        getSelectedDeliverableCategory(),
       );
       updateMetricsTable(
         jsonData,
         getSelectedGrouping(),
         getSelectedGates(),
-        getSelectedDeliverableCategory()
+        getSelectedDeliverableCategory(),
       );
     })
     .catch((error) => {
@@ -717,18 +660,8 @@ window.addEventListener("load", () => {
     const selectedGrouping = getSelectedGrouping();
     const selectedGates = getSelectedGates();
     const selectedDeliverableCategory = getSelectedDeliverableCategory();
-    updatePlotWithLegend(
-      selectedGrouping,
-      jsonData,
-      selectedGates,
-      selectedDeliverableCategory
-    );
-    updateMetricsTable(
-      jsonData,
-      selectedGrouping,
-      selectedGates,
-      selectedDeliverableCategory
-    );
+    updatePlotWithLegend(selectedGrouping, jsonData, selectedGates, selectedDeliverableCategory);
+    updateMetricsTable(jsonData, selectedGrouping, selectedGates, selectedDeliverableCategory);
   };
   selectAllGates(handlePlotUpdate);
 
@@ -744,11 +677,9 @@ window.addEventListener("load", () => {
     getRequiredElementById(id).addEventListener("click", handleNewPlot);
   });
 
-  ["deliverableCategorySelect", "gatesCheckboxes", "toggleColors"].forEach(
-    (id) => {
-      getRequiredElementById(id).addEventListener("change", handlePlotUpdate);
-    }
-  );
+  ["deliverableCategorySelect", "gatesCheckboxes", "toggleColors"].forEach((id) => {
+    getRequiredElementById(id).addEventListener("change", handlePlotUpdate);
+  });
 
   const metricsButton = getRequiredElementById("metricsButton");
   const metricContainer = getRequiredElementById("metricContainer");
@@ -759,10 +690,7 @@ window.addEventListener("load", () => {
   const legendButton = getRequiredElementById("legendButton");
   legendButton.addEventListener("click", () => toggleLegend("gate"));
 
-  function generateCSV(
-    tableData: AssayMetrics[],
-    timeRanges: string[]
-  ): string {
+  function generateCSV(tableData: AssayMetrics[], timeRanges: string[]): string {
     const csvRows: string[] = [];
     const parentHeaders = ["", ""];
     timeRanges.forEach((timeRange) => {
@@ -777,22 +705,10 @@ window.addEventListener("load", () => {
     tableData.forEach((row) => {
       const rowData: string[] = [row.assay, row.gate];
       timeRanges.forEach((timeRangeLabel) => {
-        const timeRangeData = row.timeRanges.find(
-          (tr) => tr.group === timeRangeLabel
-        );
-        rowData.push(
-          timeRangeData ? timeRangeData.avgDays ?? NOT_AVAILABLE : NOT_AVAILABLE
-        );
-        rowData.push(
-          timeRangeData
-            ? timeRangeData.medianDays ?? NOT_AVAILABLE
-            : NOT_AVAILABLE
-        );
-        rowData.push(
-          timeRangeData
-            ? timeRangeData.caseCount ?? NOT_AVAILABLE
-            : NOT_AVAILABLE
-        );
+        const timeRangeData = row.timeRanges.find((tr) => tr.group === timeRangeLabel);
+        rowData.push(timeRangeData ? timeRangeData.avgDays ?? NOT_AVAILABLE : NOT_AVAILABLE);
+        rowData.push(timeRangeData ? timeRangeData.medianDays ?? NOT_AVAILABLE : NOT_AVAILABLE);
+        rowData.push(timeRangeData ? timeRangeData.caseCount ?? NOT_AVAILABLE : NOT_AVAILABLE);
       });
       csvRows.push(rowData.join(","));
     });
@@ -818,7 +734,7 @@ window.addEventListener("load", () => {
       jsonData,
       getSelectedGrouping(),
       getSelectedGates(),
-      getSelectedDeliverableCategory()
+      getSelectedDeliverableCategory(),
     );
     const csvContent = generateCSV(tableData, sortTimeRanges(timeRanges));
     downloadCSV(csvContent, "metrics.csv");

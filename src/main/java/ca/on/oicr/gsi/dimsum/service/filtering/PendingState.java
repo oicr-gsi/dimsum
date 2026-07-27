@@ -1,11 +1,5 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
@@ -13,29 +7,37 @@ import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.util.DataUtils;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
+ *
+ *
  * <pre>
  * When to consider items pending:
- * 
+ *
  * Cases: whenever at least one item qualifies, as described below
- * 
+ *
  * Pending work (e.g. EXTRACTION)
  * * test qualification: previous gate completed and target gate not (completed or pending QC)
  * * target gate: all items (may include failed attempts and items needing top-up)
  * * upstream gates: all QC-passed items
  * * downstream gates: include all items for qualifying tests, but there should be none
- * 
+ *
  * Pending QC (e.g. LIBRARY_QC)
  * * test qualification: at least one item in target gate is pending QC
  * * target gate: items that are pending QC
- * 
+ *
  * Pending data review (e.g. LIBRARY_QUALIFICATION_DATA_REVIEW)
  * * test qualification: at least one item in target gate is pending data review
  * * target gate:
  * ** if run-library: items that are pending data review
  * ** else: n/a
- * 
+ *
  * For all states, unless otherwise noted:
  * * upstream gates: include all items for qualifying tests
  * * downstream gates: include all items for qualifying tests
@@ -104,7 +106,7 @@ public enum PendingState {
     @Override
     public boolean qualifyTest(Test test) {
       return test.getExtractions().stream()
-          .noneMatch(sample -> DataUtils.isPassed(sample) && sample.getTransferDate() != null)
+              .noneMatch(sample -> DataUtils.isPassed(sample) && sample.getTransferDate() != null)
           && test.getExtractions().stream()
               .anyMatch(sample -> DataUtils.isPassed(sample) && sample.getTransferDate() == null);
     }
@@ -157,8 +159,8 @@ public enum PendingState {
     @Override
     public boolean qualifyTest(Test test) {
       return !test.isLibraryQualificationSkipped()
-          && Helpers.hasPendingWork(test.getLibraryQualifications(), test.getLibraryPreparations(),
-              false);
+          && Helpers.hasPendingWork(
+              test.getLibraryQualifications(), test.getLibraryPreparations(), false);
     }
 
     @Override
@@ -206,8 +208,8 @@ public enum PendingState {
   FULL_DEPTH_SEQUENCING("Full-Depth Sequencing", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications(),
-          false);
+      return Helpers.hasPendingWork(
+          test.getFullDepthSequencings(), test.getLibraryQualifications(), false);
     }
 
     @Override
@@ -226,8 +228,9 @@ public enum PendingState {
   FULL_DEPTH_TOP_UP("Full-Depth Sequencing Top-Up", true, false) {
     @Override
     public boolean qualifyTest(Test test) {
-      return Helpers.hasPendingWork(test.getFullDepthSequencings(), test.getLibraryQualifications(),
-          false) && test.getFullDepthSequencings().stream().anyMatch(DataUtils::isTopUpRequired);
+      return Helpers.hasPendingWork(
+              test.getFullDepthSequencings(), test.getLibraryQualifications(), false)
+          && test.getFullDepthSequencings().stream().anyMatch(DataUtils::isTopUpRequired);
     }
 
     @Override
@@ -295,14 +298,18 @@ public enum PendingState {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
       if (deliverableCategory == null) {
-        // any deliverable has incomplete release approval and (complete analyis review or case stopped)
+        // any deliverable has incomplete release approval and (complete analyis review or case
+        // stopped)
         return kase.getDeliverables().stream()
             .map(CaseDeliverable::getDeliverableCategory)
-            .anyMatch(category -> (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, category))
-                && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, category));
+            .anyMatch(
+                category ->
+                    (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, category))
+                        && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, category));
       } else {
         return CompletedGate.RELEASE_APPROVAL.isApplicable(kase, deliverableCategory)
-            && (kase.isStopped() || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, deliverableCategory))
+            && (kase.isStopped()
+                || CompletedGate.ANALYSIS_REVIEW.qualifyCase(kase, deliverableCategory))
             && !CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, deliverableCategory);
       }
     }
@@ -314,8 +321,10 @@ public enum PendingState {
         // any deliverable is completed release approval and has a pending release
         return kase.getDeliverables().stream()
             .map(CaseDeliverable::getDeliverableCategory)
-            .anyMatch(category -> CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, category)
-            && !CompletedGate.RELEASE.qualifyCase(kase, category));
+            .anyMatch(
+                category ->
+                    CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, category)
+                        && !CompletedGate.RELEASE.qualifyCase(kase, category));
       } else {
         // specified deliverable is completed release approval and has a pending release
         return CompletedGate.RELEASE_APPROVAL.qualifyCase(kase, deliverableCategory)
@@ -326,8 +335,9 @@ public enum PendingState {
   };
   // @formatter:on
 
-  private static final Map<String, PendingState> map = Stream.of(PendingState.values())
-      .collect(Collectors.toMap(PendingState::getLabel, Function.identity()));
+  private static final Map<String, PendingState> map =
+      Stream.of(PendingState.values())
+          .collect(Collectors.toMap(PendingState::getLabel, Function.identity()));
 
   public static PendingState getByLabel(String label) {
     return map.get(label);
@@ -370,10 +380,10 @@ public enum PendingState {
 
   /**
    * Checks whether a case has pending work or QC represented by this PendingState
-   * 
+   *
    * @param kase the case to check
    * @param deliverableCategory the specific deliverable category to check for steps where this is
-   *        relevant, or null for all
+   *     relevant, or null for all
    * @return true if the step is pending; false otherwise
    */
   public boolean qualifyCase(Case kase, String deliverableCategory) {
@@ -399,8 +409,10 @@ public enum PendingState {
     public static Predicate<Sample> pendingQcOrDataReview =
         sample -> DataUtils.isPendingQc(sample) || DataUtils.isPendingDataReview(sample);
     public static Predicate<Sample> possiblyCompleted =
-        sample -> DataUtils.isPassed(sample) || DataUtils.isPendingQc(sample)
-            || DataUtils.isPendingDataReview(sample);
+        sample ->
+            DataUtils.isPassed(sample)
+                || DataUtils.isPendingQc(sample)
+                || DataUtils.isPendingDataReview(sample);
 
     private static boolean isPendingReceiptQc(Case kase) {
       return kase.getReceipts().stream().anyMatch(pendingQc);
@@ -414,11 +426,14 @@ public enum PendingState {
       return gate.stream().noneMatch(possiblyCompleted);
     }
 
-    public static boolean hasPendingWork(List<Sample> gate, List<Sample> previousGate,
-        boolean previousRequiresTransfer) {
+    public static boolean hasPendingWork(
+        List<Sample> gate, List<Sample> previousGate, boolean previousRequiresTransfer) {
       return gate.stream().noneMatch(possiblyCompleted)
-          && previousGate.stream().anyMatch(sample -> DataUtils.isPassed(sample)
-              && (!previousRequiresTransfer || sample.getTransferDate() != null))
+          && previousGate.stream()
+              .anyMatch(
+                  sample ->
+                      DataUtils.isPassed(sample)
+                          && (!previousRequiresTransfer || sample.getTransferDate() != null))
           && previousGate.stream().noneMatch(pendingQcOrDataReview);
     }
 
@@ -430,5 +445,4 @@ public enum PendingState {
       return samples.stream().anyMatch(pendingDataReview);
     }
   }
-
 }

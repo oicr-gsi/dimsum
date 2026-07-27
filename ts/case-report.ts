@@ -29,11 +29,7 @@ import {
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
 import { get } from "./util/requests";
-import {
-  getAnalysisReviewQcStatus,
-  getMetricCategory,
-  siteConfig,
-} from "./util/site-config";
+import { getAnalysisReviewQcStatus, getMetricCategory, siteConfig } from "./util/site-config";
 import { urls } from "./util/urls";
 import { BasicDropdownOption, Dropdown } from "./component/dropdown";
 import { assertRequired, nullIfUndefined } from "./data/data-utils";
@@ -60,9 +56,7 @@ const attributes: AttributeDefinition<Case>[] = [
   {
     title: "Case ID",
     addContents(object, fragment) {
-      fragment.appendChild(
-        makeNameDiv(object.id, undefined, urls.dimsum.case(object.id))
-      );
+      fragment.appendChild(makeNameDiv(object.id, undefined, urls.dimsum.case(object.id)));
       if (object.requisition.stopped) {
         const stopDiv = document.createElement("div");
         const stopText = document.createElement("span");
@@ -87,8 +81,8 @@ const attributes: AttributeDefinition<Case>[] = [
         makeNameDiv(
           object.requisition.name,
           urls.miso.requisition(object.requisition.id),
-          urls.dimsum.requisition(object.requisition.id)
-        )
+          urls.dimsum.requisition(object.requisition.id),
+        ),
       );
     },
   },
@@ -99,8 +93,8 @@ const attributes: AttributeDefinition<Case>[] = [
         makeNameDiv(
           object.donor.name,
           urls.miso.sample(object.donor.id),
-          urls.dimsum.donor(object.donor.name)
-        )
+          urls.dimsum.donor(object.donor.name),
+        ),
       );
     },
   },
@@ -142,7 +136,7 @@ const attributes: AttributeDefinition<Case>[] = [
       const assayDiv = makeNameDiv(
         `${assay.description || assay.name} v${assay.version}`,
         urls.miso.assay(object.assayId),
-        undefined
+        undefined,
       );
       fragment.appendChild(assayDiv);
     },
@@ -168,42 +162,28 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
           const run = getRun(object.sample);
           const runName = run.name;
           fragment.appendChild(
-            makeWrappingNameDiv(
-              runName,
-              urls.miso.run(runName),
-              urls.dimsum.run(runName)
-            )
+            makeWrappingNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName)),
           );
           object.allSamples.forEach((sample) => {
             fragment.appendChild(
               makeWrappingNameDiv(
-                sample.name +
-                  (sample.sequencingLane ? ` (L${sample.sequencingLane})` : ""),
-                urls.miso.sample(sample.id)
-              )
+                sample.name + (sample.sequencingLane ? ` (L${sample.sequencingLane})` : ""),
+                urls.miso.sample(sample.id),
+              ),
             );
           });
           return;
         }
         fragment.appendChild(
-          makeWrappingNameDiv(
-            object.sample.name,
-            urls.miso.sample(object.sample.id)
-          )
+          makeWrappingNameDiv(object.sample.name, urls.miso.sample(object.sample.id)),
         );
         if (object.sample.run) {
           const runName = object.sample.run.name;
           const runNameDisplay =
             runName +
-            (object.sample.sequencingLane
-              ? " (L" + object.sample.sequencingLane + ")"
-              : "");
+            (object.sample.sequencingLane ? " (L" + object.sample.sequencingLane + ")" : "");
           fragment.appendChild(
-            makeWrappingNameDiv(
-              runNameDisplay,
-              urls.miso.run(runName),
-              urls.dimsum.run(runName)
-            )
+            makeWrappingNameDiv(runNameDisplay, urls.miso.run(runName), urls.dimsum.run(runName)),
           );
         }
       },
@@ -241,7 +221,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
           return getSampleMetricCellHighlight(
             reportSample.sample,
             metric.name,
-            reportSample.metricCategory
+            reportSample.metricCategory,
           );
         }
       },
@@ -249,11 +229,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        displaySampleSignOff(
-          fragment,
-          getRunOrSampleLevel(object),
-          object.caseStopped
-        );
+        displaySampleSignOff(fragment, getRunOrSampleLevel(object), object.caseStopped);
         addAssayMismatchText(fragment, object);
       },
       getCellHighlight(object) {
@@ -273,11 +249,7 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       title: "QC Stage Sign-Off",
       addParentContents(object, fragment) {
         if (object.sample.run) {
-          displayDataReviewSignOff(
-            fragment,
-            getRunOrSampleLevel(object),
-            object.caseStopped
-          );
+          displayDataReviewSignOff(fragment, getRunOrSampleLevel(object), object.caseStopped);
           addAssayMismatchText(fragment, object);
         } else {
           addText(fragment, "No second review required");
@@ -322,11 +294,7 @@ function getRun(sample: Sample) {
   return sample.run;
 }
 
-function makeWrappingNameDiv(
-  name: string,
-  misoUrl?: string,
-  dimsumUrl?: string
-) {
+function makeWrappingNameDiv(name: string, misoUrl?: string, dimsumUrl?: string) {
   const div = makeNameDiv(name.replaceAll("_", "_<wbr>"), misoUrl, dimsumUrl);
   div.classList.add("pl-2", "-indent-2"); // hanging indent
   return div;
@@ -334,16 +302,11 @@ function makeWrappingNameDiv(
 
 function addAssayMismatchText(fragment: Node, object: ReportSample) {
   if (!caseAssayAppliesToSample(object)) {
-    const assayIds = object.sample.assayIds?.filter(
-      (assayId) => assayId !== object.caseAssayId
-    );
+    const assayIds = object.sample.assayIds?.filter((assayId) => assayId !== object.caseAssayId);
     if (assayIds?.length) {
       assayIds.forEach((assayId) => {
         const sampleAssay = siteConfig.assaysById[assayId];
-        addBoldText(
-          fragment,
-          `(Assay: ${sampleAssay.name} v${sampleAssay.version})`
-        );
+        addBoldText(fragment, `(Assay: ${sampleAssay.name} v${sampleAssay.version})`);
       });
     } else {
       addBoldText(fragment, `(Unspecified assay)`);
@@ -351,14 +314,11 @@ function addAssayMismatchText(fragment: Node, object: ReportSample) {
   }
 }
 
-const analysisReviewMetricsDefinition: TableDefinition<
-  ReportAnalysisReview,
-  Metric
-> = {
+const analysisReviewMetricsDefinition: TableDefinition<ReportAnalysisReview, Metric> = {
   disablePageControls: true,
   getChildren(parent) {
     return parent.metricSubcategory.metrics.filter((metric) =>
-      analysisMetricApplies(metric, parent.qcGroup)
+      analysisMetricApplies(metric, parent.qcGroup),
     );
   },
   getSubheading: (object) => object.deliverable.deliverableCategory,
@@ -397,28 +357,24 @@ const analysisReviewMetricsDefinition: TableDefinition<
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
-        const qcStatus = getAnalysisReviewQcStatus(
-          parent.deliverable.analysisReviewQcStatus
-        );
+        const qcStatus = getAnalysisReviewQcStatus(parent.deliverable.analysisReviewQcStatus);
         fragment.appendChild(
           makeAnalysisMetricDisplay(
             [object],
             parent.qcGroup,
             [nullIfUndefined(qcStatus?.qcPassed)],
-            false
-          )
+            false,
+          ),
         );
       },
       getCellHighlight(object, metric) {
         if (metric) {
-          const qcStatus = getAnalysisReviewQcStatus(
-            object.deliverable.analysisReviewQcStatus
-          );
+          const qcStatus = getAnalysisReviewQcStatus(object.deliverable.analysisReviewQcStatus);
           return getAnalysisMetricCellHighlight(
             object.qcGroup,
             object.kase,
             metric,
-            nullIfUndefined(qcStatus?.qcPassed)
+            nullIfUndefined(qcStatus?.qcPassed),
           );
         } else {
           return "na";
@@ -429,9 +385,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
         const deliverable = object.deliverable;
-        const qcStatus = getAnalysisReviewQcStatus(
-          deliverable.analysisReviewQcStatus
-        );
+        const qcStatus = getAnalysisReviewQcStatus(deliverable.analysisReviewQcStatus);
         displaySignOff(
           fragment,
           object.caseStopped,
@@ -439,17 +393,14 @@ const analysisReviewMetricsDefinition: TableDefinition<
           caseQcNa(qcStatus) ? "N/A" : null,
           deliverable.analysisReviewQcUser,
           deliverable.analysisReviewQcDate,
-          deliverable.analysisReviewQcNote
+          deliverable.analysisReviewQcNote,
         );
       },
       getCellHighlight(object) {
         const status = getDeliverableQcStatus(
-          getAnalysisReviewQcStatus(object.deliverable.analysisReviewQcStatus)
+          getAnalysisReviewQcStatus(object.deliverable.analysisReviewQcStatus),
         );
-        if (
-          status === qcStatuses.na ||
-          (status === qcStatuses.qc && object.caseStopped)
-        ) {
+        if (status === qcStatuses.na || (status === qcStatuses.qc && object.caseStopped)) {
           return "na";
         } else {
           return status.cellStatus;
@@ -468,11 +419,7 @@ const analysisReviewMetricsDefinition: TableDefinition<
   ],
 };
 
-function displaySampleSignOff(
-  fragment: DocumentFragment,
-  qcable: Qcable,
-  caseStopped: boolean
-) {
+function displaySampleSignOff(fragment: DocumentFragment, qcable: Qcable, caseStopped: boolean) {
   displaySignOff(
     fragment,
     caseStopped,
@@ -480,14 +427,14 @@ function displaySampleSignOff(
     qcable.qcReason,
     qcable.qcUser,
     qcable.qcDate,
-    qcable.qcNote
+    qcable.qcNote,
   );
 }
 
 function displayDataReviewSignOff(
   fragment: DocumentFragment,
   qcable: Qcable,
-  caseStopped: boolean
+  caseStopped: boolean,
 ) {
   displaySignOff(
     fragment,
@@ -496,7 +443,7 @@ function displayDataReviewSignOff(
     null,
     qcable.dataReviewUser,
     qcable.dataReviewDate,
-    null
+    null,
   );
 }
 
@@ -507,7 +454,7 @@ function displaySignOff(
   qcReason: string | null,
   qcUser: string | null | undefined,
   qcDate: string | null,
-  qcNote: string | null | undefined
+  qcNote: string | null | undefined,
 ) {
   if (qcDate) {
     if (!qcUser) {
@@ -515,7 +462,7 @@ function displaySignOff(
     }
     addBoldText(
       fragment,
-      qcReason || (qcPassed ? qcStatuses.passed.label : qcStatuses.failed.label)
+      qcReason || (qcPassed ? qcStatuses.passed.label : qcStatuses.failed.label),
     );
     addTextDiv(qcUser, fragment);
     addTextDiv(qcDate, fragment);
@@ -563,53 +510,45 @@ async function loadCase(caseId: string) {
   new AttributeList<Case>("caseAttributesContainer", data, attributes);
 
   const receipts = getReportSamples(data, data.receipts, "RECEIPT");
-  new TableBuilder(sampleGateMetricsDefinition, "receiptTableContainer").build(
-    receipts
-  );
+  new TableBuilder(sampleGateMetricsDefinition, "receiptTableContainer").build(receipts);
 
   const extractions = getReportSamples(
     data,
     data.tests.flatMap((test) => test.extractions),
-    "EXTRACTION"
+    "EXTRACTION",
   );
-  new TableBuilder(
-    sampleGateMetricsDefinition,
-    "extractionTableContainer"
-  ).build(extractions);
+  new TableBuilder(sampleGateMetricsDefinition, "extractionTableContainer").build(extractions);
 
   const libraryPreps = getReportSamples(
     data,
     data.tests.flatMap((test) => test.libraryPreparations),
-    "LIBRARY_PREP"
+    "LIBRARY_PREP",
   );
-  new TableBuilder(
-    sampleGateMetricsDefinition,
-    "libraryPreparationTableContainer"
-  ).build(libraryPreps);
+  new TableBuilder(sampleGateMetricsDefinition, "libraryPreparationTableContainer").build(
+    libraryPreps,
+  );
 
   const libraryQualifications = getReportSamples(
     data,
     data.tests.flatMap((test) => test.libraryQualifications),
-    "LIBRARY_QUALIFICATION"
+    "LIBRARY_QUALIFICATION",
   );
-  new TableBuilder(
-    sampleGateMetricsDefinition,
-    "libraryQualificationTableContainer"
-  ).build(libraryQualifications);
+  new TableBuilder(sampleGateMetricsDefinition, "libraryQualificationTableContainer").build(
+    libraryQualifications,
+  );
 
   const fullDepths = getReportSamples(
     data,
     data.tests.flatMap((test) => test.fullDepthSequencings),
-    "FULL_DEPTH_SEQUENCING"
+    "FULL_DEPTH_SEQUENCING",
   );
-  new TableBuilder(
-    sampleGateMetricsDefinition,
-    "fullDepthSequencingTableContainer"
-  ).build(fullDepths);
+  new TableBuilder(sampleGateMetricsDefinition, "fullDepthSequencingTableContainer").build(
+    fullDepths,
+  );
   const analysisReviews = getReportAnalysisReviews(data);
   const analysisReviewTable = new TableBuilder(
     analysisReviewMetricsDefinition,
-    "analysisReviewTableContainer"
+    "analysisReviewTableContainer",
   ).build(analysisReviews);
 
   addDeliverablesMenu(analysisReviewTable, analysisReviews);
@@ -618,21 +557,17 @@ async function loadCase(caseId: string) {
 
 function addDeliverablesMenu(
   analysisReviewTable: TableBuilder<ReportAnalysisReview, Metric>,
-  analysisReviews: ReportAnalysisReview[]
+  analysisReviews: ReportAnalysisReview[],
 ) {
   const deliverableCategories = analysisReviews
     .map((review) => review.deliverable.deliverableCategory)
-    .filter(
-      (deliverable, index, array) => array.indexOf(deliverable) === index
-    );
+    .filter((deliverable, index, array) => array.indexOf(deliverable) === index);
 
   if (deliverableCategories.length <= 1) {
     // Only one option - don't show menu
     return;
   }
-  const deliverableMenuContainerDiv = document.getElementById(
-    "deliverableMenuContainer"
-  );
+  const deliverableMenuContainerDiv = document.getElementById("deliverableMenuContainer");
   if (!deliverableMenuContainerDiv) {
     throw new Error("Deliverable menu container missing");
   }
@@ -642,33 +577,22 @@ function addDeliverablesMenu(
         analysisReviewTable.clear();
         analysisReviewTable.build(
           analysisReviews.filter(
-            (review) => review.deliverable.deliverableCategory === deliverable
-          )
+            (review) => review.deliverable.deliverableCategory === deliverable,
+          ),
         );
-      })
+      }),
   );
   deliverableOptions.unshift(
     new BasicDropdownOption("All", () => {
       analysisReviewTable.clear();
       analysisReviewTable.build(analysisReviews);
-    })
+    }),
   );
-  const deliverableDropdown = new Dropdown(
-    deliverableOptions,
-    true,
-    "Deliverables",
-    "All"
-  );
-  deliverableMenuContainerDiv.appendChild(
-    deliverableDropdown.getContainerTag()
-  );
+  const deliverableDropdown = new Dropdown(deliverableOptions, true, "Deliverables", "All");
+  deliverableMenuContainerDiv.appendChild(deliverableDropdown.getContainerTag());
 }
 
-function getReportSamples(
-  kase: Case,
-  samples: Sample[],
-  category: MetricCategory
-): ReportSample[] {
+function getReportSamples(kase: Case, samples: Sample[], category: MetricCategory): ReportSample[] {
   // make one record per applicable sample+subcategory combination
   return samples
     .flatMap((sample: Sample): ReportSample[] => {
@@ -676,23 +600,13 @@ function getReportSamples(
         if (sample.assayIds.includes(kase.assayId)) {
           // If one of the sample's assays matches the case assay and it has applicable metrics, use
           // only that assay
-          const reportSamples = getReportSamplesForAssays(
-            kase,
-            sample,
-            [kase.assayId],
-            category
-          );
+          const reportSamples = getReportSamplesForAssays(kase, sample, [kase.assayId], category);
           if (reportSamples.length) {
             return reportSamples;
           }
         }
         // Otherwise, use all of the sample's assays that have applicable metrics
-        const reportSamples = getReportSamplesForAssays(
-          kase,
-          sample,
-          sample.assayIds,
-          category
-        );
+        const reportSamples = getReportSamplesForAssays(kase, sample, sample.assayIds, category);
         if (reportSamples.length) {
           return reportSamples;
         }
@@ -719,11 +633,7 @@ function getReportSamples(
       if (aSubcategorySort !== bSubcategorySort) {
         return aSubcategorySort - bSubcategorySort;
       }
-      if (
-        a.sample.run &&
-        b.sample.run &&
-        a.sample.run.name !== b.sample.run.name
-      ) {
+      if (a.sample.run && b.sample.run && a.sample.run.name !== b.sample.run.name) {
         return a.sample.run.name.localeCompare(b.sample.run.name);
       }
       return a.sample.name.localeCompare(b.sample.name);
@@ -732,9 +642,7 @@ function getReportSamples(
       if (
         current.metricSubcategory.metrics &&
         current.metricSubcategory.metrics.length &&
-        current.metricSubcategory.metrics.every((metric) =>
-          RUN_METRIC_LABELS.includes(metric.name)
-        )
+        current.metricSubcategory.metrics.every((metric) => RUN_METRIC_LABELS.includes(metric.name))
       ) {
         // This is a run-level subcategory. If the previous item is the same subcategory for the
         // same run, combine this item into the previous item
@@ -760,7 +668,7 @@ function getReportSamplesForAssays(
   kase: Case,
   sample: Sample,
   assayIds: number[],
-  category: MetricCategory
+  category: MetricCategory,
 ) {
   return assayIds
     .flatMap((assayId) => getMetricCategory(assayId, category) || [])
@@ -780,8 +688,8 @@ function caseAssayAppliesToSample(object: ReportSample) {
   if (!object.sample.assayIds?.includes(object.caseAssayId)) {
     return false;
   }
-  return getMetricCategory(object.caseAssayId, object.metricCategory).some(
-    (subcategory) => sampleSubcategoryApplies(subcategory, object.sample)
+  return getMetricCategory(object.caseAssayId, object.metricCategory).some((subcategory) =>
+    sampleSubcategoryApplies(subcategory, object.sample),
   );
 }
 
@@ -791,9 +699,7 @@ function getReportAnalysisReviews(kase: Case) {
       assertRequired(kase.qcGroups);
       return kase.qcGroups.flatMap((qcGroup) => {
         return getMetricCategory(kase.assayId, "ANALYSIS_REVIEW")
-          .filter((subcategory) =>
-            analysisSubcategoryApplies(subcategory, qcGroup)
-          )
+          .filter((subcategory) => analysisSubcategoryApplies(subcategory, qcGroup))
           .map((subcategory): ReportAnalysisReview => {
             return {
               kase: kase,
@@ -808,13 +714,9 @@ function getReportAnalysisReviews(kase: Case) {
     })
     .sort((a, b) => {
       // sort by deliverable type > subcategory > item name
-      if (
-        a.deliverable.deliverableCategory < b.deliverable.deliverableCategory
-      ) {
+      if (a.deliverable.deliverableCategory < b.deliverable.deliverableCategory) {
         return -1;
-      } else if (
-        a.deliverable.deliverableCategory > b.deliverable.deliverableCategory
-      ) {
+      } else if (a.deliverable.deliverableCategory > b.deliverable.deliverableCategory) {
         return 1;
       }
       const aSubcategorySort = a.metricSubcategory.sortPriority || 0;
@@ -833,10 +735,7 @@ function setupPrint(kase: Case) {
   if (printButton) {
     printButton.onclick = async (event) => {
       if (!(window as any).chrome) {
-        await showAlertDialog(
-          "Warning",
-          "Printing is optimized for Google Chrome"
-        );
+        await showAlertDialog("Warning", "Printing is optimized for Google Chrome");
       }
       // update title temporarily to set default filename for printing to PDF
       const pageTitle = document.title;

@@ -1,16 +1,5 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
@@ -27,13 +16,23 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.DynamicTableReportSection;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import tools.jackson.databind.JsonNode;
 
 public class CaseTatReport extends Report {
 
-  private static record RowData(Case kase, Test test,
-      Map<String, CaseDeliverable> deliverablesByCategory) {
-  }
+  private static record RowData(
+      Case kase, Test test, Map<String, CaseDeliverable> deliverablesByCategory) {}
 
   // the TAT Trend Report depends on the column names defined here
   private static final ReportSection<RowData> caseSection =
@@ -42,115 +41,181 @@ public class CaseTatReport extends Report {
         @Override
         public List<RowData> getData(CaseService caseService, JsonNode parameters) {
           List<CaseFilter> filters = getParameterFilters(parameters);
-          return caseService.getCaseStream(filters)
-              .flatMap(kase -> kase.getTests().stream().map(test -> {
-                Map<String, CaseDeliverable> deliverablesByCategory =
-                    kase.getDeliverables().stream().collect(Collectors
-                        .toMap(CaseDeliverable::getDeliverableCategory, Function.identity()));
-                return new RowData(kase, test, deliverablesByCategory);
-              }))
+          return caseService
+              .getCaseStream(filters)
+              .flatMap(
+                  kase ->
+                      kase.getTests().stream()
+                          .map(
+                              test -> {
+                                Map<String, CaseDeliverable> deliverablesByCategory =
+                                    kase.getDeliverables().stream()
+                                        .collect(
+                                            Collectors.toMap(
+                                                CaseDeliverable::getDeliverableCategory,
+                                                Function.identity()));
+                                return new RowData(kase, test, deliverablesByCategory);
+                              }))
               .collect(Collectors.toList());
         }
 
-        private static final List<Column<RowData>> START_COLUMNS = Arrays.asList(
-            Column.forString("Case ID", x -> x.kase().getId()),
-            Column.forString("Projects",
-                x -> getSortedProjectNameOrPipeline(x.kase(), Project::getName)),
-            Column.forString("Pipeline",
-                x -> getSortedProjectNameOrPipeline(x.kase(), Project::getPipeline)),
-            Column.forString("Requisition", x -> x.kase().getRequisition().getName()),
-            Column.forString("Assay", x -> x.kase().getAssayName()),
-            Column.forString("Start Date",
-                x -> x.kase().getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
-            Column.forString("Receipt Completed",
-                x -> findLatestCompletionDate(x.kase().getReceipts(), false)),
-            Column.forInteger("Receipt Days", x -> x.kase().getReceiptDaysSpent()),
-            Column.forString("Test", x -> x.test().getName()),
-            Column.forString("Supplemental Only",
-                x -> isSupplementalOnly(x.test(), x.kase().getRequisition()) ? "Yes" : "No"),
-            Column.forString(
-                "Extraction (EX) Completed",
-                x -> findLatestCompletionDate(x.test().getExtractions(), true)),
-            Column.forInteger("EX Days", x -> x.test().getExtractionDaysSpent()),
-            Column.forInteger("EX Prep. Days", x -> x.test().getExtractionPreparationDaysSpent()),
-            Column.forInteger("EX QC Days", x -> x.test().getExtractionQcDaysSpent()),
-            Column.forInteger("EX Transfer Days", x -> x.test().getExtractionTransferDaysSpent()),
-            Column.forString("Library Prep. Completed",
-                x -> findLatestCompletionDate(x.test().getLibraryPreparations(), false)),
-            Column.forInteger("Library Prep. Days",
-                x -> x.test().getLibraryPreparationDaysSpent()),
-            Column.forString("Library Qual. (LQ) Completed",
-                x -> findLatestCompletionDate(x.test().getLibraryQualifications(), false)),
-            Column.forInteger("LQ Loading Days",
-                x -> x.test().getLibraryQualificationLoadingDaysSpent()),
-            Column.forInteger("LQ Sequencing Days",
-                x -> x.test().getLibraryQualificationSequencingDaysSpent()),
-            Column.forInteger("LQ QC Days", x -> x.test().getLibraryQualificationQcDaysSpent()),
-            Column.forInteger("LQ Total Days", x -> x.test().getLibraryQualificationDaysSpent()),
-            Column.forString("Full-Depth (FD) Completed",
-                x -> findLatestCompletionDate(x.test().getFullDepthSequencings(), false)),
-            Column.forInteger("FD Loading Days",
-                x -> x.test().getFullDepthSequencingLoadingDaysSpent()),
-            Column.forInteger("FD Sequencing Days",
-                x -> x.test().getFullDepthSequencingSequencingDaysSpent()),
-            Column.forInteger("FD QC Days", x -> x.test().getFullDepthSequencingQcDaysSpent()),
-            Column.forInteger("FD Total Days", x -> x.test().getFullDepthSequencingDaysSpent()));
+        private static final List<Column<RowData>> START_COLUMNS =
+            Arrays.asList(
+                Column.forString("Case ID", x -> x.kase().getId()),
+                Column.forString(
+                    "Projects", x -> getSortedProjectNameOrPipeline(x.kase(), Project::getName)),
+                Column.forString(
+                    "Pipeline",
+                    x -> getSortedProjectNameOrPipeline(x.kase(), Project::getPipeline)),
+                Column.forString("Requisition", x -> x.kase().getRequisition().getName()),
+                Column.forString("Assay", x -> x.kase().getAssayName()),
+                Column.forString(
+                    "Start Date",
+                    x -> x.kase().getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE)),
+                Column.forString(
+                    "Receipt Completed",
+                    x -> findLatestCompletionDate(x.kase().getReceipts(), false)),
+                Column.forInteger("Receipt Days", x -> x.kase().getReceiptDaysSpent()),
+                Column.forString("Test", x -> x.test().getName()),
+                Column.forString(
+                    "Supplemental Only",
+                    x -> isSupplementalOnly(x.test(), x.kase().getRequisition()) ? "Yes" : "No"),
+                Column.forString(
+                    "Extraction (EX) Completed",
+                    x -> findLatestCompletionDate(x.test().getExtractions(), true)),
+                Column.forInteger("EX Days", x -> x.test().getExtractionDaysSpent()),
+                Column.forInteger(
+                    "EX Prep. Days", x -> x.test().getExtractionPreparationDaysSpent()),
+                Column.forInteger("EX QC Days", x -> x.test().getExtractionQcDaysSpent()),
+                Column.forInteger(
+                    "EX Transfer Days", x -> x.test().getExtractionTransferDaysSpent()),
+                Column.forString(
+                    "Library Prep. Completed",
+                    x -> findLatestCompletionDate(x.test().getLibraryPreparations(), false)),
+                Column.forInteger(
+                    "Library Prep. Days", x -> x.test().getLibraryPreparationDaysSpent()),
+                Column.forString(
+                    "Library Qual. (LQ) Completed",
+                    x -> findLatestCompletionDate(x.test().getLibraryQualifications(), false)),
+                Column.forInteger(
+                    "LQ Loading Days", x -> x.test().getLibraryQualificationLoadingDaysSpent()),
+                Column.forInteger(
+                    "LQ Sequencing Days",
+                    x -> x.test().getLibraryQualificationSequencingDaysSpent()),
+                Column.forInteger("LQ QC Days", x -> x.test().getLibraryQualificationQcDaysSpent()),
+                Column.forInteger(
+                    "LQ Total Days", x -> x.test().getLibraryQualificationDaysSpent()),
+                Column.forString(
+                    "Full-Depth (FD) Completed",
+                    x -> findLatestCompletionDate(x.test().getFullDepthSequencings(), false)),
+                Column.forInteger(
+                    "FD Loading Days", x -> x.test().getFullDepthSequencingLoadingDaysSpent()),
+                Column.forInteger(
+                    "FD Sequencing Days",
+                    x -> x.test().getFullDepthSequencingSequencingDaysSpent()),
+                Column.forInteger("FD QC Days", x -> x.test().getFullDepthSequencingQcDaysSpent()),
+                Column.forInteger(
+                    "FD Total Days", x -> x.test().getFullDepthSequencingDaysSpent()));
 
-        private static final List<Column<RowData>> END_COLUMNS = Arrays.asList(
-            Column.forString("ALL Analysis Review Completed",
-                x -> getGateCompletedDate(x, CaseDeliverable::getAnalysisReviewQcStatus,
-                    CaseDeliverable::getAnalysisReviewQcDate)),
-            Column.forInteger("ALL Analysis Review Days",
-                x -> x.kase().getAnalysisReviewDaysSpent()),
-            Column.forString("ALL Release Approval Completed",
-                x -> getGateCompletedDate(x, CaseDeliverable::getReleaseApprovalQcStatus,
-                    CaseDeliverable::getReleaseApprovalQcDate)),
-            Column.forInteger("ALL Release Approval Days",
-                x -> x.kase().getReleaseApprovalDaysSpent()),
-            Column.forString("ALL Release Completed", caseTatReport -> {
-              LocalDate completionDate = DataUtils.getCompletionDate(caseTatReport.kase);
-              return completionDate != null ? completionDate.toString() : null;
-            }),
-            Column.forInteger("ALL Release Days", x -> x.kase().getReleaseDaysSpent()),
-            Column.forInteger("ALL Total Days", x -> x.kase().getCaseDaysSpent()),
-            Column.forString("Stopped", x -> x.kase().isStopped() ? "YES" : "no"));
+        private static final List<Column<RowData>> END_COLUMNS =
+            Arrays.asList(
+                Column.forString(
+                    "ALL Analysis Review Completed",
+                    x ->
+                        getGateCompletedDate(
+                            x,
+                            CaseDeliverable::getAnalysisReviewQcStatus,
+                            CaseDeliverable::getAnalysisReviewQcDate)),
+                Column.forInteger(
+                    "ALL Analysis Review Days", x -> x.kase().getAnalysisReviewDaysSpent()),
+                Column.forString(
+                    "ALL Release Approval Completed",
+                    x ->
+                        getGateCompletedDate(
+                            x,
+                            CaseDeliverable::getReleaseApprovalQcStatus,
+                            CaseDeliverable::getReleaseApprovalQcDate)),
+                Column.forInteger(
+                    "ALL Release Approval Days", x -> x.kase().getReleaseApprovalDaysSpent()),
+                Column.forString(
+                    "ALL Release Completed",
+                    caseTatReport -> {
+                      LocalDate completionDate = DataUtils.getCompletionDate(caseTatReport.kase);
+                      return completionDate != null ? completionDate.toString() : null;
+                    }),
+                Column.forInteger("ALL Release Days", x -> x.kase().getReleaseDaysSpent()),
+                Column.forInteger("ALL Total Days", x -> x.kase().getCaseDaysSpent()),
+                Column.forString("Stopped", x -> x.kase().isStopped() ? "YES" : "no"));
 
         @Override
         public List<Column<RowData>> getColumns(List<RowData> data) {
           // Use TreeSet to sort by value
-          Set<String> categories = data.stream()
-              .flatMap(row -> row.kase().getDeliverables().stream()
-                  .map(CaseDeliverable::getDeliverableCategory))
-              .collect(Collectors.toCollection(TreeSet::new));
+          Set<String> categories =
+              data.stream()
+                  .flatMap(
+                      row ->
+                          row.kase().getDeliverables().stream()
+                              .map(CaseDeliverable::getDeliverableCategory))
+                  .collect(Collectors.toCollection(TreeSet::new));
 
           Stream<Column<RowData>> colStream = START_COLUMNS.stream();
-          colStream = Stream.concat(colStream, categories.stream()
-              .flatMap(category -> Stream.of(
-                  Column.forString(category, x -> hasDeliverableCategory(x, category)),
-                  Column.forString(category + " Analysis Review Completed",
-                      x -> getAnalysisReviewCompletedDate(x.deliverablesByCategory.get(category))),
-                  Column.forInteger(category + " Analysis Review Days",
-                      x -> getDeliverableField(x, category,
-                          CaseDeliverable::getAnalysisReviewDaysSpent)),
-                  Column.forString(category + " Release Approval Completed",
-                      x -> getReleaseApprovalCompletedDate(x.deliverablesByCategory.get(category))),
-                  Column.forInteger(category + " Release Approval Days",
-                      x -> getDeliverableField(x, category,
-                          CaseDeliverable::getReleaseApprovalDaysSpent)),
-                  Column.forString(category + " Release Completed",
-                      x -> getCompletionDate(x.deliverablesByCategory.get(category))),
-                  Column.forInteger(category + " Release Days",
-                      x -> getDeliverableField(x, category, CaseDeliverable::getReleaseDaysSpent)),
-                  Column.forInteger(category + " Total Days",
-                      x -> getDeliverableField(x, category,
-                          CaseDeliverable::getDeliverableDaysSpent)))));
+          colStream =
+              Stream.concat(
+                  colStream,
+                  categories.stream()
+                      .flatMap(
+                          category ->
+                              Stream.of(
+                                  Column.forString(
+                                      category, x -> hasDeliverableCategory(x, category)),
+                                  Column.forString(
+                                      category + " Analysis Review Completed",
+                                      x ->
+                                          getAnalysisReviewCompletedDate(
+                                              x.deliverablesByCategory.get(category))),
+                                  Column.forInteger(
+                                      category + " Analysis Review Days",
+                                      x ->
+                                          getDeliverableField(
+                                              x,
+                                              category,
+                                              CaseDeliverable::getAnalysisReviewDaysSpent)),
+                                  Column.forString(
+                                      category + " Release Approval Completed",
+                                      x ->
+                                          getReleaseApprovalCompletedDate(
+                                              x.deliverablesByCategory.get(category))),
+                                  Column.forInteger(
+                                      category + " Release Approval Days",
+                                      x ->
+                                          getDeliverableField(
+                                              x,
+                                              category,
+                                              CaseDeliverable::getReleaseApprovalDaysSpent)),
+                                  Column.forString(
+                                      category + " Release Completed",
+                                      x ->
+                                          getCompletionDate(
+                                              x.deliverablesByCategory.get(category))),
+                                  Column.forInteger(
+                                      category + " Release Days",
+                                      x ->
+                                          getDeliverableField(
+                                              x, category, CaseDeliverable::getReleaseDaysSpent)),
+                                  Column.forInteger(
+                                      category + " Total Days",
+                                      x ->
+                                          getDeliverableField(
+                                              x,
+                                              category,
+                                              CaseDeliverable::getDeliverableDaysSpent)))));
           colStream = Stream.concat(colStream, END_COLUMNS.stream());
 
           return colStream.toList();
         }
 
-        private <T> T getDeliverableField(RowData row, String category,
-            Function<CaseDeliverable, T> getter) {
+        private <T> T getDeliverableField(
+            RowData row, String category, Function<CaseDeliverable, T> getter) {
           CaseDeliverable deliverable = row.deliverablesByCategory.get(category);
           if (deliverable == null) {
             return null;
@@ -165,21 +230,20 @@ public class CaseTatReport extends Report {
     super("Case TAT Report", caseSection);
   }
 
-  private static String getSortedProjectNameOrPipeline(Case kase,
-      Function<Project, String> function) {
-    return kase.getProjects().stream()
-        .map(function)
-        .sorted()
-        .collect(Collectors.joining(", "));
+  private static String getSortedProjectNameOrPipeline(
+      Case kase, Function<Project, String> function) {
+    return kase.getProjects().stream().map(function).sorted().collect(Collectors.joining(", "));
   }
 
   private static boolean isSupplementalOnly(Test test, Requisition requisition) {
-    if (test.getExtractions().isEmpty() && test.getLibraryPreparations().isEmpty()
-        && test.getLibraryQualifications().isEmpty() && test.getFullDepthSequencings().isEmpty()) {
+    if (test.getExtractions().isEmpty()
+        && test.getLibraryPreparations().isEmpty()
+        && test.getLibraryQualifications().isEmpty()
+        && test.getFullDepthSequencings().isEmpty()) {
       return false;
     }
     return test.getExtractions().stream()
-        .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()))
+            .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()))
         && test.getLibraryPreparations().stream()
             .allMatch(sample -> !Objects.equals(sample.getRequisitionId(), requisition.getId()))
         && test.getLibraryQualifications().stream()
@@ -214,17 +278,19 @@ public class CaseTatReport extends Report {
     return latestDate != null ? latestDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null;
   }
 
-  private static String getGateCompletedDate(RowData rowData,
+  private static String getGateCompletedDate(
+      RowData rowData,
       Function<CaseDeliverable, CaseQc> statusExtractor,
       Function<CaseDeliverable, LocalDate> dateExtractor) {
     if (rowData.kase().getDeliverables().stream()
         .anyMatch(deliverable -> DataUtils.isPending((statusExtractor.apply(deliverable))))) {
       return null;
     }
-    return formatDate(rowData.kase().getDeliverables().stream()
-        .map(dateExtractor)
-        .max(LocalDate::compareTo)
-        .orElse(null));
+    return formatDate(
+        rowData.kase().getDeliverables().stream()
+            .map(dateExtractor)
+            .max(LocalDate::compareTo)
+            .orElse(null));
   }
 
   private static String getAnalysisReviewCompletedDate(CaseDeliverable deliverable) {
@@ -242,26 +308,30 @@ public class CaseTatReport extends Report {
   }
 
   private static String getCompletionDate(CaseDeliverable deliverable) {
-    if (deliverable == null || deliverable.getReleases().stream()
-        .anyMatch(release -> DataUtils.isPending(release.getQcStatus()))) {
+    if (deliverable == null
+        || deliverable.getReleases().stream()
+            .anyMatch(release -> DataUtils.isPending(release.getQcStatus()))) {
       return null;
     }
 
-    return formatDate(deliverable.getReleases().stream()
-        .map(CaseRelease::getQcDate)
-        .max(LocalDate::compareTo)
-        .orElse(null));
+    return formatDate(
+        deliverable.getReleases().stream()
+            .map(CaseRelease::getQcDate)
+            .max(LocalDate::compareTo)
+            .orElse(null));
   }
 
   private static String hasDeliverableCategory(RowData rowData, String deliverableCategory) {
-    return rowData.kase().getDeliverables().stream().anyMatch(
-        deliverable -> {
-          return Objects.equals(deliverable.getDeliverableCategory(), deliverableCategory)
-              && deliverable.getReleases().stream().anyMatch(release -> release
-                  .getQcStatus() != ReleaseQcStatus.NOT_APPLICABLE);
-        })
-            ? "YES"
-            : "no";
+    return rowData.kase().getDeliverables().stream()
+            .anyMatch(
+                deliverable -> {
+                  return Objects.equals(deliverable.getDeliverableCategory(), deliverableCategory)
+                      && deliverable.getReleases().stream()
+                          .anyMatch(
+                              release -> release.getQcStatus() != ReleaseQcStatus.NOT_APPLICABLE);
+                })
+        ? "YES"
+        : "no";
   }
 
   private static String formatDate(LocalDate date) {

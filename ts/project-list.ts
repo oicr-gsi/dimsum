@@ -6,5 +6,5 @@ new TableBuilder(
   projectDefinition,
   "projectListTableContainer",
   getSearchParams(),
-  updateUrlParams
+  updateUrlParams,
 ).build();

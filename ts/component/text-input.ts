@@ -5,11 +5,7 @@ export class TextInput {
   private container: HTMLElement;
   private datalist: HTMLDataListElement;
   private textField: HTMLInputElement;
-  constructor(
-    title: string,
-    onClose: (values: string[]) => void,
-    queryUrl: string
-  ) {
+  constructor(title: string, onClose: (values: string[]) => void, queryUrl: string) {
     this.container = document.createElement("div");
     this.textField = document.createElement("input");
     this.datalist = document.createElement("datalist");
@@ -66,10 +62,7 @@ export class TextInput {
 
     this.textField.addEventListener("input", () => {
       this.styleValidity();
-      this.textField.setAttribute(
-        "size",
-        Math.max(this.textField.value.length, 10).toString()
-      );
+      this.textField.setAttribute("size", Math.max(this.textField.value.length, 10).toString());
       // if textfield was auto-filled, no need to redisplay autocomplete suggestion list
       if (this.textField.value.slice(-1) === "\u2063") {
         // remove invisible separator and treat as normal input from here on
@@ -96,13 +89,11 @@ export class TextInput {
 
     document.addEventListener("keydown", handleEsc);
 
-    this.container.className =
-      "inline-block flex-auto rounded-md ring-red ring-2 ring-offset-1";
+    this.container.className = "inline-block flex-auto rounded-md ring-red ring-2 ring-offset-1";
     var textInputContainer = document.createElement("div");
     textInputContainer.className =
       "font-inter font-medium text-12 text-black px-2 py-1 inline-block space-x-2 relative z-40";
-    this.textField.className =
-      "ring-0 border-0 outline-0 rounded-sm px-1 min-w-[150px]";
+    this.textField.className = "ring-0 border-0 outline-0 rounded-sm px-1 min-w-[150px]";
     this.textField.setAttribute("size", "10");
     submitIcon.classList.add("text-black", "hover:text-green");
 

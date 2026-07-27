@@ -1,13 +1,14 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public class ProjectSummarySortTest {
   private static final String[] namesOrdered = {"Project_A", "Project_B", "Project_C"};
@@ -27,8 +28,8 @@ public class ProjectSummarySortTest {
     assertOrder(projectSummaries, ProjectSummary::getName, namesOrdered, true);
   }
 
-  private static List<ProjectSummary> getProjectSummariesSorted(ProjectSummarySort sort,
-      boolean descending) {
+  private static List<ProjectSummary> getProjectSummariesSorted(
+      ProjectSummarySort sort, boolean descending) {
     Comparator<ProjectSummary> comparator =
         descending ? sort.comparator().reversed() : sort.comparator();
     return IntStream.range(0, 3)
@@ -43,8 +44,10 @@ public class ProjectSummarySortTest {
     return projectSummary;
   }
 
-  private static <T> void assertOrder(List<ProjectSummary> projectSummaries,
-      Function<ProjectSummary, T> getter, T[] expectedOrder,
+  private static <T> void assertOrder(
+      List<ProjectSummary> projectSummaries,
+      Function<ProjectSummary, T> getter,
+      T[] expectedOrder,
       boolean reversed) {
     assertNotNull(projectSummaries);
     assertEquals(projectSummaries.size(), expectedOrder.length);
@@ -52,5 +55,4 @@ public class ProjectSummarySortTest {
     assertEquals(expectedOrder[reversed ? 1 : 1], getter.apply(projectSummaries.get(1)));
     assertEquals(expectedOrder[reversed ? 0 : 2], getter.apply(projectSummaries.get(2)));
   }
-
 }

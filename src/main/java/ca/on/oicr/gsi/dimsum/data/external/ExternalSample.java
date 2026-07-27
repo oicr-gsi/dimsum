@@ -1,19 +1,39 @@
 package ca.on.oicr.gsi.dimsum.data.external;
 
-import java.time.LocalDate;
-import java.util.Set;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import java.time.LocalDate;
+import java.util.Set;
 
-public record ExternalSample(String id, String name, String project, Donor donor,
-    String secondaryId, String groupId, String timepoint, String tissueType, String tissueOrigin,
-    String tissueMaterial, String nucleicAcidType, String libraryDesignCode, Long requisitionId,
-    String requisitionName, Set<Long> assayIds, LocalDate createdDate, LocalDate qcDate,
-    Boolean qcPassed, String qcReason, LocalDate dataReviewDate, Boolean dataReviewPassed,
-    ExternalRun run, String sequencingLane, LocalDate latestActivityDate) {
+public record ExternalSample(
+    String id,
+    String name,
+    String project,
+    Donor donor,
+    String secondaryId,
+    String groupId,
+    String timepoint,
+    String tissueType,
+    String tissueOrigin,
+    String tissueMaterial,
+    String nucleicAcidType,
+    String libraryDesignCode,
+    Long requisitionId,
+    String requisitionName,
+    Set<Long> assayIds,
+    LocalDate createdDate,
+    LocalDate qcDate,
+    Boolean qcPassed,
+    String qcReason,
+    LocalDate dataReviewDate,
+    Boolean dataReviewPassed,
+    ExternalRun run,
+    String sequencingLane,
+    LocalDate latestActivityDate) {
 
   public ExternalSample(Sample from) {
-    this(from.getId(),
+    this(
+        from.getId(),
         from.getName(),
         from.getProject(),
         from.getDonor(),
@@ -38,5 +58,4 @@ public record ExternalSample(String id, String name, String project, Donor donor
         from.getSequencingLane(),
         from.getLatestActivityDate());
   }
-
 }

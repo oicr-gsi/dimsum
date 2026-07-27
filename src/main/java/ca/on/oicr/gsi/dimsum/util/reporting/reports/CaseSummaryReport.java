@@ -1,18 +1,5 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
@@ -30,12 +17,24 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.DynamicTableReportSection;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import tools.jackson.databind.JsonNode;
 
 public class CaseSummaryReport extends Report {
 
-  private record RowData(ExternalCase kase, Assay assay) {
-  }
+  private record RowData(ExternalCase kase, Assay assay) {}
 
   private static final ReportSection<RowData> mainSection =
       new DynamicTableReportSection<RowData>("Cases") {
@@ -43,52 +42,63 @@ public class CaseSummaryReport extends Report {
         @Override
         public List<Column<RowData>> getColumns(List<RowData> data) {
           List<Column<RowData>> columns = new ArrayList<>();
-          columns.addAll(Arrays.asList(
-              Column.forString("Case ID", row -> row.kase().id()),
-              Column.forString("Project", CaseSummaryReport::getProjectNames),
-              Column.forString("Donor", row -> row.kase().donor().getName()),
-              Column.forString("External Name", row -> row.kase().donor().getExternalName()),
-              Column.forString("Requisition", row -> row.kase().requisition().getName()),
-              Column.forString("Assay", row -> row.assay().getName()),
-              Column.forString("Assay Version", row -> row.assay().getVersion()),
-              Column.forString("Stopped",
-                  row -> row.kase().requisition().isStopped() ? "Yes" : "No"),
-              Column.forString("Receipt Completed", CaseSummaryReport::getReceiptCompletedDate),
-              Column.forString("Extraction Completed",
-                  CaseSummaryReport::getExtractionCompletedDate),
-              Column.forString("Library Prep. Completed",
-                  CaseSummaryReport::getLibraryPrepCompletedDate),
-              Column.forString("Library Qual. Completed",
-                  CaseSummaryReport::getLibraryQualCompletedDate),
-              Column.forString("Full-Depth Completed",
-                  CaseSummaryReport::getFullDepthCompletedDate),
-              Column.forString("Analysis Review Completed",
-                  CaseSummaryReport::getAnalysisReviewCompletedDate),
-              Column.forString("Release Approval Completed",
-                  CaseSummaryReport::getReleaseApprovalCompletedDate)));
+          columns.addAll(
+              Arrays.asList(
+                  Column.forString("Case ID", row -> row.kase().id()),
+                  Column.forString("Project", CaseSummaryReport::getProjectNames),
+                  Column.forString("Donor", row -> row.kase().donor().getName()),
+                  Column.forString("External Name", row -> row.kase().donor().getExternalName()),
+                  Column.forString("Requisition", row -> row.kase().requisition().getName()),
+                  Column.forString("Assay", row -> row.assay().getName()),
+                  Column.forString("Assay Version", row -> row.assay().getVersion()),
+                  Column.forString(
+                      "Stopped", row -> row.kase().requisition().isStopped() ? "Yes" : "No"),
+                  Column.forString("Receipt Completed", CaseSummaryReport::getReceiptCompletedDate),
+                  Column.forString(
+                      "Extraction Completed", CaseSummaryReport::getExtractionCompletedDate),
+                  Column.forString(
+                      "Library Prep. Completed", CaseSummaryReport::getLibraryPrepCompletedDate),
+                  Column.forString(
+                      "Library Qual. Completed", CaseSummaryReport::getLibraryQualCompletedDate),
+                  Column.forString(
+                      "Full-Depth Completed", CaseSummaryReport::getFullDepthCompletedDate),
+                  Column.forString(
+                      "Analysis Review Completed",
+                      CaseSummaryReport::getAnalysisReviewCompletedDate),
+                  Column.forString(
+                      "Release Approval Completed",
+                      CaseSummaryReport::getReleaseApprovalCompletedDate)));
 
           Map<String, Set<String>> deliverablesByCategory = new HashMap<>();
           for (RowData row : data) {
             for (ExternalCaseDeliverable deliverableCategory : row.kase().deliverables()) {
               Set<String> deliverables =
-                  deliverablesByCategory.computeIfAbsent(deliverableCategory.deliverableCategory(),
-                      x -> new HashSet<>());
+                  deliverablesByCategory.computeIfAbsent(
+                      deliverableCategory.deliverableCategory(), x -> new HashSet<>());
               for (ExternalCaseRelease release : deliverableCategory.releases()) {
                 deliverables.add(release.deliverable());
               }
             }
           }
 
-          deliverablesByCategory.forEach((deliverableCategory, deliverables) -> {
-            for (String deliverable : deliverables) {
-              String deliverableLabel = deliverable.startsWith(deliverableCategory) ? deliverable
-                  : "%s %s".formatted(deliverableCategory, deliverable);
-              columns.add(Column.forString(deliverableLabel + " Status",
-                  kase -> getDeliverableStatus(kase, deliverableCategory, deliverable)));
-              columns.add(Column.forString(deliverableLabel + " Completed",
-                  kase -> getDeliverableCompletedDate(kase, deliverableCategory, deliverable)));
-            }
-          });
+          deliverablesByCategory.forEach(
+              (deliverableCategory, deliverables) -> {
+                for (String deliverable : deliverables) {
+                  String deliverableLabel =
+                      deliverable.startsWith(deliverableCategory)
+                          ? deliverable
+                          : "%s %s".formatted(deliverableCategory, deliverable);
+                  columns.add(
+                      Column.forString(
+                          deliverableLabel + " Status",
+                          kase -> getDeliverableStatus(kase, deliverableCategory, deliverable)));
+                  columns.add(
+                      Column.forString(
+                          deliverableLabel + " Completed",
+                          kase ->
+                              getDeliverableCompletedDate(kase, deliverableCategory, deliverable)));
+                }
+              });
 
           return columns;
         }
@@ -97,11 +107,11 @@ public class CaseSummaryReport extends Report {
         public List<RowData> getData(CaseService caseService, JsonNode parameters) {
           List<CaseFilter> filters = getParameterFilters(parameters);
           Map<Long, Assay> assays = caseService.getAssaysById();
-          return caseService.getExternalCaseStream(filters)
+          return caseService
+              .getExternalCaseStream(filters)
               .map(kase -> new RowData(kase, assays.get(kase.assayId())))
               .toList();
         }
-
       };
 
   public static CaseSummaryReport INSTANCE = new CaseSummaryReport();
@@ -125,55 +135,67 @@ public class CaseSummaryReport extends Report {
   }
 
   private static String getExtractionCompletedDate(RowData row) {
-    return getTestStepCompletedDate(row, ExternalTest::extractionSkipped,
-        ExternalTest::extractions);
+    return getTestStepCompletedDate(
+        row, ExternalTest::extractionSkipped, ExternalTest::extractions);
   }
 
   private static String getLibraryPrepCompletedDate(RowData row) {
-    return getTestStepCompletedDate(row, ExternalTest::libraryPreparationSkipped,
-        ExternalTest::libraryPreparations);
+    return getTestStepCompletedDate(
+        row, ExternalTest::libraryPreparationSkipped, ExternalTest::libraryPreparations);
   }
 
   private static String getLibraryQualCompletedDate(RowData row) {
-    return getTestStepCompletedDate(row, ExternalTest::libraryQualificationSkipped,
-        ExternalTest::libraryQualifications);
+    return getTestStepCompletedDate(
+        row, ExternalTest::libraryQualificationSkipped, ExternalTest::libraryQualifications);
   }
 
   private static String getFullDepthCompletedDate(RowData row) {
-    return getTestStepCompletedDate(row, test -> false,
-        ExternalTest::fullDepthSequencings);
+    return getTestStepCompletedDate(row, test -> false, ExternalTest::fullDepthSequencings);
   }
 
-  private static String getTestStepCompletedDate(RowData row,
-      Predicate<ExternalTest> isSkipped, Function<ExternalTest, List<ExternalSample>> getSamples) {
+  private static String getTestStepCompletedDate(
+      RowData row,
+      Predicate<ExternalTest> isSkipped,
+      Function<ExternalTest, List<ExternalSample>> getSamples) {
     if (row.kase().tests().stream().allMatch(isSkipped)) {
       return "N/A";
     }
     if (row.kase().tests().stream()
-        .anyMatch(test -> !isSkipped.test(test) && getSamples.apply(test).stream()
-            .noneMatch(sample -> DataUtils.isPassed(sample)))) {
+        .anyMatch(
+            test ->
+                !isSkipped.test(test)
+                    && getSamples.apply(test).stream()
+                        .noneMatch(sample -> DataUtils.isPassed(sample)))) {
       // incomplete
       return null;
     }
-    return findLatestCompletionDate(row.kase().tests().stream()
-        .flatMap(test -> getSamples.apply(test).stream())
-        .toList());
+    return findLatestCompletionDate(
+        row.kase().tests().stream().flatMap(test -> getSamples.apply(test).stream()).toList());
   }
 
   private static String getAnalysisReviewCompletedDate(RowData row) {
-    return getDeliverableTypeCompletedDate(row, ExternalCaseDeliverable::analysisReviewQcStatus,
-        AnalysisReviewQcStatus.PENDING, AnalysisReviewQcStatus.NOT_APPLICABLE,
+    return getDeliverableTypeCompletedDate(
+        row,
+        ExternalCaseDeliverable::analysisReviewQcStatus,
+        AnalysisReviewQcStatus.PENDING,
+        AnalysisReviewQcStatus.NOT_APPLICABLE,
         ExternalCaseDeliverable::analysisReviewQcDate);
   }
 
   private static String getReleaseApprovalCompletedDate(RowData row) {
-    return getDeliverableTypeCompletedDate(row, ExternalCaseDeliverable::releaseApprovalQcStatus,
-        AnalysisReviewQcStatus.PENDING, ReleaseApprovalQcStatus.NOT_APPLICABLE,
+    return getDeliverableTypeCompletedDate(
+        row,
+        ExternalCaseDeliverable::releaseApprovalQcStatus,
+        AnalysisReviewQcStatus.PENDING,
+        ReleaseApprovalQcStatus.NOT_APPLICABLE,
         ExternalCaseDeliverable::releaseApprovalQcDate);
   }
 
-  private static <T> String getDeliverableTypeCompletedDate(RowData row,
-      Function<ExternalCaseDeliverable, T> getQcStatus, T pendingStatus, T notApplicableStatus,
+  private static <T> String getDeliverableTypeCompletedDate(
+      RowData row,
+      Function<ExternalCaseDeliverable, T> getQcStatus,
+      T pendingStatus,
+      T notApplicableStatus,
       Function<ExternalCaseDeliverable, LocalDate> getQcDate) {
     boolean allNotApplicable = true;
     LocalDate latestDate = null;
@@ -221,8 +243,8 @@ public class CaseSummaryReport extends Report {
     return latestDate != null ? latestDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null;
   }
 
-  private static String getDeliverableStatus(RowData row, String deliverableCategory,
-      String deliverable) {
+  private static String getDeliverableStatus(
+      RowData row, String deliverableCategory, String deliverable) {
     ExternalCaseRelease release = getRelease(row.kase(), deliverableCategory, deliverable);
     if (release == null) {
       return ReleaseQcStatus.NOT_APPLICABLE.getLabel();
@@ -233,8 +255,8 @@ public class CaseSummaryReport extends Report {
     }
   }
 
-  private static String getDeliverableCompletedDate(RowData row, String deliverableCategory,
-      String deliverable) {
+  private static String getDeliverableCompletedDate(
+      RowData row, String deliverableCategory, String deliverable) {
     ExternalCaseRelease release = getRelease(row.kase(), deliverableCategory, deliverable);
     if (release == null) {
       return "N/A";
@@ -245,8 +267,8 @@ public class CaseSummaryReport extends Report {
     }
   }
 
-  private static ExternalCaseRelease getRelease(ExternalCase kase, String deliverableCategory,
-      String deliverable) {
+  private static ExternalCaseRelease getRelease(
+      ExternalCase kase, String deliverableCategory, String deliverable) {
     for (ExternalCaseDeliverable cat : kase.deliverables()) {
       if (!Objects.equals(deliverableCategory, cat.deliverableCategory())) {
         continue;
@@ -261,5 +283,4 @@ public class CaseSummaryReport extends Report {
     }
     return null;
   }
-
 }

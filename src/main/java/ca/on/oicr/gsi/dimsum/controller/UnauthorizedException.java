@@ -12,11 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
  */
 public class UnauthorizedException extends ResponseStatusException {
 
-  /**
-   * Create a new UnauthorizedException
-   */
+  /** Create a new UnauthorizedException */
   public UnauthorizedException() {
     super(HttpStatus.UNAUTHORIZED);
   }
-
 }

@@ -2,21 +2,24 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
-import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public class OmittedRunSampleSortTest {
 
-  private static final String[] namesOrdered =
-      {"Sample A", "Sample B", "Sample C", "Sample D", "Sample E"};
-  private static final String[] sampleNames =
-      {namesOrdered[4], namesOrdered[1], namesOrdered[3], namesOrdered[0], namesOrdered[2]};
+  private static final String[] namesOrdered = {
+    "Sample A", "Sample B", "Sample C", "Sample D", "Sample E"
+  };
+  private static final String[] sampleNames = {
+    namesOrdered[4], namesOrdered[1], namesOrdered[3], namesOrdered[0], namesOrdered[2]
+  };
   private static final Integer[] qcStatusOrdered = {1, 2, 3, 4, 5};
   private static final Integer[] qcStatuses = {5, 1, 4, 2, 3};
 
@@ -44,8 +47,8 @@ public class OmittedRunSampleSortTest {
     assertOrder(samples, OmittedRunSampleSort::getQcStatusSortPriority, qcStatusOrdered, true);
   }
 
-  private static List<OmittedRunSample> getSamplesSorted(OmittedRunSampleSort sort,
-      boolean descending) {
+  private static List<OmittedRunSample> getSamplesSorted(
+      OmittedRunSampleSort sort, boolean descending) {
     Comparator<OmittedRunSample> comparator =
         descending ? sort.comparator().reversed() : sort.comparator();
     List<OmittedRunSample> samples = mockSamples().stream().sorted(comparator).toList();
@@ -100,16 +103,19 @@ public class OmittedRunSampleSortTest {
     return sample;
   }
 
-  private static <T> void assertOrder(List<OmittedRunSample> samples,
+  private static <T> void assertOrder(
+      List<OmittedRunSample> samples,
       Function<OmittedRunSample, T> getter,
-      T[] expectedOrder, boolean reversed) {
+      T[] expectedOrder,
+      boolean reversed) {
     assertNotNull(samples);
     assertEquals(samples.size(), expectedOrder.length);
     for (int i = 0; i < samples.size(); i++) {
       int index = reversed ? samples.size() - 1 - i : i;
-      assertEquals(expectedOrder[index], getter.apply(samples.get(i)),
+      assertEquals(
+          expectedOrder[index],
+          getter.apply(samples.get(i)),
           "The sample at index " + i + " is not in the correct order.");
     }
   }
-
 }

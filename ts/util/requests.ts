@@ -1,8 +1,4 @@
-import {
-  showConfirmDialog,
-  showErrorDialog,
-  showWorkingDialog,
-} from "../component/dialog";
+import { showConfirmDialog, showErrorDialog, showWorkingDialog } from "../component/dialog";
 
 const STATUS_NO_CONTENT = 204;
 const STATUS_FORBIDDEN = 403;
@@ -25,35 +21,33 @@ function doPost(url: string, body: any, extraHeaders?: any) {
 }
 
 export function post(url: string, body: any) {
-  return new Promise(
-    (resolve: (result: any) => void, reject: (reason: string) => void) => {
-      doPost(url, body)
-        .then((response) => {
-          if (response.ok) {
-            if (response.status === STATUS_NO_CONTENT) {
-              resolve(null);
-              return;
-            }
-            response
-              .json()
-              .then((data) => resolve(data))
-              .catch(() => reject("Unknown error"));
-          } else {
-            if (response.status === STATUS_FORBIDDEN) {
-              showSessionTimeoutError();
-              return;
-            }
-            response
-              .json()
-              .then((errorJson) => reject(errorJson.message))
-              .catch(() => reject("Unknown error"));
+  return new Promise((resolve: (result: any) => void, reject: (reason: string) => void) => {
+    doPost(url, body)
+      .then((response) => {
+        if (response.ok) {
+          if (response.status === STATUS_NO_CONTENT) {
+            resolve(null);
+            return;
           }
-        })
-        .catch(() => {
-          reject("Network error");
-        });
-    }
-  );
+          response
+            .json()
+            .then((data) => resolve(data))
+            .catch(() => reject("Unknown error"));
+        } else {
+          if (response.status === STATUS_FORBIDDEN) {
+            showSessionTimeoutError();
+            return;
+          }
+          response
+            .json()
+            .then((errorJson) => reject(errorJson.message))
+            .catch(() => reject("Unknown error"));
+        }
+      })
+      .catch(() => {
+        reject("Network error");
+      });
+  });
 }
 
 function showSessionTimeoutError() {
@@ -117,9 +111,7 @@ export function get(url: string, params?: Record<string, string>) {
   let headers: any = {
     "Content-Type": "application/json",
   };
-  let fullUrl = params
-    ? `${url}?${new URLSearchParams(params).toString()}`
-    : url;
+  let fullUrl = params ? `${url}?${new URLSearchParams(params).toString()}` : url;
   return fetch(fullUrl, {
     method: "GET",
     headers: headers,

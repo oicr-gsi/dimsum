@@ -15,13 +15,16 @@ public class SecurityConfigurationNoAuth {
 
   @Value("${testuser.external:false}")
   private boolean DEVUSER_EXTERNAL;
+
   @Value("${testuser.projects:}")
   private Set<String> DEVUSER_PROJECTS;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    String authority = DEVUSER_EXTERNAL ? SecurityConfiguration.AUTHORITY_EXTERNAL
-        : SecurityConfiguration.AUTHORITY_INTERNAL;
+    String authority =
+        DEVUSER_EXTERNAL
+            ? SecurityConfiguration.AUTHORITY_EXTERNAL
+            : SecurityConfiguration.AUTHORITY_INTERNAL;
 
     return SecurityConfiguration.setupCommon(http)
         .anonymous(anon -> anon.authorities(authority).principal(makePrincipal()))
@@ -32,5 +35,4 @@ public class SecurityConfigurationNoAuth {
     Set<String> projects = DEVUSER_EXTERNAL ? DEVUSER_PROJECTS : Collections.emptySet();
     return new DimsumPrincipal("test", "Test User", !DEVUSER_EXTERNAL, projects);
   }
-
 }

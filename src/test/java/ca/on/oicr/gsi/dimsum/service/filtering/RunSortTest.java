@@ -1,6 +1,8 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import ca.on.oicr.gsi.cardea.data.Run;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -8,14 +10,14 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import ca.on.oicr.gsi.cardea.data.Run;
 
 public class RunSortTest {
 
   private static final String[] namesOrdered = {"Run_A", "Run_B", "Run_C"};
   private static final String[] names = {namesOrdered[1], namesOrdered[2], namesOrdered[0]};
-  private static final LocalDate[] datesOrdered = {LocalDate.of(2022, 1, 1),
-      LocalDate.of(2022, 1, 2), LocalDate.of(2022, 2, 1)};
+  private static final LocalDate[] datesOrdered = {
+    LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 2), LocalDate.of(2022, 2, 1)
+  };
   private static final LocalDate[] dates = {datesOrdered[2], datesOrdered[0], datesOrdered[1]};
 
   @Test
@@ -42,8 +44,8 @@ public class RunSortTest {
     assertOrder(runs, Run::getCompletionDate, datesOrdered, true);
   }
 
-  private static <T> void assertOrder(List<Run> runs, Function<Run, T> getter, T[] expectedOrder,
-      boolean reversed) {
+  private static <T> void assertOrder(
+      List<Run> runs, Function<Run, T> getter, T[] expectedOrder, boolean reversed) {
     assertNotNull(runs);
     assertEquals(runs.size(), expectedOrder.length);
     assertEquals(expectedOrder[reversed ? 2 : 0], getter.apply(runs.get(0)));
@@ -53,10 +55,7 @@ public class RunSortTest {
 
   private static List<Run> getRunsSorted(RunSort sort, boolean descending) {
     Comparator<Run> comparator = descending ? sort.comparator().reversed() : sort.comparator();
-    return IntStream.range(0, 3)
-        .mapToObj(RunSortTest::mockRun)
-        .sorted(comparator)
-        .toList();
+    return IntStream.range(0, 3).mapToObj(RunSortTest::mockRun).sorted(comparator).toList();
   }
 
   private static Run mockRun(int runNumber) {
@@ -65,5 +64,4 @@ public class RunSortTest {
     Mockito.when(run.getCompletionDate()).thenReturn(dates[runNumber]);
     return run;
   }
-
 }

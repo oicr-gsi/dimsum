@@ -8,7 +8,7 @@ class Tab {
   constructor(
     element: Pair<string, () => void>,
     selected: boolean,
-    onSelect: (title: string) => void
+    onSelect: (title: string) => void,
   ) {
     this.selected = selected;
     this.title = element.key;
@@ -47,7 +47,7 @@ export class TabBar {
   constructor(
     elements: Pair<string, () => void>[],
     defaultElement: string,
-    tabBarContainerId: string
+    tabBarContainerId: string,
   ) {
     const tabBarContainer = document.getElementById(tabBarContainerId);
     if (tabBarContainer === null) {
@@ -65,11 +65,9 @@ export class TabBar {
     // given all the tables and their titles, create the tab bar
     this.elements.forEach((element, idx) => {
       this.tabs.push(
-        new Tab(
-          element,
-          element.key === this.defaultElement ? true : false,
-          () => this.onTabSelect(element.key)
-        )
+        new Tab(element, element.key === this.defaultElement ? true : false, () =>
+          this.onTabSelect(element.key),
+        ),
       );
       controlsContainer.appendChild(this.tabs[idx].tabButton);
       if (element.key === this.defaultElement) this.elements[idx].value();

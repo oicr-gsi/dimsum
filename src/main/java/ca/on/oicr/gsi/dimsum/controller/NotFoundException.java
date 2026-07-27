@@ -11,11 +11,10 @@ public class NotFoundException extends ResponseStatusException {
 
   /**
    * Create a new BadRequestException indicating client error
-   * 
+   *
    * @param reason explanation to return to the client
    */
   public NotFoundException(String reason) {
     super(HttpStatus.NOT_FOUND, reason);
   }
-
 }

@@ -2,15 +2,7 @@ package ca.on.oicr.gsi.dimsum.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import java.io.File;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import org.junit.jupiter.api.BeforeEach;
+
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseRelease;
@@ -29,6 +21,15 @@ import ca.on.oicr.gsi.dimsum.security.SecurityManager;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.SampleSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
+import java.io.File;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import org.junit.jupiter.api.BeforeEach;
 import tools.jackson.databind.json.JsonMapper;
 
 public class CaseServiceTest {
@@ -91,8 +92,8 @@ public class CaseServiceTest {
   @org.junit.jupiter.api.Test
   public void testGetExtractions() {
     TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null, null);
-    assertContainsSamples(data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1",
-        "2B-B2");
+    assertContainsSamples(
+        data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1", "2B-B2");
   }
 
   @org.junit.jupiter.api.Test
@@ -100,29 +101,29 @@ public class CaseServiceTest {
     // Add duplicates and ensure they get removed from results
     addCase(caseData, 1, 1);
     TableData<Sample> data = sut.getExtractions(20, 1, SampleSort.NAME, true, null, null);
-    assertContainsSamples(data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1",
-        "2B-B2");
+    assertContainsSamples(
+        data, "1A-B1", "1A-B2", "1B-B1", "1B-B2", "2A-B1", "2A-B2", "2B-B1", "2B-B2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetLibraryPreparations() {
     TableData<Sample> data = sut.getLibraryPreparations(20, 1, SampleSort.NAME, true, null, null);
-    assertContainsSamples(data, "1A-C1", "1A-C2", "1B-C1", "1B-C2", "2A-C1", "2A-C2", "2B-C1",
-        "2B-C2");
+    assertContainsSamples(
+        data, "1A-C1", "1A-C2", "1B-C1", "1B-C2", "2A-C1", "2A-C2", "2B-C1", "2B-C2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetLibraryQualifications() {
     TableData<Sample> data = sut.getLibraryQualifications(20, 1, SampleSort.NAME, true, null, null);
-    assertContainsSamples(data, "1A-D1", "1A-D2", "1B-D1", "1B-D2", "2A-D1", "2A-D2", "2B-D1",
-        "2B-D2");
+    assertContainsSamples(
+        data, "1A-D1", "1A-D2", "1B-D1", "1B-D2", "2A-D1", "2A-D2", "2B-D1", "2B-D2");
   }
 
   @org.junit.jupiter.api.Test
   public void testGetFullDepthSequencings() {
     TableData<Sample> data = sut.getFullDepthSequencings(20, 1, SampleSort.NAME, true, null, null);
-    assertContainsSamples(data, "1A-E1", "1A-E2", "1B-E1", "1B-E2", "2A-E1", "2A-E2", "2B-E1",
-        "2B-E2");
+    assertContainsSamples(
+        data, "1A-E1", "1A-E2", "1B-E1", "1B-E2", "2A-E1", "2A-E2", "2B-E1", "2B-E2");
   }
 
   @org.junit.jupiter.api.Test
@@ -141,9 +142,11 @@ public class CaseServiceTest {
     sut.cacheReleaseAssignments(signoffs);
     Case kase = sut.getCase(caseId);
     assertInstanceOf(CacheUpdatedCase.class, kase);
-    CaseRelease release = kase.getDeliverables().get(0).getReleases().stream()
-        .filter(x -> Objects.equals(DELIVERABLE_REPORT, x.getDeliverable())).findFirst()
-        .orElse(null);
+    CaseRelease release =
+        kase.getDeliverables().get(0).getReleases().stream()
+            .filter(x -> Objects.equals(DELIVERABLE_REPORT, x.getDeliverable()))
+            .findFirst()
+            .orElse(null);
     assertInstanceOf(CacheUpdatedRelease.class, release);
     CacheUpdatedRelease assignedRelease = (CacheUpdatedRelease) release;
     assertEquals(user, assignedRelease.getAssignee());
@@ -196,22 +199,25 @@ public class CaseServiceTest {
 
   // Sample names are case number + test letter (N if n/a) + gate letter (receipt=A, extract=B,
   // etc.) + sample number
-  private String makeSampleName(int caseNumber, String testLetter, String gateLetter,
-      int sampleNumber) {
+  private String makeSampleName(
+      int caseNumber, String testLetter, String gateLetter, int sampleNumber) {
     return caseNumber + testLetter + "-" + gateLetter + sampleNumber;
   }
 
   private void addSample(Collection<Sample> collection, String name) {
     // Not using mocks because we're kind-of testing hashcode for distinct filters here too
 
-    collection.add(new SampleImpl.Builder()
-        .id(name)
-        .name(name)
-        .donor(mock(Donor.class))
-        .project("PROJ")
-        .tissueOrigin("To").tissueType("T")
-        .createdDate(LocalDate.now())
-        .metrics(new ArrayList<>()).build());
+    collection.add(
+        new SampleImpl.Builder()
+            .id(name)
+            .name(name)
+            .donor(mock(Donor.class))
+            .project("PROJ")
+            .tissueOrigin("To")
+            .tissueType("T")
+            .createdDate(LocalDate.now())
+            .metrics(new ArrayList<>())
+            .build());
   }
 
   private void addDeliverables(Case kase, String deliverableCategory, String... deliverables) {
@@ -242,5 +248,4 @@ public class CaseServiceTest {
     when(principal.getProjects()).thenReturn(Collections.emptySet());
     return principal;
   }
-
 }

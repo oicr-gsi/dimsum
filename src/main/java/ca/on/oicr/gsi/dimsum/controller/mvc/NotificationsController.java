@@ -10,5 +10,4 @@ public class NotificationsController {
   public String getNotificationsPage() {
     return "notifications";
   }
-
 }

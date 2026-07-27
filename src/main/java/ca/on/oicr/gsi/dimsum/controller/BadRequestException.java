@@ -11,11 +11,10 @@ public class BadRequestException extends ResponseStatusException {
 
   /**
    * Create a new BadRequestException indicating client error
-   * 
+   *
    * @param reason explanation to return to the client
    */
   public BadRequestException(String reason) {
     super(HttpStatus.BAD_REQUEST, reason);
   }
-
 }

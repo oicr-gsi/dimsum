@@ -3,6 +3,19 @@ package ca.on.oicr.gsi.dimsum.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Metric;
+import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.SampleMetric;
+import ca.on.oicr.gsi.cardea.data.ThresholdType;
+import ca.on.oicr.gsi.dimsum.data.IssueState;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
+import com.atlassian.jira.rest.client.api.domain.Comment;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,18 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import com.atlassian.jira.rest.client.api.domain.Comment;
-import com.atlassian.jira.rest.client.api.domain.Issue;
-import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.Metric;
-import ca.on.oicr.gsi.cardea.data.MetricCategory;
-import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
-import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.SampleMetric;
-import ca.on.oicr.gsi.cardea.data.ThresholdType;
-import ca.on.oicr.gsi.dimsum.data.IssueState;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
-import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
 
 public class NotificationManagerTest {
 
@@ -37,8 +38,7 @@ public class NotificationManagerTest {
   private static final String SUMMARY = "RUN1 Dimsum Run QC";
   private static final String ISSUE_KEY = "JIRA-123";
 
-  @Mock
-  private JiraService jiraService;
+  @Mock private JiraService jiraService;
 
   private NotificationManager sut;
 
@@ -57,34 +57,66 @@ public class NotificationManagerTest {
 
   @Test
   public void testLibraryQualificationMetricsAvailable() {
-    assertTrue(sut.metricsAvailable(makeRunLibrary(true, false), pendingQcRun, assaysById,
-        MetricCategory.LIBRARY_QUALIFICATION));
-    assertTrue(sut.metricsAvailable(makeRunLibrary(true, true), pendingQcRun, assaysById,
-        MetricCategory.LIBRARY_QUALIFICATION));
+    assertTrue(
+        sut.metricsAvailable(
+            makeRunLibrary(true, false),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.LIBRARY_QUALIFICATION));
+    assertTrue(
+        sut.metricsAvailable(
+            makeRunLibrary(true, true),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.LIBRARY_QUALIFICATION));
   }
 
   @Test
   public void testLibraryQualificationMetricsNotAvailable() {
-    assertFalse(sut.metricsAvailable(makeRunLibrary(false, false), pendingQcRun, assaysById,
-        MetricCategory.LIBRARY_QUALIFICATION));
-    assertFalse(sut.metricsAvailable(makeRunLibrary(false, true), pendingQcRun, assaysById,
-        MetricCategory.LIBRARY_QUALIFICATION));
+    assertFalse(
+        sut.metricsAvailable(
+            makeRunLibrary(false, false),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.LIBRARY_QUALIFICATION));
+    assertFalse(
+        sut.metricsAvailable(
+            makeRunLibrary(false, true),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.LIBRARY_QUALIFICATION));
   }
 
   @Test
   public void testFullDepthMetricsAvailable() {
-    assertTrue(sut.metricsAvailable(makeRunLibrary(true, false), pendingQcRun, assaysById,
-        MetricCategory.FULL_DEPTH_SEQUENCING));
-    assertTrue(sut.metricsAvailable(makeRunLibrary(true, true), pendingQcRun, assaysById,
-        MetricCategory.FULL_DEPTH_SEQUENCING));
+    assertTrue(
+        sut.metricsAvailable(
+            makeRunLibrary(true, false),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.FULL_DEPTH_SEQUENCING));
+    assertTrue(
+        sut.metricsAvailable(
+            makeRunLibrary(true, true),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.FULL_DEPTH_SEQUENCING));
   }
 
   @Test
   public void testFullDepthMetricsNotAvailable() {
-    assertFalse(sut.metricsAvailable(makeRunLibrary(false, false), pendingQcRun, assaysById,
-        MetricCategory.FULL_DEPTH_SEQUENCING));
-    assertFalse(sut.metricsAvailable(makeRunLibrary(false, true), pendingQcRun, assaysById,
-        MetricCategory.FULL_DEPTH_SEQUENCING));
+    assertFalse(
+        sut.metricsAvailable(
+            makeRunLibrary(false, false),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.FULL_DEPTH_SEQUENCING));
+    assertFalse(
+        sut.metricsAvailable(
+            makeRunLibrary(false, true),
+            pendingQcRun,
+            assaysById,
+            MetricCategory.FULL_DEPTH_SEQUENCING));
   }
 
   @Test
@@ -338,8 +370,12 @@ public class NotificationManagerTest {
     return run;
   }
 
-  private Map<String, RunAndLibraries> makeData(boolean runSignoffsDone, int pendingAnalysisCount,
-      int pendingQcCount, int pendingDataReviewCount, int doneCount) {
+  private Map<String, RunAndLibraries> makeData(
+      boolean runSignoffsDone,
+      int pendingAnalysisCount,
+      int pendingQcCount,
+      int pendingDataReviewCount,
+      int doneCount) {
     Map<String, RunAndLibraries> data = new HashMap<>();
     RunAndLibraries runAndLibraries = makeRunAndLibraries(runSignoffsDone);
     for (int i = 0; i < pendingAnalysisCount; i++) {
@@ -370,8 +406,8 @@ public class NotificationManagerTest {
     return makeRunLibrary(metricsAvailable, signoffsDone, signoffsDone);
   }
 
-  private SampleAndRelated makeRunLibrary(boolean metricsAvailable, boolean qcDone,
-      boolean signoffsDone) {
+  private SampleAndRelated makeRunLibrary(
+      boolean metricsAvailable, boolean qcDone, boolean signoffsDone) {
     SampleAndRelated runLib = mock(SampleAndRelated.class);
     SampleMetric metric = mock(SampleMetric.class);
     when(metric.getName()).thenReturn("Mean Insert Size");
@@ -407,7 +443,7 @@ public class NotificationManagerTest {
     return """
         (Human readable stuff here)
 
-        Internal use: <%s>""".formatted(code);
+        Internal use: <%s>"""
+        .formatted(code);
   }
-
 }

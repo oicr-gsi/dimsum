@@ -31,5 +31,4 @@ public class TableData<T> {
   public void setFilteredCount(long filteredCount) {
     this.filteredCount = filteredCount;
   }
-
 }

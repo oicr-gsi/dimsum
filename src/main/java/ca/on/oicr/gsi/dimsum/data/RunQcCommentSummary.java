@@ -1,13 +1,12 @@
 package ca.on.oicr.gsi.dimsum.data;
 
+import ca.on.oicr.gsi.cardea.data.Run;
+import com.atlassian.jira.rest.client.api.domain.Comment;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 import org.joda.time.DateTime;
-import com.atlassian.jira.rest.client.api.domain.Comment;
-import com.atlassian.jira.rest.client.api.domain.Issue;
-
-import ca.on.oicr.gsi.cardea.data.Run;
 
 @Immutable
 public class RunQcCommentSummary {
@@ -55,8 +54,8 @@ public class RunQcCommentSummary {
     return Integer.parseInt(m.group(group));
   }
 
-  protected RunQcCommentSummary(int runState, int pendingAnalysisCount, int pendingQcCount,
-      int pendingDataReviewCount) {
+  protected RunQcCommentSummary(
+      int runState, int pendingAnalysisCount, int pendingQcCount, int pendingDataReviewCount) {
     this.runState = runState;
     this.pendingAnalysisCount = pendingAnalysisCount;
     this.pendingQcCount = pendingQcCount;
@@ -91,8 +90,8 @@ public class RunQcCommentSummary {
   }
 
   public String getCode() {
-    return String.format("R%dA%dQ%dD%d", runState, pendingAnalysisCount, pendingQcCount,
-        pendingDataReviewCount);
+    return String.format(
+        "R%dA%dQ%dD%d", runState, pendingAnalysisCount, pendingQcCount, pendingDataReviewCount);
   }
 
   private static int getRunState(Run run) {
@@ -104,5 +103,4 @@ public class RunQcCommentSummary {
       return 3;
     }
   }
-
 }

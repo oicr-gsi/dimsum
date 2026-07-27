@@ -2,6 +2,9 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -9,69 +12,72 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.Donor;
-import ca.on.oicr.gsi.dimsum.data.TestTableView;
 
 public class TestTableViewSortTest {
   private static final String[] testsOrdered = {"TEST_A", "TEST_B", "TEST_C", "TEST_D", "TEST_E"};
-  private static final String[] testNames =
-      {testsOrdered[0], testsOrdered[4], testsOrdered[1], testsOrdered[2], testsOrdered[3]};
+  private static final String[] testNames = {
+    testsOrdered[0], testsOrdered[4], testsOrdered[1], testsOrdered[2], testsOrdered[3]
+  };
   private static final String[] assaysOrdered = {"A", "B", "C", "D", "E"};
-  private static final String[] testAssays =
-      {assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]};
-  private static String[] donorsOrdered =
-      {"APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"};
-  private static String[] testDonors =
-      {donorsOrdered[2], donorsOrdered[1], donorsOrdered[0], donorsOrdered[4], donorsOrdered[3]};
-  private static LocalDate[] datesOrdered = {LocalDate.of(2021, 03, 13), LocalDate.of(2021, 06, 14),
-      LocalDate.of(2022, 01, 01), LocalDate.of(2022, 06, 10), LocalDate.of(2022, 06, 13)};
-  private static LocalDate[] caseActivityDates =
-      {datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3], datesOrdered[0]};
+  private static final String[] testAssays = {
+    assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]
+  };
+  private static String[] donorsOrdered = {
+    "APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"
+  };
+  private static String[] testDonors = {
+    donorsOrdered[2], donorsOrdered[1], donorsOrdered[0], donorsOrdered[4], donorsOrdered[3]
+  };
+  private static LocalDate[] datesOrdered = {
+    LocalDate.of(2021, 03, 13),
+    LocalDate.of(2021, 06, 14),
+    LocalDate.of(2022, 01, 01),
+    LocalDate.of(2022, 06, 10),
+    LocalDate.of(2022, 06, 13)
+  };
+  private static LocalDate[] caseActivityDates = {
+    datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3], datesOrdered[0]
+  };
 
   @Test
   public void testSortByTestAscending() {
-    List<TestTableView> testTableViews =
-        getTestTableViewsSorted(TestTableViewSort.TEST, false);
-    assertOrder(testTableViews, testTableView -> testTableView.getTest().getName(), testsOrdered,
-        false);
+    List<TestTableView> testTableViews = getTestTableViewsSorted(TestTableViewSort.TEST, false);
+    assertOrder(
+        testTableViews, testTableView -> testTableView.getTest().getName(), testsOrdered, false);
   }
 
   @Test
   public void testSortByTestDescending() {
-    List<TestTableView> testTableViews =
-        getTestTableViewsSorted(TestTableViewSort.TEST, true);
-    assertOrder(testTableViews, testTableView -> testTableView.getTest().getName(), testsOrdered,
-        true);
+    List<TestTableView> testTableViews = getTestTableViewsSorted(TestTableViewSort.TEST, true);
+    assertOrder(
+        testTableViews, testTableView -> testTableView.getTest().getName(), testsOrdered, true);
   }
 
   @Test
   public void testSortByAssayAscending() {
-    List<TestTableView> testTableViews =
-        getTestTableViewsSorted(TestTableViewSort.ASSAY, false);
-    assertOrder(testTableViews, testTableView -> testTableView.getAssayName(), assaysOrdered,
-        false);
+    List<TestTableView> testTableViews = getTestTableViewsSorted(TestTableViewSort.ASSAY, false);
+    assertOrder(
+        testTableViews, testTableView -> testTableView.getAssayName(), assaysOrdered, false);
   }
 
   @Test
   public void testSortByAssayDescending() {
-    List<TestTableView> testTableViews =
-        getTestTableViewsSorted(TestTableViewSort.ASSAY, true);
-    assertOrder(testTableViews, testTableView -> testTableView.getAssayName(), assaysOrdered,
-        true);
+    List<TestTableView> testTableViews = getTestTableViewsSorted(TestTableViewSort.ASSAY, true);
+    assertOrder(testTableViews, testTableView -> testTableView.getAssayName(), assaysOrdered, true);
   }
 
   @Test
   public void testSortByDonorAscending() {
     List<TestTableView> testTableViews = getTestTableViewsSorted(TestTableViewSort.DONOR, false);
-    assertOrder(testTableViews, testTableView -> testTableView.getDonor().getName(), donorsOrdered,
-        false);
+    assertOrder(
+        testTableViews, testTableView -> testTableView.getDonor().getName(), donorsOrdered, false);
   }
 
   @Test
   public void testSortByDonorDescending() {
     List<TestTableView> testTableViews = getTestTableViewsSorted(TestTableViewSort.DONOR, true);
-    assertOrder(testTableViews, testTableView -> testTableView.getDonor().getName(), donorsOrdered,
-        true);
+    assertOrder(
+        testTableViews, testTableView -> testTableView.getDonor().getName(), donorsOrdered, true);
   }
 
   @Test
@@ -88,8 +94,8 @@ public class TestTableViewSortTest {
     assertOrder(testTableViews, TestTableView::getLatestActivityDate, datesOrdered, true);
   }
 
-  private static List<TestTableView> getTestTableViewsSorted(TestTableViewSort sort,
-      boolean descending) {
+  private static List<TestTableView> getTestTableViewsSorted(
+      TestTableViewSort sort, boolean descending) {
     Comparator<TestTableView> comparator =
         descending ? sort.comparator().reversed() : sort.comparator();
     List<TestTableView> testTableViews =
@@ -114,8 +120,10 @@ public class TestTableViewSortTest {
     return testTableView;
   }
 
-  private static <T> void assertOrder(List<TestTableView> testTableViews,
-      Function<TestTableView, T> getter, T[] expectedOrder,
+  private static <T> void assertOrder(
+      List<TestTableView> testTableViews,
+      Function<TestTableView, T> getter,
+      T[] expectedOrder,
       boolean reversed) {
     assertNotNull(testTableViews);
     assertEquals(testTableViews.size(), expectedOrder.length);
@@ -125,5 +133,4 @@ public class TestTableViewSortTest {
     assertEquals(expectedOrder[reversed ? 1 : 3], getter.apply(testTableViews.get(3)));
     assertEquals(expectedOrder[reversed ? 0 : 4], getter.apply(testTableViews.get(4)));
   }
-
 }

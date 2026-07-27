@@ -1,5 +1,10 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.service.CaseService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +13,12 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.Sample;
-import ca.on.oicr.gsi.dimsum.controller.NotFoundException;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
-import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @Controller
 @RequestMapping("/runs")
 public class RunController {
 
-  @Autowired
-  private CaseService caseService;
+  @Autowired private CaseService caseService;
 
   @GetMapping("/{runName}")
   public String getRunPage(@PathVariable String runName, ModelMap model) {
@@ -31,9 +30,10 @@ public class RunController {
     model.put("title", String.format("%s Run Details", runName));
     model.put("run", runAndLibraries.getRun());
     model.put("runStatus", runStatus);
-    model.put("libraryDesigns",
-        Stream
-            .concat(runAndLibraries.getLibraryQualifications().stream(),
+    model.put(
+        "libraryDesigns",
+        Stream.concat(
+                runAndLibraries.getLibraryQualifications().stream(),
                 runAndLibraries.getFullDepthSequencings().stream())
             .map(Sample::getLibraryDesignCode)
             .distinct()
@@ -58,5 +58,4 @@ public class RunController {
       return "failed";
     }
   }
-
 }

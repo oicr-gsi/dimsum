@@ -148,20 +148,9 @@ export const caseFilters: FilterDefinition[] = [
     title: "Archiving Status",
     key: "ARCHIVING_STATUS",
     type: "dropdown",
-    values: [
-      "Pending",
-      "Started",
-      "Paused",
-      "Complete",
-      "Deleted",
-      "Expired",
-      "Not applicable",
-    ],
+    values: ["Pending", "Started", "Paused", "Complete", "Deleted", "Expired", "Not applicable"],
     showExternal: false,
   },
 ];
 
-export const runLibraryFilters: FilterDefinition[] = [
-  projectFilter,
-  libraryDesignFilter,
-];
+export const runLibraryFilters: FilterDefinition[] = [projectFilter, libraryDesignFilter];

@@ -2,10 +2,11 @@ package ca.on.oicr.gsi.dimsum.data;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import ca.on.oicr.gsi.cardea.data.Sample;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.Sample;
 
 public class NotificationTest {
 
@@ -70,5 +71,4 @@ public class NotificationTest {
     when(sample.getSequencingLane()).thenReturn("1");
     return sample;
   }
-
 }

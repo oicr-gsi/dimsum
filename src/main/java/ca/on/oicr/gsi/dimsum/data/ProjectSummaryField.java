@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
+
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -26,6 +27,4 @@ public class ProjectSummaryField {
   public String getFilterValue() {
     return filterValue;
   }
-
-
 }

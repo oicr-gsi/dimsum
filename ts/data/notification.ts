@@ -30,12 +30,7 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
         addParentContents(notification, fragment) {
           const runName = notification.run.name;
           fragment.appendChild(
-            makeNameDiv(
-              runName,
-              urls.miso.run(runName),
-              urls.dimsum.run(runName),
-              runName
-            )
+            makeNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName), runName),
           );
         },
         sortType: "text",
@@ -91,12 +86,7 @@ export const notificationDefinition: TableDefinition<Notification, void> = {
         title: "Issue",
         addParentContents(notification, fragment) {
           if (notification.issueKey) {
-            addLink(
-              fragment,
-              notification.issueKey,
-              urls.jira.issue(notification.issueKey),
-              true
-            );
+            addLink(fragment, notification.issueKey, urls.jira.issue(notification.issueKey), true);
           } else if (siteConfig.jiraUrl) {
             addText(fragment, "Error");
           } else {

@@ -1,9 +1,5 @@
 package ca.on.oicr.gsi.dimsum.util;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
@@ -12,6 +8,10 @@ import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.dimsum.data.external.ExternalSample;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class DataUtils {
   public static final String TOP_UP_REASON = "Top-up Required";
@@ -31,8 +31,10 @@ public class DataUtils {
     if (sample.getRun() == null) {
       return true;
     }
-    return isTrue(sample.getQcPassed()) && isTrue(sample.getDataReviewPassed())
-        && isTrue(sample.getRun().getQcPassed()) && isTrue(sample.getRun().getDataReviewPassed());
+    return isTrue(sample.getQcPassed())
+        && isTrue(sample.getDataReviewPassed())
+        && isTrue(sample.getRun().getQcPassed())
+        && isTrue(sample.getRun().getDataReviewPassed());
   }
 
   public static boolean isPassed(ExternalSample sample) {
@@ -42,13 +44,15 @@ public class DataUtils {
     if (sample.run() == null) {
       return true;
     }
-    return isTrue(sample.qcPassed()) && isTrue(sample.dataReviewPassed())
-        && isTrue(sample.run().qcPassed()) && isTrue(sample.run().dataReviewPassed());
+    return isTrue(sample.qcPassed())
+        && isTrue(sample.dataReviewPassed())
+        && isTrue(sample.run().qcPassed())
+        && isTrue(sample.run().dataReviewPassed());
   }
 
   public static boolean passedOrTopUpConfirmed(Sample sample) {
-    return DataUtils.isPassed(sample) || (DataUtils.isTopUpRequired(sample)
-        && Boolean.TRUE.equals(sample.getDataReviewPassed()));
+    return DataUtils.isPassed(sample)
+        || (DataUtils.isTopUpRequired(sample) && Boolean.TRUE.equals(sample.getDataReviewPassed()));
   }
 
   public static boolean isFailed(Sample sample) {
@@ -117,18 +121,16 @@ public class DataUtils {
       return null;
     }
 
-    List<CaseRelease> releases = deliverables.stream()
-        .flatMap(deliverable -> deliverable.getReleases().stream())
-        .collect(Collectors.toList());
+    List<CaseRelease> releases =
+        deliverables.stream()
+            .flatMap(deliverable -> deliverable.getReleases().stream())
+            .collect(Collectors.toList());
 
     if (releases.isEmpty()
         || releases.stream().anyMatch(release -> isPending(release.getQcStatus()))) {
       return null;
     }
 
-    return releases.stream()
-        .map(CaseRelease::getQcDate)
-        .max(LocalDate::compareTo)
-        .orElse(null);
+    return releases.stream().map(CaseRelease::getQcDate).max(LocalDate::compareTo).orElse(null);
   }
 }

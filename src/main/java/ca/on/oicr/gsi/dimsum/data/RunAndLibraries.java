@@ -1,17 +1,16 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
+
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.Sample;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.Sample;
 
-/**
- * Immutable RunAndLibraries
- */
+/** Immutable RunAndLibraries */
 public class RunAndLibraries {
 
   private final Set<SampleAndRelated> fullDepthSequencings;
@@ -20,12 +19,14 @@ public class RunAndLibraries {
 
   private RunAndLibraries(Builder builder) {
     this.run = requireNonNull(builder.run);
-    this.libraryQualifications = builder.libraryQualifications.values().stream()
-        .map(SampleAndRelated.Builder::build)
-        .collect(Collectors.toUnmodifiableSet());
-    this.fullDepthSequencings = builder.fullDepthSequencings.values().stream()
-        .map(SampleAndRelated.Builder::build)
-        .collect(Collectors.toUnmodifiableSet());
+    this.libraryQualifications =
+        builder.libraryQualifications.values().stream()
+            .map(SampleAndRelated.Builder::build)
+            .collect(Collectors.toUnmodifiableSet());
+    this.fullDepthSequencings =
+        builder.fullDepthSequencings.values().stream()
+            .map(SampleAndRelated.Builder::build)
+            .collect(Collectors.toUnmodifiableSet());
   }
 
   public Set<SampleAndRelated> getFullDepthSequencings() {
@@ -50,8 +51,8 @@ public class RunAndLibraries {
       if (fullDepthSequencings.containsKey(sample.getId())) {
         fullDepthSequencings.get(sample.getId()).addRelatedSamples(relatedSamples);
       } else {
-        fullDepthSequencings.put(sample.getId(),
-            new SampleAndRelated.Builder(sample, relatedSamples));
+        fullDepthSequencings.put(
+            sample.getId(), new SampleAndRelated.Builder(sample, relatedSamples));
       }
       return this;
     }
@@ -60,8 +61,8 @@ public class RunAndLibraries {
       if (libraryQualifications.containsKey(sample.getId())) {
         libraryQualifications.get(sample.getId()).addRelatedSamples(relatedSamples);
       } else {
-        libraryQualifications.put(sample.getId(),
-            new SampleAndRelated.Builder(sample, relatedSamples));
+        libraryQualifications.put(
+            sample.getId(), new SampleAndRelated.Builder(sample, relatedSamples));
       }
       return this;
     }
@@ -74,7 +75,5 @@ public class RunAndLibraries {
       this.run = run;
       return this;
     }
-
   }
-
 }

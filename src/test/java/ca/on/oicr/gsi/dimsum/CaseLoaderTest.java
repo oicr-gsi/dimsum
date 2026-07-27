@@ -1,6 +1,7 @@
 package ca.on.oicr.gsi.dimsum;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
@@ -18,5 +19,4 @@ public class CaseLoaderTest {
     assertFalse(CaseLoader.dateBetween(LocalDate.of(2024, 1, 27), afterDate, beforeDate));
     assertFalse(CaseLoader.dateBetween(LocalDate.of(2024, 1, 28), afterDate, beforeDate));
   }
-
 }

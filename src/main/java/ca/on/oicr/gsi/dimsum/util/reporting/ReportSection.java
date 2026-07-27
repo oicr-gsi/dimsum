@@ -1,5 +1,9 @@
 package ca.on.oicr.gsi.dimsum.util.reporting;
 
+import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
+import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
+import ca.on.oicr.gsi.dimsum.service.CaseService;
+import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,10 +14,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
-import ca.on.oicr.gsi.dimsum.controller.mvc.MvcUtils;
-import ca.on.oicr.gsi.dimsum.service.CaseService;
-import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -21,7 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 public abstract class ReportSection<T> {
 
-  public static abstract class DynamicTableReportSection<T> extends ReportSection<T> {
+  public abstract static class DynamicTableReportSection<T> extends ReportSection<T> {
 
     public DynamicTableReportSection(String title) {
       super(title);
@@ -51,8 +51,8 @@ public abstract class ReportSection<T> {
     }
 
     @Override
-    public void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
-        boolean includeHeaders) {
+    public void writeDelimitedText(
+        StringBuilder sb, List<T> objects, String delimiter, boolean includeHeaders) {
       List<Column<T>> columns = getColumns(objects);
       if (includeHeaders) {
         for (int i = 0; i < columns.size(); i++) {
@@ -88,7 +88,7 @@ public abstract class ReportSection<T> {
     }
   }
 
-  public static abstract class StaticTableReportSection<T> extends DynamicTableReportSection<T> {
+  public abstract static class StaticTableReportSection<T> extends DynamicTableReportSection<T> {
 
     private final List<Column<T>> columns;
 
@@ -101,7 +101,6 @@ public abstract class ReportSection<T> {
     public List<Column<T>> getColumns(List<T> data) {
       return columns;
     }
-
   }
 
   private final String title;
@@ -114,8 +113,8 @@ public abstract class ReportSection<T> {
     return title;
   }
 
-  public void createExcelSheet(XSSFWorkbook workbook, CaseService caseService,
-      JsonNode parameters) {
+  public void createExcelSheet(
+      XSSFWorkbook workbook, CaseService caseService, JsonNode parameters) {
     List<T> objects = getData(caseService, parameters);
     XSSFSheet worksheet = workbook.createSheet(getTitle());
     writeExcelSheet(worksheet, objects);
@@ -123,17 +122,21 @@ public abstract class ReportSection<T> {
 
   protected abstract void writeExcelSheet(XSSFSheet worksheet, List<T> objects);
 
-  public void createDelimitedText(StringBuilder sb, CaseService caseService,
-      String delimiter, boolean includeHeadings, JsonNode parameters) {
+  public void createDelimitedText(
+      StringBuilder sb,
+      CaseService caseService,
+      String delimiter,
+      boolean includeHeadings,
+      JsonNode parameters) {
     List<T> objects = getData(caseService, parameters);
     writeDelimitedText(sb, objects, delimiter, includeHeadings);
   }
 
-  protected abstract void writeDelimitedText(StringBuilder sb, List<T> objects, String delimiter,
-      boolean includeHeaders);
+  protected abstract void writeDelimitedText(
+      StringBuilder sb, List<T> objects, String delimiter, boolean includeHeaders);
 
-  public void createJson(ArrayNode json, CaseService caseService, JsonMapper jsonMapper,
-      JsonNode parameters) {
+  public void createJson(
+      ArrayNode json, CaseService caseService, JsonMapper jsonMapper, JsonNode parameters) {
     List<T> objects = getData(caseService, parameters);
     writeJson(json, objects, jsonMapper);
   }
@@ -142,11 +145,10 @@ public abstract class ReportSection<T> {
 
   /**
    * Fetches data from the CaseService based on parameters provided
-   * 
+   *
    * @param caseService
    * @param parameters options provided from front-end; must be validated
    * @return
-   * 
    * @throws BadRequestException if there are invalid parameters
    */
   public abstract List<T> getData(CaseService caseService, JsonNode parameters);

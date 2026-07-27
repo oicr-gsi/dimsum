@@ -3,10 +3,7 @@ import { Metric, MetricCategory, MetricSubcategory } from "../data/assay";
 import { addTextDiv, makeIcon } from "./html-utils";
 import { siteConfig } from "./site-config";
 
-export function getMetricNames(
-  category: MetricCategory,
-  assayIds: number[],
-): string[] {
+export function getMetricNames(category: MetricCategory, assayIds: number[]): string[] {
   const assays = assayIds.filter(unique).map((assayId) => {
     if (!assayId) {
       throw new Error("Unexpected error (undefined should be filtered)");
@@ -51,25 +48,14 @@ function unique(item: any, index: number, arr: any[]) {
   return arr.indexOf(item) === index;
 }
 
-function byPriority(
-  a: MetricSubcategory | Metric,
-  b: MetricSubcategory | Metric,
-) {
+function byPriority(a: MetricSubcategory | Metric, b: MetricSubcategory | Metric) {
   const sortPriorityA = a.sortPriority || -1;
   const sortPriorityB = b.sortPriority || -1;
   return sortPriorityA - sortPriorityB;
 }
 
-export function makeNotFoundIcon(
-  prefix?: string,
-  tooltipAdditionalContents?: Node,
-) {
-  return makeStatusIcon(
-    "question",
-    "Not Found",
-    prefix,
-    tooltipAdditionalContents,
-  );
+export function makeNotFoundIcon(prefix?: string, tooltipAdditionalContents?: Node) {
+  return makeStatusIcon("question", "Not Found", prefix, tooltipAdditionalContents);
 }
 
 export function makeStatusIcon(
@@ -120,17 +106,10 @@ export function makeMetricDisplay(
   return div;
 }
 
-export function formatMetricValue(
-  value: number,
-  metrics: Metric[],
-  divisorUnit?: string | null,
-) {
+export function formatMetricValue(value: number, metrics: Metric[], divisorUnit?: string | null) {
   const metricPlaces = Math.max(
     ...metrics.map((metric) =>
-      Math.max(
-        countDecimalPlaces(metric.minimum),
-        countDecimalPlaces(metric.maximum),
-      ),
+      Math.max(countDecimalPlaces(metric.minimum), countDecimalPlaces(metric.maximum)),
     ),
   );
   if (divisorUnit) {
@@ -197,9 +176,7 @@ function formatThreshold(value?: number) {
 export function addMetricRequirementText(metrics: Metric[], container: Node) {
   const metricDiv = document.createElement("div");
   const requirements: Set<string> = new Set();
-  metrics.forEach((metric) =>
-    requirements.add(getMetricRequirementText(metric)),
-  );
+  metrics.forEach((metric) => requirements.add(getMetricRequirementText(metric)));
   if (requirements.size === 1) {
     metricDiv.innerText = "Required: " + requirements.values().next().value;
   } else {
@@ -232,9 +209,7 @@ export function getMetricRequirementText(metric: Metric) {
       text = `<= ${formatThreshold(metric.maximum)}`;
       break;
     case "BETWEEN":
-      text = `Between ${formatThreshold(metric.minimum)} and ${formatThreshold(
-        metric.maximum,
-      )}`;
+      text = `Between ${formatThreshold(metric.minimum)} and ${formatThreshold(metric.maximum)}`;
       break;
     default:
       throw new Error(`Unexpected threshold type: ${metric.thresholdType}`);
@@ -306,9 +281,7 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
         break;
       }
       default:
-        throw new Error(
-          `Unexpected threshold type: ${metrics[i].thresholdType}`,
-        );
+        throw new Error(`Unexpected threshold type: ${metrics[i].thresholdType}`);
     }
   }
   return false;

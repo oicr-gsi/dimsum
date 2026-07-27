@@ -1,34 +1,5 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.commons.math3.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
@@ -84,15 +55,44 @@ import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.math3.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Service providing access to cases and related data. All public methods must include
- * authorization. Methods that should be inaccessible to the current user throw
- * {@link UnauthorizedException}. Methods that are sometimes allowed should return null or empty if
- * there are no authorized results, rather than throwing an exception. This prevents disclosing the
+ * authorization. Methods that should be inaccessible to the current user throw {@link
+ * UnauthorizedException}. Methods that are sometimes allowed should return null or empty if there
+ * are no authorized results, rather than throwing an exception. This prevents disclosing the
  * existence of unauthorized resources.
  */
 @Service
@@ -107,20 +107,15 @@ public class CaseService {
   @Value("${datadirectory}")
   private String dataDirectory;
 
-  @Autowired
-  private CaseLoader dataLoader;
+  @Autowired private CaseLoader dataLoader;
 
-  @Autowired
-  private FrontEndConfig frontEndConfig;
+  @Autowired private FrontEndConfig frontEndConfig;
 
-  @Autowired
-  private NotificationManager notificationManager;
+  @Autowired private NotificationManager notificationManager;
 
-  @Autowired
-  private SecurityManager securityManager;
+  @Autowired private SecurityManager securityManager;
 
-  @Autowired
-  private JsonMapper jsonMapper;
+  @Autowired private JsonMapper jsonMapper;
 
   private CaseData caseData;
 
@@ -142,7 +137,8 @@ public class CaseService {
           .description("Number of consecutive failures to refresh the case data")
           .register(meterRegistry);
       Gauge.builder("case_data_age_seconds", () -> this.getDataAge().toSeconds())
-          .description("Time since case data was refreshed").register(meterRegistry);
+          .description("Time since case data was refreshed")
+          .register(meterRegistry);
       Gauge.builder("assignment_dump_failures", this::getAssignmentDumpFailures)
           .description("Number of consecutive failures to write assignments to file")
           .register(meterRegistry);
@@ -205,9 +201,12 @@ public class CaseService {
     DimsumPrincipal principal = securityManager.getPrincipal();
     if (!principal.isInternal()) {
       Set<String> userProjects = principal.getProjects();
-      stream = stream.filter(kase -> kase.getProjects().stream()
-          .map(Project::getName)
-          .anyMatch(userProjects::contains));
+      stream =
+          stream.filter(
+              kase ->
+                  kase.getProjects().stream()
+                      .map(Project::getName)
+                      .anyMatch(userProjects::contains));
     }
 
     if (baseFilter != null) {
@@ -269,8 +268,13 @@ public class CaseService {
     return caseData.getAssaysById();
   }
 
-  public TableData<Case> getCases(int pageSize, int pageNumber, CaseSort sort, boolean descending,
-      CaseFilter baseFilter, Collection<CaseFilter> filters) {
+  public TableData<Case> getCases(
+      int pageSize,
+      int pageNumber,
+      CaseSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
     authorizeInternalOnly();
     List<Case> baseCases = getAuthorizedCases(baseFilter);
     Stream<Case> stream = filterCases(baseCases, filters);
@@ -293,8 +297,13 @@ public class CaseService {
     return data;
   }
 
-  public TableData<ExternalCase> getExternalCases(int pageSize, int pageNumber, CaseSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+  public TableData<ExternalCase> getExternalCases(
+      int pageSize,
+      int pageNumber,
+      CaseSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
     List<Case> baseCases = getAuthorizedCases(baseFilter);
     Stream<Case> stream = filterCases(baseCases, filters);
 
@@ -306,10 +315,8 @@ public class CaseService {
     Comparator<Case> comparator = sort.comparator(getAssaysById());
     stream = stream.sorted(descending ? comparator.reversed() : comparator);
 
-    List<ExternalCase> filteredCases = stream.skip(pageSize * (pageNumber - 1))
-        .limit(pageSize)
-        .map(ExternalCase::new)
-        .toList();
+    List<ExternalCase> filteredCases =
+        stream.skip(pageSize * (pageNumber - 1)).limit(pageSize).map(ExternalCase::new).toList();
 
     TableData<ExternalCase> data = new TableData<>();
     data.setTotalCount(baseCases.size());
@@ -330,11 +337,10 @@ public class CaseService {
     if (securityManager.getPrincipal().isInternal()) {
       stream = caseData.getRequisitionNames().stream();
     } else {
-      stream = streamAuthorizedCases(null)
-          .map(Case::getRequisition)
-          .map(Requisition::getName);
+      stream = streamAuthorizedCases(null).map(Case::getRequisition).map(Requisition::getName);
     }
-    return stream.filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
+    return stream
+        .filter(s -> s.toLowerCase().startsWith(prefix.toLowerCase()))
         .collect(Collectors.toSet());
   }
 
@@ -377,127 +383,242 @@ public class CaseService {
         .collect(Collectors.toSet());
   }
 
-  public TableData<Sample> getReceipts(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    authorizeInternalOnly();
-    return getInternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.RECEIPT);
-  }
-
-  public TableData<Sample> getExtractions(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    authorizeInternalOnly();
-    return getInternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.EXTRACTION);
-  }
-
-  public TableData<Sample> getLibraryPreparations(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    authorizeInternalOnly();
-    return getInternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.LIBRARY_PREP);
-  }
-
-  public List<Sample> getLibraryQualifications(CaseFilter baseFilter,
+  public TableData<Sample> getReceipts(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
       Collection<CaseFilter> filters) {
-    return filterSamples(getAuthorizedCases(baseFilter), filters,
-        MetricCategory.LIBRARY_QUALIFICATION)
-            .distinct()
-            .toList();
+    authorizeInternalOnly();
+    return getInternalSampleData(
+        pageSize, pageNumber, sort, descending, baseFilter, filters, MetricCategory.RECEIPT);
   }
 
-  public TableData<Sample> getLibraryQualifications(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+  public TableData<Sample> getExtractions(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
     authorizeInternalOnly();
-    return getInternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
+    return getInternalSampleData(
+        pageSize, pageNumber, sort, descending, baseFilter, filters, MetricCategory.EXTRACTION);
+  }
+
+  public TableData<Sample> getLibraryPreparations(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    authorizeInternalOnly();
+    return getInternalSampleData(
+        pageSize, pageNumber, sort, descending, baseFilter, filters, MetricCategory.LIBRARY_PREP);
+  }
+
+  public List<Sample> getLibraryQualifications(
+      CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return filterSamples(
+            getAuthorizedCases(baseFilter), filters, MetricCategory.LIBRARY_QUALIFICATION)
+        .distinct()
+        .toList();
+  }
+
+  public TableData<Sample> getLibraryQualifications(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    authorizeInternalOnly();
+    return getInternalSampleData(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
         MetricCategory.LIBRARY_QUALIFICATION);
   }
 
-  public List<Sample> getFullDepthSequencings(CaseFilter baseFilter,
-      Collection<CaseFilter> filters) {
-    return filterSamples(getAuthorizedCases(baseFilter), filters,
-        MetricCategory.FULL_DEPTH_SEQUENCING)
-            .distinct()
-            .toList();
+  public List<Sample> getFullDepthSequencings(
+      CaseFilter baseFilter, Collection<CaseFilter> filters) {
+    return filterSamples(
+            getAuthorizedCases(baseFilter), filters, MetricCategory.FULL_DEPTH_SEQUENCING)
+        .distinct()
+        .toList();
   }
 
-  public TableData<Sample> getFullDepthSequencings(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+  public TableData<Sample> getFullDepthSequencings(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
     authorizeInternalOnly();
-    return getInternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
+    return getInternalSampleData(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
         MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
-  private TableData<Sample> getInternalSampleData(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
+  private TableData<Sample> getInternalSampleData(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters,
       MetricCategory requestCategory) {
     authorizeInternalOnly();
-    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters, requestCategory,
-        Function.identity(), false);
+    return getSamples(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
+        requestCategory,
+        Function.identity(),
+        false);
   }
 
-  public TableData<ExternalSample> getExternalReceipts(int pageSize, int pageNumber,
-      SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
+  public TableData<ExternalSample> getExternalReceipts(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
     // Receipts should all be included regardless of QC status because these are the
     // collaborator's samples that they expect to see
-    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.RECEIPT, ExternalSample::new, false);
+    return getSamples(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
+        MetricCategory.RECEIPT,
+        ExternalSample::new,
+        false);
   }
 
-  public TableData<ExternalSample> getExternalExtractions(int pageSize, int pageNumber,
-      SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    return getExternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.EXTRACTION);
+  public TableData<ExternalSample> getExternalExtractions(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    return getExternalSampleData(
+        pageSize, pageNumber, sort, descending, baseFilter, filters, MetricCategory.EXTRACTION);
   }
 
-  public TableData<ExternalSample> getExternalLibraryPreparations(int pageSize, int pageNumber,
-      SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    return getExternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
-        MetricCategory.LIBRARY_PREP);
+  public TableData<ExternalSample> getExternalLibraryPreparations(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    return getExternalSampleData(
+        pageSize, pageNumber, sort, descending, baseFilter, filters, MetricCategory.LIBRARY_PREP);
   }
 
-  public TableData<ExternalSample> getExternalLibraryQualifications(int pageSize, int pageNumber,
-      SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    return getExternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
+  public TableData<ExternalSample> getExternalLibraryQualifications(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    return getExternalSampleData(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
         MetricCategory.LIBRARY_QUALIFICATION);
   }
 
-  public TableData<ExternalSample> getExternalFullDepthSequencings(int pageSize, int pageNumber,
-      SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters) {
-    return getExternalSampleData(pageSize, pageNumber, sort, descending, baseFilter, filters,
+  public TableData<ExternalSample> getExternalFullDepthSequencings(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters) {
+    return getExternalSampleData(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
         MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
-  private TableData<ExternalSample> getExternalSampleData(int pageSize, int pageNumber,
-      SampleSort sort, boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
+  private TableData<ExternalSample> getExternalSampleData(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters,
       MetricCategory requestCategory) {
-    return getSamples(pageSize, pageNumber, sort, descending, baseFilter, filters, requestCategory,
-        ExternalSample::new, true);
+    return getSamples(
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        baseFilter,
+        filters,
+        requestCategory,
+        ExternalSample::new,
+        true);
   }
 
-  private <T> TableData<T> getSamples(int pageSize, int pageNumber, SampleSort sort,
-      boolean descending, CaseFilter baseFilter, Collection<CaseFilter> filters,
-      MetricCategory requestCategory, Function<Sample, T> transform, boolean passedOnly) {
+  private <T> TableData<T> getSamples(
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
+      Collection<CaseFilter> filters,
+      MetricCategory requestCategory,
+      Function<Sample, T> transform,
+      boolean passedOnly) {
     Predicate<Sample> passingFilter =
         passedOnly ? DataUtils::passedOrTopUpConfirmed : sample -> true;
     List<Case> cases = getAuthorizedCases(baseFilter);
     TableData<T> data = new TableData<>();
-    data.setTotalCount(cases.stream()
-        .flatMap(getAllGateSamples(requestCategory))
-        .filter(passingFilter)
-        .distinct()
-        .count());
-    List<Sample> samples = filterSamples(cases, filters, requestCategory)
-        .filter(passingFilter)
-        .distinct()
-        .toList();
+    data.setTotalCount(
+        cases.stream()
+            .flatMap(getAllGateSamples(requestCategory))
+            .filter(passingFilter)
+            .distinct()
+            .count());
+    List<Sample> samples =
+        filterSamples(cases, filters, requestCategory).filter(passingFilter).distinct().toList();
     data.setFilteredCount(samples.size());
-    data.setItems(samples.stream()
-        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1))
-        .limit(pageSize)
-        .map(transform)
-        .toList());
+    data.setItems(
+        samples.stream()
+            .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .map(transform)
+            .toList());
     return data;
   }
 
@@ -534,7 +655,11 @@ public class CaseService {
     }
   }
 
-  public TableData<Run> getRuns(int pageSize, int pageNumber, RunSort sort, boolean descending,
+  public TableData<Run> getRuns(
+      int pageSize,
+      int pageNumber,
+      RunSort sort,
+      boolean descending,
       Collection<RunFilter> filters) {
     authorizeInternalOnly();
     List<Run> baseRuns =
@@ -554,8 +679,12 @@ public class CaseService {
     return data;
   }
 
-  public TableData<OmittedSample> getOmittedSamples(int pageSize, int pageNumber,
-      OmittedSampleSort sort, boolean descending, Collection<OmittedSampleFilter> filters) {
+  public TableData<OmittedSample> getOmittedSamples(
+      int pageSize,
+      int pageNumber,
+      OmittedSampleSort sort,
+      boolean descending,
+      Collection<OmittedSampleFilter> filters) {
     authorizeInternalOnly();
     List<OmittedSample> baseSamples = caseData.getOmittedSamples();
     Stream<OmittedSample> stream = filterOmittedSamples(baseSamples, filters);
@@ -573,8 +702,12 @@ public class CaseService {
     return data;
   }
 
-  public TableData<ProjectSummary> getProjects(int pageSize, int pageNumber,
-      ProjectSummarySort sort, boolean descending, Collection<ProjectSummaryFilter> filters) {
+  public TableData<ProjectSummary> getProjects(
+      int pageSize,
+      int pageNumber,
+      ProjectSummarySort sort,
+      boolean descending,
+      Collection<ProjectSummaryFilter> filters) {
     authorizeInternalOnly();
     List<ProjectSummary> baseProjectSummaries = caseData.getProjectSummaries().stream().toList();
     Stream<ProjectSummary> stream = filterProjectSummaries(baseProjectSummaries, filters);
@@ -595,12 +728,17 @@ public class CaseService {
     return data;
   }
 
-  public TableData<ExternalProjectSummary> getExternalProjects(int pageSize, int pageNumber,
-      ProjectSummarySort sort, boolean descending, Collection<ProjectSummaryFilter> filters) {
+  public TableData<ExternalProjectSummary> getExternalProjects(
+      int pageSize,
+      int pageNumber,
+      ProjectSummarySort sort,
+      boolean descending,
+      Collection<ProjectSummaryFilter> filters) {
     DimsumPrincipal principal = securityManager.getPrincipal();
-    List<ProjectSummary> baseProjectSummaries = caseData.getProjectSummaries().stream()
-        .filter(summary -> principal.getProjects().contains(summary.getName()))
-        .toList();
+    List<ProjectSummary> baseProjectSummaries =
+        caseData.getProjectSummaries().stream()
+            .filter(summary -> principal.getProjects().contains(summary.getName()))
+            .toList();
     Stream<ProjectSummary> stream = filterProjectSummaries(baseProjectSummaries, filters);
 
     if (sort == null) {
@@ -610,7 +748,8 @@ public class CaseService {
     stream = stream.sorted(descending ? sort.comparator().reversed() : sort.comparator());
 
     List<ExternalProjectSummary> filteredProjectSummaries =
-        stream.skip(pageSize * (pageNumber - 1))
+        stream
+            .skip(pageSize * (pageNumber - 1))
             .limit(pageSize)
             .map(ExternalProjectSummary::new)
             .collect(Collectors.toList());
@@ -622,8 +761,11 @@ public class CaseService {
     return data;
   }
 
-  public TableData<ProjectSummaryRow> getProjectSummaryRows(String projectName,
-      Collection<CaseFilter> filters, LocalDate afterDate, LocalDate beforeDate) {
+  public TableData<ProjectSummaryRow> getProjectSummaryRows(
+      String projectName,
+      Collection<CaseFilter> filters,
+      LocalDate afterDate,
+      LocalDate beforeDate) {
     DimsumPrincipal principal = securityManager.getPrincipal();
     TableData<ProjectSummaryRow> data = new TableData<>();
     if (!principal.isInternal() && !principal.getProjects().contains(projectName)) {
@@ -663,34 +805,46 @@ public class CaseService {
     return data;
   }
 
-  public TableData<TestTableView> getTestTableViews(int pageSize, int pageNumber,
-      TestTableViewSort sort, boolean descending, CaseFilter baseFilter,
+  public TableData<TestTableView> getTestTableViews(
+      int pageSize,
+      int pageNumber,
+      TestTableViewSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
       Collection<CaseFilter> filters) {
     List<Case> cases = getAuthorizedCases(baseFilter);
     TableData<TestTableView> data = new TableData<>();
-    data.setTotalCount(
-        cases.stream().flatMap(kase -> kase.getTests().stream()).count());
+    data.setTotalCount(cases.stream().flatMap(kase -> kase.getTests().stream()).count());
     List<TestTableView> testTableViews = filterTestTableViews(cases, filters).toList();
     data.setFilteredCount(testTableViews.size());
-    data.setItems(testTableViews.stream()
-        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
+    data.setItems(
+        testTableViews.stream()
+            .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .toList());
     return data;
   }
 
-  public TableData<ExternalTestTableView> getExternalTestTableViews(int pageSize, int pageNumber,
-      TestTableViewSort sort, boolean descending, CaseFilter baseFilter,
+  public TableData<ExternalTestTableView> getExternalTestTableViews(
+      int pageSize,
+      int pageNumber,
+      TestTableViewSort sort,
+      boolean descending,
+      CaseFilter baseFilter,
       Collection<CaseFilter> filters) {
     List<Case> cases = getAuthorizedCases(baseFilter);
     TableData<ExternalTestTableView> data = new TableData<>();
-    data.setTotalCount(
-        cases.stream().flatMap(kase -> kase.getTests().stream()).count());
+    data.setTotalCount(cases.stream().flatMap(kase -> kase.getTests().stream()).count());
     List<ExternalTestTableView> testTableViews =
         filterExternalTestTableViews(cases, filters).toList();
     data.setFilteredCount(testTableViews.size());
-    data.setItems(testTableViews.stream()
-        .sorted(descending ? sort.externalComparator().reversed() : sort.externalComparator())
-        .skip(pageSize * (pageNumber - 1)).limit(pageSize).toList());
+    data.setItems(
+        testTableViews.stream()
+            .sorted(descending ? sort.externalComparator().reversed() : sort.externalComparator())
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .toList());
     return data;
   }
 
@@ -726,8 +880,8 @@ public class CaseService {
     return stream;
   }
 
-  private Stream<OmittedSample> filterOmittedSamples(List<OmittedSample> samples,
-      Collection<OmittedSampleFilter> filters) {
+  private Stream<OmittedSample> filterOmittedSamples(
+      List<OmittedSample> samples, Collection<OmittedSampleFilter> filters) {
     Stream<OmittedSample> stream = samples.stream();
     if (filters != null && !filters.isEmpty()) {
       Map<OmittedSampleFilterKey, Predicate<OmittedSample>> filterMap = new HashMap<>();
@@ -747,8 +901,7 @@ public class CaseService {
   }
 
   private Stream<Test> filterTests(List<Case> cases, Collection<CaseFilter> filters) {
-    Stream<Test> stream = filterCases(cases, filters)
-        .flatMap(kase -> kase.getTests().stream());
+    Stream<Test> stream = filterCases(cases, filters).flatMap(kase -> kase.getTests().stream());
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<Test>> filterMap =
           buildFilterMap(filters, CaseFilter::testPredicate);
@@ -759,14 +912,13 @@ public class CaseService {
     return stream;
   }
 
-  private Stream<Sample> filterSamples(List<Case> cases, Collection<CaseFilter> filters,
-      MetricCategory requestCategory) {
+  private Stream<Sample> filterSamples(
+      List<Case> cases, Collection<CaseFilter> filters, MetricCategory requestCategory) {
     Stream<Sample> stream = null;
     if (requestCategory == MetricCategory.RECEIPT) {
       stream = filterCases(cases, filters).flatMap(kase -> kase.getReceipts().stream());
     } else {
-      stream = filterTests(cases, filters)
-          .flatMap(getAllTestGateSamples(requestCategory));
+      stream = filterTests(cases, filters).flatMap(getAllTestGateSamples(requestCategory));
     }
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<Sample>> filterMap =
@@ -778,8 +930,8 @@ public class CaseService {
     return stream;
   }
 
-  private Stream<ProjectSummary> filterProjectSummaries(List<ProjectSummary> projectSummaries,
-      Collection<ProjectSummaryFilter> filters) {
+  private Stream<ProjectSummary> filterProjectSummaries(
+      List<ProjectSummary> projectSummaries, Collection<ProjectSummaryFilter> filters) {
     Stream<ProjectSummary> stream = projectSummaries.stream();
     if (filters != null && !filters.isEmpty()) {
       Map<ProjectSummaryFilterKey, Predicate<ProjectSummary>> filterMap = new HashMap<>();
@@ -798,23 +950,24 @@ public class CaseService {
     return stream;
   }
 
-  private Stream<TestTableView> filterTestTableViews(List<Case> cases,
-      Collection<CaseFilter> filters) {
+  private Stream<TestTableView> filterTestTableViews(
+      List<Case> cases, Collection<CaseFilter> filters) {
     return filterCaseTests(cases, filters)
         .map(pair -> new TestTableView(pair.getFirst(), pair.getSecond()));
   }
 
-  private Stream<ExternalTestTableView> filterExternalTestTableViews(List<Case> cases,
-      Collection<CaseFilter> filters) {
+  private Stream<ExternalTestTableView> filterExternalTestTableViews(
+      List<Case> cases, Collection<CaseFilter> filters) {
     return filterCaseTests(cases, filters)
         .map(pair -> new ExternalTestTableView(pair.getFirst(), pair.getSecond()));
   }
 
-  private Stream<Pair<Case, Test>> filterCaseTests(List<Case> cases,
-      Collection<CaseFilter> filters) {
-    Stream<Pair<Case, Test>> stream = filterCases(cases, filters)
-        .flatMap(kase -> kase.getTests().stream()
-            .map(test -> new Pair<Case, Test>(kase, test)));
+  private Stream<Pair<Case, Test>> filterCaseTests(
+      List<Case> cases, Collection<CaseFilter> filters) {
+    Stream<Pair<Case, Test>> stream =
+        filterCases(cases, filters)
+            .flatMap(
+                kase -> kase.getTests().stream().map(test -> new Pair<Case, Test>(kase, test)));
     if (filters != null && !filters.isEmpty()) {
       Map<CaseFilterKey, Predicate<Test>> filterMap =
           buildFilterMap(filters, CaseFilter::testPredicate);
@@ -825,8 +978,8 @@ public class CaseService {
     return stream;
   }
 
-  private Map<Case, List<Test>> getFilteredCaseAndTest(List<Case> cases,
-      Collection<CaseFilter> filters) {
+  private Map<Case, List<Test>> getFilteredCaseAndTest(
+      List<Case> cases, Collection<CaseFilter> filters) {
     if (filters == null) {
       throw new NullPointerException("Filters cannot be null");
     } else if (filters.isEmpty()) {
@@ -845,8 +998,8 @@ public class CaseService {
     return testsByCase;
   }
 
-  private <T> Map<CaseFilterKey, Predicate<T>> buildFilterMap(Collection<CaseFilter> filters,
-      Function<CaseFilter, Predicate<T>> getPredicate) {
+  private <T> Map<CaseFilterKey, Predicate<T>> buildFilterMap(
+      Collection<CaseFilter> filters, Function<CaseFilter, Predicate<T>> getPredicate) {
     Map<CaseFilterKey, Predicate<T>> filterMap = new HashMap<>();
     for (CaseFilter filter : filters) {
       CaseFilterKey key = filter.getKey();
@@ -864,98 +1017,141 @@ public class CaseService {
     return caseData.getRunAndLibraries(name);
   }
 
-  public List<SampleAndRelated> getLibraryQualificationsForRun(String runName,
-      Collection<CaseFilter> filters) {
+  public List<SampleAndRelated> getLibraryQualificationsForRun(
+      String runName, Collection<CaseFilter> filters) {
     Set<SampleAndRelated> samples =
         getRunLibraries(runName, RunAndLibraries::getLibraryQualifications);
     return filterRunLibraries(samples, filters, MetricCategory.LIBRARY_QUALIFICATION);
   }
 
-  public TableData<SampleAndRelated> getLibraryQualificationsForRun(String runName,
+  public TableData<SampleAndRelated> getLibraryQualificationsForRun(
+      String runName,
       int pageSize,
-      int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters) {
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      Collection<CaseFilter> filters) {
     authorizeInternalOnly();
-    return getRunLibraries(runName, pageSize, pageNumber, sort, descending, filters,
-        RunAndLibraries::getLibraryQualifications, MetricCategory.LIBRARY_QUALIFICATION);
+    return getRunLibraries(
+        runName,
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        filters,
+        RunAndLibraries::getLibraryQualifications,
+        MetricCategory.LIBRARY_QUALIFICATION);
   }
 
-  public List<SampleAndRelated> getFullDepthSequencingsForRun(String runName,
-      Collection<CaseFilter> filters) {
+  public List<SampleAndRelated> getFullDepthSequencingsForRun(
+      String runName, Collection<CaseFilter> filters) {
     Set<SampleAndRelated> samples =
         getRunLibraries(runName, RunAndLibraries::getFullDepthSequencings);
     return filterRunLibraries(samples, filters, MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
-  public TableData<SampleAndRelated> getFullDepthSequencingsForRun(String runName, int pageSize,
-      int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters) {
+  public TableData<SampleAndRelated> getFullDepthSequencingsForRun(
+      String runName,
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      Collection<CaseFilter> filters) {
     authorizeInternalOnly();
-    return getRunLibraries(runName, pageSize, pageNumber, sort, descending, filters,
-        RunAndLibraries::getFullDepthSequencings, MetricCategory.FULL_DEPTH_SEQUENCING);
+    return getRunLibraries(
+        runName,
+        pageSize,
+        pageNumber,
+        sort,
+        descending,
+        filters,
+        RunAndLibraries::getFullDepthSequencings,
+        MetricCategory.FULL_DEPTH_SEQUENCING);
   }
 
-  public TableData<OmittedRunSample> getOmittedRunSamplesForRun(String runName, int pageSize,
-      int pageNumber, OmittedRunSampleSort sort, boolean descending) {
+  public TableData<OmittedRunSample> getOmittedRunSamplesForRun(
+      String runName, int pageSize, int pageNumber, OmittedRunSampleSort sort, boolean descending) {
     authorizeInternalOnly();
-    Set<OmittedRunSample> samples = caseData.getOmittedRunSamples().stream()
-        .filter(x -> Objects.equals(x.getRunName(), runName))
-        .collect(Collectors.toSet());
+    Set<OmittedRunSample> samples =
+        caseData.getOmittedRunSamples().stream()
+            .filter(x -> Objects.equals(x.getRunName(), runName))
+            .collect(Collectors.toSet());
 
     return filterOmittedRunSamples(samples, pageSize, pageNumber, sort, descending);
   }
 
-  public TableData<OmittedRunSample> getOmittedRunSamplesForProject(String projectName,
-      MetricCategory sequencingType, int pageSize, int pageNumber, OmittedRunSampleSort sort,
+  public TableData<OmittedRunSample> getOmittedRunSamplesForProject(
+      String projectName,
+      MetricCategory sequencingType,
+      int pageSize,
+      int pageNumber,
+      OmittedRunSampleSort sort,
       boolean descending) {
-    Set<OmittedRunSample> samples = caseData.getOmittedRunSamples().stream()
-        .filter(x -> Objects.equals(x.getProject(), projectName)
-            && x.getSequencingType() == sequencingType)
-        .collect(Collectors.toSet());
+    Set<OmittedRunSample> samples =
+        caseData.getOmittedRunSamples().stream()
+            .filter(
+                x ->
+                    Objects.equals(x.getProject(), projectName)
+                        && x.getSequencingType() == sequencingType)
+            .collect(Collectors.toSet());
 
     return filterOmittedRunSamples(samples, pageSize, pageNumber, sort, descending);
   }
 
-  private TableData<OmittedRunSample> filterOmittedRunSamples(Set<OmittedRunSample> samples,
-      int pageSize, int pageNumber, OmittedRunSampleSort sort, boolean descending) {
+  private TableData<OmittedRunSample> filterOmittedRunSamples(
+      Set<OmittedRunSample> samples,
+      int pageSize,
+      int pageNumber,
+      OmittedRunSampleSort sort,
+      boolean descending) {
     TableData<OmittedRunSample> data = new TableData<>();
     data.setTotalCount(samples.size());
     data.setFilteredCount(samples.size());
-    data.setItems(samples.stream()
-        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1))
-        .limit(pageSize)
-        .toList());
+    data.setItems(
+        samples.stream()
+            .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .toList());
     return data;
   }
 
-  private TableData<SampleAndRelated> getRunLibraries(String runName, int pageSize,
-      int pageNumber, SampleSort sort, boolean descending, Collection<CaseFilter> filters,
+  private TableData<SampleAndRelated> getRunLibraries(
+      String runName,
+      int pageSize,
+      int pageNumber,
+      SampleSort sort,
+      boolean descending,
+      Collection<CaseFilter> filters,
       Function<RunAndLibraries, Set<SampleAndRelated>> getSamples,
       MetricCategory requestCategory) {
     Set<SampleAndRelated> samples = getRunLibraries(runName, getSamples);
-    List<SampleAndRelated> filteredSamples =
-        filterRunLibraries(samples, filters, requestCategory);
+    List<SampleAndRelated> filteredSamples = filterRunLibraries(samples, filters, requestCategory);
 
     TableData<SampleAndRelated> data = new TableData<>();
     data.setTotalCount(samples.size());
     data.setFilteredCount(filteredSamples.size());
-    data.setItems(filteredSamples.stream()
-        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1))
-        .limit(pageSize)
-        .toList());
+    data.setItems(
+        filteredSamples.stream()
+            .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .toList());
     return data;
   }
 
-  private Set<SampleAndRelated> getRunLibraries(String runName,
-      Function<RunAndLibraries, Set<SampleAndRelated>> getSamples) {
+  private Set<SampleAndRelated> getRunLibraries(
+      String runName, Function<RunAndLibraries, Set<SampleAndRelated>> getSamples) {
     RunAndLibraries runAndLibraries = caseData.getRunAndLibraries(runName);
-    Set<SampleAndRelated> samples = runAndLibraries == null ? Collections.emptySet()
-        : getSamples.apply(runAndLibraries);
+    Set<SampleAndRelated> samples =
+        runAndLibraries == null ? Collections.emptySet() : getSamples.apply(runAndLibraries);
     return samples;
   }
 
-  private List<SampleAndRelated> filterRunLibraries(Collection<SampleAndRelated> samples,
-      Collection<CaseFilter> filters, MetricCategory requestCategory) {
+  private List<SampleAndRelated> filterRunLibraries(
+      Collection<SampleAndRelated> samples,
+      Collection<CaseFilter> filters,
+      MetricCategory requestCategory) {
     Stream<SampleAndRelated> stream = samples.stream();
 
     if (filters != null && !filters.isEmpty()) {
@@ -972,31 +1168,45 @@ public class CaseService {
     return new ProjectSummaryRow.Builder()
         .title("Completed")
         .receipt(
-            new ProjectSummaryField(projectSummary.getReceiptCompletedCount(),
+            new ProjectSummaryField(
+                projectSummary.getReceiptCompletedCount(),
                 CaseFilterKey.COMPLETED.name(),
                 CompletedGate.RECEIPT.getLabel()))
         .extraction(
-            new ProjectSummaryField(projectSummary.getExtractionCompletedCount(),
+            new ProjectSummaryField(
+                projectSummary.getExtractionCompletedCount(),
                 CaseFilterKey.COMPLETED.name(),
                 CompletedGate.EXTRACTION.getLabel()))
         .libraryPreparation(
-            new ProjectSummaryField(projectSummary.getLibraryPrepCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.LIBRARY_PREPARATION.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getLibraryPrepCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.LIBRARY_PREPARATION.getLabel()))
         .libraryQualification(
-            new ProjectSummaryField(projectSummary.getLibraryQualCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.LIBRARY_QUALIFICATION.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getLibraryQualCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.LIBRARY_QUALIFICATION.getLabel()))
         .fullDepthSequencing(
-            new ProjectSummaryField(projectSummary.getFullDepthSeqCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.FULL_DEPTH_SEQUENCING.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getFullDepthSeqCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.FULL_DEPTH_SEQUENCING.getLabel()))
         .analysisReview(
-            new ProjectSummaryField(projectSummary.getAnalysisReviewCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.ANALYSIS_REVIEW.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getAnalysisReviewCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.ANALYSIS_REVIEW.getLabel()))
         .releaseApproval(
-            new ProjectSummaryField(projectSummary.getReleaseApprovalCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.RELEASE_APPROVAL.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getReleaseApprovalCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.RELEASE_APPROVAL.getLabel()))
         .release(
-            new ProjectSummaryField(projectSummary.getReleaseCompletedCount(),
-                CaseFilterKey.COMPLETED.name(), CompletedGate.RELEASE.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getReleaseCompletedCount(),
+                CaseFilterKey.COMPLETED.name(),
+                CompletedGate.RELEASE.getLabel()))
         .build();
   }
 
@@ -1004,26 +1214,40 @@ public class CaseService {
     return new ProjectSummaryRow.Builder()
         .title("Pending Work")
         .extraction(
-            new ProjectSummaryField(projectSummary.getExtractionPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.EXTRACTION.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getExtractionPendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.EXTRACTION.getLabel()))
         .libraryPreparation(
-            new ProjectSummaryField(projectSummary.getLibraryPrepPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_PREPARATION.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getLibraryPrepPendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.LIBRARY_PREPARATION.getLabel()))
         .libraryQualification(
-            new ProjectSummaryField(projectSummary.getLibraryQualPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QUALIFICATION.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getLibraryQualPendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.LIBRARY_QUALIFICATION.getLabel()))
         .fullDepthSequencing(
-            new ProjectSummaryField(projectSummary.getFullDepthSeqPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_SEQUENCING.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getFullDepthSeqPendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.FULL_DEPTH_SEQUENCING.getLabel()))
         .analysisReview(
-            new ProjectSummaryField(projectSummary.getAnalysisReviewPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.ANALYSIS_REVIEW.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getAnalysisReviewPendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.ANALYSIS_REVIEW.getLabel()))
         .releaseApproval(
-            new ProjectSummaryField(projectSummary.getReleaseApprovalPendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.RELEASE_APPROVAL.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getReleaseApprovalPendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.RELEASE_APPROVAL.getLabel()))
         .release(
-            new ProjectSummaryField(projectSummary.getReleasePendingCount(),
-                CaseFilterKey.PENDING.name(), PendingState.RELEASE.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getReleasePendingCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.RELEASE.getLabel()))
         .build();
   }
 
@@ -1031,20 +1255,30 @@ public class CaseService {
     return new ProjectSummaryRow.Builder()
         .title("Pending QC")
         .receipt(
-            new ProjectSummaryField(projectSummary.getReceiptPendingQcCount(),
-                CaseFilterKey.PENDING.name(), PendingState.RECEIPT_QC.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getReceiptPendingQcCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.RECEIPT_QC.getLabel()))
         .extraction(
-            new ProjectSummaryField(projectSummary.getExtractionPendingQcCount(),
-                CaseFilterKey.PENDING.name(), PendingState.EXTRACTION_QC.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getExtractionPendingQcCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.EXTRACTION_QC.getLabel()))
         .libraryPreparation(
-            new ProjectSummaryField(projectSummary.getLibraryPrepPendingQcCount(),
-                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QC.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getLibraryPrepPendingQcCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.LIBRARY_QC.getLabel()))
         .libraryQualification(
-            new ProjectSummaryField(projectSummary.getLibraryQualPendingQcCount(),
-                CaseFilterKey.PENDING.name(), PendingState.LIBRARY_QUALIFICATION_QC.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getLibraryQualPendingQcCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.LIBRARY_QUALIFICATION_QC.getLabel()))
         .fullDepthSequencing(
-            new ProjectSummaryField(projectSummary.getFullDepthSeqPendingQcCount(),
-                CaseFilterKey.PENDING.name(), PendingState.FULL_DEPTH_QC.getLabel()))
+            new ProjectSummaryField(
+                projectSummary.getFullDepthSeqPendingQcCount(),
+                CaseFilterKey.PENDING.name(),
+                PendingState.FULL_DEPTH_QC.getLabel()))
         .build();
   }
 
@@ -1066,28 +1300,35 @@ public class CaseService {
   }
 
   private void updateFrontEndConfig() {
-    frontEndConfig.setPipelines(cacheUpdatedCases.stream()
-        .flatMap(kase -> kase.getProjects().stream())
-        .map(Project::getPipeline)
-        .collect(Collectors.toSet()));
+    frontEndConfig.setPipelines(
+        cacheUpdatedCases.stream()
+            .flatMap(kase -> kase.getProjects().stream())
+            .map(Project::getPipeline)
+            .collect(Collectors.toSet()));
     frontEndConfig.setAssaysById(caseData.getAssaysById());
     // Library preparation must always match the test design code
     // Library qualification must match the library qualificiation design code if set, else above
     // Full-depth must match one of the above items
-    frontEndConfig.setLibraryDesigns(cacheUpdatedCases.stream()
-        .flatMap(kase -> kase.getTests().stream())
-        .flatMap(test -> Stream.concat(Stream.of(test.getLibraryDesignCode()),
-            test.getLibraryQualifications().stream().map(Sample::getLibraryDesignCode)))
-        .collect(Collectors.toSet()));
-    frontEndConfig.setDeliverableCategories(caseData.getCases().stream()
-        .flatMap(kase -> kase.getDeliverables().stream())
-        .map(CaseDeliverable::getDeliverableCategory)
-        .collect(Collectors.toSet()));
-    frontEndConfig.setDeliverables(caseData.getCases().stream()
-        .flatMap(kase -> kase.getDeliverables().stream())
-        .flatMap(deliverable -> deliverable.getReleases().stream())
-        .map(CaseRelease::getDeliverable)
-        .collect(Collectors.toSet()));
+    frontEndConfig.setLibraryDesigns(
+        cacheUpdatedCases.stream()
+            .flatMap(kase -> kase.getTests().stream())
+            .flatMap(
+                test ->
+                    Stream.concat(
+                        Stream.of(test.getLibraryDesignCode()),
+                        test.getLibraryQualifications().stream().map(Sample::getLibraryDesignCode)))
+            .collect(Collectors.toSet()));
+    frontEndConfig.setDeliverableCategories(
+        caseData.getCases().stream()
+            .flatMap(kase -> kase.getDeliverables().stream())
+            .map(CaseDeliverable::getDeliverableCategory)
+            .collect(Collectors.toSet()));
+    frontEndConfig.setDeliverables(
+        caseData.getCases().stream()
+            .flatMap(kase -> kase.getDeliverables().stream())
+            .flatMap(deliverable -> deliverable.getReleases().stream())
+            .map(CaseRelease::getDeliverable)
+            .collect(Collectors.toSet()));
   }
 
   public void cacheSignoffs(Collection<NabuSavedSignoff> signoffs) {
@@ -1134,10 +1375,11 @@ public class CaseService {
           // remember previous value in-case we need to cancel
           Map<String, Map<String, String>> previousCategories =
               previousAssignmentsByCaseId.computeIfAbsent(caseId, (x) -> new HashMap<>());
-          Map<String, String> previousReleases = previousCategories
-              .computeIfAbsent(signoff.getDeliverableType(), (x) -> new HashMap<>());
-          previousReleases.put(signoff.getDeliverable(),
-              categoryAssignments.get(signoff.getDeliverable()));
+          Map<String, String> previousReleases =
+              previousCategories.computeIfAbsent(
+                  signoff.getDeliverableType(), (x) -> new HashMap<>());
+          previousReleases.put(
+              signoff.getDeliverable(), categoryAssignments.get(signoff.getDeliverable()));
 
           categoryAssignments.put(signoff.getDeliverable(), signoff.getUsername());
         }
@@ -1154,8 +1396,10 @@ public class CaseService {
             Map<String, String> previousAssignmentsByDeliverable =
                 previousAssignmentsByCategory.get(category);
             for (String deliverable : previousAssignmentsByDeliverable.keySet()) {
-              cachedReleaseAssignments.get(caseId).get(category).put(deliverable,
-                  previousAssignmentsByDeliverable.get(deliverable));
+              cachedReleaseAssignments
+                  .get(caseId)
+                  .get(category)
+                  .put(deliverable, previousAssignmentsByDeliverable.get(deliverable));
             }
           }
         }
@@ -1173,8 +1417,9 @@ public class CaseService {
     File file = new File(dataDirectory, ASSIGNMENT_FILE);
     if (file.exists()) {
       synchronized (cachedSignoffsByCaseId) {
-        cachedReleaseAssignments = jsonMapper.readValue(file,
-            new TypeReference<Map<String, Map<String, Map<String, String>>>>() {});
+        cachedReleaseAssignments =
+            jsonMapper.readValue(
+                file, new TypeReference<Map<String, Map<String, Map<String, String>>>>() {});
         assignmentsChanged = false;
         updateAssignmentsCount();
       }
@@ -1202,26 +1447,30 @@ public class CaseService {
   }
 
   private void updateAssignmentsCount() {
-    assignmentsCount = cachedReleaseAssignments.values().stream()
-        .flatMap(byCategory -> byCategory.values().stream())
-        .mapToInt(byDeliverable -> byDeliverable.size()).sum();
+    assignmentsCount =
+        cachedReleaseAssignments.values().stream()
+            .flatMap(byCategory -> byCategory.values().stream())
+            .mapToInt(byDeliverable -> byDeliverable.size())
+            .sum();
   }
 
   private void refreshCacheUpdatedCases() {
     synchronized (cachedSignoffsByCaseId) {
       removeExpiredCachedSignoffs();
 
-      cacheUpdatedCases = caseData.getCases().stream()
-          .map(kase -> {
-            List<NabuSavedSignoff> signoffs = cachedSignoffsByCaseId.get(kase.getId());
-            Map<String, Map<String, String>> assignments =
-                updateAndGetCaseAssignments(kase, signoffs);
-            return signoffs != null || assignments != null
-                ? makeCacheUpdatedCase(kase, signoffs, assignments)
-                : kase;
-          })
-          .collect(
-              Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+      cacheUpdatedCases =
+          caseData.getCases().stream()
+              .map(
+                  kase -> {
+                    List<NabuSavedSignoff> signoffs = cachedSignoffsByCaseId.get(kase.getId());
+                    Map<String, Map<String, String>> assignments =
+                        updateAndGetCaseAssignments(kase, signoffs);
+                    return signoffs != null || assignments != null
+                        ? makeCacheUpdatedCase(kase, signoffs, assignments)
+                        : kase;
+                  })
+              .collect(
+                  Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
       tryDumpAssignments();
     }
   }
@@ -1239,8 +1488,8 @@ public class CaseService {
     }
   }
 
-  private Map<String, Map<String, String>> updateAndGetCaseAssignments(Case kase,
-      List<NabuSavedSignoff> cachedCaseSignoffs) {
+  private Map<String, Map<String, String>> updateAndGetCaseAssignments(
+      Case kase, List<NabuSavedSignoff> cachedCaseSignoffs) {
     Map<String, Map<String, String>> caseAssignments = cachedReleaseAssignments.get(kase.getId());
     if (caseAssignments == null) {
       return null;
@@ -1257,11 +1506,15 @@ public class CaseService {
         }
         if (release.getQcStatus() != null && !release.getQcStatus().isPending()) {
           categoryAssignments.remove(release.getDeliverable());
-        } else if (cachedCaseSignoffs != null && cachedCaseSignoffs.stream()
-            .anyMatch(signoff -> signoff.getSignoffStepName() == NabuSignoffStep.RELEASE
-                && Objects.equals(signoff.getDeliverableType(), category.getDeliverableCategory())
-                && Objects.equals(signoff.getDeliverable(), release.getDeliverable())
-                && (signoff.getQcPassed() != null || signoff.getRelease() != null))) {
+        } else if (cachedCaseSignoffs != null
+            && cachedCaseSignoffs.stream()
+                .anyMatch(
+                    signoff ->
+                        signoff.getSignoffStepName() == NabuSignoffStep.RELEASE
+                            && Objects.equals(
+                                signoff.getDeliverableType(), category.getDeliverableCategory())
+                            && Objects.equals(signoff.getDeliverable(), release.getDeliverable())
+                            && (signoff.getQcPassed() != null || signoff.getRelease() != null))) {
           categoryAssignments.remove(release.getDeliverable());
           assignmentsChanged = true;
         }
@@ -1293,9 +1546,12 @@ public class CaseService {
             caseAssignments.getValue().entrySet().iterator();
         while (categoryIterator.hasNext()) {
           Map.Entry<String, Map<String, String>> categoryAssignments = categoryIterator.next();
-          CaseDeliverable caseDeliverable = kase.getDeliverables().stream()
-              .filter(x -> Objects.equals(x.getDeliverableCategory(), categoryAssignments.getKey()))
-              .findFirst().orElse(null);
+          CaseDeliverable caseDeliverable =
+              kase.getDeliverables().stream()
+                  .filter(
+                      x -> Objects.equals(x.getDeliverableCategory(), categoryAssignments.getKey()))
+                  .findFirst()
+                  .orElse(null);
           if (caseDeliverable == null) {
             categoryIterator.remove();
             assignmentsChanged = true;
@@ -1305,8 +1561,9 @@ public class CaseService {
               categoryAssignments.getValue().entrySet().iterator();
           while (deliverableIterator.hasNext()) {
             Map.Entry<String, String> deliverableAssignment = deliverableIterator.next();
-            if (caseDeliverable.getReleases().stream().noneMatch(
-                x -> Objects.equals(x.getDeliverable(), deliverableAssignment.getKey()))) {
+            if (caseDeliverable.getReleases().stream()
+                .noneMatch(
+                    x -> Objects.equals(x.getDeliverable(), deliverableAssignment.getKey()))) {
               deliverableIterator.remove();
               assignmentsChanged = true;
               continue;
@@ -1324,7 +1581,9 @@ public class CaseService {
     }
   }
 
-  private Case makeCacheUpdatedCase(Case kase, Collection<NabuSavedSignoff> signoffs,
+  private Case makeCacheUpdatedCase(
+      Case kase,
+      Collection<NabuSavedSignoff> signoffs,
       Map<String, Map<String, String>> releaseAssignments) {
     Case result = kase;
     if (signoffs == null) {
@@ -1335,5 +1594,4 @@ public class CaseService {
     }
     return result;
   }
-
 }

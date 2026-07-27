@@ -3,10 +3,7 @@ import { BasicDropdownOption, Dropdown, DropdownOption } from "./dropdown";
 
 interface FormAction {
   title: string;
-  handler: (
-    resolve: (value?: any) => void,
-    reject: (reason: string) => void,
-  ) => void;
+  handler: (resolve: (value?: any) => void, reject: (reason: string) => void) => void;
 }
 
 /**
@@ -32,8 +29,7 @@ function showDialog(
   const header = document.createElement("div");
   header.className = "flex flex-row items-center border-b-1 border-grey-200";
   const titleElement = document.createElement("span");
-  titleElement.className =
-    "font-sarabun font-thin text-green-200 text-24 my-2 mx-4";
+  titleElement.className = "font-sarabun font-thin text-green-200 text-24 my-2 mx-4";
   titleElement.innerText = title;
   const spacer = document.createElement("div");
   spacer.className = "flex-auto";
@@ -68,8 +64,7 @@ function showDialog(
   dialog.append(header, body);
   if (actions) {
     const footer = document.createElement("div");
-    footer.className =
-      "border-t-1 border-grey-200 pt-2 flex justify-end space-x-1";
+    footer.className = "border-t-1 border-grey-200 pt-2 flex justify-end space-x-1";
     for (let action of actions) {
       addActionButton(footer, action.title, () =>
         action.handler(
@@ -138,11 +133,7 @@ function addText(body: Node, text: string) {
   body.appendChild(textElement);
 }
 
-export function showConfirmDialog(
-  title: string,
-  text: string,
-  action: FormAction,
-) {
+export function showConfirmDialog(title: string, text: string, action: FormAction) {
   showDialog(title, (body) => addText(body, text), true, [action]);
 }
 
@@ -206,9 +197,7 @@ export class TextField extends FormField<string> {
   }
 
   getValue() {
-    return this.input == null ||
-      this.input.value == null ||
-      !this.input.value.length
+    return this.input == null || this.input.value == null || !this.input.value.length
       ? null
       : this.input.value;
   }
@@ -277,12 +266,7 @@ export class DropdownField<FieldType> extends FormField<FieldType> {
         }),
       );
     }
-    const dropdown = new Dropdown(
-      dropdownOptions,
-      true,
-      undefined,
-      this.defaultLabel || nullText,
-    );
+    const dropdown = new Dropdown(dropdownOptions, true, undefined, this.defaultLabel || nullText);
     const element = dropdown.getContainerTag();
     element.classList.add("w-48");
     container.appendChild(element);
@@ -380,14 +364,7 @@ export function showDownloadOptionsDialog(
     ],
   ]);
   let fields: FormField<any>[] = [
-    new DropdownField(
-      "Format",
-      formatOptions,
-      "formatOptions",
-      true,
-      undefined,
-      "Excel",
-    ),
+    new DropdownField("Format", formatOptions, "formatOptions", true, undefined, "Excel"),
   ];
   if (additionalFields) {
     fields = fields.concat(additionalFields);

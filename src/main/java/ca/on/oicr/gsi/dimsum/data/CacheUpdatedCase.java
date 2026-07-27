@@ -1,13 +1,7 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+
 import ca.on.oicr.gsi.cardea.data.AnalysisQcGroup;
 import ca.on.oicr.gsi.cardea.data.ArchivingStatus;
 import ca.on.oicr.gsi.cardea.data.Case;
@@ -17,26 +11,38 @@ import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class CacheUpdatedCase implements Case {
 
   private final Case baseCase;
   private final List<CaseDeliverable> cacheUpdatedDeliverables;
 
-  public CacheUpdatedCase(Case baseCase, NabuSavedSignoff signoff,
+  public CacheUpdatedCase(
+      Case baseCase,
+      NabuSavedSignoff signoff,
       Map<String, Map<String, String>> releaseAssignments) {
     this.baseCase = requireNonNull(baseCase);
     List<CaseDeliverable> deliverables = new ArrayList<>();
     for (CaseDeliverable original : baseCase.getDeliverables()) {
-      NabuSavedSignoff categorySignoff = signoff != null
-          && Objects.equals(original.getDeliverableCategory(), signoff.getDeliverableType())
+      NabuSavedSignoff categorySignoff =
+          signoff != null
+                  && Objects.equals(original.getDeliverableCategory(), signoff.getDeliverableType())
               ? signoff
               : null;
-      Map<String, String> categoryAssignments = releaseAssignments == null ? null
-          : releaseAssignments.get(original.getDeliverableCategory());
+      Map<String, String> categoryAssignments =
+          releaseAssignments == null
+              ? null
+              : releaseAssignments.get(original.getDeliverableCategory());
       if (categorySignoff != null || categoryAssignments != null) {
-        deliverables
-            .add(new CacheUpdatedCaseDeliverable(original, categorySignoff, categoryAssignments));
+        deliverables.add(
+            new CacheUpdatedCaseDeliverable(original, categorySignoff, categoryAssignments));
       } else {
         deliverables.add(original);
       }
@@ -173,5 +179,4 @@ public class CacheUpdatedCase implements Case {
   public Integer getArchivingTtlDays() {
     return baseCase.getArchivingTtlDays();
   }
-
 }

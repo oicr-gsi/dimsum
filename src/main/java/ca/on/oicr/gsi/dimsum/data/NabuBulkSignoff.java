@@ -13,5 +13,4 @@ public class NabuBulkSignoff extends NabuSignoff {
   public void setCaseIdentifiers(List<String> caseIdentifiers) {
     this.caseIdentifiers = caseIdentifiers;
   }
-
 }

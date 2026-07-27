@@ -1,6 +1,11 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
+
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.SampleMetric;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -12,10 +17,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import ca.on.oicr.gsi.cardea.data.Donor;
-import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.Sample;
-import ca.on.oicr.gsi.cardea.data.SampleMetric;
 
 public class SampleAndRelated implements Sample {
 
@@ -314,10 +315,11 @@ public class SampleAndRelated implements Sample {
 
     public Builder(Sample sample, Collection<Sample> relatedSamples) {
       this.sample = sample;
-      this.relatedSamples = relatedSamples.stream()
-          .filter(related -> !Objects.equals(related.getId(), sample.getId()))
-          .map(RelatedSample::new)
-          .collect(Collectors.toMap(RelatedSample::getId, Function.identity()));
+      this.relatedSamples =
+          relatedSamples.stream()
+              .filter(related -> !Objects.equals(related.getId(), sample.getId()))
+              .map(RelatedSample::new)
+              .collect(Collectors.toMap(RelatedSample::getId, Function.identity()));
     }
 
     public Builder addRelatedSamples(Collection<Sample> relatedSamples) {
@@ -325,8 +327,7 @@ public class SampleAndRelated implements Sample {
         if (Objects.equals(relatedSample.getId(), sample.getId())) {
           continue;
         }
-        this.relatedSamples.putIfAbsent(relatedSample.getId(),
-            new RelatedSample(relatedSample));
+        this.relatedSamples.putIfAbsent(relatedSample.getId(), new RelatedSample(relatedSample));
       }
       return this;
     }
@@ -334,7 +335,5 @@ public class SampleAndRelated implements Sample {
     public SampleAndRelated build() {
       return new SampleAndRelated(this);
     }
-
   }
-
 }

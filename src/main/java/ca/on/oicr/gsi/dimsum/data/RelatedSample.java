@@ -1,9 +1,10 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-import java.util.Objects;
+
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import java.util.Objects;
 
 public class RelatedSample {
 
@@ -62,5 +63,4 @@ public class RelatedSample {
   public String getSequencingLane() {
     return sequencingLane;
   }
-
 }

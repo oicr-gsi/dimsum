@@ -1,19 +1,5 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import com.atlassian.jira.rest.client.api.domain.Issue;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Run;
@@ -28,8 +14,22 @@ import ca.on.oicr.gsi.dimsum.data.SampleAndRelated;
 import ca.on.oicr.gsi.dimsum.service.filtering.NotificationSort;
 import ca.on.oicr.gsi.dimsum.service.filtering.TableData;
 import ca.on.oicr.gsi.dimsum.util.Counter;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class NotificationManager {
@@ -45,6 +45,7 @@ public class NotificationManager {
 
   @Value("${baseurl}")
   private String baseUrl;
+
   @Value("${jira.resolutions.override:#{null}}")
   private String resolutionOverride;
 
@@ -76,14 +77,17 @@ public class NotificationManager {
     Set<String> handledRunNames = new HashSet<>();
     List<Notification> newNotifications =
         updateOpenIssues(data, assaysById, handledRunNames, jiraErrorCounter);
-    newNotifications
-        .addAll(createOrReopenIssues(data, assaysById, handledRunNames, jiraErrorCounter));
+    newNotifications.addAll(
+        createOrReopenIssues(data, assaysById, handledRunNames, jiraErrorCounter));
     notifications = newNotifications;
     jiraErrors = jiraErrorCounter.getCount();
   }
 
-  private List<Notification> updateOpenIssues(Map<String, RunAndLibraries> data,
-      Map<Long, Assay> assaysById, Set<String> handledRunNames, Counter jiraErrorCounter) {
+  private List<Notification> updateOpenIssues(
+      Map<String, RunAndLibraries> data,
+      Map<Long, Assay> assaysById,
+      Set<String> handledRunNames,
+      Counter jiraErrorCounter) {
     List<Notification> newNotifications = new ArrayList<>();
     if (issueTracker == null) {
       return newNotifications;
@@ -173,59 +177,65 @@ public class NotificationManager {
     }
   }
 
-  private List<Notification> createOrReopenIssues(Map<String, RunAndLibraries> data,
-      Map<Long, Assay> assaysById, Set<String> handledRunNames, Counter jiraErrorCounter) {
+  private List<Notification> createOrReopenIssues(
+      Map<String, RunAndLibraries> data,
+      Map<Long, Assay> assaysById,
+      Set<String> handledRunNames,
+      Counter jiraErrorCounter) {
     List<Notification> newNotifications = new ArrayList<>();
     data.values().stream()
-        .filter(x -> !handledRunNames.contains(x.getRun().getName())
-            && (readyForLibraryQualificationQc(x, assaysById)
-                || readyForFullDepthQc(x, assaysById)))
+        .filter(
+            x ->
+                !handledRunNames.contains(x.getRun().getName())
+                    && (readyForLibraryQualificationQc(x, assaysById)
+                        || readyForFullDepthQc(x, assaysById)))
         .map(x -> makeNotification(x, assaysById, false, null))
         .filter(Objects::nonNull)
-        .forEach(x -> {
-          if (issueTracker == null) {
-            newNotifications.add(x);
-            return;
-          }
-          String runName = x.getRun().getName();
-          log.debug("Processing run without existing open ticket: {}", runName);
-          String issueSummary = runName + SUMMARY_SUFFIX_RUN_QC;
-          Issue issue = null;
-          try {
-            issue = issueTracker.getIssueBySummary(issueSummary);
-          } catch (Exception e) {
-            jiraErrorCounter.increment();
-            log.error("Error searching for issue", e);
-            newNotifications.add(x);
-            return;
-          }
-          if (issue == null) {
-            log.debug("Creating new ticket for {}", runName);
-            try {
-              String newIssueKey =
-                  issueTracker.createIssue(issueSummary,
-                      x.makeComment(baseUrl, resolutionOverride));
-              newNotifications.add(x.withIssueKey(newIssueKey));
-            } catch (Exception e) {
-              jiraErrorCounter.increment();
-              log.error("Error creating issue", e);
-              newNotifications.add(x);
-            }
-          } else {
-            IssueState issueState = issueTracker.getIssueState(issue);
-            if (issueState != IssueState.OVERRIDDEN) {
-              updateIssue(issue, x, jiraErrorCounter);
-              newNotifications.add(x.withIssueKey(issue.getKey()));
-            } else {
-              log.debug("Aborting update on overridden ticket {}", issue.getSummary());
-            }
-          }
-        });
+        .forEach(
+            x -> {
+              if (issueTracker == null) {
+                newNotifications.add(x);
+                return;
+              }
+              String runName = x.getRun().getName();
+              log.debug("Processing run without existing open ticket: {}", runName);
+              String issueSummary = runName + SUMMARY_SUFFIX_RUN_QC;
+              Issue issue = null;
+              try {
+                issue = issueTracker.getIssueBySummary(issueSummary);
+              } catch (Exception e) {
+                jiraErrorCounter.increment();
+                log.error("Error searching for issue", e);
+                newNotifications.add(x);
+                return;
+              }
+              if (issue == null) {
+                log.debug("Creating new ticket for {}", runName);
+                try {
+                  String newIssueKey =
+                      issueTracker.createIssue(
+                          issueSummary, x.makeComment(baseUrl, resolutionOverride));
+                  newNotifications.add(x.withIssueKey(newIssueKey));
+                } catch (Exception e) {
+                  jiraErrorCounter.increment();
+                  log.error("Error creating issue", e);
+                  newNotifications.add(x);
+                }
+              } else {
+                IssueState issueState = issueTracker.getIssueState(issue);
+                if (issueState != IssueState.OVERRIDDEN) {
+                  updateIssue(issue, x, jiraErrorCounter);
+                  newNotifications.add(x.withIssueKey(issue.getKey()));
+                } else {
+                  log.debug("Aborting update on overridden ticket {}", issue.getSummary());
+                }
+              }
+            });
     return newNotifications;
   }
 
-  protected boolean readyForLibraryQualificationQc(RunAndLibraries runAndLibraries,
-      Map<Long, Assay> assaysById) {
+  protected boolean readyForLibraryQualificationQc(
+      RunAndLibraries runAndLibraries, Map<Long, Assay> assaysById) {
     Set<SampleAndRelated> libraries = runAndLibraries.getLibraryQualifications();
     if (libraries.isEmpty()) {
       return false;
@@ -233,13 +243,14 @@ public class NotificationManager {
     Run run = runAndLibraries.getRun();
     // "ready" if metrics for ALL libraries are available and ANY library or run sign-off is needed
     return libraries.stream()
-        .allMatch(x -> metricsAvailable(x, run, assaysById, MetricCategory.LIBRARY_QUALIFICATION))
+            .allMatch(
+                x -> metricsAvailable(x, run, assaysById, MetricCategory.LIBRARY_QUALIFICATION))
         && (libraries.stream().anyMatch(x -> x.getDataReviewDate() == null)
             || run.getDataReviewDate() == null);
   }
 
-  protected boolean readyForFullDepthQc(RunAndLibraries runAndLibraries,
-      Map<Long, Assay> assaysById) {
+  protected boolean readyForFullDepthQc(
+      RunAndLibraries runAndLibraries, Map<Long, Assay> assaysById) {
     Set<SampleAndRelated> libraries = runAndLibraries.getFullDepthSequencings();
     if (libraries.isEmpty()) {
       return false;
@@ -248,23 +259,39 @@ public class NotificationManager {
     final MetricCategory category = MetricCategory.FULL_DEPTH_SEQUENCING;
     // "ready" if ANY library has metrics available AND ANY such library or the run needs sign-off
     return libraries.stream()
-        .anyMatch(x -> metricsAvailable(x, run, assaysById, category)
-            && (x.getDataReviewDate() == null || run.getDataReviewDate() == null));
+        .anyMatch(
+            x ->
+                metricsAvailable(x, run, assaysById, category)
+                    && (x.getDataReviewDate() == null || run.getDataReviewDate() == null));
   }
 
-  private Notification makeNotification(RunAndLibraries runAndLibraries,
-      Map<Long, Assay> assaysById, boolean returnIfPendingAnalysisOnly, String issueKey) {
+  private Notification makeNotification(
+      RunAndLibraries runAndLibraries,
+      Map<Long, Assay> assaysById,
+      boolean returnIfPendingAnalysisOnly,
+      String issueKey) {
     Run run = runAndLibraries.getRun();
     Set<Sample> pendingAnalysis = new HashSet<>();
     Set<Sample> pendingQc = new HashSet<>();
     Set<Sample> pendingDataReview = new HashSet<>();
-    sortSamples(runAndLibraries.getLibraryQualifications(), run, assaysById,
-        MetricCategory.LIBRARY_QUALIFICATION, pendingAnalysis, pendingQc, pendingDataReview);
-    sortSamples(runAndLibraries.getFullDepthSequencings(), run, assaysById,
-        MetricCategory.FULL_DEPTH_SEQUENCING, pendingAnalysis, pendingQc, pendingDataReview);
+    sortSamples(
+        runAndLibraries.getLibraryQualifications(),
+        run,
+        assaysById,
+        MetricCategory.LIBRARY_QUALIFICATION,
+        pendingAnalysis,
+        pendingQc,
+        pendingDataReview);
+    sortSamples(
+        runAndLibraries.getFullDepthSequencings(),
+        run,
+        assaysById,
+        MetricCategory.FULL_DEPTH_SEQUENCING,
+        pendingAnalysis,
+        pendingQc,
+        pendingDataReview);
 
-    if (pendingQc.isEmpty() && pendingDataReview.isEmpty()
-        && run.getDataReviewDate() != null) {
+    if (pendingQc.isEmpty() && pendingDataReview.isEmpty() && run.getDataReviewDate() != null) {
       if (returnIfPendingAnalysisOnly) {
         if (pendingAnalysis.isEmpty()) {
           return null;
@@ -276,8 +303,13 @@ public class NotificationManager {
     return new Notification(run, pendingAnalysis, pendingQc, pendingDataReview, issueKey);
   }
 
-  private void sortSamples(Set<SampleAndRelated> runLibs, Run run, Map<Long, Assay> assaysById,
-      MetricCategory category, Set<Sample> pendingAnalysis, Set<Sample> pendingQc,
+  private void sortSamples(
+      Set<SampleAndRelated> runLibs,
+      Run run,
+      Map<Long, Assay> assaysById,
+      MetricCategory category,
+      Set<Sample> pendingAnalysis,
+      Set<Sample> pendingQc,
       Set<Sample> pendingDataReview) {
     for (SampleAndRelated sample : runLibs) {
       if (sample.getDataReviewDate() != null) {
@@ -292,15 +324,15 @@ public class NotificationManager {
     }
   }
 
-  public TableData<Notification> getNotifications(int pageSize, int pageNumber,
-      NotificationSort sort,
-      boolean descending) {
+  public TableData<Notification> getNotifications(
+      int pageSize, int pageNumber, NotificationSort sort, boolean descending) {
     List<Notification> currentNotifications = notifications;
-    List<Notification> includedNotifications = currentNotifications.stream()
-        .sorted(descending ? sort.comparator().reversed() : sort.comparator())
-        .skip(pageSize * (pageNumber - 1))
-        .limit(pageSize)
-        .toList();
+    List<Notification> includedNotifications =
+        currentNotifications.stream()
+            .sorted(descending ? sort.comparator().reversed() : sort.comparator())
+            .skip(pageSize * (pageNumber - 1))
+            .limit(pageSize)
+            .toList();
     TableData<Notification> data = new TableData<>();
     data.setTotalCount(currentNotifications.size());
     data.setFilteredCount(currentNotifications.size());
@@ -308,8 +340,8 @@ public class NotificationManager {
     return data;
   }
 
-  protected boolean metricsAvailable(Sample sample, Run run, Map<Long, Assay> assaysById,
-      MetricCategory metricCategory) {
+  protected boolean metricsAvailable(
+      Sample sample, Run run, Map<Long, Assay> assaysById, MetricCategory metricCategory) {
     if (metricCategory != MetricCategory.LIBRARY_QUALIFICATION
         && metricCategory != MetricCategory.FULL_DEPTH_SEQUENCING) {
       throw new IllegalArgumentException(
@@ -321,11 +353,11 @@ public class NotificationManager {
     }
     for (SampleMetric metric : sample.getMetrics()) {
       if ((Objects.equals("Sample Authenticated", metric.getName())
-          || metric.getThresholdType() != ThresholdType.BOOLEAN) && metric.getQcPassed() == null) {
+              || metric.getThresholdType() != ThresholdType.BOOLEAN)
+          && metric.getQcPassed() == null) {
         return false;
       }
     }
     return true;
   }
-
 }

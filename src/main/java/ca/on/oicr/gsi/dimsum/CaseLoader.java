@@ -1,5 +1,19 @@
 package ca.on.oicr.gsi.dimsum;
 
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
+import ca.on.oicr.gsi.cardea.data.Project;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.Test;
+import ca.on.oicr.gsi.dimsum.data.CaseData;
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
+import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
+import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -18,20 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.Case;
-import ca.on.oicr.gsi.cardea.data.OmittedSample;
-import ca.on.oicr.gsi.cardea.data.Project;
-import ca.on.oicr.gsi.cardea.data.Sample;
-import ca.on.oicr.gsi.cardea.data.Test;
-import ca.on.oicr.gsi.dimsum.data.CaseData;
-import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
-import ca.on.oicr.gsi.dimsum.data.RunAndLibraries;
-import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
-import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
-import ca.on.oicr.gsi.dimsum.util.DataUtils;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 
 @Component
 public class CaseLoader {
@@ -42,19 +42,19 @@ public class CaseLoader {
 
   @Value("${cardea.url}")
   private String cardeaUrl; // to store Cardea url that is passed in CaseLoader constructor
+
   private final int LIMIT_FOR_DATA_LOAD = 1073741824; // 1GB to load the data from Cardea
-
-
 
   public CaseLoader(@Autowired MeterRegistry meterRegistry) {
     if (meterRegistry != null) {
-      refreshTimer = Timer.builder("case_data_refresh_time")
-          .description("Time taken to refresh the case data").register(meterRegistry);
+      refreshTimer =
+          Timer.builder("case_data_refresh_time")
+              .description("Time taken to refresh the case data")
+              .register(meterRegistry);
     }
   }
 
   /**
-   *
    * @param previousTimestamp timestamp of previous successful load
    * @return case data if it is available and newer than the previous Timestamp; null otherwise
    */
@@ -62,8 +62,14 @@ public class CaseLoader {
     log.debug("Loading case data...");
 
     WebClient.Builder builder = WebClient.builder();
-    ZonedDateTime currentTimeStamp = builder.build().get().uri(cardeaUrl + "/timestamp").retrieve()
-        .bodyToMono(ZonedDateTime.class).block();
+    ZonedDateTime currentTimeStamp =
+        builder
+            .build()
+            .get()
+            .uri(cardeaUrl + "/timestamp")
+            .retrieve()
+            .bodyToMono(ZonedDateTime.class)
+            .block();
 
     if (previousTimestamp != null && !currentTimeStamp.isAfter(previousTimestamp)) {
       log.debug("Current case data is up to date with Cardea; aborting reload.");
@@ -85,9 +91,19 @@ public class CaseLoader {
     ZonedDateTime afterTimestamp = cardeaCaseData.getTimestamp();
 
     CaseData caseData =
-        new CaseData(cardeaCaseData.getCases(), runsByName, assaysById, omittedSamples,
-            cardeaCaseData.getOmittedRunSamples(), afterTimestamp, requisitionNames, projectsNames,
-            donorNames, getRunNames(runsByName), testNames, projectSummariesByName);
+        new CaseData(
+            cardeaCaseData.getCases(),
+            runsByName,
+            assaysById,
+            omittedSamples,
+            cardeaCaseData.getOmittedRunSamples(),
+            afterTimestamp,
+            requisitionNames,
+            projectsNames,
+            donorNames,
+            getRunNames(runsByName),
+            testNames,
+            projectSummariesByName);
 
     log.debug(String.format("Completed loading %d cases.", cardeaCaseData.getCases().size()));
     if (refreshTimer != null) {
@@ -97,50 +113,60 @@ public class CaseLoader {
   }
 
   /**
-   * 
    * @param builder WebClient builder state used to fetch data from Cardea API `/dimsum` endpoint
    */
   private ca.on.oicr.gsi.cardea.data.CaseData loadCardeaData(WebClient.Builder builder)
       throws IOException {
-    ca.on.oicr.gsi.cardea.data.CaseData data = builder
-        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(LIMIT_FOR_DATA_LOAD))
-        .build().get().uri(cardeaUrl + "/dimsum").retrieve()
-        .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class).blockLast();
+    ca.on.oicr.gsi.cardea.data.CaseData data =
+        builder
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(LIMIT_FOR_DATA_LOAD))
+            .build()
+            .get()
+            .uri(cardeaUrl + "/dimsum")
+            .retrieve()
+            .bodyToFlux(ca.on.oicr.gsi.cardea.data.CaseData.class)
+            .blockLast();
     if (data == null) {
       throw new IOException("Cardea's Case API returned an empty response");
     }
     return data;
   }
 
-
   public Set<String> loadRequisitionNames(List<Case> cases) {
     Set<String> requisitionNames = new HashSet<>();
-    cases.forEach(kase -> {
-      requisitionNames.add(kase.getRequisition().getName());
-    });
+    cases.forEach(
+        kase -> {
+          requisitionNames.add(kase.getRequisition().getName());
+        });
     return requisitionNames;
   }
 
   public Set<String> loadProjectsNames(List<Case> cases) {
     Set<String> projectsNames = new HashSet<>();
-    cases.forEach(kase -> {
-      kase.getProjects().forEach(project -> {
-        projectsNames.add(project.getName());
-      });
-    });
+    cases.forEach(
+        kase -> {
+          kase.getProjects()
+              .forEach(
+                  project -> {
+                    projectsNames.add(project.getName());
+                  });
+        });
     return projectsNames;
   }
 
   public Set<String> loadDonorNames(List<Case> cases) {
     Set<String> donorNames = new HashSet<>();
-    cases.forEach(kase -> {
-      donorNames.add(kase.getDonor().getName());
-    });
+    cases.forEach(
+        kase -> {
+          donorNames.add(kase.getDonor().getName());
+        });
     return donorNames;
   }
 
   private static Set<String> getTestNames(List<Case> cases) {
-    return cases.stream().flatMap(kase -> kase.getTests().stream()).map(test -> test.getName())
+    return cases.stream()
+        .flatMap(kase -> kase.getTests().stream())
+        .map(test -> test.getName())
         .collect(Collectors.toSet());
   }
 
@@ -178,8 +204,8 @@ public class CaseLoader {
     R apply(T input) throws DataParseException;
   }
 
-  public static Map<String, ProjectSummary> calculateProjectSummaries(List<Case> cases,
-      LocalDate afterDate, LocalDate beforeDate) {
+  public static Map<String, ProjectSummary> calculateProjectSummaries(
+      List<Case> cases, LocalDate afterDate, LocalDate beforeDate) {
     Map<String, ProjectSummary.Builder> tempProjectSummariesByName = new HashMap<>();
     for (Case kase : cases) {
       addCounts(kase, kase.getTests(), tempProjectSummariesByName, afterDate, beforeDate);
@@ -196,14 +222,15 @@ public class CaseLoader {
       addCounts(kase, map.get(kase), tempProjectSummariesByName, afterDate, beforeDate);
     }
     return buildProjectSummaries(tempProjectSummariesByName);
-
   }
 
-  private static void addCounts(Case kase, List<Test> tests,
-      Map<String, ProjectSummary.Builder> tempProjectSummariesByName, LocalDate afterDate,
+  private static void addCounts(
+      Case kase,
+      List<Test> tests,
+      Map<String, ProjectSummary.Builder> tempProjectSummariesByName,
+      LocalDate afterDate,
       LocalDate beforeDate) {
-    ProjectSummary.Builder caseSummary =
-        new ProjectSummary.Builder();
+    ProjectSummary.Builder caseSummary = new ProjectSummary.Builder();
     int testSize = tests != null ? tests.size() : 0;
     caseSummary.totalTestCount(testSize);
     if (PendingState.RECEIPT_QC.qualifyCase(kase, null) && !kase.isStopped()) {
@@ -241,7 +268,7 @@ public class CaseLoader {
             && anySamplesMatch(test.getLibraryQualifications(), afterDate, beforeDate)) {
           caseSummary.incrementLibraryQualCompletedCount();
         } else if ((PendingState.LIBRARY_QUALIFICATION_QC.qualifyTest(test)
-            || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
+                || PendingState.LIBRARY_QUALIFICATION_DATA_REVIEW.qualifyTest(test))
             && !kase.isStopped()) {
           caseSummary.incrementLibraryQualPendingQcCount();
         } else if (PendingState.LIBRARY_QUALIFICATION.qualifyTest(test) && !kase.isStopped()) {
@@ -253,7 +280,8 @@ public class CaseLoader {
             && anySamplesMatch(test.getFullDepthSequencings(), afterDate, beforeDate)) {
           caseSummary.incrementFullDepthSeqCompletedCount();
         } else if ((PendingState.FULL_DEPTH_QC.qualifyTest(test)
-            || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test)) && !kase.isStopped()) {
+                || PendingState.FULL_DEPTH_DATA_REVIEW.qualifyTest(test))
+            && !kase.isStopped()) {
           caseSummary.incrementFullDepthSeqPendingQcCount();
         } else if (PendingState.FULL_DEPTH_SEQUENCING.qualifyTest(test) && !kase.isStopped()) {
           caseSummary.incrementFullDepthSeqPendingCount();
@@ -284,8 +312,11 @@ public class CaseLoader {
     // release
     if (CompletedGate.RELEASE.qualifyCase(kase, null)
         && kase.getDeliverables().stream()
-            .anyMatch(d -> d.getReleases() != null && d.getReleases().stream()
-                .anyMatch(r -> dateBetween(r.getQcDate(), afterDate, beforeDate)))) {
+            .anyMatch(
+                d ->
+                    d.getReleases() != null
+                        && d.getReleases().stream()
+                            .anyMatch(r -> dateBetween(r.getQcDate(), afterDate, beforeDate)))) {
       caseSummary.releaseCompletedCount(testSize);
     }
     if (PendingState.RELEASE.qualifyCase(kase, null)) {
@@ -300,7 +331,9 @@ public class CaseLoader {
         tempProjectSummariesByName.get(project.getName()).addCounts(caseSummary);
       } else {
         ProjectSummary.Builder projectSummary =
-            new ProjectSummary.Builder().name(project.getName()).addCounts(caseSummary)
+            new ProjectSummary.Builder()
+                .name(project.getName())
+                .addCounts(caseSummary)
                 .pipeline(project.getPipeline());
         tempProjectSummariesByName.put(project.getName(), projectSummary);
       }
@@ -331,20 +364,22 @@ public class CaseLoader {
     return projectSummariesByName;
   }
 
-  private static boolean anySamplesMatch(List<Sample> samples, LocalDate afterDate,
-      LocalDate beforeDate) {
+  private static boolean anySamplesMatch(
+      List<Sample> samples, LocalDate afterDate, LocalDate beforeDate) {
     if (samples.isEmpty()) {
       return false;
     } else if (afterDate == null && beforeDate == null) {
       return true;
     }
-    return samples.stream().anyMatch(sample -> {
-      LocalDate qcDate = sample.getRun() == null ? sample.getQcDate() : sample.getDataReviewDate();
-      if (qcDate == null) {
-        return false;
-      }
-      return dateBetween(qcDate, afterDate, beforeDate);
-    });
+    return samples.stream()
+        .anyMatch(
+            sample -> {
+              LocalDate qcDate =
+                  sample.getRun() == null ? sample.getQcDate() : sample.getDataReviewDate();
+              if (qcDate == null) {
+                return false;
+              }
+              return dateBetween(qcDate, afterDate, beforeDate);
+            });
   }
-
 }

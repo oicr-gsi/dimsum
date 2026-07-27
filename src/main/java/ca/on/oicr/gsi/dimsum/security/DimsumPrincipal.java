@@ -4,9 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.springframework.security.core.AuthenticatedPrincipal;
 
-/**
- * Principal that contains all authorization data relevant to Dimsum for convenient access
- */
+/** Principal that contains all authorization data relevant to Dimsum for convenient access */
 public class DimsumPrincipal implements AuthenticatedPrincipal {
 
   private final String name;
@@ -37,5 +35,4 @@ public class DimsumPrincipal implements AuthenticatedPrincipal {
   public Set<String> getProjects() {
     return projects;
   }
-
 }
