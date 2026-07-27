@@ -173,6 +173,66 @@
             -Dspring.config.location=classpath:/application.yml,classpath:/application-noauth.yml,classpath:/application-test.properties</argLine>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>3.8.0</version>
+        <configuration>
+          <pom>
+            <sortPom/>
+          </pom>
+          <markdown>
+            <includes>
+              <include>**/*.md</include>
+            </includes>
+            <excludes>
+              <exclude>LICENSE</exclude>
+              <exclude>node_modules/**/*</exclude>
+              <exclude>target/**/*</exclude>
+            </excludes>
+            <flexmark/>
+          </markdown>
+          <java>
+            <googleJavaFormat/>
+          </java>
+          <typescript>
+            <includes>
+              <include>ts/**/*.ts</include>
+            </includes>
+            <prettier>
+              <config>
+                <printWidth>100</printWidth>
+                <trailingComma>all</trailingComma>
+              </config>
+            </prettier>
+          </typescript>
+          <json>
+            <includes>
+              <include>**/*.json</include>
+            </includes>
+            <excludes>
+              <exclude>node_modules/**/*</exclude>
+              <exclude>target/**/*</exclude>
+              <exclude>.vscode/*</exclude>
+              <exclude>package-lock.json</exclude>
+            </excludes>
+            <jackson>
+              <jsonFeatures>
+                <QUOTE_FIELD_NAMES>true</QUOTE_FIELD_NAMES>
+              </jsonFeatures>
+            </jackson>
+          </json>
+        </configuration>
+        <executions>
+          <execution>
+            <id>install-pre-push-hook</id>
+            <goals>
+              <goal>install-git-pre-push-hook</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
