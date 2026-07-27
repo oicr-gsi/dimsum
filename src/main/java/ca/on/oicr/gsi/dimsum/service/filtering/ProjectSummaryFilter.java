@@ -2,10 +2,8 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.function.Predicate;
-
 import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
-
+import java.util.function.Predicate;
 
 public class ProjectSummaryFilter {
 
@@ -26,5 +24,4 @@ public class ProjectSummaryFilter {
   public Predicate<ProjectSummary> predicate() {
     return key.create().apply(value);
   }
-
 }

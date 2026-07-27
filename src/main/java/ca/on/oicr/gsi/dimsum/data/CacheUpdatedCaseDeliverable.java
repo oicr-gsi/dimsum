@@ -1,16 +1,17 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
+
+import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
+import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseRelease;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
-import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
-import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
-import ca.on.oicr.gsi.cardea.data.CaseRelease;
 
 public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
 
@@ -19,7 +20,9 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   private final CachedSignoff cachedReleaseApprovalSignoff;
   private final List<CaseRelease> cachedReleases;
 
-  public CacheUpdatedCaseDeliverable(CaseDeliverable baseDeliverable, NabuSavedSignoff signoff,
+  public CacheUpdatedCaseDeliverable(
+      CaseDeliverable baseDeliverable,
+      NabuSavedSignoff signoff,
       Map<String, String> releaseAssignments) {
     this.baseDeliverable = requireNonNull(baseDeliverable);
     if (signoff == null) {
@@ -55,7 +58,8 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
             NabuSavedSignoff releaseSignoff =
                 Objects.equals(release.getDeliverable(), signoff.getDeliverable()) ? signoff : null;
             String releaseAssignee =
-                releaseAssignments == null ? null
+                releaseAssignments == null
+                    ? null
                     : releaseAssignments.get(release.getDeliverable());
             if (releaseSignoff != null || releaseAssignee != null) {
               releases.add(new CacheUpdatedRelease(release, signoff, releaseAssignee));
@@ -183,5 +187,4 @@ public class CacheUpdatedCaseDeliverable implements CaseDeliverable {
   public int getReleaseDaysSpent() {
     return baseDeliverable.getReleaseDaysSpent();
   }
-
 }

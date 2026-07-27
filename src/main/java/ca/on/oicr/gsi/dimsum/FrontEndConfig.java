@@ -1,5 +1,15 @@
 package ca.on.oicr.gsi.dimsum;
 
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.CaseQc;
+import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
+import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
+import ca.on.oicr.gsi.dimsum.data.external.ExternalAssay;
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.security.SecurityManager;
+import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
+import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,16 +21,6 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.CaseQc;
-import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
-import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
-import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
-import ca.on.oicr.gsi.dimsum.data.external.ExternalAssay;
-import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
-import ca.on.oicr.gsi.dimsum.security.SecurityManager;
-import ca.on.oicr.gsi.dimsum.service.filtering.CompletedGate;
-import ca.on.oicr.gsi.dimsum.service.filtering.PendingState;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -40,8 +40,7 @@ public class FrontEndConfig {
   @Value("${jira.baseurl:#{null}}")
   private String jiraUrl;
 
-  @Autowired
-  private SecurityManager securityManager;
+  @Autowired private SecurityManager securityManager;
 
   private final Map<String, ObjectNode> analysisReviewQcStatuses;
   private final Map<String, ObjectNode> releaseApprovalQcStatuses;
@@ -103,8 +102,9 @@ public class FrontEndConfig {
 
   public void setAssaysById(Map<Long, Assay> assaysById) {
     this.internalAssaysById = assaysById;
-    this.externalAssaysById = assaysById.entrySet().stream()
-        .collect(Collectors.toMap(Entry::getKey, entry -> new ExternalAssay(entry.getValue())));
+    this.externalAssaysById =
+        assaysById.entrySet().stream()
+            .collect(Collectors.toMap(Entry::getKey, entry -> new ExternalAssay(entry.getValue())));
   }
 
   public List<String> getCompletedGates() {
@@ -137,26 +137,36 @@ public class FrontEndConfig {
 
   public void setDeliverableCategories(Set<String> deliverableCategories) {
     this.deliverableCategories = deliverableCategories;
-    completedGates = Stream.of(CompletedGate.values())
-        .flatMap(gate -> {
-          Stream<String> stream = Stream.of(gate.getLabel());
-          if (gate.considerDeliverableCategory()) {
-            stream = Stream.concat(stream, deliverableCategories.stream()
-                .map(category -> gate.getLabel() + " - " + category));
-          }
-          return stream;
-        })
-        .toList();
-    pendingStates = Stream.of(PendingState.values())
-        .flatMap(state -> {
-          Stream<String> stream = Stream.of(state.getLabel());
-          if (state.considerDeliverableCategory()) {
-            stream = Stream.concat(stream, deliverableCategories.stream()
-                .map(category -> state.getLabel() + " - " + category));
-          }
-          return stream;
-        })
-        .toList();
+    completedGates =
+        Stream.of(CompletedGate.values())
+            .flatMap(
+                gate -> {
+                  Stream<String> stream = Stream.of(gate.getLabel());
+                  if (gate.considerDeliverableCategory()) {
+                    stream =
+                        Stream.concat(
+                            stream,
+                            deliverableCategories.stream()
+                                .map(category -> gate.getLabel() + " - " + category));
+                  }
+                  return stream;
+                })
+            .toList();
+    pendingStates =
+        Stream.of(PendingState.values())
+            .flatMap(
+                state -> {
+                  Stream<String> stream = Stream.of(state.getLabel());
+                  if (state.considerDeliverableCategory()) {
+                    stream =
+                        Stream.concat(
+                            stream,
+                            deliverableCategories.stream()
+                                .map(category -> state.getLabel() + " - " + category));
+                  }
+                  return stream;
+                })
+            .toList();
   }
 
   public Set<String> getDeliverables() {
@@ -176,8 +186,8 @@ public class FrontEndConfig {
     return node;
   }
 
-  private static <T extends CaseQc> Map<String, ObjectNode> mapCaseQcs(T[] values,
-      Function<T, String> getName, JsonMapper jsonMapper) {
+  private static <T extends CaseQc> Map<String, ObjectNode> mapCaseQcs(
+      T[] values, Function<T, String> getName, JsonMapper jsonMapper) {
     Map<String, ObjectNode> map = new TreeMap<>();
     for (T value : values) {
       String name = getName.apply(value);
@@ -185,5 +195,4 @@ public class FrontEndConfig {
     }
     return map;
   }
-
 }

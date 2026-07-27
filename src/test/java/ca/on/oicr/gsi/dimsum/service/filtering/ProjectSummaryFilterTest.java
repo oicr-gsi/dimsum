@@ -2,19 +2,21 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public class ProjectSummaryFilterTest {
 
-  private static List<ProjectSummary> projectSummaries = Arrays.asList(
-      makeProjectSummary("PROJ1", "PipelineA"),
-      makeProjectSummary("PROJ2", "PipelineB"),
-      makeProjectSummary("PROJ3", "PipelineC"),
-      makeProjectSummary("PROJ4", "PipelineA"),
-      makeProjectSummary("PROJ5", "PipelineB"));
+  private static List<ProjectSummary> projectSummaries =
+      Arrays.asList(
+          makeProjectSummary("PROJ1", "PipelineA"),
+          makeProjectSummary("PROJ2", "PipelineB"),
+          makeProjectSummary("PROJ3", "PipelineC"),
+          makeProjectSummary("PROJ4", "PipelineA"),
+          makeProjectSummary("PROJ5", "PipelineB"));
 
   @Test
   public void testFilterName() {
@@ -32,7 +34,8 @@ public class ProjectSummaryFilterTest {
   private static void testFilter(ProjectSummaryFilter filter, List<String> expectedNames) {
     List<ProjectSummary> filtered = projectSummaries.stream().filter(filter.predicate()).toList();
     for (String expectedName : expectedNames) {
-      assertTrue(filtered.stream().anyMatch(x -> x.getName().equals(expectedName)),
+      assertTrue(
+          filtered.stream().anyMatch(x -> x.getName().equals(expectedName)),
           "Project %s included".formatted(expectedName));
     }
     assertEquals(expectedNames.size(), filtered.size(), "Project Summary count");

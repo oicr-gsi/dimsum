@@ -9,5 +9,4 @@ public class JiraServiceTest {
     // Construct the JiraService to ensure that runtime dependencies are satisfied
     new JiraService("http://localhost/jira", "test", "test", null);
   }
-
 }

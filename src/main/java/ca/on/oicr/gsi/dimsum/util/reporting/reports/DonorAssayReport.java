@@ -1,11 +1,5 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
@@ -15,24 +9,33 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import tools.jackson.databind.JsonNode;
 
 public class DonorAssayReport extends Report {
 
   private static final ReportSection<Case> mainSection =
-      new StaticTableReportSection<Case>("Donor Assay Report", Arrays.asList(
-          Column.forString("Project", DonorAssayReport::getProjectNames),
-          Column.forString("Pipeline", DonorAssayReport::getProjectPipelines),
-          Column.forString("Donor", kase -> kase.getDonor().getName()),
-          Column.forString("External Name", kase -> kase.getDonor().getExternalName()),
-          Column.forString("Case ID", Case::getId),
-          Column.forString("Assay", Case::getAssayName),
-          Column.forString("Start Date", kase -> kase.getStartDate().toString()),
-          Column.forString("Latest Activity", kase -> kase.getLatestActivityDate().toString()),
-          Column.forString("Completed",
-              kase -> CompletedGate.RELEASE.qualifyCase(kase, null) ? "Yes" : "No"),
-          Column.forString("Stopped/Paused", DonorAssayReport::getStoppedPausedStatus),
-          Column.forString("Stop/Pause Reason", DonorAssayReport::getStopPauseReason))) {
+      new StaticTableReportSection<Case>(
+          "Donor Assay Report",
+          Arrays.asList(
+              Column.forString("Project", DonorAssayReport::getProjectNames),
+              Column.forString("Pipeline", DonorAssayReport::getProjectPipelines),
+              Column.forString("Donor", kase -> kase.getDonor().getName()),
+              Column.forString("External Name", kase -> kase.getDonor().getExternalName()),
+              Column.forString("Case ID", Case::getId),
+              Column.forString("Assay", Case::getAssayName),
+              Column.forString("Start Date", kase -> kase.getStartDate().toString()),
+              Column.forString("Latest Activity", kase -> kase.getLatestActivityDate().toString()),
+              Column.forString(
+                  "Completed",
+                  kase -> CompletedGate.RELEASE.qualifyCase(kase, null) ? "Yes" : "No"),
+              Column.forString("Stopped/Paused", DonorAssayReport::getStoppedPausedStatus),
+              Column.forString("Stop/Pause Reason", DonorAssayReport::getStopPauseReason))) {
 
         @Override
         public List<Case> getData(CaseService caseService, JsonNode parameters) {

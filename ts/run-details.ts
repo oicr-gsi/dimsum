@@ -27,16 +27,10 @@ misoRunLink.setAttribute("href", urls.miso.run(runName));
 
 const dashiRunLink = getRequiredElementById("dashiRunLink");
 const libraryDesignsString = dashiRunLink.getAttribute("data-library-designs");
-const libraryDesigns = libraryDesignsString
-  ? libraryDesignsString.split(",")
-  : [];
+const libraryDesigns = libraryDesignsString ? libraryDesignsString.split(",") : [];
 makeDashiRunLinksTooltip(dashiRunLink, runName, libraryDesigns);
 
-function makeTable(
-  headingId: string,
-  containerId: string,
-  definition: TableDefinition<any, void>,
-) {
+function makeTable(headingId: string, containerId: string, definition: TableDefinition<any, void>) {
   new TableBuilder(definition, containerId, undefined, undefined, (data) => {
     if (!data || !data.length) {
       document.getElementById(headingId)?.remove();
@@ -57,21 +51,13 @@ shadeElement(runQcCell, status.cellStatus);
 makeTable(
   "libraryQualificationsHeading",
   "libraryQualificationsTableContainer",
-  getLibraryQualificationsDefinition(
-    urls.rest.runs.libraryQualifications(runName),
-    false,
-    runName,
-  ),
+  getLibraryQualificationsDefinition(urls.rest.runs.libraryQualifications(runName), false, runName),
 );
 
 makeTable(
   "fullDepthSequencingsHeading",
   "fullDepthSequencingsTableContainer",
-  getFullDepthSequencingsDefinition(
-    urls.rest.runs.fullDepthSequencings(runName),
-    false,
-    runName,
-  ),
+  getFullDepthSequencingsDefinition(urls.rest.runs.fullDepthSequencings(runName), false, runName),
 );
 
 document.getElementById("omissionsInfo")?.addEventListener("click", () => {
@@ -87,11 +73,7 @@ makeTable(
   getOmittedRunSamplesDefinition(urls.rest.runs.omissions(runName), false),
 );
 
-function makeDashiRunLinksTooltip(
-  element: HTMLElement,
-  runName: string,
-  libraryDesigns: string[],
-) {
+function makeDashiRunLinksTooltip(element: HTMLElement, runName: string, libraryDesigns: string[]) {
   const tooltipInstance = Tooltip.getInstance();
   tooltipInstance.addTarget(element, (fragment) => {
     let linksAdded = false;
@@ -105,11 +87,7 @@ function makeDashiRunLinksTooltip(
     }
     if (libraryDesigns.includes("WT")) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Single-Lane RNA-seq",
-        urls.dashi.run.singleLaneRna(runName),
-      );
+      addLinkDiv(fragment, "Single-Lane RNA-seq", urls.dashi.run.singleLaneRna(runName));
     }
     if (
       libraryDesigns.includes("WG") ||
@@ -117,19 +95,11 @@ function makeDashiRunLinksTooltip(
       libraryDesigns.includes("PG")
     ) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Single-Lane WGS",
-        urls.dashi.run.singleLaneWgs(runName),
-      );
+      addLinkDiv(fragment, "Single-Lane WGS", urls.dashi.run.singleLaneWgs(runName));
     }
     if (libraryDesigns.includes("CM")) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Single-Lane cfMeDIP",
-        urls.dashi.run.singleLaneCfMeDip(runName),
-      );
+      addLinkDiv(fragment, "Single-Lane cfMeDIP", urls.dashi.run.singleLaneCfMeDip(runName));
     }
     if (!linksAdded) {
       addTextDiv("No Dashi-compatible libraries", fragment);

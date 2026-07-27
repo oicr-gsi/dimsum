@@ -1,14 +1,5 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Metric;
@@ -24,6 +15,15 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.StaticTableReportSection;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import tools.jackson.databind.JsonNode;
 
 public class TglTrackingReport extends Report {
@@ -57,7 +57,8 @@ public class TglTrackingReport extends Report {
   }
 
   private static final ReportSection<RowData> trackerSection =
-      new StaticTableReportSection<RowData>("Tracker",
+      new StaticTableReportSection<RowData>(
+          "Tracker",
           Arrays.asList(
               Column.forString("Case ID", x -> x.getCase().getId()),
               Column.forString("External Name", x -> x.getCase().getDonor().getExternalName()),
@@ -65,56 +66,79 @@ public class TglTrackingReport extends Report {
               Column.forString("Assay", x -> x.getCase().getAssayName()),
               Column.forString("Tissue Type", x -> x.getTest().getTissueType()),
               Column.forString("Group ID", x -> x.getTest().getGroupId()),
-              Column.forString("Extraction Pass?",
+              Column.forString(
+                  "Extraction Pass?",
                   x -> CompletedGate.EXTRACTION.qualifyTest(x.getTest()) ? "Yes" : null),
-              Column.forString("Stock ID", x -> x.getTest().getExtractions().stream()
-                  .map(Sample::getId).collect(Collectors.joining(", "))),
-              Column.forString("Stock Name", x -> x.getTest().getExtractions().stream()
-                  .map(Sample::getName).collect(Collectors.joining(", "))),
-              Column.forString("Library Aliquot ID",
-                  x -> Stream
-                      .concat(x.getTest().getLibraryQualifications().stream(),
-                          x.getTest().getFullDepthSequencings().stream())
-                      .map(Sample::getId).collect(Collectors.joining(", "))),
-              Column.forString("Library Aliquot Name",
-                  x -> Stream
-                      .concat(x.getTest().getLibraryQualifications().stream(),
-                          x.getTest().getFullDepthSequencings().stream())
-                      .map(Sample::getName).collect(Collectors.joining(", "))),
-              Column.forString("Library Qualification Runs",
-                  x -> x.getTest().getLibraryQualifications().stream()
-                      .filter(sample -> sample.getRun() != null)
-                      .map(runlib -> runlib.getRun().getName())
-                      .collect(Collectors.joining(", "))),
-              Column.forString("Library Qualification Pass?",
-                  x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.getTest()) ? "Yes"
-                      : null),
-              Column.forString("Full-Depth Runs",
-                  x -> x.getTest().getFullDepthSequencings().stream()
-                      .map(runlib -> runlib.getRun().getName())
-                      .collect(Collectors.joining(", "))),
+              Column.forString(
+                  "Stock ID",
+                  x ->
+                      x.getTest().getExtractions().stream()
+                          .map(Sample::getId)
+                          .collect(Collectors.joining(", "))),
+              Column.forString(
+                  "Stock Name",
+                  x ->
+                      x.getTest().getExtractions().stream()
+                          .map(Sample::getName)
+                          .collect(Collectors.joining(", "))),
+              Column.forString(
+                  "Library Aliquot ID",
+                  x ->
+                      Stream.concat(
+                              x.getTest().getLibraryQualifications().stream(),
+                              x.getTest().getFullDepthSequencings().stream())
+                          .map(Sample::getId)
+                          .collect(Collectors.joining(", "))),
+              Column.forString(
+                  "Library Aliquot Name",
+                  x ->
+                      Stream.concat(
+                              x.getTest().getLibraryQualifications().stream(),
+                              x.getTest().getFullDepthSequencings().stream())
+                          .map(Sample::getName)
+                          .collect(Collectors.joining(", "))),
+              Column.forString(
+                  "Library Qualification Runs",
+                  x ->
+                      x.getTest().getLibraryQualifications().stream()
+                          .filter(sample -> sample.getRun() != null)
+                          .map(runlib -> runlib.getRun().getName())
+                          .collect(Collectors.joining(", "))),
+              Column.forString(
+                  "Library Qualification Pass?",
+                  x -> CompletedGate.LIBRARY_QUALIFICATION.qualifyTest(x.getTest()) ? "Yes" : null),
+              Column.forString(
+                  "Full-Depth Runs",
+                  x ->
+                      x.getTest().getFullDepthSequencings().stream()
+                          .map(runlib -> runlib.getRun().getName())
+                          .collect(Collectors.joining(", "))),
               Column.forDecimal("Coverage Required", TglTrackingReport::getCoverageRequired),
               Column.forDecimal("Coverage Achieved", TglTrackingReport::getCoverageAchieved),
-              Column.forString("MOH Data Released",
+              Column.forString(
+                  "MOH Data Released",
                   x -> CompletedGate.RELEASE.qualifyCase(x.getCase(), "MOH") ? "Yes" : null),
               Column.forString("Case Status", x -> getCaseStatus(x.getCase())))) {
 
         @Override
-        public List<RowData> getData(CaseService caseService,
-            JsonNode parameters) {
+        public List<RowData> getData(CaseService caseService, JsonNode parameters) {
           Set<String> projectNames = getParameterStringSet(parameters, "projects");
           List<CaseFilter> filters = null;
           if (projectNames != null) {
-            filters = projectNames.stream()
-                .map(project -> new CaseFilter(CaseFilterKey.PROJECT, project))
-                .toList();
+            filters =
+                projectNames.stream()
+                    .map(project -> new CaseFilter(CaseFilterKey.PROJECT, project))
+                    .toList();
           }
 
           Map<Long, Assay> assaysById = caseService.getAssaysById();
 
-          return caseService.getCaseStream(filters)
-              .flatMap(kase -> kase.getTests().stream()
-                  .map(test -> new RowData(kase, test, assaysById.get(kase.getAssayId()))))
+          return caseService
+              .getCaseStream(filters)
+              .flatMap(
+                  kase ->
+                      kase.getTests().stream()
+                          .map(test -> new RowData(kase, test, assaysById.get(kase.getAssayId()))))
               .toList();
         }
       };
@@ -129,9 +153,11 @@ public class TglTrackingReport extends Report {
     if (CompletedGate.RELEASE.qualifyCase(kase, null)) {
       return "Completed";
     } else if (kase.isStopped()) {
-      return "Failed (%s)".formatted(
-          kase.getRequisition().getStopReason() != null ? kase.getRequisition().getStopReason()
-              : "Reason Unspecified");
+      return "Failed (%s)"
+          .formatted(
+              kase.getRequisition().getStopReason() != null
+                  ? kase.getRequisition().getStopReason()
+                  : "Reason Unspecified");
     } else {
       return "In Progress";
     }
@@ -154,9 +180,12 @@ public class TglTrackingReport extends Report {
       case METRIC_COVERAGE:
         return getMetricValue(rowData.getTest(), Sample::getMeanCoverageDeduplicated);
       case METRIC_CLUSTERS:
-        return getMetricValue(rowData.getTest(),
-            sample -> sample.getClustersPerSample() == null ? null
-                : new BigDecimal(sample.getClustersPerSample()));
+        return getMetricValue(
+            rowData.getTest(),
+            sample ->
+                sample.getClustersPerSample() == null
+                    ? null
+                    : new BigDecimal(sample.getClustersPerSample()));
       default:
         throw new IllegalArgumentException("Invalid metric: " + metric.getName());
     }
@@ -184,8 +213,8 @@ public class TglTrackingReport extends Report {
       }
       for (Metric metric : subcategory.getMetrics()) {
         if (metric.getTissueType() != null
-            && (metric.isNegateTissueType() == metric.getTissueType()
-                .equals(test.getTissueType()))) {
+            && (metric.isNegateTissueType()
+                == metric.getTissueType().equals(test.getTissueType()))) {
           continue;
         }
         if (metric.getTissueOrigin() != null
@@ -201,5 +230,4 @@ public class TglTrackingReport extends Report {
     }
     return value;
   }
-
 }

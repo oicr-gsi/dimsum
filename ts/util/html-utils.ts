@@ -42,18 +42,12 @@ export function addColumnHeader(
 export function makeCell(tr: HTMLTableRowElement, firstColumn: boolean) {
   const td = tr.insertCell();
   td.className =
-    "p-3 border-grey-200 border-t-1 text-left align-text-top" +
-    (firstColumn ? "" : " border-l-1");
+    "p-3 border-grey-200 border-t-1 text-left align-text-top" + (firstColumn ? "" : " border-l-1");
   return td;
 }
 
 // adds a styled link to an element
-export function addLink(
-  container: Node,
-  text: string,
-  url: string,
-  external?: boolean,
-) {
+export function addLink(container: Node, text: string, url: string, external?: boolean) {
   const a = document.createElement("a");
   a.setAttribute("href", url);
   if (external) {
@@ -132,8 +126,7 @@ export function addIconButton(container: HTMLElement, iconName: string) {
 // makes a transparent button used to click out of user inputs
 export function makeClickout() {
   const clickout = document.createElement("button");
-  clickout.className =
-    "bg-transparent fixed inset-0 w-full h-full cursor-default hidden z-10";
+  clickout.className = "bg-transparent fixed inset-0 w-full h-full cursor-default hidden z-10";
   return clickout;
 }
 
@@ -178,11 +171,7 @@ export function makeCopyIdButton(text: string): HTMLButtonElement {
   return makeCopyButton(text, "id-badge", "Copy ID");
 }
 
-function makeCopyButton(
-  text: string,
-  icon: string,
-  tooltipText: string,
-): HTMLButtonElement {
+function makeCopyButton(text: string, icon: string, tooltipText: string): HTMLButtonElement {
   const button = document.createElement("button");
   button.type = "button";
   button.title = tooltipText;
@@ -193,11 +182,7 @@ function makeCopyButton(
   return button;
 }
 
-export function makeTextDivWithTooltip(
-  text: string,
-  tooltip: string,
-  addCopyButton = false,
-) {
+export function makeTextDivWithTooltip(text: string, tooltip: string, addCopyButton = false) {
   const div = document.createElement("div");
   div.className = "flex flex-row space-x-1 items-center";
   const textSpan = document.createElement("span");
@@ -241,11 +226,7 @@ export function toTitleCase(text: string) {
   });
 }
 
-export function addActionButton(
-  container: HTMLElement,
-  title: string,
-  handler: () => void,
-) {
+export function addActionButton(container: HTMLElement, title: string, handler: () => void) {
   const button = document.createElement("button");
   button.className =
     "bg-green-200 rounded-md hover:ring-2 ring-offset-1 ring-green-200 text-white font-inter font-medium text-12 px-2 py-1";
@@ -262,10 +243,7 @@ export function getRequiredElementById(id: string): HTMLElement {
   return element;
 }
 
-export function getRequiredDataAttribute(
-  element: HTMLElement,
-  attribute: string,
-) {
+export function getRequiredDataAttribute(element: HTMLElement, attribute: string) {
   const value = element.getAttribute(attribute);
   if (!value) {
     throw new Error(`Missing attribute: ${attribute}`);

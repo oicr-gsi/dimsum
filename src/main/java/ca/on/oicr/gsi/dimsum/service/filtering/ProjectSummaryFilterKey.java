@@ -1,12 +1,12 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public enum ProjectSummaryFilterKey {
-  NAME(string -> projectSummary -> projectSummary.getName().equalsIgnoreCase(string)), PIPELINE(
-      string -> projectSummary -> projectSummary.getPipeline().equals(string));
+  NAME(string -> projectSummary -> projectSummary.getName().equalsIgnoreCase(string)),
+  PIPELINE(string -> projectSummary -> projectSummary.getPipeline().equals(string));
 
   private final Function<String, Predicate<ProjectSummary>> create;
 

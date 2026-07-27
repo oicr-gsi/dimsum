@@ -1,10 +1,10 @@
 package ca.on.oicr.gsi.dimsum.service;
 
+import ca.on.oicr.gsi.dimsum.data.IssueState;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 import java.util.ArrayList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
-import com.atlassian.jira.rest.client.api.domain.Issue;
-import ca.on.oicr.gsi.dimsum.data.IssueState;
 
 /**
  * This service is intended for testing only, does not interact with any real service, and does not
@@ -58,5 +58,4 @@ public class TestIssueService implements IssueTracker {
   public IssueState getIssueState(Issue issue) {
     return IssueState.OPEN;
   }
-
 }

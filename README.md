@@ -16,13 +16,15 @@
    directory and rename it to `application.properties`
 3. Are you enabling SAML authentication?
    - If yes:
+
      1. add the IdP certificate to your `config` directory
      2. generate/add your SP key and certificate to the `config` directory. An example using `openssl`:
-     
+
         `openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout dimsum_sp.key -out dimsum_sp.crt`
 
      3. fill out the SAML properties in `application.properties`, including paths to the
         above-mentioned certificates/key
+
    - If no, add the following line to `application.properties` to disable authentication:
      `spring.profiles.active=noauth`
 
@@ -31,7 +33,7 @@
 Dimsum information you'll likely need to configure on your IdP:
 
 - **Entity ID**: `<base-url>/saml2/service-provider-metadata/dimsum` (this is also the URL of the service
-provider metadata if you need to download the XML)
+  provider metadata if you need to download the XML)
 - **POST Logout URL for single logout**: `<base-url>/logout/saml2/slo`
 
 ### Example Keycloak Client Configuration
@@ -60,7 +62,7 @@ __Certificate__. Save the text to a file.
 Maven is configured to automatically run `npm` to install node modules, compile and package
 TypeScript via `tsc` and `webpack`, and include requirements from both in the Java build.
 
-Build runnable `.jar` file: 
+Build runnable `.jar` file:
 
 `mvn clean package`
 

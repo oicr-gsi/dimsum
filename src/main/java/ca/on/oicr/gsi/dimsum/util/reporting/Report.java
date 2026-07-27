@@ -1,13 +1,13 @@
 package ca.on.oicr.gsi.dimsum.util.reporting;
 
+import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
+import ca.on.oicr.gsi.dimsum.service.CaseService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
-import ca.on.oicr.gsi.dimsum.service.CaseService;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -46,8 +46,7 @@ public abstract class Report {
     }
   }
 
-  public byte[] writeFile(CaseService caseService, JsonNode parameters)
-      throws IOException {
+  public byte[] writeFile(CaseService caseService, JsonNode parameters) throws IOException {
     ReportFormat format = getFormat(parameters);
 
     switch (format) {
@@ -62,8 +61,7 @@ public abstract class Report {
     }
   }
 
-  private byte[] writeExcelFile(CaseService caseService, JsonNode parameters)
-      throws IOException {
+  private byte[] writeExcelFile(CaseService caseService, JsonNode parameters) throws IOException {
     XSSFWorkbook workbook = new XSSFWorkbook();
     for (ReportSection<?> section : sections) {
       section.createExcelSheet(workbook, caseService, parameters);
@@ -74,8 +72,8 @@ public abstract class Report {
     }
   }
 
-  private byte[] writeDelimitedFile(CaseService caseService, String delimiter,
-      JsonNode parameters) {
+  private byte[] writeDelimitedFile(
+      CaseService caseService, String delimiter, JsonNode parameters) {
     StringBuilder sb = new StringBuilder();
     boolean includeHeadings =
         parameters.has(PARAM_HEADINGS) && parameters.get(PARAM_HEADINGS).asBoolean();

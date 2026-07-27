@@ -79,10 +79,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           ),
         );
         fragment.appendChild(
-          makeTextDivWithTooltip(
-            testTableView.donor.externalName,
-            "External Name",
-          ),
+          makeTextDivWithTooltip(testTableView.donor.externalName, "External Name"),
         );
 
         const tumourDetailDiv = document.createElement("div");
@@ -123,11 +120,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
           fragment.appendChild(stoppedDiv);
         }
         const requisitionDiv = document.createElement("div");
-        addLink(
-          requisitionDiv,
-          requisition.name,
-          urls.dimsum.requisition(requisition.id),
-        );
+        addLink(requisitionDiv, requisition.name, urls.dimsum.requisition(requisition.id));
         addMisoIcon(requisitionDiv, urls.miso.requisition(requisition.id));
         fragment.appendChild(requisitionDiv);
       },
@@ -142,9 +135,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
 
         if (testTableView.test.groupId) {
           const groupIdDiv = document.createElement("div");
-          groupIdDiv.appendChild(
-            document.createTextNode(testTableView.test.groupId),
-          );
+          groupIdDiv.appendChild(document.createTextNode(testTableView.test.groupId));
           const tooltipInstance = Tooltip.getInstance();
           tooltipInstance.addTarget(groupIdDiv, (fragment) =>
             fragment.appendChild(document.createTextNode("Group ID")),
@@ -157,18 +148,11 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       title: "Extraction",
       addParentContents(testTableView, fragment) {
         if (
-          handleNaSamplePhase(
-            testTableView.requisition,
-            testTableView.test.extractions,
-            fragment,
-          )
+          handleNaSamplePhase(testTableView.requisition, testTableView.test.extractions, fragment)
         ) {
           return;
         }
-        if (
-          !testTableView.test.extractions.length &&
-          testTableView.test.extractionSkipped
-        ) {
+        if (!testTableView.test.extractions.length && testTableView.test.extractionSkipped) {
           addNaText(fragment);
           return;
         }
@@ -191,10 +175,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       },
       getCellHighlight(testTableView) {
         testTableView.test = assertNotNull(testTableView.test);
-        if (
-          !testTableView.test.extractions.length &&
-          testTableView.test.extractionSkipped
-        ) {
+        if (!testTableView.test.extractions.length && testTableView.test.extractionSkipped) {
           return "na";
         }
         return getSamplePhaseHighlight(
@@ -329,9 +310,7 @@ export const testDefinition: TableDefinition<TestTableView, void> = {
       title: "Latest Activity",
       sortType: "date",
       addParentContents(testTableView, fragment) {
-        fragment.appendChild(
-          document.createTextNode(testTableView.latestActivityDate),
-        );
+        fragment.appendChild(document.createTextNode(testTableView.latestActivityDate));
       },
     },
   ],

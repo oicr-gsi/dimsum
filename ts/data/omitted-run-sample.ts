@@ -1,9 +1,5 @@
 import { showAlertDialog } from "../component/dialog";
-import {
-  ColumnDefinition,
-  TableDefinition,
-  legendAction,
-} from "../component/table-builder";
+import { ColumnDefinition, TableDefinition, legendAction } from "../component/table-builder";
 import { Tooltip } from "../component/tooltip";
 import { makeIcon, makeNameDiv } from "../util/html-utils";
 import { urls } from "../util/urls";
@@ -31,13 +27,7 @@ export function getOmittedRunSamplesDefinition(
         const icon = makeIcon(status.icon);
         const tooltipInstance = Tooltip.getInstance();
         tooltipInstance.addTarget(icon, (tooltip) => {
-          addStatusTooltipText(
-            tooltip,
-            status,
-            sample.qcReason,
-            sample.qcUser,
-            sample.qcNote,
-          );
+          addStatusTooltipText(tooltip, status, sample.qcReason, sample.qcUser, sample.qcNote);
         });
         fragment.appendChild(icon);
       },
@@ -52,13 +42,7 @@ export function getOmittedRunSamplesDefinition(
       addParentContents(sample, fragment) {
         const text = `${sample.name} (L${sample.sequencingLane})`;
         fragment.appendChild(
-          makeNameDiv(
-            text,
-            urls.miso.sample(sample.id),
-            undefined,
-            sample.name,
-            sample.id,
-          ),
+          makeNameDiv(text, urls.miso.sample(sample.id), undefined, sample.name, sample.id),
         );
       },
     },
@@ -95,10 +79,7 @@ export function getOmittedRunSamplesDefinition(
         handler: (items) => {
           const text = items.map((x) => x.name).join("\n");
           navigator.clipboard.writeText(text);
-          showAlertDialog(
-            "Copy Names",
-            "Library aliquot names copied to clipboard",
-          );
+          showAlertDialog("Copy Names", "Library aliquot names copied to clipboard");
         },
       },
     ],

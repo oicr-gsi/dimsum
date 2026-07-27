@@ -11,5 +11,4 @@ public class Counter {
   public void increment() {
     count += 1;
   }
-
 }

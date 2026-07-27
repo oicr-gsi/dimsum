@@ -1,23 +1,25 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import ca.on.oicr.gsi.dimsum.data.Notification;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.dimsum.data.Notification;
 
 public enum NotificationSort {
 
   // @formatter:off
   RUN("Run", Comparator.comparing(x -> x.getRun().getName())),
-  COMPLETION_DATE("Completion Date",
-      Comparator.comparing(x -> x.getRun().getCompletionDate(),
-          Comparator.nullsLast(Comparator.naturalOrder())));
+  COMPLETION_DATE(
+      "Completion Date",
+      Comparator.comparing(
+          x -> x.getRun().getCompletionDate(), Comparator.nullsLast(Comparator.naturalOrder())));
   // @formatter:on
 
-  private static final Map<String, NotificationSort> map = Stream.of(NotificationSort.values())
-      .collect(Collectors.toMap(NotificationSort::getLabel, Function.identity()));
+  private static final Map<String, NotificationSort> map =
+      Stream.of(NotificationSort.values())
+          .collect(Collectors.toMap(NotificationSort::getLabel, Function.identity()));
 
   public static NotificationSort getByLabel(String label) {
     return map.get(label);
@@ -38,5 +40,4 @@ public enum NotificationSort {
   public Comparator<Notification> comparator() {
     return comparator;
   }
-
 }

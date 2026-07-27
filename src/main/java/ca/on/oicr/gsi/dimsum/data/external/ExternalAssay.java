@@ -7,5 +7,4 @@ public record ExternalAssay(long id, String name, String version, String descrip
   public ExternalAssay(Assay from) {
     this(from.getId(), from.getName(), from.getVersion(), from.getDescription());
   }
-
 }

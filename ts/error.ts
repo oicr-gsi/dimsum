@@ -44,11 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return !(attr.title === "Message" && errorData.message === undefined);
     });
 
-    new AttributeList<ErrorData>(
-      "error-attribute-list",
-      errorData,
-      filteredAttributes
-    );
+    new AttributeList<ErrorData>("error-attribute-list", errorData, filteredAttributes);
   } else {
     console.error("Error container not found");
   }

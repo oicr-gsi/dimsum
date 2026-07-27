@@ -1,26 +1,28 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
+import ca.on.oicr.gsi.dimsum.service.CaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
-import ca.on.oicr.gsi.dimsum.service.CaseService;
 
 @ControllerAdvice(basePackages = {"ca.on.oicr.gsi.dimsum.controller.mvc"})
 public class CommonModelAttributeProvider {
 
-  @Autowired
-  private CaseService caseService;
+  @Autowired private CaseService caseService;
 
   @Value("${instancename}")
   private String instanceName;
+
   @Value("${build.version}")
   private String buildVersion;
+
   @Value("${bugreport.url}")
   private String bugReportUrl;
+
   @Value(value = "${bugreport.external.url:#{null}}")
   private String externalBugReportUrl;
 
@@ -72,5 +74,4 @@ public class CommonModelAttributeProvider {
     model.put("externalBugReportUrl", getExternalBugReportUrl());
     model.put("internalUser", isInternalUser(principal));
   }
-
 }

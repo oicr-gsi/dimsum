@@ -1,9 +1,5 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import java.time.LocalDate;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
@@ -13,23 +9,38 @@ import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.util.DataUtils;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public enum CaseFilterKey {
 
   // @formatter:off
-  ASSAY(string -> kase -> kase.getAssayName().toLowerCase().startsWith(string.toLowerCase())
-      || kase.getAssayDescription().toLowerCase().startsWith(string.toLowerCase())),
+  ASSAY(
+      string ->
+          kase ->
+              kase.getAssayName().toLowerCase().startsWith(string.toLowerCase())
+                  || kase.getAssayDescription().toLowerCase().startsWith(string.toLowerCase())),
   CASE_ID(string -> kase -> kase.getId().toLowerCase().equals(string.toLowerCase())),
-  DONOR(string -> kase -> kase.getDonor().getName().toLowerCase().startsWith(string.toLowerCase())
-      || kase.getDonor().getExternalName().toLowerCase().contains(string.toLowerCase())),
-  PENDING(string -> {
-    PendingState state = getState(string);
-    String deliverableCategory = getDeliverableCategory(string);
-    Predicate<Case> notStoppedOrPaused = kase ->
-        (!state.isStoppable() || !kase.getRequisition().isStopped())
-        && !kase.getRequisition().isPaused();
-    return notStoppedOrPaused.and(kase -> state.qualifyCase(kase, deliverableCategory));
-  }) {
+  DONOR(
+      string ->
+          kase ->
+              kase.getDonor().getName().toLowerCase().startsWith(string.toLowerCase())
+                  || kase.getDonor()
+                      .getExternalName()
+                      .toLowerCase()
+                      .contains(string.toLowerCase())),
+  PENDING(
+      string -> {
+        PendingState state = getState(string);
+        String deliverableCategory = getDeliverableCategory(string);
+        Predicate<Case> notStoppedOrPaused =
+            kase ->
+                (!state.isStoppable() || !kase.getRequisition().isStopped())
+                    && !kase.getRequisition().isPaused();
+        return notStoppedOrPaused.and(kase -> state.qualifyCase(kase, deliverableCategory));
+      }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
       return string -> getState(string).testPredicate();
@@ -40,47 +51,70 @@ public enum CaseFilterKey {
       return string -> getState(string).samplePredicate(requestCategory);
     }
   },
-  PENDING_RELEASE_DELIVERABLE(string -> kase -> {
-    for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
-      if (!DataUtils.isComplete(caseDeliverable.getReleaseApprovalQcStatus())) {
-        // No releases pending for this deliverable type
-        continue;
-      }
-      for (CaseRelease release : caseDeliverable.getReleases()) {
-        if (Objects.equals(string, release.getDeliverable())) {
-          return !DataUtils.isComplete(release.getQcStatus());
-        }
-      }
-    }
-    return false;
-  }),
-  PIPELINE(string -> kase -> kase.getProjects().stream()
-      .anyMatch(project -> project.getPipeline().equals(string))),
-  PROJECT(string -> kase -> kase.getProjects().stream()
-      .anyMatch(project -> project.getName().equalsIgnoreCase(string))) {
+  PENDING_RELEASE_DELIVERABLE(
+      string ->
+          kase -> {
+            for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
+              if (!DataUtils.isComplete(caseDeliverable.getReleaseApprovalQcStatus())) {
+                // No releases pending for this deliverable type
+                continue;
+              }
+              for (CaseRelease release : caseDeliverable.getReleases()) {
+                if (Objects.equals(string, release.getDeliverable())) {
+                  return !DataUtils.isComplete(release.getQcStatus());
+                }
+              }
+            }
+            return false;
+          }),
+  PIPELINE(
+      string ->
+          kase ->
+              kase.getProjects().stream()
+                  .anyMatch(project -> project.getPipeline().equals(string))),
+  PROJECT(
+      string ->
+          kase ->
+              kase.getProjects().stream()
+                  .anyMatch(project -> project.getName().equalsIgnoreCase(string))) {
     @Override
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
       return string -> sample -> sample.getProject().equalsIgnoreCase(string);
     }
   },
-  REQUISITION(string -> kase -> kase.getRequisition().getName().toLowerCase().startsWith(string.toLowerCase())),
+  REQUISITION(
+      string ->
+          kase -> kase.getRequisition().getName().toLowerCase().startsWith(string.toLowerCase())),
   REQUISITION_ID(string -> kase -> kase.getRequisition().getId() == Long.parseLong(string)),
-  TEST(string -> {
-    return kase -> kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string));
-  }) {
-    @Override 
+  TEST(
+      string -> {
+        return kase ->
+            kase.getTests().stream().anyMatch(test -> test.getName().equalsIgnoreCase(string));
+      }) {
+    @Override
     public Function<String, Predicate<Test>> testPredicate() {
       return string -> test -> test.getName().equalsIgnoreCase(string);
     }
   },
-  STOPPED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isStopped() : !kase.getRequisition().isStopped()),
-  PAUSED(string -> kase -> ("Yes".equals(string)) ? kase.getRequisition().isPaused() : !kase.getRequisition().isPaused()),
-  COMPLETED(string -> {
-    CompletedGate gate = getGate(string);
-    String deliverableCategory = getDeliverableCategory(string);
-    Predicate<Case> applicable = kase -> gate.isApplicable(kase, deliverableCategory);
-    return applicable.and(kase -> gate.qualifyCase(kase, deliverableCategory));
-  }) {
+  STOPPED(
+      string ->
+          kase ->
+              ("Yes".equals(string))
+                  ? kase.getRequisition().isStopped()
+                  : !kase.getRequisition().isStopped()),
+  PAUSED(
+      string ->
+          kase ->
+              ("Yes".equals(string))
+                  ? kase.getRequisition().isPaused()
+                  : !kase.getRequisition().isPaused()),
+  COMPLETED(
+      string -> {
+        CompletedGate gate = getGate(string);
+        String deliverableCategory = getDeliverableCategory(string);
+        Predicate<Case> applicable = kase -> gate.isApplicable(kase, deliverableCategory);
+        return applicable.and(kase -> gate.qualifyCase(kase, deliverableCategory));
+      }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
       return string -> getGate(string).testPredicate();
@@ -91,39 +125,47 @@ public enum CaseFilterKey {
       return string -> getGate(string).samplePredicate(requestCategory);
     }
   },
-  INCOMPLETE(string -> {
-    CompletedGate gate = getGate(string);
-    String deliverableCategory = getDeliverableCategory(string);
-    Predicate<Case> applicable = kase -> gate.isApplicable(kase, deliverableCategory);
-    Predicate<Case> gatePredicate = kase -> gate.qualifyCase(kase, deliverableCategory);
-    return applicable.and(gatePredicate.negate()); // Negate the completed condition
-}) {
+  INCOMPLETE(
+      string -> {
+        CompletedGate gate = getGate(string);
+        String deliverableCategory = getDeliverableCategory(string);
+        Predicate<Case> applicable = kase -> gate.isApplicable(kase, deliverableCategory);
+        Predicate<Case> gatePredicate = kase -> gate.qualifyCase(kase, deliverableCategory);
+        return applicable.and(gatePredicate.negate()); // Negate the completed condition
+      }) {
     @Override
     public Function<String, Predicate<Test>> testPredicate() {
-        return string -> {
-          CompletedGate gate = getGate(string);
-          if (gate.isCaseLevel()) {
-            // show all tests within cases that are incomplete (case is always filtered first)
-            return sample -> true;
-          }
-          return gate.testPredicate().negate();
-        };
+      return string -> {
+        CompletedGate gate = getGate(string);
+        if (gate.isCaseLevel()) {
+          // show all tests within cases that are incomplete (case is always filtered first)
+          return sample -> true;
+        }
+        return gate.testPredicate().negate();
+      };
     }
 
     @Override
     public Function<String, Predicate<Sample>> samplePredicate(MetricCategory requestCategory) {
-        // show all items within tests that are incomplete (test is always filtered first)
-        return string -> sample -> true;
+      // show all items within tests that are incomplete (test is always filtered first)
+      return string -> sample -> true;
     }
-},
-  LIBRARY_DESIGN(string -> {return kase -> kase.getTests().stream().anyMatch(test -> 
-      Objects.equals(test.getLibraryDesignCode(), string)
-      || Objects.equals(test.getLibraryQualificationDesignCode(), string));
-  }) {
-    @Override 
+  },
+  LIBRARY_DESIGN(
+      string -> {
+        return kase ->
+            kase.getTests().stream()
+                .anyMatch(
+                    test ->
+                        Objects.equals(test.getLibraryDesignCode(), string)
+                            || Objects.equals(test.getLibraryQualificationDesignCode(), string));
+      }) {
+    @Override
     public Function<String, Predicate<Test>> testPredicate() {
-      return string -> test -> Objects.equals(test.getLibraryDesignCode(), string)
-          || Objects.equals(test.getLibraryQualificationDesignCode(), string);
+      return string ->
+          test ->
+              Objects.equals(test.getLibraryDesignCode(), string)
+                  || Objects.equals(test.getLibraryQualificationDesignCode(), string);
     }
 
     @Override
@@ -131,43 +173,60 @@ public enum CaseFilterKey {
       return string -> sample -> Objects.equals(sample.getLibraryDesignCode(), string);
     }
   },
-  DELIVERABLE(string -> kase -> {
-    for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
-      for (CaseRelease release : caseDeliverable.getReleases()) {
-        if (string.equalsIgnoreCase(release.getDeliverable())) {
-          return true;
-        }
-      }
-    }
-    return false;
-}),
-  STARTED_BEFORE(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isBefore(LocalDate.parse(string))),
-  STARTED_AFTER(string -> kase -> kase.getStartDate() != null && kase.getStartDate().isAfter(LocalDate.parse(string))),
-  COMPLETED_BEFORE(string -> kase -> {
-    LocalDate completionDate = DataUtils.getCompletionDate(kase);
-    return completionDate != null && completionDate.isBefore(LocalDate.parse(string));
-  }),
-  COMPLETED_AFTER(string -> kase -> {
-    LocalDate completionDate = DataUtils.getCompletionDate(kase);
-    return completionDate != null && completionDate.isAfter(LocalDate.parse(string));
-  }),
-  STAGED_DELIVERABLE(string -> kase -> {
-    for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
-      for (CaseRelease release : caseDeliverable.getReleases()) {
-        if (("any".equalsIgnoreCase(string) || string.equalsIgnoreCase(release.getDeliverable()))
-            && release.getQcStatus() == ReleaseQcStatus.STAGED) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }),
-  ARCHIVING_STATUS(string -> kase -> {
-    if (kase.getArchivingStatus() == null) {
-      return false;
-    }
-    return Objects.equals(kase.getArchivingStatus().getLabel(), string);
-  });
+  DELIVERABLE(
+      string ->
+          kase -> {
+            for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
+              for (CaseRelease release : caseDeliverable.getReleases()) {
+                if (string.equalsIgnoreCase(release.getDeliverable())) {
+                  return true;
+                }
+              }
+            }
+            return false;
+          }),
+  STARTED_BEFORE(
+      string ->
+          kase ->
+              kase.getStartDate() != null && kase.getStartDate().isBefore(LocalDate.parse(string))),
+  STARTED_AFTER(
+      string ->
+          kase ->
+              kase.getStartDate() != null && kase.getStartDate().isAfter(LocalDate.parse(string))),
+  COMPLETED_BEFORE(
+      string ->
+          kase -> {
+            LocalDate completionDate = DataUtils.getCompletionDate(kase);
+            return completionDate != null && completionDate.isBefore(LocalDate.parse(string));
+          }),
+  COMPLETED_AFTER(
+      string ->
+          kase -> {
+            LocalDate completionDate = DataUtils.getCompletionDate(kase);
+            return completionDate != null && completionDate.isAfter(LocalDate.parse(string));
+          }),
+  STAGED_DELIVERABLE(
+      string ->
+          kase -> {
+            for (CaseDeliverable caseDeliverable : kase.getDeliverables()) {
+              for (CaseRelease release : caseDeliverable.getReleases()) {
+                if (("any".equalsIgnoreCase(string)
+                        || string.equalsIgnoreCase(release.getDeliverable()))
+                    && release.getQcStatus() == ReleaseQcStatus.STAGED) {
+                  return true;
+                }
+              }
+            }
+            return false;
+          }),
+  ARCHIVING_STATUS(
+      string ->
+          kase -> {
+            if (kase.getArchivingStatus() == null) {
+              return false;
+            }
+            return Objects.equals(kase.getArchivingStatus().getLabel(), string);
+          });
   // @formatter:on
 
   private static final String SEPARATOR = " - ";

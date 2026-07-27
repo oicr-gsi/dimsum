@@ -6,11 +6,7 @@ export interface AttributeDefinition<Type> {
 export class AttributeList<Type> {
   container: HTMLElement;
 
-  constructor(
-    containerId: string,
-    object: Type,
-    attributes: AttributeDefinition<Type>[]
-  ) {
+  constructor(containerId: string, object: Type, attributes: AttributeDefinition<Type>[]) {
     const container = document.getElementById(containerId);
     if (container === null) {
       throw Error(`Container ID "${containerId}" not found on page`);
@@ -33,7 +29,7 @@ export class AttributeList<Type> {
       "border-2",
       "rounded-xl",
       "overflow-hidden",
-      "mt-8"
+      "mt-8",
     );
     attributes.forEach((attribute, i) => {
       const row = tbody.insertRow();
@@ -45,7 +41,7 @@ export class AttributeList<Type> {
         "bg-grey-300",
         "text-left",
         "align-text-top",
-        "whitespace-nowrap"
+        "whitespace-nowrap",
       );
       if (i === 0) {
         th.classList.add("w-0", "min-w-[200px]");
@@ -55,13 +51,7 @@ export class AttributeList<Type> {
       th.append(document.createTextNode(attribute.title));
 
       const td = row.insertCell();
-      td.classList.add(
-        "p-4",
-        "border-grey-200",
-        "border-l-1",
-        "text-left",
-        "align-text-top"
-      );
+      td.classList.add("p-4", "border-grey-200", "border-l-1", "text-left", "align-text-top");
       if (i > 0) {
         td.classList.add("border-t-1");
       }

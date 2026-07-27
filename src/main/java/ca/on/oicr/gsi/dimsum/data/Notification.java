@@ -1,15 +1,15 @@
 package ca.on.oicr.gsi.dimsum.data;
 
+import ca.on.oicr.gsi.cardea.data.Run;
+import ca.on.oicr.gsi.cardea.data.Sample;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import ca.on.oicr.gsi.cardea.data.Run;
-import ca.on.oicr.gsi.cardea.data.Sample;
 
 @Immutable
 public class Notification {
@@ -24,8 +24,12 @@ public class Notification {
   private final Set<Sample> pendingDataReviewSamples;
   private final String issueKey;
 
-  public Notification(Run run, Set<Sample> pendingAnalysisSamples, Set<Sample> pendingQcSamples,
-      Set<Sample> pendingDataReviewSamples, String issueKey) {
+  public Notification(
+      Run run,
+      Set<Sample> pendingAnalysisSamples,
+      Set<Sample> pendingQcSamples,
+      Set<Sample> pendingDataReviewSamples,
+      String issueKey) {
     this.run = run;
     this.pendingAnalysisSamples = Collections.unmodifiableSet(pendingAnalysisSamples);
     this.pendingQcSamples = Collections.unmodifiableSet(pendingQcSamples);
@@ -34,8 +38,8 @@ public class Notification {
   }
 
   public Notification withIssueKey(String newIssueKey) {
-    return new Notification(run, pendingAnalysisSamples, pendingQcSamples, pendingDataReviewSamples,
-        newIssueKey);
+    return new Notification(
+        run, pendingAnalysisSamples, pendingQcSamples, pendingDataReviewSamples, newIssueKey);
   }
 
   public Run getRun() {
@@ -77,13 +81,14 @@ public class Notification {
   }
 
   public boolean requiresAction() {
-    return !pendingQcSamples.isEmpty() || !pendingDataReviewSamples.isEmpty()
+    return !pendingQcSamples.isEmpty()
+        || !pendingDataReviewSamples.isEmpty()
         || run.getDataReviewDate() == null;
   }
 
   /**
    * Create a comment describing any outstanding QC
-   * 
+   *
    * @param baseUrl Dimsum base URL
    * @return the generated comment
    */
@@ -94,7 +99,7 @@ public class Notification {
   /**
    * Create a comment describing any outstanding QC. If overrideResolution is provided, include a
    * message about how to permanently close the ticket
-   * 
+   *
    * @param baseUrl Dimsum base URL
    * @param overrideResolution resolution to permanently close the issue
    * @return the generated comment
@@ -111,15 +116,21 @@ public class Notification {
 
         [See metrics in Dimsum|%s/runs/%s]%s
 
-        Internal use: <%s>""".formatted(makeRunMessage(),
-        getPendingQcCount(), makePunctuationAndList(pendingQcSamples),
-        getPendingDataReviewCount(), makePunctuationAndList(pendingDataReviewSamples),
-        getPendingAnalysisCount(),
-        baseUrl, run.getName(),
-        overrideResolution == null ? ""
-            : "\n\nTo permanently close this issue without completing, set resolution to \"%s.\""
-                .formatted(overrideResolution),
-        makeCommentCode());
+        Internal use: <%s>"""
+        .formatted(
+            makeRunMessage(),
+            getPendingQcCount(),
+            makePunctuationAndList(pendingQcSamples),
+            getPendingDataReviewCount(),
+            makePunctuationAndList(pendingDataReviewSamples),
+            getPendingAnalysisCount(),
+            baseUrl,
+            run.getName(),
+            overrideResolution == null
+                ? ""
+                : "\n\nTo permanently close this issue without completing, set resolution to \"%s.\""
+                    .formatted(overrideResolution),
+            makeCommentCode());
   }
 
   private String makeRunMessage() {
@@ -142,12 +153,16 @@ public class Notification {
           sb.append("\n* %s (L%s)".formatted(sample.getName(), sample.getSequencingLane()));
         }
       } else {
-        Map<String, Integer> projects = samples.stream()
-            .map(Sample::getProject)
-            .collect(Collectors.toMap(Function.identity(), x -> 1, (x, y) -> x + y));
+        Map<String, Integer> projects =
+            samples.stream()
+                .map(Sample::getProject)
+                .collect(Collectors.toMap(Function.identity(), x -> 1, (x, y) -> x + y));
         if (projects.size() <= MAX_LIST_ITEMS) {
-          projects.entrySet().forEach((entry) -> sb
-              .append("\n* %d %s libraries".formatted(entry.getValue(), entry.getKey())));
+          projects
+              .entrySet()
+              .forEach(
+                  (entry) ->
+                      sb.append("\n* %d %s libraries".formatted(entry.getValue(), entry.getKey())));
         } else {
           Integer libraryCount = projects.values().stream().reduce(0, (x, y) -> x + y);
           sb.append("\n* %d libraries in %d projects".formatted(libraryCount, projects.size()));
@@ -158,8 +173,12 @@ public class Notification {
   }
 
   private String makeCommentCode() {
-    return "R%dA%dQ%dD%d".formatted(getRunState(), getPendingAnalysisCount(), getPendingQcCount(),
-        getPendingDataReviewCount());
+    return "R%dA%dQ%dD%d"
+        .formatted(
+            getRunState(),
+            getPendingAnalysisCount(),
+            getPendingQcCount(),
+            getPendingDataReviewCount());
   }
 
   private int getRunState() {
@@ -173,8 +192,7 @@ public class Notification {
   }
 
   public IssueState getIssueState() {
-    if (!pendingQcSamples.isEmpty()
-        || !pendingDataReviewSamples.isEmpty()) {
+    if (!pendingQcSamples.isEmpty() || !pendingDataReviewSamples.isEmpty()) {
       return IssueState.OPEN;
     } else if (!pendingAnalysisSamples.isEmpty()) {
       return IssueState.PAUSED;
@@ -184,5 +202,4 @@ public class Notification {
       return IssueState.CLOSED;
     }
   }
-
 }

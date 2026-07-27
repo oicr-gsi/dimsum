@@ -1,8 +1,5 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.function.Function;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.DataQuery;
 import ca.on.oicr.gsi.dimsum.controller.rest.request.KeyValuePair;
@@ -14,6 +11,9 @@ import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.ProjectSummaryFilterKey;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilter;
 import ca.on.oicr.gsi.dimsum.service.filtering.RunFilterKey;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.function.Function;
 
 public class MvcUtils {
 
@@ -129,10 +129,12 @@ public class MvcUtils {
   }
 
   private static LocalDate parseDateFilterValue(DataQuery query, String key) {
-    String value = query.getFilters().stream()
-        .filter(x -> key.equals(x.getKey()))
-        .map(KeyValuePair::getValue)
-        .findFirst().orElse(null);
+    String value =
+        query.getFilters().stream()
+            .filter(x -> key.equals(x.getKey()))
+            .map(KeyValuePair::getValue)
+            .findFirst()
+            .orElse(null);
     return value == null ? null : LocalDate.parse(value);
   }
 
@@ -152,5 +154,4 @@ public class MvcUtils {
       throw new BadRequestException(String.format("Invalid filter key: %s", pair.getKey()));
     }
   }
-
 }

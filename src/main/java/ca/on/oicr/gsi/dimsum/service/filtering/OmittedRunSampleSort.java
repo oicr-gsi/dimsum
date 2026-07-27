@@ -1,12 +1,12 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
-import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum OmittedRunSampleSort {
 

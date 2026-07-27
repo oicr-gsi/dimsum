@@ -13,8 +13,11 @@ public class DimsumSamlPrincipal extends DimsumPrincipal implements Saml2Respons
 
   private final Saml2ResponseAssertionAccessor assertionAccessor;
 
-  public DimsumSamlPrincipal(Saml2ResponseAssertionAccessor assertionAccessor, String displayName,
-      boolean internal, Set<String> projects) {
+  public DimsumSamlPrincipal(
+      Saml2ResponseAssertionAccessor assertionAccessor,
+      String displayName,
+      boolean internal,
+      Set<String> projects) {
     super(assertionAccessor.getNameId(), displayName, internal, projects);
     this.assertionAccessor = assertionAccessor;
   }
@@ -48,5 +51,4 @@ public class DimsumSamlPrincipal extends DimsumPrincipal implements Saml2Respons
   public String getResponseValue() {
     return assertionAccessor.getResponseValue();
   }
-
 }

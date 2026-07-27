@@ -38,15 +38,12 @@ export const urls = {
         `${getRestBaseUrl()}/runs/${runName}/library-qualifications`,
       fullDepthSequencings: (runName: string) =>
         `${getRestBaseUrl()}/runs/${runName}/full-depth-sequencings`,
-      omissions: (runName: string) =>
-        `${getRestBaseUrl()}/runs/${runName}/omissions`,
+      omissions: (runName: string) => `${getRestBaseUrl()}/runs/${runName}/omissions`,
       list: `${getRestBaseUrl()}/runs`,
     },
     autocomplete: {
       assayNames: `${getRestBaseUrl(true)}/autocomplete/assay-names`,
-      requisitionNames: `${getRestBaseUrl(
-        true,
-      )}/autocomplete/requisition-names`,
+      requisitionNames: `${getRestBaseUrl(true)}/autocomplete/requisition-names`,
       projectNames: `${getRestBaseUrl(true)}/autocomplete/project-names`,
       donorNames: `${getRestBaseUrl(true)}/autocomplete/donor-names`,
       runNames: `${getRestBaseUrl()}/autocomplete/run-names`,
@@ -55,8 +52,7 @@ export const urls = {
     notifications: `${getRestBaseUrl()}/notifications`,
     omissions: `${getRestBaseUrl()}/omissions`,
     projects: {
-      summary: (projectName: string) =>
-        `${getRestBaseUrl(true)}/projects/${projectName}/summary`,
+      summary: (projectName: string) => `${getRestBaseUrl(true)}/projects/${projectName}/summary`,
       list: `${getRestBaseUrl()}/projects`,
       libraryQualificationOmissions: (projectName: string) =>
         `${getRestBaseUrl()}/projects/${projectName}/omissions/library-qualification`,
@@ -65,8 +61,7 @@ export const urls = {
     },
     tests: `${getRestBaseUrl()}/tests`,
     downloads: {
-      reports: (reportName: string) =>
-        `${getRestBaseUrl()}/downloads/reports/${reportName}`,
+      reports: (reportName: string) => `${getRestBaseUrl()}/downloads/reports/${reportName}`,
       reportData: (reportName: string) =>
         `${getRestBaseUrl()}/downloads/reports/${reportName}/data`,
     },
@@ -92,37 +87,25 @@ export const urls = {
     },
     project: (shortName: string) => makeMisoUrl("project/shortname", shortName),
     run: (runName: string) => makeMisoUrl("run/alias", runName),
-    requisition: (requisitionId: number) =>
-      makeMisoUrl("requisition", requisitionId),
+    requisition: (requisitionId: number) => makeMisoUrl("requisition", requisitionId),
     qcRunLibraries: `${siteConfig.misoUrl}/runlibraries/metrics`,
     assay: (assayId: number) => makeMisoUrl("assay", assayId),
   },
   dashi: {
     project: {
-      callReadyRna: (project: string) =>
-        makeDashiProjectUrl("call-ready-rna", project),
-      callReadyTar: (project: string) =>
-        makeDashiProjectUrl("call-ready-tar", project),
-      callReadyWgs: (project: string) =>
-        makeDashiProjectUrl("call-ready-wgs", project),
-      singleLaneCfMeDip: (project: string) =>
-        makeDashiProjectUrl("single-lane-cfmedip", project),
-      singleLaneRna: (project: string) =>
-        makeDashiProjectUrl("single-lane-rna", project),
-      singleLaneTar: (project: string) =>
-        makeDashiProjectUrl("single-lane-tar", project),
-      singleLaneWgs: (project: string) =>
-        makeDashiProjectUrl("single-lane-wgs", project),
+      callReadyRna: (project: string) => makeDashiProjectUrl("call-ready-rna", project),
+      callReadyTar: (project: string) => makeDashiProjectUrl("call-ready-tar", project),
+      callReadyWgs: (project: string) => makeDashiProjectUrl("call-ready-wgs", project),
+      singleLaneCfMeDip: (project: string) => makeDashiProjectUrl("single-lane-cfmedip", project),
+      singleLaneRna: (project: string) => makeDashiProjectUrl("single-lane-rna", project),
+      singleLaneTar: (project: string) => makeDashiProjectUrl("single-lane-tar", project),
+      singleLaneWgs: (project: string) => makeDashiProjectUrl("single-lane-wgs", project),
     },
     run: {
-      singleLaneCfMeDip: (runName: string) =>
-        makeDashiRunUrl("single-lane-cfmedip", runName),
-      singleLaneRna: (runName: string) =>
-        makeDashiRunUrl("single-lane-rna", runName),
-      singleLaneTar: (runName: string) =>
-        makeDashiRunUrl("single-lane-tar", runName),
-      singleLaneWgs: (runName: string) =>
-        makeDashiRunUrl("single-lane-wgs", runName),
+      singleLaneCfMeDip: (runName: string) => makeDashiRunUrl("single-lane-cfmedip", runName),
+      singleLaneRna: (runName: string) => makeDashiRunUrl("single-lane-rna", runName),
+      singleLaneTar: (runName: string) => makeDashiRunUrl("single-lane-tar", runName),
+      singleLaneWgs: (runName: string) => makeDashiRunUrl("single-lane-wgs", runName),
     },
   },
   jira: {
@@ -190,8 +173,7 @@ export function updateUrlParams(key: string, value: string, add?: boolean) {
   window.history.replaceState(
     nextState,
     nextTitle,
-    getBaseUrl() +
-      (add ? appendUrlParam(key, value) : removeUrlParam(key, value)),
+    getBaseUrl() + (add ? appendUrlParam(key, value) : removeUrlParam(key, value)),
   );
 }
 

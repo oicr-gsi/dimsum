@@ -2,6 +2,11 @@ package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
+
+import ca.on.oicr.gsi.cardea.data.Assay;
+import ca.on.oicr.gsi.cardea.data.Case;
+import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,10 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
-import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.Case;
-import ca.on.oicr.gsi.cardea.data.OmittedRunSample;
-import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 @Immutable
 public class CaseData {
@@ -31,11 +32,19 @@ public class CaseData {
   private final Set<String> testNames;
   private final Map<String, ProjectSummary> projectSummariesByName;
 
-  public CaseData(List<Case> cases, Map<String, RunAndLibraries> runsByName,
-      Map<Long, Assay> assaysById, List<OmittedSample> omittedSamples,
-      List<OmittedRunSample> omittedRunSamples, ZonedDateTime timestamp,
-      Set<String> requisitions, Set<String> projects, Set<String> donors, Set<String> runs,
-      Set<String> tests, Map<String, ProjectSummary> projectSummariesByName) {
+  public CaseData(
+      List<Case> cases,
+      Map<String, RunAndLibraries> runsByName,
+      Map<Long, Assay> assaysById,
+      List<OmittedSample> omittedSamples,
+      List<OmittedRunSample> omittedRunSamples,
+      ZonedDateTime timestamp,
+      Set<String> requisitions,
+      Set<String> projects,
+      Set<String> donors,
+      Set<String> runs,
+      Set<String> tests,
+      Map<String, ProjectSummary> projectSummariesByName) {
     this.cases = unmodifiableList(cases);
     this.runsByName = Collections.unmodifiableMap(runsByName);
     this.assaysById = Collections.unmodifiableMap(assaysById);
@@ -48,13 +57,10 @@ public class CaseData {
     this.donorNames = Collections.unmodifiableSet(donors);
     this.testNames = Collections.unmodifiableSet(tests);
     this.projectSummariesByName = Collections.unmodifiableMap(projectSummariesByName);
-
   }
 
   private static Set<String> getAssayNames(Map<Long, Assay> assaysById) {
-    return assaysById.values().stream()
-        .map(Assay::getName)
-        .collect(Collectors.toSet());
+    return assaysById.values().stream().map(Assay::getName).collect(Collectors.toSet());
   }
 
   public List<Case> getCases() {

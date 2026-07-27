@@ -18,13 +18,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * "Deleted" archiving status was wrongly being highlighted yellow (incomplete/warning)
 
-
 ## [1.66.1] - 2026-05-05
 
 ### Fixed
 
 * When marking case signoffs, the signoff was saved sucessfully, but an "unexpected error" was shown and the signoff would not appear in Dimsum until the next refresh
-
 
 ## [1.66.0] - 2026-05-05
 
@@ -36,7 +34,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 ### Changed
 
 * MISO links, copy name and ID buttons, and status tooltips within the related run-library tooltips
-
 
 ## [1.65.0] - 2026-03-19
 
@@ -56,20 +53,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Checkboxes were included in some tables even when there was no use for them (external view only)
 
-
 ## [1.64.0] - 2026-03-05
 
 ### Added
 
 * Button to copy case ID beside "Case Details" text in Assay column on List pages
 
-
 ## [1.63.1] - 2026-03-02
 
 ### Fixed
 
 * When the units for a metric were K/M/B, the pass/fail status was not being calculated correctly, affecting whether the cell was shaded red to indicate a failure. Exception: "Min Clusters (PF)" metrics were working correctly.
-
 
 ## [1.63.0] - 2026-02-26
 
@@ -89,13 +83,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Some icons were missing from the legend dialog for internal users
 
-
 ## [1.62.0] - 2026-02-12
 
 ### Changed
 
 * It is now possible to sign off release for multiple deliverables at once
-
 
 ## [1.61.0] - 2026-01-08
 
@@ -115,7 +107,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * In notifications, run-libraries were counted as pending QC while certain metrics were still pending analysis
 
-
 ## [1.60.0] - 2025-12-11
 
 ### Added
@@ -133,13 +124,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * A clear error message will be shown when page updates and downloads fail due to session timeout, with
   the option to refresh
 
-
 ## [1.59.0] - 2025-10-30
 
 ### Changed
 
 * Modified version of tgl report, adding more columns used by MOH
-
 
 ## [1.58.0] - 2025-10-15
 
@@ -156,13 +145,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Users must now be authorized to access Dimsum as either internal or external users
 * Home page for external users to the Projects list
 
-
 ## [1.57.1] - 2025-10-09
 
 ### Fixed
 
 * The QC in MISO page was showing the same value for all metrics
-
 
 ## [1.57.0] - 2025-10-08
 
@@ -176,12 +163,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Error on QC in MISO page with certain metrics
 * results of "incomplete" filters
   * when choosing a step that is evaluated at the case level, all tests and samples within the matching
-  cases will be included
+    cases will be included
   * when choosing a step that is evaluated at the test level, all samples within the matching tests
-  will be included
+    will be included
 * On the Run Details page, the Library Qualifications and Full-Depth Sequencing tables would disappear
   after filtering if no items matched the filters
-
 
 ## [1.56.0] - 2025-08-21
 
@@ -192,7 +178,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 ### Fixed
 
 * In some places, library qualification included run metrics for tests that did not involve a run
-
 
 ## [1.55.0] - 2025-08-07
 
@@ -206,7 +191,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * All deliverable categories are now included in the Case TAT and TAT Trend Reports
 
-
 ## [1.54.1] - 2025-07-04
 
 ### Fixed
@@ -214,13 +198,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * QC in MISO feature was not working with pass/fail metrics. These will now be excluded from display in
   MISO instead.
 
-
 ## [1.54.0] - 2025-06-30
 
 ### Added
 
 * Support for custom deliverable categories
-
 
 ## [1.53.0] - 2025-06-12
 
@@ -237,7 +219,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Some filters were remaining in the URL after removed from a table
 * When choosing to download csv/tsv with headings, the headings were not actually included
 
-
 ## [1.52.3] - 2025-05-29
 
 ### Fixed
@@ -245,13 +226,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * The Case QC Report Analysis Review table still showed pass/fail metrics as pending after QC signoff
   was failed
 
-
 ## [1.52.2] - 2025-04-08
 
 ### Fixed
 
 * TAT Trend Report showing zero receipt days for all tests
-
 
 ## [1.52.1] - 2025-04-03
 
@@ -266,20 +245,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * When filtering by library design, cases using the specified design code only after library
   preparation were not included
 
-
 ## [1.52.0] - 2025-03-06
 
 ### Added
 
 * QC Status column on the Full-Depth Summary download sheet
 
-
 ## [1.51.1] - 2025-02-06
 
 ### Fixed
 
 * OpenSAML dependency in pom.xml
-
 
 ## [1.51.0] - 2025-02-06
 
@@ -295,14 +271,12 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Error when attempting to display some items with no metrics
 
-
 ## [1.50.0] - 2025-01-30
 
 ### Changed
 
 * The Cases list will now show a status of "Sequencing in progress" instead of pending QC or data
   review for sequencing items that are currently running
-
 
 ## [1.49.0] - 2024-12-19
 
@@ -314,7 +288,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * The Run Details page Library Design filter was missing some options
 * Error creating JIRA Service
-
 
 ## [1.48.0] - 2024-12-17
 
@@ -328,20 +301,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Analysis review, release approval, and release now have QC statuses that indicate both QC passed and
   the release status
 
-
 ## [1.47.1] - 2024-12-06
 
 ### Fixed
 
 * Items that have an assay but do not have any metrics should not be displayed on the Case QC Report
 
-
 ## [1.47.0] - 2024-12-05
 
 ### Added
 
 * Checkbox to select/deselect all QC gates on TAT trend report
-
 
 ## [1.46.0] - 2024-11-21
 
@@ -362,7 +332,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
   (mainly affects supplemental samples)
 * Case QC Report sample tables were not being displayed
 
-
 ## [1.45.0] - 2024-11-15
 
 ### Added
@@ -376,14 +345,12 @@ This file is updated automatically as described in [Unreleased Changes](changes/
   project. If there are over 100 projects, then only a count of the libraries and projects will be
   included
 
-
 ## [1.44.0] - 2024-11-07
 
 ### Added
 
 * Omissions table on the Run Details page, showing libraries that are included in the run but not a
   part of any case
-
 
 ## [1.43.0] - 2024-10-31
 
@@ -397,13 +364,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Date inputs submitting before entry is completed. Now requires pressing enter or clicking the submit
   (checkmark) button to submit, similar to text inputs
 
-
 ## [1.42.0] - 2024-09-30
 
 ### Changed
 
 * Links to MISO have been updated
-
 
 ## [1.41.0] - 2024-09-19
 
@@ -417,13 +382,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * 'OVERDUE' being shown for completed sequencing gates if there was a failed run where the run-library
   did not have its (unnecessary) QC completed
 
-
 ## [1.40.1] - 2024-09-05
 
 ### Fixed
 
 * Security patches
-
 
 ## [1.40.0] - 2024-08-15
 
@@ -437,7 +400,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * The Case QC Report now displays "CASE STOPPED" along with the stop reason if the case is stopped,
   and correctly shows incomplete sign-offs as "N/A (case stopped)"
 
-
 ## [1.39.0] - 2024-08-06
 
 ### Changed
@@ -450,13 +412,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * DV200 library metric values were not being displayed
 
-
 ## [1.38.1] - 2024-07-04
 
 ### Fixed
 
 * Display of Analysis Review pass/fail metrics
-
 
 ## [1.38.0] - 2024-06-27
 
@@ -469,7 +429,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * The Case QC Report's default filename when printing to PDF will always use the requisition name and
   never the group ID
 
-
 ## [1.37.0] - 2024-06-13
 
 ### Added
@@ -477,7 +436,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Pending extraction transfer case filter
 * Requirement for extraction sample (or aliquot) transfer to complete extraction step. A new icon is
   used to indicate samples pending transfer
-
 
 ## [1.36.0] - 2024-06-06
 
@@ -487,20 +445,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
   sequencing in the Case TAT Report
 * Ability to link to requisitions by name: `/requisitions/by-name/<name>`
 
-
 ## [1.35.0] - 2024-05-30
 
 ### Added
 
 * Display a count of the selected items in a table
 
-
 ## [1.34.0] - 2024-05-23
 
 ### Added
 
 * case start and end date filters
-
 
 ## [1.33.0] - 2024-05-09
 
@@ -513,7 +468,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * The format of case IDs has changed. When requesting a case page using an old case ID, an attempt is
   made to determine the updated case ID and redirect you to the intended page
-
 
 ## [1.32.0] - 2024-05-07
 
@@ -532,14 +486,12 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Some columns on the Case TAT Report showed a completion date whether the step was passed (completed)
   or failed (not completed)
 
-
 ## [1.31.0] - 2024-04-18
 
 ### Added
 
 * Project and library design filters for Library Qualification and Full-Depth Sequencing tables on the
   Run Details page
-
 
 ## [1.30.0] - 2024-04-11
 
@@ -556,7 +508,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Library qualification and full-depth sequencing would be highlighted as incomplete if an item had
   failed run QC with run-library QC left incomplete. These should be considered completed (failed)
 
-
 ## [1.29.0] - 2024-03-28
 
 ### Added
@@ -569,13 +520,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Button text in first "Case QC" dialog from "Submit" to "Next" to clarify that there will be another step
 
-
 ## [1.28.1] - 2024-03-25
 
 ### Fixed
 
 * Error when attempting to record sign offs
-
 
 ## [1.28.0] - 2024-03-14
 
@@ -589,7 +538,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * The "Passed" QC status will now be displayed as "Approved"
 * Moved the Case Details link from the assay name to a clearer "Case Details" text node
 
-
 ## [1.27.1] - 2024-03-07
 
 ### Fixed
@@ -597,13 +545,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * The 'Pending: Release Approval' and 'Pending: Release' filters (without a deliverable type specified) were not including all of the appropriate cases
 * The "Pending: Release Approval - Data Release" and "Pending: Release Approval - Clinical Report" filters were not including stopped cases
 
-
 ## [1.27.0] - 2024-03-01
 
 ### Added
 
 * Dropdown on the Case QC Report to choose which deliverable type(s) to include in the report
-
 
 ## [1.26.0] - 2024-02-29
 
@@ -626,13 +572,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Some metrics with reported values of zero were wrongly displayed as "Not Found," and their highlighting was inconsistent
 * Pending Release Approvals and Releases were not counted for stopped cases in the project summary
 
-
 ## [1.25.1] - 2024-02-16
 
 ### Fixed
 
 * Some JIRA tickets were not being closed automatically after QC was completed
-
 
 ## [1.25.0] - 2024-01-29
 
@@ -646,13 +590,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * The QC in MISO function would error and not respond if an assay contained a metric with a range threshold (between x and y)
 * When using the QC in MISO function, a single assay was used to choose the metrics to relay to MISO. This means that MISO would display the wrong metrics for samples with a different assay
 
-
 ## [1.24.0] - 2024-01-18
 
 ### Changed
 
 * Some tests may not have a library qualification step
-
 
 ## [1.23.0] - 2024-01-04
 
@@ -668,13 +610,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Steps that were skipped due to the case being stopped could still be shown as overdue
 
-
 ## [1.22.1] - 2023-12-18
 
 ### Fixed
 
 * Skipped (N/A) steps were displayed as "BEHIND SCHEDULE"
-
 
 ## [1.22.0] - 2023-12-14
 
@@ -687,7 +627,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Improved display of case-level turn-around time, including days remaining
 
-
 ## [1.21.0] - 2023-11-30
 
 ### Added
@@ -699,7 +638,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Cases are now sorted by urgency by default
 
-
 ## [1.20.0] - 2023-11-23
 
 ### Added
@@ -710,7 +648,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 ### Changed
 
 * Replaced the default Spring "Whitelabel Error Page" with custom error page
-
 
 ## [1.19.0] - 2023-11-09
 
@@ -729,13 +666,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Updating notifications failed if any requisitions included supplemental samples that did not have
   their own fully defined assay
 
-
 ## [1.18.0] - 2023-10-05
 
 ### Changed
 
 * Collapse lane-level values to reduce run metric visual clutter
-
 
 ## [1.17.0] - 2023-09-28
 
@@ -747,7 +682,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Removed QC report button from Requisition Details page
 
-
 ## [1.16.0] - 2023-09-20
 
 ### Changed
@@ -756,7 +690,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
   * Informatics Review -> Analysis Review
   * Draft Report -> Release Approval
   * Final Report -> Release
-
 
 ## [1.15.0] - 2023-09-14
 
@@ -768,7 +701,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * The way cases are loaded; uses the case data from live Cardea API instead of QC-Gate-ETL files
 
-
 ## [1.14.0] - 2023-08-03
 
 ### Added
@@ -779,13 +711,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * TGL Tracking Sheet was showing reversed coverage requirements for tumour vs. normal
 
-
 ## [1.13.0] - 2023-07-27
 
 ### Added
 
 * Support for median insert size metric
-
 
 ## [1.12.0] - 2023-07-13
 
@@ -801,20 +731,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Broken links and images within user manual
 
-
 ## [1.11.0] - 2023-07-05
 
 ### Added
 
 * TGL Tracking Sheet project downloads
 
-
 ## [1.10.1] - 2023-06-29
 
 ### Fixed
 
 * Project list was failing to load and showing "NO DATA"
-
 
 ## [1.10.0] - 2023-06-28
 
@@ -828,20 +755,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Default page size for all tables to 50
 
-
 ## [1.9.2] - 2023-06-15
 
 ### Fixed
 
 * yield showing not found instead of zero if sample volume or concentration is zero
 
-
 ## [1.9.1] - 2023-05-18
 
 ### Fixed
 
 * Display of thresholds with min/max values of zero
-
 
 ## [1.9.0] - 2023-05-11
 
@@ -850,14 +774,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * A date range for the summary table on the Project Details page. This includes:
   - dropdown of common ranges (today, yesterday, this week, etc.)
   - custom ranges
-  
-  
 
 ### Fixed
 
 * display of "Yield (Qubit)" metric
 * tests that skip a gate should be counted as having completed that gate
-
 
 ## [1.8.1] - 2023-04-28
 
@@ -866,7 +787,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Case QC Report was showing the wrong sign-offs for run-level categories
 * Report generated date on Case QC Report was off by one day
 * Autocomplete suggestions not appearing
-
 
 ## [1.8.0] - 2023-04-20
 
@@ -885,7 +805,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * data for the wrong donor could be included in Informatics Review metrics on the Case QC Report
 * sorting and displaying cases when start date and/or latest activity cannot be determined
 
-
 ## [1.7.0] - 2023-04-06
 
 ### Added
@@ -894,13 +813,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
   - Project detail table with any Completed Gate filter will now show stopped cases as well for consistency with the counts table
 * Case QC Report page
 
-
 ## [1.6.0] - 2023-03-30
 
 ### Added
 
 * Project summary table on project detail page that displays counts of items at each QC gate that are pending, pending QC, completed
-
 
 ## [1.5.0] - 2023-03-22
 
@@ -912,7 +829,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
   - Completed gate
 * Support for EM-Seq assay metrics
 
-
 ## [1.4.0] - 2023-03-16
 
 ### Added
@@ -923,7 +839,6 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 ### Changed
 
 * Turn-Around Time will not be displayed for stopped cases
-
 
 ## [1.3.0] - 2023-03-09
 
@@ -948,20 +863,17 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Changed references to previous name, 'Dim Sum', to 'Dimsum'
 
-
 ## [1.2.0] - 2023-01-20
 
 ### Changed
 
 * Help link in the header now links to the user manual
 
-
 ## [1.1.1] - 2023-01-04
 
 ### Fixed
 
 * Metric columns that are n/a for all samples should be hidden
-
 
 ## [1.1.0] - 2022-12-15
 
@@ -973,13 +885,11 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 * Filter options meant for other pages were appearing on the Run Details page
 
-
 ## [1.0.1] - 2022-12-08
 
 ### Fixed
 
 * The Library Qualifications table on detail pages was showing the wrong items
-
 
 ## [1.0.0] - 2022-12-08
 
@@ -996,11 +906,9 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 * Notification ticket summary format for easier email filtering (RUN_NAME Dimsum
   Run QC)
 
-
 ## [0.1.0] - 2022-11-17
 
 ### Added
 
 * Changelog
-  
 

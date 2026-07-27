@@ -14,36 +14,36 @@ import org.springframework.web.server.ResponseStatusException;
 @ControllerAdvice(basePackages = "ca.on.oicr.gsi.dimsum.controller.rest")
 public class RestExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(RestExceptionHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(RestExceptionHandler.class);
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, Object>> handleResponseStatusException(
-            ResponseStatusException ex) {
-        return prepareErrorResponse(ex.getStatusCode(), ex.getReason(), ex);
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Map<String, Object>> handleResponseStatusException(
+      ResponseStatusException ex) {
+    return prepareErrorResponse(ex.getStatusCode(), ex.getReason(), ex);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+    return prepareErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex);
+  }
+
+  private ResponseEntity<Map<String, Object>> prepareErrorResponse(
+      HttpStatusCode httpStatus, String errorMessage, Exception ex) {
+    logException(httpStatus.value(), errorMessage, ex);
+
+    Map<String, Object> error = new HashMap<>();
+    error.put("status", httpStatus.value());
+    error.put("error", HttpStatus.resolve(httpStatus.value()).getReasonPhrase());
+    error.put("message", errorMessage);
+
+    return new ResponseEntity<>(error, httpStatus);
+  }
+
+  private void logException(int status, String message, Exception ex) {
+    if (status >= 500) {
+      logger.error("Error Status: {}. Error Message: {}", status, message, ex);
+    } else {
+      logger.warn("Error Status: {}. Error Message: {}", status, message);
     }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        return prepareErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", ex);
-    }
-
-    private ResponseEntity<Map<String, Object>> prepareErrorResponse(HttpStatusCode httpStatus,
-            String errorMessage, Exception ex) {
-        logException(httpStatus.value(), errorMessage, ex);
-
-        Map<String, Object> error = new HashMap<>();
-        error.put("status", httpStatus.value());
-        error.put("error", HttpStatus.resolve(httpStatus.value()).getReasonPhrase());
-        error.put("message", errorMessage);
-
-        return new ResponseEntity<>(error, httpStatus);
-    }
-
-    private void logException(int status, String message, Exception ex) {
-        if (status >= 500) {
-            logger.error("Error Status: {}. Error Message: {}", status, message, ex);
-        } else {
-            logger.warn("Error Status: {}. Error Message: {}", status, message);
-        }
-    }
+  }
 }

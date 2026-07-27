@@ -58,5 +58,4 @@ public class DataQuery {
   public void setDescending(Boolean descending) {
     this.descending = descending;
   }
-
 }

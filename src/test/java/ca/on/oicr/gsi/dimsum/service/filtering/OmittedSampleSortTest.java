@@ -4,26 +4,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import ca.on.oicr.gsi.cardea.data.Donor;
+import ca.on.oicr.gsi.cardea.data.OmittedSample;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.Donor;
-import ca.on.oicr.gsi.cardea.data.OmittedSample;
 
 public class OmittedSampleSortTest {
 
   private static final String[] namesOrdered = {"Sample_A", "Sample_B", "Sample_C"};
   private static final String[] names = {namesOrdered[1], namesOrdered[2], namesOrdered[0]};
   private static final String[] projectsOrdered = {"APROJ", "BPROJ", "CPROJ"};
-  private static final String[] projects =
-      {projectsOrdered[2], projectsOrdered[0], projectsOrdered[1]};
+  private static final String[] projects = {
+    projectsOrdered[2], projectsOrdered[0], projectsOrdered[1]
+  };
   private static final String[] donorsOrdered = {"APROJ_0001", "APROJ_0002", "BPROJ_0001"};
   private static final String[] donors = {donorsOrdered[1], donorsOrdered[0], donorsOrdered[2]};
   private static final String[] requisitionsOrdered = {"REQ A", "REQ B", "REQ C"};
-  private static final String[] requisitions =
-      {requisitionsOrdered[0], requisitionsOrdered[2], requisitionsOrdered[1]};
+  private static final String[] requisitions = {
+    requisitionsOrdered[0], requisitionsOrdered[2], requisitionsOrdered[1]
+  };
 
   @Test
   public void testSortByNameAscending() {
@@ -73,8 +76,11 @@ public class OmittedSampleSortTest {
     assertOrder(samples, OmittedSample::getRequisitionName, requisitionsOrdered, true);
   }
 
-  private static <T> void assertOrder(List<OmittedSample> samples,
-      Function<OmittedSample, T> getter, T[] expectedOrder, boolean reversed) {
+  private static <T> void assertOrder(
+      List<OmittedSample> samples,
+      Function<OmittedSample, T> getter,
+      T[] expectedOrder,
+      boolean reversed) {
     assertNotNull(samples);
     assertEquals(samples.size(), expectedOrder.length);
     assertEquals(expectedOrder[reversed ? 2 : 0], getter.apply(samples.get(0)));
@@ -101,5 +107,4 @@ public class OmittedSampleSortTest {
     when(sample.getRequisitionName()).thenReturn(requisitions[sampleNumber]);
     return sample;
   }
-
 }

@@ -22,7 +22,7 @@ export interface ProjectSummaryRow {
 }
 
 export function getProjectSummaryRowDefinition(
-  queryUrl: string
+  queryUrl: string,
 ): TableDefinition<ProjectSummaryRow, void> {
   return {
     queryUrl: queryUrl,
@@ -47,9 +47,7 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Status",
           addParentContents(projectSummaryRow, fragment) {
-            fragment.appendChild(
-              document.createTextNode(projectSummaryRow.title)
-            );
+            fragment.appendChild(document.createTextNode(projectSummaryRow.title));
           },
         },
         {
@@ -70,11 +68,7 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Library Preparation",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(
-              "Library Preparations",
-              projectSummaryRow.libraryPreparation,
-              fragment
-            );
+            displayCount("Library Preparations", projectSummaryRow.libraryPreparation, fragment);
           },
         },
         {
@@ -83,28 +77,20 @@ export function getProjectSummaryRowDefinition(
             displayCount(
               "Library Qualifications",
               projectSummaryRow.libraryQualification,
-              fragment
+              fragment,
             );
           },
         },
         {
           title: "Full-Depth Sequencing",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(
-              "Full-Depth Sequencings",
-              projectSummaryRow.fullDepthSequencing,
-              fragment
-            );
+            displayCount("Full-Depth Sequencings", projectSummaryRow.fullDepthSequencing, fragment);
           },
         },
         {
           title: "Analysis Review",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(
-              "Analysis Reviews",
-              projectSummaryRow.analysisReview,
-              fragment
-            );
+            displayCount("Analysis Reviews", projectSummaryRow.analysisReview, fragment);
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.analysisReview ? "na" : null;
@@ -113,11 +99,7 @@ export function getProjectSummaryRowDefinition(
         {
           title: "Release Approval",
           addParentContents(projectSummaryRow, fragment) {
-            displayCount(
-              "Release Approvals",
-              projectSummaryRow.releaseApproval,
-              fragment
-            );
+            displayCount("Release Approvals", projectSummaryRow.releaseApproval, fragment);
           },
           getCellHighlight(projectSummaryRow) {
             return !projectSummaryRow.releaseApproval ? "na" : null;
@@ -142,7 +124,7 @@ const tableFilterKey = "TABLE";
 function displayCount(
   tableFilterValue: string,
   projectSummaryField: ProjectSummaryField,
-  fragment: DocumentFragment
+  fragment: DocumentFragment,
 ) {
   if (!projectSummaryField) {
     addNaText(fragment);
@@ -152,10 +134,6 @@ function displayCount(
   params.append(tableFilterKey, tableFilterValue);
   params.append(projectSummaryField.filterKey, projectSummaryField.filterValue);
   fragment.appendChild(
-    makeNameDiv(
-      projectSummaryField.count.toString(),
-      undefined,
-      `?${params.toString()}`
-    )
+    makeNameDiv(projectSummaryField.count.toString(), undefined, `?${params.toString()}`),
   );
 }

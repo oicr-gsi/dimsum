@@ -2,15 +2,7 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
 import ca.on.oicr.gsi.cardea.data.Assay;
 import ca.on.oicr.gsi.cardea.data.AssayTargets;
 import ca.on.oicr.gsi.cardea.data.Case;
@@ -21,28 +13,53 @@ import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class CaseSortTest {
 
-  private static final String[] requistionsOrdered =
-      {"123", "Req A", "req b", "REQ C", "WGTS20260213"};
-  private static final String[] caseRequisitions = {requistionsOrdered[4], requistionsOrdered[0],
-      requistionsOrdered[3], requistionsOrdered[1], requistionsOrdered[2]};
+  private static final String[] requistionsOrdered = {
+    "123", "Req A", "req b", "REQ C", "WGTS20260213"
+  };
+  private static final String[] caseRequisitions = {
+    requistionsOrdered[4],
+    requistionsOrdered[0],
+    requistionsOrdered[3],
+    requistionsOrdered[1],
+    requistionsOrdered[2]
+  };
 
   private static final String[] assaysOrdered = {"A", "B", "C", "D", "E"};
-  private static final String[] caseAssays =
-      {assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]};
+  private static final String[] caseAssays = {
+    assaysOrdered[1], assaysOrdered[4], assaysOrdered[2], assaysOrdered[0], assaysOrdered[3]
+  };
 
-  private static String[] donorsOrdered =
-      {"APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"};
-  private static String[] caseDonors =
-      {donorsOrdered[2], donorsOrdered[1], donorsOrdered[0], donorsOrdered[4], donorsOrdered[3]};
-  private static LocalDate[] datesOrdered = {LocalDate.of(2021, 03, 13), LocalDate.of(2021, 06, 14),
-      LocalDate.of(2022, 01, 01), LocalDate.of(2022, 06, 10), LocalDate.of(2022, 06, 13)};
-  private static LocalDate[] caseReceiptDates =
-      {datesOrdered[0], datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3]};
-  private static LocalDate[] caseActivityDates =
-      {datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3], datesOrdered[0]};
+  private static String[] donorsOrdered = {
+    "APROJ_0001", "APROJ_0002", "BPROJ_0001", "BPROJ_0002", "BPROJ_0003"
+  };
+  private static String[] caseDonors = {
+    donorsOrdered[2], donorsOrdered[1], donorsOrdered[0], donorsOrdered[4], donorsOrdered[3]
+  };
+  private static LocalDate[] datesOrdered = {
+    LocalDate.of(2021, 03, 13),
+    LocalDate.of(2021, 06, 14),
+    LocalDate.of(2022, 01, 01),
+    LocalDate.of(2022, 06, 10),
+    LocalDate.of(2022, 06, 13)
+  };
+  private static LocalDate[] caseReceiptDates = {
+    datesOrdered[0], datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3]
+  };
+  private static LocalDate[] caseActivityDates = {
+    datesOrdered[4], datesOrdered[1], datesOrdered[2], datesOrdered[3], datesOrdered[0]
+  };
 
   private static Map<Long, Assay> mockAssaysById = makeAssays();
 
@@ -361,16 +378,16 @@ public class CaseSortTest {
     }
   }
 
-  private static void addRelease(Case kase, ReleaseQcStatus qcStatus, int year, int month,
-      int day) {
+  private static void addRelease(
+      Case kase, ReleaseQcStatus qcStatus, int year, int month, int day) {
     CaseRelease release = kase.getDeliverables().get(0).getReleases().get(0);
     when(release.getQcStatus()).thenReturn(qcStatus);
     when(release.getQcUser()).thenReturn("User");
     when(release.getQcDate()).thenReturn(LocalDate.of(year, month, day));
   }
 
-  private static <T> void assertOrder(List<Case> cases, Function<Case, T> getter, T[] expectedOrder,
-      boolean reversed) {
+  private static <T> void assertOrder(
+      List<Case> cases, Function<Case, T> getter, T[] expectedOrder, boolean reversed) {
     assertNotNull(cases);
     assertEquals(cases.size(), expectedOrder.length);
     assertEquals(expectedOrder[reversed ? 4 : 0], getter.apply(cases.get(0)));

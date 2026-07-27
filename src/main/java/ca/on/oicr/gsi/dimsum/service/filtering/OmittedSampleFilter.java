@@ -2,8 +2,8 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.function.Predicate;
 import ca.on.oicr.gsi.cardea.data.OmittedSample;
+import java.util.function.Predicate;
 
 public class OmittedSampleFilter {
 
@@ -24,5 +24,4 @@ public class OmittedSampleFilter {
   public Predicate<OmittedSample> predicate() {
     return key.create().apply(value);
   }
-
 }

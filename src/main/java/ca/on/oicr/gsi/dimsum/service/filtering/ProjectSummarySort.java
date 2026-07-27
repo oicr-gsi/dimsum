@@ -1,11 +1,11 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.dimsum.data.ProjectSummary;
 
 public enum ProjectSummarySort {
 
@@ -13,8 +13,9 @@ public enum ProjectSummarySort {
   NAME("Name", Comparator.comparing(ProjectSummary::getName));
 
   // @formatter:on
-  private static final Map<String, ProjectSummarySort> map = Stream.of(ProjectSummarySort.values())
-      .collect(Collectors.toMap(ProjectSummarySort::getLabel, Function.identity()));
+  private static final Map<String, ProjectSummarySort> map =
+      Stream.of(ProjectSummarySort.values())
+          .collect(Collectors.toMap(ProjectSummarySort::getLabel, Function.identity()));
 
   public static ProjectSummarySort getByLabel(String label) {
     return map.get(label);

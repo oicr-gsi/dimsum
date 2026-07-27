@@ -31,5 +31,4 @@ public class NabuSavedSignoff extends NabuSignoff {
   public void setCreated(ZonedDateTime created) {
     this.created = created;
   }
-
 }

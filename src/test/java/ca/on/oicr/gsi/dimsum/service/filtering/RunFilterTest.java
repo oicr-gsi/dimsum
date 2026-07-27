@@ -2,14 +2,14 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import ca.on.oicr.gsi.cardea.data.Run;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import ca.on.oicr.gsi.cardea.data.Run;
 
 public class RunFilterTest {
-
 
   private static List<Run> runs =
       Arrays.asList(
@@ -40,7 +40,8 @@ public class RunFilterTest {
   private static void testFilter(RunFilter filter, List<String> expectedNames) {
     List<Run> filtered = runs.stream().filter(filter.predicate()).toList();
     for (String expectedName : expectedNames) {
-      assertTrue(filtered.stream().anyMatch(x -> x.getName().equals(expectedName)),
+      assertTrue(
+          filtered.stream().anyMatch(x -> x.getName().equals(expectedName)),
           "Run %s included".formatted(expectedName));
     }
     assertEquals(expectedNames.size(), filtered.size(), "Run count");

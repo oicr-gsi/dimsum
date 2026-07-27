@@ -13,12 +13,7 @@ import {
   receiptDefinition,
 } from "./data/sample";
 import { getProjectSummaryRowDefinition } from "./data/project-summary-row";
-import {
-  getSearchParams,
-  updateUrlParams,
-  replaceUrlParams,
-  urls,
-} from "./util/urls";
+import { getSearchParams, updateUrlParams, replaceUrlParams, urls } from "./util/urls";
 import { TabBar } from "./component/tab-bar-builder";
 import { Pair } from "./util/pair";
 import { TableBuilder, TableDefinition } from "./component/table-builder";
@@ -36,24 +31,17 @@ import { internalUser } from "./util/site-config";
 const tableContainerId = "tableContainer";
 const tableContainer = getRequiredElementById(tableContainerId); // use same table container across all tables
 const afterDatePicker = getRequiredElementById("afterDate") as HTMLInputElement;
-const beforeDatePicker = getRequiredElementById(
-  "beforeDate"
-) as HTMLInputElement;
+const beforeDatePicker = getRequiredElementById("beforeDate") as HTMLInputElement;
 const afterDateKey = "AFTER_DATE";
 const beforeDateKey = "BEFORE_DATE";
 
 const projectHeading = getRequiredElementById("projectHeading");
-const projectName = getRequiredDataAttribute(
-  projectHeading,
-  "data-project-name"
-);
+const projectName = getRequiredDataAttribute(projectHeading, "data-project-name");
 if (internalUser) {
   // Add Dashi links
   const dashiLink = getRequiredElementById("dashiProjectLink");
   const libraryDesignsString = dashiLink.getAttribute("data-library-designs");
-  const libraryDesigns = libraryDesignsString
-    ? libraryDesignsString.split(",")
-    : [];
+  const libraryDesigns = libraryDesignsString ? libraryDesignsString.split(",") : [];
   makeDashiProjectLinksTooltip(dashiLink, projectName, libraryDesigns);
 }
 
@@ -73,41 +61,22 @@ const dateOptions = [
       afterDatePicker.value = "";
       beforeDatePicker.value = "";
     });
-    projectSummaryTable.replaceFilters([
-      new Pair(afterDateKey, ""),
-      new Pair(beforeDateKey, ""),
-    ]);
+    projectSummaryTable.replaceFilters([new Pair(afterDateKey, ""), new Pair(beforeDateKey, "")]);
   }),
   new BasicDropdownOption("Today", () => {
     handleDateDropdownFilter(dateToString(today), dateToString(today));
   }),
   new BasicDropdownOption("Yesterday", () => {
-    const date = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() - 1
-    );
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
     handleDateDropdownFilter(dateToString(date), dateToString(date));
   }),
   new BasicDropdownOption("This Week", () => {
-    const afterdate = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() - 6
-    );
+    const afterdate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
     handleDateDropdownFilter(dateToString(afterdate), dateToString(today));
   }),
   new BasicDropdownOption("Last Week", () => {
-    const afterdate = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() - 13
-    );
-    const beforedate = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() - 7
-    );
+    const afterdate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 13);
+    const beforedate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
     handleDateDropdownFilter(dateToString(afterdate), dateToString(beforedate));
   }),
   new BasicDropdownOption("This Month", () => {
@@ -152,19 +121,15 @@ dateRangeContainer.classList.add("flex-auto", "items-center", "space-x-2");
 topControlsContainer.appendChild(dateRangeContainer);
 
 // append the project summary filter to the top project summary table's top control
-getRequiredElementById("projectSummaryDateControls").appendChild(
-  topControlsContainer
-);
+getRequiredElementById("projectSummaryDateControls").appendChild(topControlsContainer);
 
 if (!tableContainer.dataset.detailValue) {
   throw Error("Summary table missing data: detail value");
 }
 const projectSummaryTable = new TableBuilder(
-  getProjectSummaryRowDefinition(
-    urls.rest.projects.summary(tableContainer.dataset.detailValue)
-  ),
+  getProjectSummaryRowDefinition(urls.rest.projects.summary(tableContainer.dataset.detailValue)),
   "projectSummaryContainer",
-  getSearchParams()
+  getSearchParams(),
 ).build();
 
 // each pair consists of (1) the title of the table, and (2) its reload function upon selection
@@ -176,19 +141,13 @@ const tables = [
   new Pair("Extractions", () => reload(extractionDefinition)),
   new Pair("Library Preparations", () => reload(libraryPreparationDefinition)),
   new Pair("Library Qualifications", () => {
-    reload(
-      getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true)
-    );
+    reload(getLibraryQualificationsDefinition(urls.rest.libraryQualifications, true));
     if (internalUser) {
-      addOmissionsTable(
-        urls.rest.projects.libraryQualificationOmissions(projectName)
-      );
+      addOmissionsTable(urls.rest.projects.libraryQualificationOmissions(projectName));
     }
   }),
   new Pair("Full-Depth Sequencings", () => {
-    reload(
-      getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true)
-    );
+    reload(getFullDepthSequencingsDefinition(urls.rest.fullDepthSequencings, true));
     if (internalUser) {
       addOmissionsTable(urls.rest.projects.fullDepthOmissions(projectName));
     }
@@ -199,8 +158,7 @@ const tables = [
 ];
 
 // tabbed interface defaults to the cases table
-const tableUrlQuery =
-  getSearchParams().find((query) => query.key === "TABLE")?.value || "Cases";
+const tableUrlQuery = getSearchParams().find((query) => query.key === "TABLE")?.value || "Cases";
 const tabBar = new TabBar(tables, tableUrlQuery, "tabBarContainer");
 tabBar.build();
 
@@ -211,7 +169,7 @@ function reload(definition: TableDefinition<any, any>) {
     definition,
     tableContainerId,
     getSearchParams(),
-    handleTabbedTableFilters
+    handleTabbedTableFilters,
   ).build();
 
   omissionsHeading?.remove();
@@ -226,15 +184,14 @@ function handleTabbedTableFilters(key: string, value: string, add: boolean) {
 function addOmissionsTable(queryUrl: string) {
   omissionsHeading = document.createElement("h2");
   omissionsHeading.innerText = "Omissions";
-  omissionsHeading.className =
-    "text-green-200 font-sarabun font-light font text-24 mt-8";
+  omissionsHeading.className = "text-green-200 font-sarabun font-light font text-24 mt-8";
   omissionsTableContainer = document.createElement("div");
   omissionsTableContainer.id = "omissionsTableContainer";
 
   tableContainer.after(omissionsHeading, omissionsTableContainer);
   new TableBuilder(
     getOmittedRunSamplesDefinition(queryUrl, true),
-    omissionsTableContainer.id
+    omissionsTableContainer.id,
   ).build();
 }
 
@@ -268,7 +225,7 @@ function dateToString(date: Date) {
 function makeDashiProjectLinksTooltip(
   element: HTMLElement,
   projectName: string,
-  libraryDesigns: string[]
+  libraryDesigns: string[],
 ) {
   const tooltipInstance = Tooltip.getInstance();
   tooltipInstance.addTarget(element, (fragment) => {
@@ -278,16 +235,12 @@ function makeDashiProjectLinksTooltip(
       addLinkDiv(
         fragment,
         "Call Ready Targeted Sequencing",
-        urls.dashi.project.callReadyTar(projectName)
+        urls.dashi.project.callReadyTar(projectName),
       );
     }
     if (libraryDesigns.includes("WT")) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Call Ready RNA-seq",
-        urls.dashi.project.callReadyRna(projectName)
-      );
+      addLinkDiv(fragment, "Call Ready RNA-seq", urls.dashi.project.callReadyRna(projectName));
     }
     if (
       libraryDesigns.includes("WG") ||
@@ -295,27 +248,19 @@ function makeDashiProjectLinksTooltip(
       libraryDesigns.includes("PG")
     ) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Call Ready WGS",
-        urls.dashi.project.callReadyWgs(projectName)
-      );
+      addLinkDiv(fragment, "Call Ready WGS", urls.dashi.project.callReadyWgs(projectName));
     }
     if (libraryDesigns.includes("TS") || libraryDesigns.includes("EX")) {
       linksAdded = true;
       addLinkDiv(
         fragment,
         "Single-Lane Targeted Sequencing",
-        urls.dashi.project.singleLaneTar(projectName)
+        urls.dashi.project.singleLaneTar(projectName),
       );
     }
     if (libraryDesigns.includes("WT")) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Single-Lane RNA-seq",
-        urls.dashi.project.singleLaneRna(projectName)
-      );
+      addLinkDiv(fragment, "Single-Lane RNA-seq", urls.dashi.project.singleLaneRna(projectName));
     }
     if (
       libraryDesigns.includes("WG") ||
@@ -323,18 +268,14 @@ function makeDashiProjectLinksTooltip(
       libraryDesigns.includes("PG")
     ) {
       linksAdded = true;
-      addLinkDiv(
-        fragment,
-        "Single-Lane WGS",
-        urls.dashi.project.singleLaneWgs(projectName)
-      );
+      addLinkDiv(fragment, "Single-Lane WGS", urls.dashi.project.singleLaneWgs(projectName));
     }
     if (libraryDesigns.includes("CM")) {
       linksAdded = true;
       addLinkDiv(
         fragment,
         "Single-Lane cfMeDIP",
-        urls.dashi.project.singleLaneCfMeDip(projectName)
+        urls.dashi.project.singleLaneCfMeDip(projectName),
       );
     }
     if (!linksAdded) {

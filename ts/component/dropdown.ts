@@ -33,7 +33,7 @@ export class Dropdown {
     displaySelection: boolean,
     displayLabel?: string,
     defaultOption?: string,
-    displayTemporary?: boolean
+    displayTemporary?: boolean,
   ) {
     this.dropdownContainer = document.createElement("div");
     this.dropdownContainer.classList.add("inline-block");
@@ -41,8 +41,7 @@ export class Dropdown {
     const dropdownButton = makeDropdownButton();
 
     const dropdownButtonText = document.createElement("div");
-    dropdownButtonText.className =
-      "flex-auto text-left overflow-hidden text-ellipsis";
+    dropdownButtonText.className = "flex-auto text-left overflow-hidden text-ellipsis";
     dropdownButtonText.innerHTML = makeDisplayText(displayLabel, defaultOption);
     dropdownButton.appendChild(dropdownButtonText);
     dropdownButton.appendChild(makeIcon("caret-down"));
@@ -100,10 +99,7 @@ export class Dropdown {
             if (!option.text) {
               throw new Error("Selectable option has no text to display");
             }
-            dropdownButtonText.innerHTML = makeDisplayText(
-              displayLabel,
-              option.text
-            );
+            dropdownButtonText.innerHTML = makeDisplayText(displayLabel, option.text);
           }
           toggleMenu();
           if (dropdownMenuContainer.classList.contains("hidden")) {

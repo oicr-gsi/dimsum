@@ -12,5 +12,4 @@ public class OmissionsController {
   public String getOmissionsPage() {
     return "omissions";
   }
-
 }

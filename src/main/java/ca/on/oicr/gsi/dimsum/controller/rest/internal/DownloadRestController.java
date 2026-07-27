@@ -1,13 +1,5 @@
 package ca.on.oicr.gsi.dimsum.controller.rest.internal;
 
-import java.io.IOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import ca.on.oicr.gsi.dimsum.controller.BadRequestException;
 import ca.on.oicr.gsi.dimsum.controller.ControllerUtils;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
@@ -19,6 +11,14 @@ import ca.on.oicr.gsi.dimsum.util.reporting.reports.DonorAssayReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.FullDepthSummary;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.SampleMetricsReport;
 import ca.on.oicr.gsi.dimsum.util.reporting.reports.TglTrackingReport;
+import java.io.IOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -26,15 +26,13 @@ import tools.jackson.databind.json.JsonMapper;
 @RequestMapping("/rest/internal/downloads")
 public class DownloadRestController {
 
-  @Autowired
-  private CaseService caseService;
+  @Autowired private CaseService caseService;
 
-  @Autowired
-  private JsonMapper jsonMapper;
+  @Autowired private JsonMapper jsonMapper;
 
   @PostMapping("/reports/{reportName}")
-  public HttpEntity<byte[]> generateReport(@PathVariable String reportName,
-      @RequestBody JsonNode parameters) throws IOException {
+  public HttpEntity<byte[]> generateReport(
+      @PathVariable String reportName, @RequestBody JsonNode parameters) throws IOException {
     Report report = getReport(reportName);
     return ControllerUtils.generateReport(reportName, report, parameters, caseService);
   }

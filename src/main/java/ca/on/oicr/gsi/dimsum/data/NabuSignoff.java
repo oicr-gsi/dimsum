@@ -3,7 +3,9 @@ package ca.on.oicr.gsi.dimsum.data;
 public class NabuSignoff {
 
   public enum NabuSignoffStep {
-    ANALYSIS_REVIEW, RELEASE_APPROVAL, RELEASE
+    ANALYSIS_REVIEW,
+    RELEASE_APPROVAL,
+    RELEASE
   };
 
   private Boolean qcPassed;
@@ -69,5 +71,4 @@ public class NabuSignoff {
   public void setComment(String comment) {
     this.comment = comment;
   }
-
 }

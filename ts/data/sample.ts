@@ -6,11 +6,7 @@ import {
   makeNameDiv,
   makeTextDiv,
 } from "../util/html-utils";
-import {
-  ColumnDefinition,
-  legendAction,
-  TableDefinition,
-} from "../component/table-builder";
+import { ColumnDefinition, legendAction, TableDefinition } from "../component/table-builder";
 import { Tooltip } from "../component/tooltip";
 import { urls } from "../util/urls";
 import { Metric, MetricCategory, MetricSubcategory } from "./assay";
@@ -29,22 +25,10 @@ import {
   makeNotFoundIcon,
   makeStatusIcon,
 } from "../util/metrics";
-import {
-  showDownloadOptionsDialog,
-  showErrorDialog,
-} from "../component/dialog";
-import {
-  caseFilters,
-  latestActivitySort,
-  runLibraryFilters,
-} from "../component/table-components";
+import { showDownloadOptionsDialog, showErrorDialog } from "../component/dialog";
+import { caseFilters, latestActivitySort, runLibraryFilters } from "../component/table-components";
 import { postDownload, postNavigate } from "../util/requests";
-import {
-  assertDefined,
-  assertRequired,
-  nullIfUndefined,
-  nullOrUndefined,
-} from "./data-utils";
+import { assertDefined, assertRequired, nullIfUndefined, nullOrUndefined } from "./data-utils";
 import { getMetricCategory, internalUser } from "../util/site-config";
 
 const METRIC_LABEL_Q30 = "Bases Over Q30";
@@ -163,9 +147,7 @@ interface QcInMisoRequest {
   library_aliquots: MisoRunLibrary[];
 }
 
-function makeQcStatusColumn(
-  includeRun: boolean,
-): ColumnDefinition<Sample, void> {
+function makeQcStatusColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   const getStatus = includeRun ? getQcStatus : getSampleQcStatus;
   return {
     title: "QC Status",
@@ -175,13 +157,7 @@ function makeQcStatusColumn(
       const icon = makeIcon(status.icon);
       const tooltipInstance = Tooltip.getInstance();
       tooltipInstance.addTarget(icon, (tooltip) => {
-        addStatusTooltipText(
-          tooltip,
-          status,
-          sample.qcReason,
-          sample.qcUser,
-          sample.qcNote,
-        );
+        addStatusTooltipText(tooltip, status, sample.qcReason, sample.qcUser, sample.qcNote);
       });
       fragment.appendChild(icon);
     },
@@ -198,9 +174,7 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
     addParentContents(sample, fragment) {
       const name =
         sample.name +
-        (!includeRun && sample.sequencingLane
-          ? " (L" + sample.sequencingLane + ")"
-          : "");
+        (!includeRun && sample.sequencingLane ? " (L" + sample.sequencingLane + ")" : "");
       const nameDiv = makeNameDiv(
         name,
         urls.miso.sample(sample.id),
@@ -257,10 +231,7 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
               related.id,
             );
             sampleNameDiv.classList.add("ml-4");
-            const sampleStatus = getRelatedQcStatus(
-              related.qcPassed,
-              related.qcReason,
-            );
+            const sampleStatus = getRelatedQcStatus(related.qcPassed, related.qcReason);
             const sampleStatusIcon = makeIcon(sampleStatus.icon);
             sampleStatusIcon.title = "Status: " + sampleStatus.label;
             sampleNameDiv.prepend(sampleStatusIcon);
@@ -273,9 +244,7 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
       if (includeRun && sample.run) {
         const runName = sample.run.name;
         const nameDiv = makeNameDiv(
-          sample.sequencingLane
-            ? runName + " (L" + sample.sequencingLane + ")"
-            : runName,
+          sample.sequencingLane ? runName + " (L" + sample.sequencingLane + ")" : runName,
           urls.miso.run(runName),
           internalUser ? urls.dimsum.run(runName) : undefined,
           runName,
@@ -287,10 +256,7 @@ function makeNameColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
   };
 }
 
-function getRelatedQcStatus(
-  qcPassed: boolean | null,
-  qcReason?: string | null,
-) {
+function getRelatedQcStatus(qcPassed: boolean | null, qcReason?: string | null) {
   if (qcPassed === false) {
     return qcStatuses.failed;
   } else if (qcPassed === true) {
@@ -331,16 +297,12 @@ const sequencingAttributesColumn: ColumnDefinition<Sample, void> = {
     if (sample.run) {
       const flowCellContainer = document.createElement("div");
       flowCellContainer.appendChild(
-        document.createTextNode(
-          `Flow cell: ${sample.run.containerModel || "unknown"}`,
-        ),
+        document.createTextNode(`Flow cell: ${sample.run.containerModel || "unknown"}`),
       );
       fragment.appendChild(flowCellContainer);
       const parametersContainer = document.createElement("div");
       parametersContainer.appendChild(
-        document.createTextNode(
-          `Parameters: ${sample.run.sequencingParameters || "unknown"}`,
-        ),
+        document.createTextNode(`Parameters: ${sample.run.sequencingParameters || "unknown"}`),
       );
       fragment.appendChild(parametersContainer);
     } else {
@@ -453,12 +415,7 @@ export function getLibraryQualificationsDefinition(
       {
         title: "Download",
         handler(filters, baseFilter) {
-          downloadSampleMetrics(
-            filters,
-            baseFilter,
-            "LIBRARY_QUALIFICATION",
-            runName,
-          );
+          downloadSampleMetrics(filters, baseFilter, "LIBRARY_QUALIFICATION", runName);
         },
         view: "internal",
       },
@@ -503,12 +460,7 @@ export function getFullDepthSequencingsDefinition(
       {
         title: "Download",
         handler(filters, baseFilter) {
-          downloadSampleMetrics(
-            filters,
-            baseFilter,
-            "FULL_DEPTH_SEQUENCING",
-            runName,
-          );
+          downloadSampleMetrics(filters, baseFilter, "FULL_DEPTH_SEQUENCING", runName);
         },
         view: "internal",
       },
@@ -553,11 +505,7 @@ function downloadSampleMetrics(
     if (runName) {
       options.runName = runName;
     }
-    postDownload(
-      urls.rest.downloads.reports("sample-metrics"),
-      options,
-      "Generating report.",
-    );
+    postDownload(urls.rest.downloads.reports("sample-metrics"), options, "Generating report.");
   };
   showDownloadOptionsDialog(callback);
 }
@@ -604,10 +552,7 @@ function openQcInMiso(samples: Sample[], category: MetricCategory) {
   postNavigate(urls.miso.qcRunLibraries, request, true);
 }
 
-function generateMetricData(
-  category: MetricCategory,
-  samples: Sample[],
-): MisoRunLibrary[] {
+function generateMetricData(category: MetricCategory, samples: Sample[]): MisoRunLibrary[] {
   const data: MisoRunLibrary[] = [];
   samples.forEach((sample) => {
     if (!sample.assayIds?.length) {
@@ -637,19 +582,13 @@ function getSampleMetrics(
   category: MetricCategory,
 ): MisoRunLibraryMetric[] {
   return metricNames
-    .flatMap(
-      (metricName) => getMatchingMetrics(metricName, category, sample) || [],
-    )
+    .flatMap((metricName) => getMatchingMetrics(metricName, category, sample) || [])
     .filter((metric) => metric.thresholdType !== "BOOLEAN")
     .map((metric) => {
       const sampleMetric = sample.metrics.find(
-        (sampleMetric) =>
-          sampleMetric.name === metric.name &&
-          sampleMetric.metricLevel == "SAMPLE",
+        (sampleMetric) => sampleMetric.name === metric.name && sampleMetric.metricLevel == "SAMPLE",
       );
-      const value = sampleMetric
-        ? sampleMetric.value
-        : getMetricValue(metric.name, sample);
+      const value = sampleMetric ? sampleMetric.value : getMetricValue(metric.name, sample);
       const misoMetric: MisoRunLibraryMetric = {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
@@ -693,9 +632,7 @@ function generateMetricColumns(
   if (!samples) {
     return [];
   }
-  const assayIds: number[] = samples
-    .flatMap((sample) => sample.assayIds || [])
-    .filter(unique);
+  const assayIds: number[] = samples.flatMap((sample) => sample.assayIds || []).filter(unique);
   const metricNames = getMetricNames(category, assayIds);
   return metricNames
     .filter((metricName) =>
@@ -741,9 +678,7 @@ export function getSampleMetricCellHighlight(
       return getPhixHighlight(sample, metrics);
   }
   if (metricName === "Sample Authenticated") {
-    const sampleMetric = sample.metrics.find(
-      (metric) => metric.name === metricName,
-    );
+    const sampleMetric = sample.metrics.find((metric) => metric.name === metricName);
     const qcPassed = sampleMetric ? sampleMetric.qcPassed : null;
     return getBooleanMetricHighlight(qcPassed);
   } else if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
@@ -761,19 +696,14 @@ export function getSampleMetricCellHighlight(
   // TODO: handle lane level metrics
   const sampleMetric = sample.metrics.find(
     (metric) =>
-      metric.name === metricName &&
-      (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
+      metric.name === metricName && (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
   );
   // handle metrics that may be preliminary
-  const preliminary = sampleMetric
-    ? sampleMetric.preliminary
-    : isPreliminary(metricName, sample);
+  const preliminary = sampleMetric ? sampleMetric.preliminary : isPreliminary(metricName, sample);
   if (preliminary) {
     return "warning";
   }
-  const value = sampleMetric
-    ? sampleMetric.value
-    : getMetricValue(metricName, sample);
+  const value = sampleMetric ? sampleMetric.value : getMetricValue(metricName, sample);
   if (nullOrUndefined(value)) {
     return "warning";
   }
@@ -823,13 +753,7 @@ export function addMetricValueContents(
       return;
     case METRIC_LABEL_CLUSTERS_PF_1:
     case METRIC_LABEL_CLUSTERS_PF_2:
-      addClustersPfContents(
-        sample,
-        metrics,
-        fragment,
-        addTooltip,
-        shouldCollapse,
-      );
+      addClustersPfContents(sample, metrics, fragment, addTooltip, shouldCollapse);
       return;
     case METRIC_LABEL_PHIX:
       addPhixContents(sample, metrics, fragment, addTooltip, shouldCollapse);
@@ -837,18 +761,14 @@ export function addMetricValueContents(
   }
 
   if (metricName === "Sample Authenticated") {
-    const sampleMetric = sample.metrics.find(
-      (metric) => metric.name === metricName,
-    );
+    const sampleMetric = sample.metrics.find((metric) => metric.name === metricName);
     const qcPassed = sampleMetric ? sampleMetric.qcPassed : null;
     if (qcPassed == null) {
       // Show analysis skipped or pending rather than pending QC
       if (sample.analysisSkipped) {
         fragment.append(makeAnalysisSkippedIcon());
       } else {
-        fragment.append(
-          makeStatusIcon(qcStatuses.analysis.icon, qcStatuses.analysis.label),
-        );
+        fragment.append(makeStatusIcon(qcStatuses.analysis.icon, qcStatuses.analysis.label));
       }
     } else {
       fragment.append(getBooleanMetricValueIcon(qcPassed));
@@ -858,13 +778,8 @@ export function addMetricValueContents(
     fragment.append(getBooleanMetricValueIcon(sample.qcPassed));
     return;
   }
-  if (
-    /^Adaptor Contamination/.test(metricName) ||
-    /^AUC between/.test(metricName)
-  ) {
-    fragment.append(
-      makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id)),
-    );
+  if (/^Adaptor Contamination/.test(metricName) || /^AUC between/.test(metricName)) {
+    fragment.append(makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id)));
     return;
   }
   if (/^Assigned/.test(metricName) || metricName === "Empty") {
@@ -874,23 +789,16 @@ export function addMetricValueContents(
   // TODO: handle lane level metrics and run level metrics with multiple values
   const sampleMetric = sample.metrics.find(
     (metric) =>
-      metric.name === metricName &&
-      (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
+      metric.name === metricName && (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
   );
-  const value = sampleMetric
-    ? sampleMetric.value
-    : getMetricValue(metricName, sample);
-  const preliminary = sampleMetric
-    ? sampleMetric.preliminary
-    : isPreliminary(metricName, sample);
+  const value = sampleMetric ? sampleMetric.value : getMetricValue(metricName, sample);
+  const preliminary = sampleMetric ? sampleMetric.preliminary : isPreliminary(metricName, sample);
   if (value === null) {
     if (sample.run) {
       if (sample.analysisSkipped) {
         fragment.appendChild(makeAnalysisSkippedIcon());
       } else {
-        const status = sample.run.completionDate
-          ? qcStatuses.analysis
-          : qcStatuses.sequencing;
+        const status = sample.run.completionDate ? qcStatuses.analysis : qcStatuses.sequencing;
         fragment.appendChild(makeStatusIcon(status.icon, status.label));
       }
     } else {
@@ -902,13 +810,7 @@ export function addMetricValueContents(
       additionalTooltip = makeTextDiv("PRELIMINARY VALUE ONLY");
       additionalTooltip.classList.add("font-bold");
     }
-    const contents = makeMetricDisplay(
-      value,
-      metrics,
-      addTooltip,
-      undefined,
-      additionalTooltip,
-    );
+    const contents = makeMetricDisplay(value, metrics, addTooltip, undefined, additionalTooltip);
     if (preliminary) {
       const icon = makeIcon("pen-ruler");
       icon.classList.add("mr-1");
@@ -974,11 +876,7 @@ function addQ30Contents(
     return;
   }
 
-  const metricDisplay = makeMetricDisplay(
-    sample.run.percentOverQ30,
-    metrics,
-    addTooltip,
-  );
+  const metricDisplay = makeMetricDisplay(sample.run.percentOverQ30, metrics, addTooltip);
 
   const contentWrapper = document.createElement("div");
 
@@ -1028,11 +926,7 @@ function addClustersPfContents(
   const runDiv = document.createElement("div");
   const divisorUnit = getDivisorUnit(metrics[0]);
 
-  runDiv.innerText = formatMetricValue(
-    sample.run.clustersPf,
-    metrics,
-    divisorUnit,
-  );
+  runDiv.innerText = formatMetricValue(sample.run.clustersPf, metrics, divisorUnit);
 
   if (addTooltip && perRunMetrics.length) {
     // whether originally or not, these metrics are per run
@@ -1072,10 +966,7 @@ function addClustersPfContents(
   }
 }
 
-function getClustersPfHighlight(
-  sample: Sample,
-  metrics: Metric[],
-): CellStatus | null {
+function getClustersPfHighlight(sample: Sample, metrics: Metric[]): CellStatus | null {
   if (!sample.run || nullOrUndefined(sample.run.clustersPf)) {
     return "warning";
   }
@@ -1105,12 +996,8 @@ function getClustersPfHighlight(
 }
 
 function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
-  let perLaneMetrics = metrics.filter(
-    (metric) => metric.units && metric.units.endsWith("/lane"),
-  );
-  let perRunMetrics = metrics.filter(
-    (metric) => !metric.units || !metric.units.endsWith("/lane"),
-  );
+  let perLaneMetrics = metrics.filter((metric) => metric.units && metric.units.endsWith("/lane"));
+  let perRunMetrics = metrics.filter((metric) => !metric.units || !metric.units.endsWith("/lane"));
   if (run.joinedLanes) {
     // ALL metrics are per run. If specified per lane, multiply by lane count
     perLaneMetrics.forEach((metric) => {
@@ -1206,9 +1093,7 @@ function addPhixContents(
     } else {
       const text =
         `R1: ${lane.percentPfixRead1}` +
-        (!nullOrUndefined(lane.percentPfixRead2)
-          ? `; R2: ${lane.percentPfixRead2}`
-          : "");
+        (!nullOrUndefined(lane.percentPfixRead2) ? `; R2: ${lane.percentPfixRead2}` : "");
       const textNode = document.createTextNode(text);
       laneDiv.appendChild(textNode);
 
@@ -1225,10 +1110,7 @@ function addPhixContents(
   handleCollapse(minPhixDiv, contentWrapper, fragment, shouldCollapse);
 }
 
-function getPhixHighlight(
-  sample: Sample,
-  metrics: Metric[],
-): CellStatus | null {
+function getPhixHighlight(sample: Sample, metrics: Metric[]): CellStatus | null {
   if (
     !sample.run ||
     !sample.run.lanes ||
@@ -1242,8 +1124,7 @@ function getPhixHighlight(
       assertRequired(lane.percentPfixRead1);
       return (
         anyFail(lane.percentPfixRead1, metrics) ||
-        (!nullOrUndefined(lane.percentPfixRead2) &&
-          anyFail(lane.percentPfixRead2, metrics))
+        (!nullOrUndefined(lane.percentPfixRead2) && anyFail(lane.percentPfixRead2, metrics))
       );
     })
   ) {
@@ -1264,25 +1145,15 @@ function getMatchingMetrics(
     .flatMap((assayId) => getMetricCategory(assayId, category) || [])
     .filter((subcategory) => subcategoryApplies(subcategory, sample))
     .flatMap((subcategory) => subcategory.metrics)
-    .filter(
-      (metric) => metric.name === metricName && metricApplies(metric, sample),
-    );
+    .filter((metric) => metric.name === metricName && metricApplies(metric, sample));
 }
 
-export function subcategoryApplies(
-  subcategory: MetricSubcategory,
-  sample: Sample,
-): boolean {
-  if (
-    subcategory.libraryDesignCode &&
-    subcategory.libraryDesignCode !== sample.libraryDesignCode
-  ) {
+export function subcategoryApplies(subcategory: MetricSubcategory, sample: Sample): boolean {
+  if (subcategory.libraryDesignCode && subcategory.libraryDesignCode !== sample.libraryDesignCode) {
     return false;
   }
   if (
-    subcategory.metrics.every((metric) =>
-      RUN_METRIC_LABELS.includes(metric.name),
-    ) &&
+    subcategory.metrics.every((metric) => RUN_METRIC_LABELS.includes(metric.name)) &&
     !sample.run
   ) {
     // This is a run subcategory and the sample has no run
@@ -1292,10 +1163,7 @@ export function subcategoryApplies(
 }
 
 export function metricApplies(metric: Metric, sample: Sample): boolean {
-  if (
-    metric.tissueMaterial &&
-    sample.tissueMaterial !== metric.tissueMaterial
-  ) {
+  if (metric.tissueMaterial && sample.tissueMaterial !== metric.tissueMaterial) {
     return false;
   }
   if (metric.tissueOrigin && metric.tissueOrigin !== sample.tissueOrigin) {
@@ -1310,10 +1178,7 @@ export function metricApplies(metric: Metric, sample: Sample): boolean {
       return false;
     }
   }
-  if (
-    metric.nucleicAcidType &&
-    metric.nucleicAcidType !== sample.nucleicAcidType
-  ) {
+  if (metric.nucleicAcidType && metric.nucleicAcidType !== sample.nucleicAcidType) {
     return false;
   }
   if (metric.containerModel) {
@@ -1330,8 +1195,7 @@ export function metricApplies(metric: Metric, sample: Sample): boolean {
       return false;
     } else if (
       metric.readLength2 &&
-      (!sample.run.readLength2 ||
-        Math.abs(metric.readLength2 - sample.run.readLength2) > 1)
+      (!sample.run.readLength2 || Math.abs(metric.readLength2 - sample.run.readLength2) > 1)
     ) {
       return false;
     }
@@ -1362,8 +1226,7 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       return nullIfUndefined(sample.volume);
     case "Yield":
     case "Yield (Qubit)":
-      return nullOrUndefined(sample.volume) ||
-        nullOrUndefined(sample.concentration)
+      return nullOrUndefined(sample.volume) || nullOrUndefined(sample.concentration)
         ? null
         : sample.volume * sample.concentration;
     case "DV200":
@@ -1436,9 +1299,7 @@ export function getQcStatus(sample: Sample): QcStatus {
   const sampleStatus = getSampleQcStatus(sample);
   if (sample.run) {
     const runStatus = getQcStatusWithDataReview(sample.run);
-    return runStatus.priority < sampleStatus.priority
-      ? runStatus
-      : sampleStatus;
+    return runStatus.priority < sampleStatus.priority ? runStatus : sampleStatus;
   } else {
     return sampleStatus;
   }
@@ -1484,10 +1345,7 @@ export function getFirstReviewStatus(qcable: Qcable) {
 }
 
 function makeSequencingIcon() {
-  return makeStatusIcon(
-    qcStatuses.sequencing.icon,
-    qcStatuses.sequencing.label,
-  );
+  return makeStatusIcon(qcStatuses.sequencing.icon, qcStatuses.sequencing.label);
 }
 
 export function extractLibraryName(runLibraryId: string): string {

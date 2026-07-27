@@ -1,13 +1,21 @@
 package ca.on.oicr.gsi.dimsum.data.external;
 
-import java.time.LocalDate;
 import ca.on.oicr.gsi.cardea.data.Run;
+import java.time.LocalDate;
 
-public record ExternalRun(long id, String name, LocalDate startDate, LocalDate completionDate,
-    LocalDate qcDate, Boolean qcPassed, LocalDate dataReviewDate, Boolean dataReviewPassed) {
+public record ExternalRun(
+    long id,
+    String name,
+    LocalDate startDate,
+    LocalDate completionDate,
+    LocalDate qcDate,
+    Boolean qcPassed,
+    LocalDate dataReviewDate,
+    Boolean dataReviewPassed) {
 
   public ExternalRun(Run from) {
-    this(from.getId(),
+    this(
+        from.getId(),
         from.getName(),
         from.getStartDate(),
         from.getCompletionDate(),
@@ -16,5 +24,4 @@ public record ExternalRun(long id, String name, LocalDate startDate, LocalDate c
         from.getDataReviewDate(),
         from.getDataReviewPassed());
   }
-
 }

@@ -1,7 +1,8 @@
 ---
+
 layout: default
 title: "External Dimsum Documentation Home"
----
+-------------------------------------------
 
 ![Dimsum](../../images/dimsum_logo.svg)
 

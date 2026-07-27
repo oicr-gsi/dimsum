@@ -9,7 +9,6 @@ import org.springframework.test.context.ActiveProfiles;
 // note: property sources are controlled via maven-surefire-plugin argLine in pom.xml
 class DimSumApplicationTests {
 
-	@Test
-	void contextLoads() {}
-
+  @Test
+  void contextLoads() {}
 }

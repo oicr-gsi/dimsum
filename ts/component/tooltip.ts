@@ -35,7 +35,7 @@ export class Tooltip {
       "font-inter",
       "text-14",
       "font-medium",
-      "invisible"
+      "invisible",
     );
     document.body.appendChild(div);
     return div;
@@ -70,10 +70,7 @@ export class Tooltip {
     return Tooltip.instance;
   }
 
-  public addTarget(
-    target: HTMLElement,
-    addContents: (fragment: DocumentFragment) => void
-  ) {
+  public addTarget(target: HTMLElement, addContents: (fragment: DocumentFragment) => void) {
     target.onmouseenter = () => {
       this.mouseOnIcon = true;
       this.activeTarget = target;

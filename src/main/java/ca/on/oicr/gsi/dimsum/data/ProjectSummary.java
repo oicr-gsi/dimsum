@@ -1,9 +1,10 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-import javax.annotation.concurrent.Immutable;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @JsonDeserialize(builder = ProjectSummary.Builder.class)
@@ -58,8 +59,6 @@ public class ProjectSummary {
     this.releaseApprovalCompletedCount = builder.releaseApprovalCompletedCount;
     this.releasePendingCount = builder.releasePendingCount;
     this.releaseCompletedCount = builder.releaseCompletedCount;
-
-
   }
 
   public String getName() {
@@ -116,7 +115,6 @@ public class ProjectSummary {
 
   public int getLibraryQualCompletedCount() {
     return libraryQualCompletedCount;
-
   }
 
   public int getFullDepthSeqPendingCount() {
@@ -183,7 +181,6 @@ public class ProjectSummary {
     private int releasePendingCount = 0;
     private int releaseCompletedCount = 0;
 
-
     public Builder name(String name) {
       this.name = name;
       return this;
@@ -248,7 +245,6 @@ public class ProjectSummary {
 
     public void incrementFullDepthSeqPendingQcCount() {
       this.fullDepthSeqPendingQcCount += 1;
-
     }
 
     public void incrementFullDepthSeqCompletedCount() {

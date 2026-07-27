@@ -1,12 +1,5 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
@@ -14,6 +7,13 @@ import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.data.TestTableView;
 import ca.on.oicr.gsi.dimsum.util.DataUtils;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum CompletedGate {
   // @formatter:off
@@ -27,7 +27,7 @@ public enum CompletedGate {
     public boolean qualifyTest(Test test) {
       return true;
     }
-    
+
     @Override
     public boolean qualifySample(Sample sample, MetricCategory requestCategory) {
       if (requestCategory == MetricCategory.RECEIPT) {
@@ -40,8 +40,9 @@ public enum CompletedGate {
   EXTRACTION("Extraction", false, true, false) {
     @Override
     public boolean qualifyTest(Test test) {
-      return test.isExtractionSkipped() || test.getExtractions().stream().anyMatch(sample ->
-          DataUtils.isPassed(sample) && sample.getTransferDate() != null);
+      return test.isExtractionSkipped()
+          || test.getExtractions().stream()
+              .anyMatch(sample -> DataUtils.isPassed(sample) && sample.getTransferDate() != null);
     }
 
     @Override
@@ -68,7 +69,6 @@ public enum CompletedGate {
         return true;
       }
     }
-
   },
   LIBRARY_QUALIFICATION("Library Qualification", false, true, false) {
     @Override
@@ -107,29 +107,30 @@ public enum CompletedGate {
       if (DataUtils.isAnalysisReviewSkipped(kase)) {
         return FULL_DEPTH_SEQUENCING.qualifyCase(kase, deliverableCategory);
       } else {
-        return qualifyCaseForDeliverableType(kase, deliverableCategory,
-            CompletedGate::analysisReviewComplete);
+        return qualifyCaseForDeliverableType(
+            kase, deliverableCategory, CompletedGate::analysisReviewComplete);
       }
     }
   },
   RELEASE_APPROVAL("Release Approval", true, false, true) {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
-      return qualifyCaseForDeliverableType(kase, deliverableCategory,
-          CompletedGate::releaseApprovalComplete);
+      return qualifyCaseForDeliverableType(
+          kase, deliverableCategory, CompletedGate::releaseApprovalComplete);
     }
   },
   RELEASE("Release", true, false, true) {
     @Override
     public boolean qualifyCase(Case kase, String deliverableCategory) {
-      return qualifyCaseForDeliverableType(kase, deliverableCategory,
-          CompletedGate::allReleasesComplete);
+      return qualifyCaseForDeliverableType(
+          kase, deliverableCategory, CompletedGate::allReleasesComplete);
     }
   };
-// @formatter:on
+  // @formatter:on
 
-  private static final Map<String, CompletedGate> map = Stream.of(CompletedGate.values())
-      .collect(Collectors.toMap(CompletedGate::getLabel, Function.identity()));
+  private static final Map<String, CompletedGate> map =
+      Stream.of(CompletedGate.values())
+          .collect(Collectors.toMap(CompletedGate::getLabel, Function.identity()));
 
   public static CompletedGate getByLabel(String label) {
     return map.get(label);
@@ -141,8 +142,8 @@ public enum CompletedGate {
   private final boolean considerDeliverableCategory;
   private final Predicate<Test> testPredicate = this::qualifyTest;
 
-  private CompletedGate(String label, boolean caseLevel, boolean stoppable,
-      boolean considerDeliverableCategory) {
+  private CompletedGate(
+      String label, boolean caseLevel, boolean stoppable, boolean considerDeliverableCategory) {
     this.label = label;
     this.caseLevel = caseLevel;
     this.stoppable = stoppable;
@@ -179,10 +180,10 @@ public enum CompletedGate {
 
   /**
    * Check whether a case is completed the step represented by this CompletedGate
-   * 
+   *
    * @param kase the case to check
    * @param deliverableCategory the specific deliverable category to check for steps where this is
-   *        relevant (see {@link #isApplicable(Case, String)}), or null for all
+   *     relevant (see {@link #isApplicable(Case, String)}), or null for all
    * @return true if the step is completed; false otherwise
    */
   public boolean qualifyCase(Case kase, String deliverableCategory) {
@@ -208,8 +209,8 @@ public enum CompletedGate {
     throw new IllegalStateException("This gate does not apply to samples");
   }
 
-  private static boolean qualifyCaseForDeliverableType(Case kase, String deliverableCategory,
-      Function<CaseDeliverable, Boolean> getQcPassed) {
+  private static boolean qualifyCaseForDeliverableType(
+      Case kase, String deliverableCategory, Function<CaseDeliverable, Boolean> getQcPassed) {
     if (kase.getDeliverables() == null || kase.getDeliverables().isEmpty()) {
       return false;
     }
@@ -237,8 +238,8 @@ public enum CompletedGate {
   }
 
   private static boolean allReleasesComplete(CaseDeliverable deliverable) {
-    return !deliverable.getReleases().isEmpty() && deliverable.getReleases().stream()
-        .allMatch(x -> DataUtils.isComplete(x.getQcStatus()));
+    return !deliverable.getReleases().isEmpty()
+        && deliverable.getReleases().stream().allMatch(x -> DataUtils.isComplete(x.getQcStatus()));
   }
 
   private static class Helpers {
@@ -252,8 +253,5 @@ public enum CompletedGate {
     public static boolean isCompleted(List<Sample> samples) {
       return samples.stream().anyMatch(DataUtils::isPassed);
     }
-
   }
-
-
 }

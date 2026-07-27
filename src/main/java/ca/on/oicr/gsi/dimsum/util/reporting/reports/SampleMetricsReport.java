@@ -1,10 +1,5 @@
 package ca.on.oicr.gsi.dimsum.util.reporting.reports;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.SampleMetric;
@@ -18,6 +13,11 @@ import ca.on.oicr.gsi.dimsum.util.reporting.Column;
 import ca.on.oicr.gsi.dimsum.util.reporting.Report;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection;
 import ca.on.oicr.gsi.dimsum.util.reporting.ReportSection.DynamicTableReportSection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import tools.jackson.databind.JsonNode;
 
 public class SampleMetricsReport extends Report {
@@ -25,15 +25,16 @@ public class SampleMetricsReport extends Report {
   private static final ReportSection<Sample> mainSection =
       new DynamicTableReportSection<Sample>("Samples") {
 
-        private static final List<Column<Sample>> STATIC_COLUMNS = Arrays.asList(
-            Column.forString("Sample", Sample::getName),
-            Column.forString("Group ID", Sample::getGroupId),
-            Column.forString("External Name", x -> x.getDonor().getExternalName()),
-            Column.forString("Run", x -> x.getRun() == null ? null : x.getRun().getName()),
-            Column.forString("Tissue Origin", Sample::getTissueOrigin),
-            Column.forString("Tissue Type", Sample::getTissueType),
-            Column.forString("Timepoint", Sample::getTimepoint),
-            Column.forString("Design", Sample::getLibraryDesignCode));
+        private static final List<Column<Sample>> STATIC_COLUMNS =
+            Arrays.asList(
+                Column.forString("Sample", Sample::getName),
+                Column.forString("Group ID", Sample::getGroupId),
+                Column.forString("External Name", x -> x.getDonor().getExternalName()),
+                Column.forString("Run", x -> x.getRun() == null ? null : x.getRun().getName()),
+                Column.forString("Tissue Origin", Sample::getTissueOrigin),
+                Column.forString("Tissue Type", Sample::getTissueType),
+                Column.forString("Timepoint", Sample::getTimepoint),
+                Column.forString("Design", Sample::getLibraryDesignCode));
 
         @Override
         public List<Sample> getData(CaseService caseService, JsonNode parameters) {
@@ -68,28 +69,39 @@ public class SampleMetricsReport extends Report {
 
         @Override
         public List<Column<Sample>> getColumns(List<Sample> data) {
-          Stream<Column<Sample>> metricColumns = data.stream()
-              .flatMap(sample -> sample.getMetrics().stream()
-                  // Exclude boolean metrics (no value)
-                  .filter(metric -> metric.getThresholdType() != ThresholdType.BOOLEAN)
-                  // Exclude lane-level metrics (multiple values)
-                  .filter(metric -> metric.getMetricLevel() == MetricLevel.SAMPLE
-                      || metric.getMetricLevel() == MetricLevel.RUN)
-                  .map(SampleMetric::getName))
-              .distinct()
-              .map(metricName -> makeMetricColumn(metricName));
+          Stream<Column<Sample>> metricColumns =
+              data.stream()
+                  .flatMap(
+                      sample ->
+                          sample.getMetrics().stream()
+                              // Exclude boolean metrics (no value)
+                              .filter(metric -> metric.getThresholdType() != ThresholdType.BOOLEAN)
+                              // Exclude lane-level metrics (multiple values)
+                              .filter(
+                                  metric ->
+                                      metric.getMetricLevel() == MetricLevel.SAMPLE
+                                          || metric.getMetricLevel() == MetricLevel.RUN)
+                              .map(SampleMetric::getName))
+                  .distinct()
+                  .map(metricName -> makeMetricColumn(metricName));
 
           return Stream.concat(STATIC_COLUMNS.stream(), metricColumns).toList();
         }
 
         private static Column<Sample> makeMetricColumn(String metricName) {
-          return Column.forDecimal(metricName, sample -> {
-            SampleMetric metric = sample.getMetrics().stream()
-                .filter(x -> Objects.equals(x.getName(), metricName)
-                    && !Boolean.TRUE.equals(x.getPreliminary()))
-                .findAny().orElse(null);
-            return metric == null ? null : metric.getValue();
-          });
+          return Column.forDecimal(
+              metricName,
+              sample -> {
+                SampleMetric metric =
+                    sample.getMetrics().stream()
+                        .filter(
+                            x ->
+                                Objects.equals(x.getName(), metricName)
+                                    && !Boolean.TRUE.equals(x.getPreliminary()))
+                        .findAny()
+                        .orElse(null);
+                return metric == null ? null : metric.getValue();
+              });
         }
       };
 
@@ -98,5 +110,4 @@ public class SampleMetricsReport extends Report {
   private SampleMetricsReport() {
     super("Metrics Report", mainSection);
   }
-
 }

@@ -7,8 +7,7 @@ export class DateInput {
 
   constructor(labelText: string, onChange: (value: string) => void) {
     this.container = document.createElement("div");
-    this.container.className =
-      "inline-block flex-auto rounded-md ring-red ring-2 ring-offset-1";
+    this.container.className = "inline-block flex-auto rounded-md ring-red ring-2 ring-offset-1";
 
     // remove date input on click outside of element
     const clickout = makeClickout();

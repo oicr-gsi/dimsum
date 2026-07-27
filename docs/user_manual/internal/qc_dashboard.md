@@ -74,8 +74,8 @@ Each assay includes one or more tests. Tests must be repeated for each group ID 
 
 The following are QC step columns, and their associated items:
 
-| Step/Column           | Item type                                                 |
-| --------------------- | --------------------------------------------------------- |
+|      Step/Column      |                         Item type                         |
+|-----------------------|-----------------------------------------------------------|
 | Receipt/Inspection    | Requisitioned samples                                     |
 | Extraction            | Stock samples                                             |
 | Library Preparation   | Libraries                                                 |

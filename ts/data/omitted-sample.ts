@@ -54,9 +54,7 @@ export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
         title: "Name",
         sortType: "text",
         addParentContents(sample, fragment) {
-          fragment.appendChild(
-            makeNameDiv(sample.name, urls.miso.sample(sample.id))
-          );
+          fragment.appendChild(makeNameDiv(sample.name, urls.miso.sample(sample.id)));
         },
       },
       {
@@ -67,8 +65,8 @@ export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
             makeNameDiv(
               sample.project,
               urls.miso.project(sample.project),
-              urls.dimsum.project(sample.project)
-            )
+              urls.dimsum.project(sample.project),
+            ),
           );
         },
       },
@@ -80,12 +78,10 @@ export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
             makeNameDiv(
               sample.donor.name,
               urls.miso.sample(sample.donor.id),
-              urls.dimsum.donor(sample.donor.name)
-            )
+              urls.dimsum.donor(sample.donor.name),
+            ),
           );
-          fragment.appendChild(
-            makeTextDivWithTooltip(sample.donor.externalName, "External Name")
-          );
+          fragment.appendChild(makeTextDivWithTooltip(sample.donor.externalName, "External Name"));
         },
       },
       {
@@ -94,10 +90,7 @@ export const omittedSampleDefinition: TableDefinition<OmittedSample, void> = {
         addParentContents(sample, fragment) {
           if (sample.requisitionId && sample.requisitionName) {
             fragment.appendChild(
-              makeNameDiv(
-                sample.requisitionName,
-                urls.miso.requisition(sample.requisitionId)
-              )
+              makeNameDiv(sample.requisitionName, urls.miso.requisition(sample.requisitionId)),
             );
             if (sample.assayIds) {
               sample.assayIds.forEach((assayId) => {

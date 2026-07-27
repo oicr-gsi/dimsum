@@ -1,7 +1,7 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import com.atlassian.jira.rest.client.api.domain.Issue;
 import ca.on.oicr.gsi.dimsum.data.IssueState;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 
 public interface IssueTracker {
 
@@ -22,5 +22,4 @@ public interface IssueTracker {
   String createIssue(String summary, String description);
 
   IssueState getIssueState(Issue issue);
-
 }

@@ -3,11 +3,7 @@ import { makeNameDiv } from "../util/html-utils";
 import { postDownload } from "../util/requests";
 import { urls } from "../util/urls";
 import { siteConfig } from "../util/site-config";
-import {
-  DropdownField,
-  showFormDialog,
-  showDownloadOptionsDialog,
-} from "../component/dialog";
+import { DropdownField, showFormDialog, showDownloadOptionsDialog } from "../component/dialog";
 
 export interface ProjectSummary {
   name: string;
@@ -37,16 +33,9 @@ export interface ProjectSummary {
 const TGL_TRACKING_SHEET = "tgl-tracking-sheet";
 
 function showDownloadDialog(items: ProjectSummary[]) {
-  const reportOptions = new Map<string, string>([
-    ["TGL Tracking Sheet", TGL_TRACKING_SHEET],
-  ]);
+  const reportOptions = new Map<string, string>([["TGL Tracking Sheet", TGL_TRACKING_SHEET]]);
 
-  const reportSelect = new DropdownField(
-    "Report",
-    reportOptions,
-    "report",
-    true
-  );
+  const reportSelect = new DropdownField("Report", reportOptions, "report", true);
   showFormDialog("Download Project Data", [reportSelect], "Next", (result) => {
     switch (result.report) {
       case TGL_TRACKING_SHEET:
@@ -66,19 +55,11 @@ function showDownloadOptionsDialogX(report: string, items: ProjectSummary[]) {
   showDownloadOptionsDialog(callback, undefined);
 }
 
-function downloadProjectReport(
-  report: string,
-  params: any,
-  items: ProjectSummary[]
-) {
+function downloadProjectReport(report: string, params: any, items: ProjectSummary[]) {
   if (items && items.length) {
     params.projects = items.map((project) => project.name).join(", ");
   }
-  postDownload(
-    urls.rest.downloads.reports(report),
-    params,
-    "Generating report."
-  );
+  postDownload(urls.rest.downloads.reports(report), params, "Generating report.");
 }
 
 export const projectDefinition: TableDefinition<ProjectSummary, void> = {
@@ -122,17 +103,15 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             makeNameDiv(
               projectSummary.name,
               urls.miso.project(projectSummary.name),
-              urls.dimsum.project(projectSummary.name)
-            )
+              urls.dimsum.project(projectSummary.name),
+            ),
           );
         },
       },
       {
         title: "Tests Expected",
         addParentContents(projectSummary, fragment) {
-          fragment.appendChild(
-            document.createTextNode(projectSummary.totalTestCount.toString())
-          );
+          fragment.appendChild(document.createTextNode(projectSummary.totalTestCount.toString()));
         },
       },
       {
@@ -142,8 +121,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.receiptCompletedCount,
               projectSummary.name,
-              "Receipt"
-            )
+              "Receipt",
+            ),
           );
         },
       },
@@ -154,8 +133,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.extractionCompletedCount,
               projectSummary.name,
-              "Extraction"
-            )
+              "Extraction",
+            ),
           );
         },
       },
@@ -166,8 +145,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.libraryPrepCompletedCount,
               projectSummary.name,
-              "Library Preparation"
-            )
+              "Library Preparation",
+            ),
           );
         },
       },
@@ -178,8 +157,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.libraryQualCompletedCount,
               projectSummary.name,
-              "Library Qualification"
-            )
+              "Library Qualification",
+            ),
           );
         },
       },
@@ -190,8 +169,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.fullDepthSeqCompletedCount,
               projectSummary.name,
-              "Full-Depth Sequencing"
-            )
+              "Full-Depth Sequencing",
+            ),
           );
         },
       },
@@ -202,8 +181,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.analysisReviewCompletedCount,
               projectSummary.name,
-              "Analysis Review"
-            )
+              "Analysis Review",
+            ),
           );
         },
       },
@@ -214,8 +193,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.releaseApprovalCompletedCount,
               projectSummary.name,
-              "Release Approval"
-            )
+              "Release Approval",
+            ),
           );
         },
       },
@@ -226,8 +205,8 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
             displayFilteredProject(
               projectSummary.releaseCompletedCount,
               projectSummary.name,
-              "Release"
-            )
+              "Release",
+            ),
           );
         },
       },
@@ -238,11 +217,7 @@ export const projectDefinition: TableDefinition<ProjectSummary, void> = {
 const completedFilterKey = "COMPLETED";
 const tableFilterKey = "TABLE";
 
-function displayFilteredProject(
-  count: number,
-  projectName: string,
-  filterValue: string
-) {
+function displayFilteredProject(count: number, projectName: string, filterValue: string) {
   const params = new URLSearchParams();
   const tableFilterValue = filterValue + "s";
   params.append(tableFilterKey, tableFilterValue);
@@ -250,6 +225,6 @@ function displayFilteredProject(
   return makeNameDiv(
     count.toString(),
     undefined,
-    urls.dimsum.project(projectName) + `?${params.toString()}`
+    urls.dimsum.project(projectName) + `?${params.toString()}`,
   );
 }

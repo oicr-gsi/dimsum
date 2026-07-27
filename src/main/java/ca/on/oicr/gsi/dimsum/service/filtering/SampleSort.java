@@ -1,23 +1,24 @@
 package ca.on.oicr.gsi.dimsum.service.filtering;
 
+import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import ca.on.oicr.gsi.cardea.data.Sample;
-import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
 public enum SampleSort {
 
   // @formatter:off
-    NAME("Name", Comparator.comparing(Sample::getName)),
-    LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate)),
-    QC_STATUS("QC Status", Comparator.comparing(SampleSort::getSampleQcStatus));
-    // @formatter:on
+  NAME("Name", Comparator.comparing(Sample::getName)),
+  LATEST_ACTIVITY("Latest Activity", Comparator.comparing(Sample::getLatestActivityDate)),
+  QC_STATUS("QC Status", Comparator.comparing(SampleSort::getSampleQcStatus));
+  // @formatter:on
 
-  private static final Map<String, SampleSort> map = Stream.of(SampleSort.values())
-      .collect(Collectors.toMap(SampleSort::getLabel, Function.identity()));
+  private static final Map<String, SampleSort> map =
+      Stream.of(SampleSort.values())
+          .collect(Collectors.toMap(SampleSort::getLabel, Function.identity()));
 
   public static SampleSort getByLabel(String label) {
     return map.get(label);

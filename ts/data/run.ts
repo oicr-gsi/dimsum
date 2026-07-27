@@ -40,12 +40,7 @@ export const runDefinition: TableDefinition<Run, void> = {
         title: "Name",
         addParentContents(run, fragment) {
           fragment.appendChild(
-            makeNameDiv(
-              run.name,
-              urls.miso.run(run.name),
-              urls.dimsum.run(run.name),
-              run.name,
-            ),
+            makeNameDiv(run.name, urls.miso.run(run.name), urls.dimsum.run(run.name), run.name),
           );
         },
         sortType: "text",

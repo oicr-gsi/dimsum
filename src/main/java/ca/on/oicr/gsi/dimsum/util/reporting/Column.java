@@ -27,7 +27,6 @@ public abstract class Column<T> {
         }
         return value;
       }
-
     };
   }
 
@@ -47,7 +46,6 @@ public abstract class Column<T> {
         BigDecimal value = getter.apply(object);
         return value != null ? value.toPlainString() : "";
       }
-
     };
   }
 
@@ -83,5 +81,4 @@ public abstract class Column<T> {
   public abstract void writeExcelCell(Cell cell, T object);
 
   public abstract String getDelimitedColumnString(String delimiter, T object);
-
 }

@@ -2,9 +2,8 @@ package ca.on.oicr.gsi.dimsum.service.filtering;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.function.Predicate;
-
 import ca.on.oicr.gsi.cardea.data.Run;
+import java.util.function.Predicate;
 
 public class RunFilter {
 
@@ -25,5 +24,4 @@ public class RunFilter {
   public Predicate<Run> predicate() {
     return key.create().apply(value);
   }
-
 }

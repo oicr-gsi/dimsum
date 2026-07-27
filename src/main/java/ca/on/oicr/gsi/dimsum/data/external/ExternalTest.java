@@ -1,20 +1,31 @@
 package ca.on.oicr.gsi.dimsum.data.external;
 
+import ca.on.oicr.gsi.cardea.data.Test;
+import ca.on.oicr.gsi.dimsum.util.DataUtils;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import ca.on.oicr.gsi.cardea.data.Test;
-import ca.on.oicr.gsi.dimsum.util.DataUtils;
 
-public record ExternalTest(String name, String tissueType, String tissueOrigin, String timepoint,
-    String groupId, String libraryDesignCode, String targetedSequencing, boolean extractionSkipped,
-    boolean libraryPreparationSkipped, boolean libraryQualificationSkipped,
-    List<ExternalSample> extractions, List<ExternalSample> libraryPreparations,
-    List<ExternalSample> libraryQualifications, List<ExternalSample> fullDepthSequencings,
+public record ExternalTest(
+    String name,
+    String tissueType,
+    String tissueOrigin,
+    String timepoint,
+    String groupId,
+    String libraryDesignCode,
+    String targetedSequencing,
+    boolean extractionSkipped,
+    boolean libraryPreparationSkipped,
+    boolean libraryQualificationSkipped,
+    List<ExternalSample> extractions,
+    List<ExternalSample> libraryPreparations,
+    List<ExternalSample> libraryQualifications,
+    List<ExternalSample> fullDepthSequencings,
     LocalDate latestActivityDate) {
 
   public ExternalTest(Test from) {
-    this(from.getName(),
+    this(
+        from.getName(),
         from.getTissueType(),
         from.getTissueOrigin(),
         from.getTimepoint(),
@@ -42,5 +53,4 @@ public record ExternalTest(String name, String tissueType, String tissueOrigin, 
             .collect(Collectors.toUnmodifiableList()),
         from.getLatestActivityDate());
   }
-
 }

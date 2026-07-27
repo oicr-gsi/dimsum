@@ -1,13 +1,7 @@
 package ca.on.oicr.gsi.dimsum;
 
 import static org.mockito.Mockito.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+
 import ca.on.oicr.gsi.cardea.data.ArchivingStatus;
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.CaseDeliverable;
@@ -21,7 +15,13 @@ import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
-
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 // note: ensure that each mock case has at least one test added to it.
 
@@ -35,12 +35,43 @@ public class MockCase {
   }
 
   private static final List<Case> cases =
-      Arrays.asList(makeCase0(), makeCase1(), makeCase2(), makeCase3(), makeCase4(), makeCase5(),
-          makeCase6(), makeCase7(), makeCase8(), makeCase9(), makeCase10(), makeCase11(),
-          makeCase12(), makeCase13(), makeCase14(), makeCase15(), makeCase16(), makeCase17(),
-          makeCase18(), makeCase19(), makeCase20(), makeCase21(), makeCase22(), makeCase23(),
-          makeCase24(), makeCase25(), makeCase26(), makeCase27(), makeCase28(), makeCase29(),
-          makeCase30(), makeCase31(), makeCase32(), makeCase33(), makeCase34(), makeCase35());
+      Arrays.asList(
+          makeCase0(),
+          makeCase1(),
+          makeCase2(),
+          makeCase3(),
+          makeCase4(),
+          makeCase5(),
+          makeCase6(),
+          makeCase7(),
+          makeCase8(),
+          makeCase9(),
+          makeCase10(),
+          makeCase11(),
+          makeCase12(),
+          makeCase13(),
+          makeCase14(),
+          makeCase15(),
+          makeCase16(),
+          makeCase17(),
+          makeCase18(),
+          makeCase19(),
+          makeCase20(),
+          makeCase21(),
+          makeCase22(),
+          makeCase23(),
+          makeCase24(),
+          makeCase25(),
+          makeCase26(),
+          makeCase27(),
+          makeCase28(),
+          makeCase29(),
+          makeCase30(),
+          makeCase31(),
+          makeCase32(),
+          makeCase33(),
+          makeCase34(),
+          makeCase35());
 
   private static Case makeCase0() {
     final int caseNumber = 0;
@@ -79,8 +110,7 @@ public class MockCase {
 
   private static Case makeCase2() {
     final int caseNumber = 2;
-    Case kase =
-        makeCase("PRO1_0001", "WG assay 1", "PRO1", "REQ03", caseNumber, null, null);
+    Case kase = makeCase("PRO1_0001", "WG assay 1", "PRO1", "REQ03", caseNumber, null, null);
     // Test 1 is pending library qualification data review
     ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Normal WG", "WG", true, true, false, false);
@@ -93,8 +123,7 @@ public class MockCase {
 
   private static Case makeCase3() {
     final int caseNumber = 3;
-    Case kase =
-        makeCase("PRO2_0002", "WG assay 2", "PRO2", "REQ02", caseNumber, null, null);
+    Case kase = makeCase("PRO2_0002", "WG assay 2", "PRO2", "REQ02", caseNumber, null, null);
     // Test 1 is pending full depth QC
     ca.on.oicr.gsi.cardea.data.Test test1 =
         addTest(kase, caseNumber, 1, "Normal WG", "WG", true, true, true, false);
@@ -326,8 +355,8 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
-        null);
+    markRelease(
+        kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE, null);
     addDeliverable(kase, DELIVERABLE_TYPE_CLINICAL, "Clinical Report");
     return kase;
   }
@@ -339,8 +368,8 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
-        null);
+    markRelease(
+        kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE, null);
     CaseDeliverable deliverable =
         addDeliverable(kase, DELIVERABLE_TYPE_CLINICAL, "Clinical Report");
     markAnalysisReview(deliverable, AnalysisReviewQcStatus.PASSED);
@@ -354,8 +383,8 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE,
-        null);
+    markRelease(
+        kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.PASSED_RELEASE, null);
     CaseDeliverable deliverable =
         addDeliverable(kase, DELIVERABLE_TYPE_CLINICAL, "Clinical Report");
     markAnalysisReview(deliverable, AnalysisReviewQcStatus.PASSED);
@@ -370,8 +399,7 @@ public class MockCase {
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     markReleaseApproval(kase.getDeliverables().get(0), ReleaseApprovalQcStatus.PASSED_PROCEED);
-    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.STAGED,
-        null);
+    markRelease(kase.getDeliverables().get(0).getReleases().get(0), ReleaseQcStatus.STAGED, null);
     when(kase.getArchivingStatus()).thenReturn(ArchivingStatus.STARTED);
     return kase;
   }
@@ -379,8 +407,7 @@ public class MockCase {
   private static Case makeCase29() {
     final int caseNumber = 29;
     // Case is pending release approval - data release, and pending release - clinical report
-    Case kase =
-        makeCase("PRO29_0001", "Single Test", "PRO29", "REQ29", caseNumber, null, null);
+    Case kase = makeCase("PRO29_0001", "Single Test", "PRO29", "REQ29", caseNumber, null, null);
     addTest(kase, caseNumber, 1, "Test", "WG", true, true, true, true);
     markAnalysisReview(kase.getDeliverables().get(0), AnalysisReviewQcStatus.PASSED);
     CaseDeliverable deliverable =
@@ -439,8 +466,8 @@ public class MockCase {
     LocalDate startDate = LocalDate.of(2024, 1, 1);
     LocalDate completionDate = LocalDate.of(2024, 1, 15);
     Case kase =
-        makeCase("PRO34_0001", "Single Test", "PRO34", "REQ34", caseNumber, startDate,
-            completionDate);
+        makeCase(
+            "PRO34_0001", "Single Test", "PRO34", "REQ34", caseNumber, startDate, completionDate);
 
     // Mocking the completion logic based on deliverable states
     List<CaseDeliverable> deliverables = new ArrayList<>();
@@ -472,8 +499,13 @@ public class MockCase {
     return kase;
   }
 
-  private static Case makeCase(String donorName, String assayName, String projectName,
-      String requisitionName, int caseNumber, LocalDate startDate,
+  private static Case makeCase(
+      String donorName,
+      String assayName,
+      String projectName,
+      String requisitionName,
+      int caseNumber,
+      LocalDate startDate,
       LocalDate completionDate) {
     if (startDate == null) {
       startDate = LocalDate.now();
@@ -507,9 +539,10 @@ public class MockCase {
     if (deliverables.isEmpty()) {
       return null;
     }
-    List<CaseRelease> releases = deliverables.stream()
-        .flatMap(deliverable -> deliverable.getReleases().stream())
-        .collect(Collectors.toList());
+    List<CaseRelease> releases =
+        deliverables.stream()
+            .flatMap(deliverable -> deliverable.getReleases().stream())
+            .collect(Collectors.toList());
     if (releases.isEmpty()) {
       return null;
     }
@@ -517,17 +550,16 @@ public class MockCase {
         .anyMatch(release -> release.getQcStatus() == null || release.getQcStatus().isPending())) {
       return null;
     }
-    return releases.stream()
-        .map(CaseRelease::getQcDate)
-        .max(LocalDate::compareTo)
-        .orElse(null);
+    return releases.stream().map(CaseRelease::getQcDate).max(LocalDate::compareTo).orElse(null);
   }
 
-  private static CaseDeliverable addDeliverable(Case kase, String deliverableType,
-      String deliverableName) {
-    CaseDeliverable deliverable = kase.getDeliverables().stream()
-        .filter(x -> Objects.equals(x.getDeliverableCategory(), deliverableType)).findFirst()
-        .orElse(null);
+  private static CaseDeliverable addDeliverable(
+      Case kase, String deliverableType, String deliverableName) {
+    CaseDeliverable deliverable =
+        kase.getDeliverables().stream()
+            .filter(x -> Objects.equals(x.getDeliverableCategory(), deliverableType))
+            .findFirst()
+            .orElse(null);
     if (deliverable == null) {
       deliverable = mock(CaseDeliverable.class);
       when(deliverable.getDeliverableCategory()).thenReturn(deliverableType);
@@ -540,8 +572,8 @@ public class MockCase {
     return deliverable;
   }
 
-  private static String makeSampleId(int caseNumber, int testNumber, MetricCategory gate,
-      int sampleNumber) {
+  private static String makeSampleId(
+      int caseNumber, int testNumber, MetricCategory gate, int sampleNumber) {
     return "C%dT%dG%dS%d".formatted(caseNumber, testNumber, gate.ordinal(), sampleNumber);
   }
 
@@ -560,15 +592,15 @@ public class MockCase {
     return requisition;
   }
 
-  private static void markAnalysisReview(CaseDeliverable deliverable,
-      AnalysisReviewQcStatus qcStatus) {
+  private static void markAnalysisReview(
+      CaseDeliverable deliverable, AnalysisReviewQcStatus qcStatus) {
     when(deliverable.getAnalysisReviewQcStatus()).thenReturn(qcStatus);
     when(deliverable.getAnalysisReviewQcUser()).thenReturn("User");
     when(deliverable.getAnalysisReviewQcDate()).thenReturn(LocalDate.now());
   }
 
-  private static void markReleaseApproval(CaseDeliverable deliverable,
-      ReleaseApprovalQcStatus qcStatus) {
+  private static void markReleaseApproval(
+      CaseDeliverable deliverable, ReleaseApprovalQcStatus qcStatus) {
     when(deliverable.getReleaseApprovalQcStatus()).thenReturn(qcStatus);
     when(deliverable.getReleaseApprovalQcUser()).thenReturn("User");
     when(deliverable.getReleaseApprovalQcDate()).thenReturn(LocalDate.now());
@@ -584,8 +616,8 @@ public class MockCase {
     }
   }
 
-  private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,
-      String name, String libraryDesignCode) {
+  private static ca.on.oicr.gsi.cardea.data.Test addTest(
+      Case kase, int caseNumber, int testNumber, String name, String libraryDesignCode) {
     ca.on.oicr.gsi.cardea.data.Test test = mock(ca.on.oicr.gsi.cardea.data.Test.class);
     when(test.getName()).thenReturn(name);
     when(test.getLibraryDesignCode()).thenReturn(libraryDesignCode);
@@ -598,9 +630,15 @@ public class MockCase {
     return test;
   }
 
-  private static ca.on.oicr.gsi.cardea.data.Test addTest(Case kase, int caseNumber, int testNumber,
-      String name, String libraryDesignCode,
-      boolean extractionComplete, boolean libraryPrepComplete, boolean libraryQualificationComplete,
+  private static ca.on.oicr.gsi.cardea.data.Test addTest(
+      Case kase,
+      int caseNumber,
+      int testNumber,
+      String name,
+      String libraryDesignCode,
+      boolean extractionComplete,
+      boolean libraryPrepComplete,
+      boolean libraryQualificationComplete,
       boolean fullDepthComplete) {
     ca.on.oicr.gsi.cardea.data.Test test =
         addTest(kase, caseNumber, testNumber, name, libraryDesignCode);
@@ -630,8 +668,8 @@ public class MockCase {
     return "C%dT%d".formatted(caseNumber, testNumber);
   }
 
-  private static Sample addSample(List<Sample> gateItems, String id, Boolean qcPassed,
-      String qcReason) {
+  private static Sample addSample(
+      List<Sample> gateItems, String id, Boolean qcPassed, String qcReason) {
     Sample sample = mock(Sample.class);
     when(sample.getId()).thenReturn(id);
     when(sample.getQcPassed()).thenReturn(qcPassed);
@@ -644,14 +682,24 @@ public class MockCase {
     return sample;
   }
 
-  private static Sample addRunLibrary(List<Sample> gateItems, String id, Boolean qcPassed,
-      String qcReason, Boolean dataReviewPassed) {
-    return addRunLibrary(gateItems, id, qcPassed, qcReason, dataReviewPassed, qcPassed,
-        dataReviewPassed);
+  private static Sample addRunLibrary(
+      List<Sample> gateItems,
+      String id,
+      Boolean qcPassed,
+      String qcReason,
+      Boolean dataReviewPassed) {
+    return addRunLibrary(
+        gateItems, id, qcPassed, qcReason, dataReviewPassed, qcPassed, dataReviewPassed);
   }
 
-  private static Sample addRunLibrary(List<Sample> gateItems, String id, Boolean qcPassed,
-      String qcReason, Boolean dataReviewPassed, Boolean runQcPassed, Boolean runDataReviewPassed) {
+  private static Sample addRunLibrary(
+      List<Sample> gateItems,
+      String id,
+      Boolean qcPassed,
+      String qcReason,
+      Boolean dataReviewPassed,
+      Boolean runQcPassed,
+      Boolean runDataReviewPassed) {
     Sample sample = addSample(gateItems, id, qcPassed, qcReason);
     Run run = mock(Run.class);
     when(sample.getRun()).thenReturn(run);
@@ -672,5 +720,4 @@ public class MockCase {
     }
     return sample;
   }
-
 }

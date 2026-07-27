@@ -1,10 +1,10 @@
 package ca.on.oicr.gsi.dimsum.data;
 
-import java.time.LocalDate;
 import ca.on.oicr.gsi.cardea.data.CaseQc;
 import ca.on.oicr.gsi.cardea.data.CaseQc.AnalysisReviewQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseApprovalQcStatus;
 import ca.on.oicr.gsi.cardea.data.CaseQc.ReleaseQcStatus;
+import java.time.LocalDate;
 
 public class CachedSignoff {
 
@@ -50,5 +50,4 @@ public class CachedSignoff {
   public String getQcNote() {
     return qcNote;
   }
-
 }

@@ -1,17 +1,18 @@
 package ca.on.oicr.gsi.dimsum.data;
 
 import static java.util.Objects.requireNonNull;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import javax.annotation.concurrent.Immutable;
+
 import ca.on.oicr.gsi.cardea.data.Case;
 import ca.on.oicr.gsi.cardea.data.Donor;
 import ca.on.oicr.gsi.cardea.data.Project;
 import ca.on.oicr.gsi.cardea.data.Requisition;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.Test;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public class TestTableView {
@@ -40,10 +41,14 @@ public class TestTableView {
     this.tissueType = requireNonNull(kase.getTissueType());
     this.timepoint = kase.getTimepoint();
     this.receipts = kase.getReceipts();
-    this.latestActivityDate = test.getLatestActivityDate() == null
-        ? kase.getReceipts().stream().map(Sample::getLatestActivityDate).filter(Objects::nonNull)
-            .max(LocalDate::compareTo).orElse(null)
-        : test.getLatestActivityDate();
+    this.latestActivityDate =
+        test.getLatestActivityDate() == null
+            ? kase.getReceipts().stream()
+                .map(Sample::getLatestActivityDate)
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo)
+                .orElse(null)
+            : test.getLatestActivityDate();
   }
 
   public Test getTest() {
@@ -93,5 +98,4 @@ public class TestTableView {
   public LocalDate getLatestActivityDate() {
     return latestActivityDate;
   }
-
 }

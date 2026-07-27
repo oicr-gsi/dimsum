@@ -7,7 +7,7 @@ new TableBuilder(
   omittedSampleDefinition,
   "omissionTableContainer",
   getSearchParams(),
-  updateUrlParams
+  updateUrlParams,
 ).build();
 
 document.getElementById("omissionsInfo")?.addEventListener("click", () => {
@@ -33,6 +33,6 @@ document.getElementById("omissionsInfo")?.addEventListener("click", () => {
     "Omissions",
     "These samples and their children will not be included in other parts of Dimsum because they do" +
       " not have a well-defined assay. To have a well-defined assay means:",
-    fragment
+    fragment,
   );
 });

@@ -6,5 +6,5 @@ new TableBuilder(
   runDefinition,
   "runListTableContainer",
   getSearchParams(),
-  updateUrlParams
+  updateUrlParams,
 ).build();

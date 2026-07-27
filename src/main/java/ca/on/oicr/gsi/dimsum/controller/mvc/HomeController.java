@@ -1,19 +1,17 @@
 package ca.on.oicr.gsi.dimsum.controller.mvc;
 
+import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import ca.on.oicr.gsi.dimsum.security.DimsumPrincipal;
 
 @Controller
 public class HomeController {
 
-  @Autowired
-  private CaseController caseController;
-  @Autowired
-  private ProjectController projectController;
+  @Autowired private CaseController caseController;
+  @Autowired private ProjectController projectController;
 
   @GetMapping("/")
   public String getHomePage(@AuthenticationPrincipal DimsumPrincipal principal) {
@@ -33,5 +31,4 @@ public class HomeController {
       return "login";
     }
   }
-
 }

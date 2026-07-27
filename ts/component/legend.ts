@@ -15,8 +15,7 @@ class Legend {
     this.container.id = legendId;
     // header bar w/title and close window icon
     const header = document.createElement("div");
-    header.className =
-      "flex flex-row items-center border-b-1 border-grey-200 cursor-move";
+    header.className = "flex flex-row items-center border-b-1 border-grey-200 cursor-move";
     const title = document.createElement("span");
     title.className = "font-sarabun font-thin text-green-200 text-24 my-2 mx-4";
     title.innerHTML = "Legend";
@@ -45,18 +44,12 @@ class Legend {
     if (type === "qc") {
       Object.values(qcStatuses)
         .filter((qcStatus) => internalUser || qcStatus.showExternal)
-        .forEach((qcStatus) =>
-          body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label)),
-        );
+        .forEach((qcStatus) => body.appendChild(makeLegendEntry(qcStatus.icon, qcStatus.label)));
       if (internalUser) {
         body.appendChild(makeLegendEntry("pen-ruler", "Preliminary value"));
         body.appendChild(makeLegendEntry("upload", "Archiving started"));
-        body.appendChild(
-          makeLegendEntry("triangle-exclamation", "Processing skipped/stalled"),
-        );
-        body.appendChild(
-          makeLegendEntry("trash", "Data deleted/archive expired"),
-        );
+        body.appendChild(makeLegendEntry("triangle-exclamation", "Processing skipped/stalled"));
+        body.appendChild(makeLegendEntry("trash", "Data deleted/archive expired"));
       }
     } else if (type === "gate") {
       for (const gate of Object.keys(GATE_COLOR_MAPPING)) {
@@ -75,10 +68,8 @@ class Legend {
 
     // centering window, setTimeout is required for offsetHeight and offsetWidth to load
     window.setTimeout(() => {
-      this.container.style.top =
-        (window.innerHeight - this.container.offsetHeight) / 2 + "px";
-      this.container.style.left =
-        (window.innerWidth - this.container.offsetWidth) / 2 + "px";
+      this.container.style.top = (window.innerHeight - this.container.offsetHeight) / 2 + "px";
+      this.container.style.left = (window.innerWidth - this.container.offsetWidth) / 2 + "px";
       this.container.classList.toggle("invisible");
     }, 0);
   }
@@ -124,10 +115,8 @@ class Legend {
       previousPosX = e.clientX;
       previousPosY = e.clientY;
       // Set the element's new position
-      this.container.style.top =
-        this.clampY(this.container.offsetTop - diffY) + "px";
-      this.container.style.left =
-        this.clampX(this.container.offsetLeft - diffX) + "px";
+      this.container.style.top = this.clampY(this.container.offsetTop - diffY) + "px";
+      this.container.style.left = this.clampX(this.container.offsetLeft - diffX) + "px";
     };
 
     // move container if it gets clipped in window resizing

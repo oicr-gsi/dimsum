@@ -10,12 +10,12 @@ types of changes contained in a release determine the release type. If there are
 requiring a minor release, a minor release should be performed. If there are only changes that
 require a patch release, then a patch release should be performed instead.
 
-| Change Type | Filename Prefix | Description | Release Type |
-|-------------|-----------------|-------------|--------------|
-| Added       | `add_`          | New features | minor |
-| Changed     | `change_`       | Changes in existing functionality | minor |
-| Removed     | `remove_`       | Features that have been removed | minor |
-| Fixed       | `fix_`          | Bug fixes and performance improvements | patch |
+| Change Type | Filename Prefix |              Description               | Release Type |
+|-------------|-----------------|----------------------------------------|--------------|
+| Added       | `add_`          | New features                           | minor        |
+| Changed     | `change_`       | Changes in existing functionality      | minor        |
+| Removed     | `remove_`       | Features that have been removed        | minor        |
+| Fixed       | `fix_`          | Bug fixes and performance improvements | patch        |
 
 ## File Names
 
