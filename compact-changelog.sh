@@ -60,7 +60,7 @@ add_section "Removed" "remove"
 add_section "Fixed" "fix"
 add_section "Upgrade Notes" "note"
 
-printf "\n\n" >> "${TEMP_FILE}"
+printf "\n" >> "${TEMP_FILE}"
 
 sed -i.bak -e "/^\(-\{10,\}\)/ r ${TEMP_FILE}" "${CHANGELOG}"
 rm -f -- "${CHANGE_DIR}"/add_* "${CHANGE_DIR}"/change_* "${CHANGE_DIR}"/remove_* \

@@ -22,4 +22,4 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-      - run: mvn --batch-mode package
+      - run: mvn --batch-mode package spotless:check
