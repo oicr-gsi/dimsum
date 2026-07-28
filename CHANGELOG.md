@@ -7,6 +7,12 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.67.1] - 2026-07-28
+
+### Fixed
+
+* Inclusion of omitted run samples that are neither library qualification nor full-depth. These will be shown on the Run Details page, but not on the Project Details page (where display depends on the QC step)
+
 ## [1.67.0] - 2026-07-23
 
 ### Changed
