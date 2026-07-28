@@ -13,12 +13,12 @@ function getRestBaseUrl(common?: boolean) {
 
 export const urls = {
   dimsum: {
-    case: (id: string) => `/cases/${id}`,
-    caseQcReport: (id: string) => `/cases/${id}/report`,
-    donor: (name: string) => `/donors/${name}`,
-    project: (name: string) => `/projects/${name}`,
-    requisition: (id: number) => `/requisitions/${id}`,
-    run: (name: string) => `/runs/${name}`,
+    case: (id: string) => `/cases/${encodeURIComponent(id)}`,
+    caseQcReport: (id: string) => `/cases/${encodeURIComponent(id)}/report`,
+    donor: (name: string) => `/donors/${encodeURIComponent(name)}`,
+    project: (name: string) => `/projects/${encodeURIComponent(name)}`,
+    requisition: (id: number) => `/requisitions/${encodeURIComponent(String(id))}`,
+    run: (name: string) => `/runs/${encodeURIComponent(name)}`,
   },
   rest: {
     cases: {
