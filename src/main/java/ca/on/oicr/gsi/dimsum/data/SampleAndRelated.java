@@ -40,11 +40,6 @@ public class SampleAndRelated implements Sample {
   }
 
   @Override
-  public Integer getClustersPerSample() {
-    return sample.getClustersPerSample();
-  }
-
-  @Override
   public BigDecimal getCollapsedCoverage() {
     return sample.getCollapsedCoverage();
   }
@@ -85,11 +80,6 @@ public class SampleAndRelated implements Sample {
   }
 
   @Override
-  public BigDecimal getDuplicationRate() {
-    return sample.getDuplicationRate();
-  }
-
-  @Override
   public BigDecimal getDv200() {
     return sample.getDv200();
   }
@@ -102,16 +92,6 @@ public class SampleAndRelated implements Sample {
   @Override
   public String getId() {
     return sample.getId();
-  }
-
-  @Override
-  public Integer getLambdaClusters() {
-    return sample.getLambdaClusters();
-  }
-
-  @Override
-  public BigDecimal getLambdaMethylation() {
-    return sample.getLambdaMethylation();
   }
 
   @Override
@@ -130,31 +110,6 @@ public class SampleAndRelated implements Sample {
   }
 
   @Override
-  public BigDecimal getMappedToCoding() {
-    return sample.getMappedToCoding();
-  }
-
-  @Override
-  public BigDecimal getMeanCoverageDeduplicated() {
-    return sample.getMeanCoverageDeduplicated();
-  }
-
-  @Override
-  public BigDecimal getMeanInsertSize() {
-    return sample.getMeanInsertSize();
-  }
-
-  @Override
-  public BigDecimal getMedianInsertSize() {
-    return sample.getMedianInsertSize();
-  }
-
-  @Override
-  public BigDecimal getMethylationBeta() {
-    return sample.getMethylationBeta();
-  }
-
-  @Override
   public List<SampleMetric> getMetrics() {
     return sample.getMetrics();
   }
@@ -170,38 +125,8 @@ public class SampleAndRelated implements Sample {
   }
 
   @Override
-  public BigDecimal getOnTargetReads() {
-    return sample.getOnTargetReads();
-  }
-
-  @Override
-  public Integer getPeReads() {
-    return sample.getPeReads();
-  }
-
-  @Override
-  public Integer getPreliminaryClustersPerSample() {
-    return sample.getPreliminaryClustersPerSample();
-  }
-
-  @Override
-  public BigDecimal getPreliminaryMeanCoverageDeduplicated() {
-    return sample.getPreliminaryMeanCoverageDeduplicated();
-  }
-
-  @Override
   public String getProject() {
     return sample.getProject();
-  }
-
-  @Override
-  public Integer getPuc19Clusters() {
-    return sample.getPuc19Clusters();
-  }
-
-  @Override
-  public BigDecimal getPuc19Methylation() {
-    return sample.getPuc19Methylation();
   }
 
   @Override
@@ -227,16 +152,6 @@ public class SampleAndRelated implements Sample {
   @Override
   public String getQcUser() {
     return sample.getQcUser();
-  }
-
-  @Override
-  public BigDecimal getRawCoverage() {
-    return sample.getRawCoverage();
-  }
-
-  @Override
-  public BigDecimal getRelativeCpgInRegions() {
-    return sample.getRelativeCpgInRegions();
   }
 
   @Override
@@ -297,11 +212,6 @@ public class SampleAndRelated implements Sample {
   @Override
   public BigDecimal getVolume() {
     return sample.getVolume();
-  }
-
-  @Override
-  public BigDecimal getRrnaContamination() {
-    return sample.getRrnaContamination();
   }
 
   public Set<RelatedSample> getRelatedSamples() {

@@ -6,6 +6,7 @@ import ca.on.oicr.gsi.cardea.data.Metric;
 import ca.on.oicr.gsi.cardea.data.MetricCategory;
 import ca.on.oicr.gsi.cardea.data.MetricSubcategory;
 import ca.on.oicr.gsi.cardea.data.Sample;
+import ca.on.oicr.gsi.cardea.data.SampleMetric;
 import ca.on.oicr.gsi.cardea.data.Test;
 import ca.on.oicr.gsi.dimsum.service.CaseService;
 import ca.on.oicr.gsi.dimsum.service.filtering.CaseFilter;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import tools.jackson.databind.JsonNode;
@@ -176,27 +176,25 @@ public class TglTrackingReport extends Report {
     if (metric == null) {
       return null;
     }
-    switch (metric.getName()) {
-      case METRIC_COVERAGE:
-        return getMetricValue(rowData.getTest(), Sample::getMeanCoverageDeduplicated);
-      case METRIC_CLUSTERS:
-        return getMetricValue(
-            rowData.getTest(),
-            sample ->
-                sample.getClustersPerSample() == null
-                    ? null
-                    : new BigDecimal(sample.getClustersPerSample()));
-      default:
-        throw new IllegalArgumentException("Invalid metric: " + metric.getName());
-    }
+    return getMetricValue(rowData.getTest(), metric);
   }
 
-  private static BigDecimal getMetricValue(Test test, Function<Sample, BigDecimal> getter) {
+  private static BigDecimal getMetricValue(Test test, Metric metric) {
     return test.getFullDepthSequencings().stream()
-        .map(getter)
+        .map(sample -> getSampleMetric(sample, metric))
         .filter(Objects::nonNull)
+        .map(sampleMetric -> sampleMetric.getValue())
         .max(BigDecimal::compareTo)
         .orElse(null);
+  }
+
+  private static SampleMetric getSampleMetric(Sample sample, Metric metric) {
+    for (SampleMetric sampleMetric : sample.getMetrics()) {
+      if (Objects.equals(sampleMetric.getName(), metric.getName())) {
+        return sampleMetric;
+      }
+    }
+    return null;
   }
 
   private static Metric getCoverageMetric(Assay assay, Test test) {
