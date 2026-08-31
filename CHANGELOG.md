@@ -7,6 +7,12 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.67.2] - 2026-08-31
+
+### Fixed
+
+* Updated to latest Cardea version (no user-visible changes)
+
 ## [1.67.1] - 2026-07-28
 
 ### Fixed
