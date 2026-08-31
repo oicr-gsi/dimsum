@@ -18,7 +18,6 @@ import {
   formatMetricValue,
   getBooleanMetricHighlight,
   getBooleanMetricValueIcon,
-  getDivisor,
   getDivisorUnit,
   getMetricNames,
   makeMetricDisplay,
@@ -35,13 +34,7 @@ const METRIC_LABEL_Q30 = "Bases Over Q30";
 const METRIC_LABEL_CLUSTERS_PF_1 = "Min Clusters (PF)";
 const METRIC_LABEL_CLUSTERS_PF_2 = "Min Reads Delivered (PF)";
 const METRIC_LABEL_PHIX = "PhiX Control";
-const METRIC_LABELS_CLUSTERS = [
-  "Clusters Per Sample",
-  "Pass Filter Clusters",
-  "Total Clusters (Passed Filter)",
-  "Pipeline Filtered Clusters",
-];
-const METRIC_LABEL_COVERAGE = "Mean Coverage Deduplicated";
+
 export const RUN_METRIC_LABELS = [
   METRIC_LABEL_Q30,
   METRIC_LABEL_CLUSTERS_PF_1,
@@ -101,27 +94,9 @@ export interface Sample extends Qcable {
   run: Run | null;
   donor: Donor;
   transferDate?: string | null;
-  meanInsertSize?: number | null;
-  medianInsertSize?: number | null;
-  clustersPerSample?: number | null;
-  preliminaryClustersPerSample?: number | null;
-  duplicationRate?: number | null;
-  meanCoverageDeduplicated?: number | null;
-  preliminaryMeanCoverageDeduplicated?: number | null;
-  rRnaContamination?: number | null;
-  mappedToCoding?: number | null;
-  rawCoverage?: number | null;
-  onTargetReads?: number | null;
   collapsedCoverage?: number | null;
-  lambdaMethylation?: number | null;
-  lambdaClusters?: number | null;
-  puc19Methylation?: number | null;
-  puc19Clusters?: number | null;
   latestActivityDate: string;
   sequencingLane: string | null;
-  relativeCpgInRegions?: number | null;
-  methylationBeta?: number | null;
-  peReads?: number | null;
   metrics: SampleMetric[];
   analysisSkipped?: boolean | null;
   relatedSamples?: RelatedSample[];
@@ -699,7 +674,7 @@ export function getSampleMetricCellHighlight(
       metric.name === metricName && (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
   );
   // handle metrics that may be preliminary
-  const preliminary = sampleMetric ? sampleMetric.preliminary : isPreliminary(metricName, sample);
+  const preliminary = sampleMetric ? sampleMetric.preliminary : false;
   if (preliminary) {
     return "warning";
   }
@@ -711,25 +686,6 @@ export function getSampleMetricCellHighlight(
     return "error";
   }
   return null;
-}
-
-function isPreliminary(metricName: string, sample: Sample) {
-  if (METRIC_LABELS_CLUSTERS.includes(metricName)) {
-    if (
-      nullOrUndefined(sample.clustersPerSample) &&
-      !nullOrUndefined(sample.preliminaryClustersPerSample)
-    ) {
-      return true;
-    }
-  } else if (metricName === METRIC_LABEL_COVERAGE) {
-    if (
-      nullOrUndefined(sample.meanCoverageDeduplicated) &&
-      !nullOrUndefined(sample.preliminaryMeanCoverageDeduplicated)
-    ) {
-      return true;
-    }
-  }
-  return false;
 }
 
 export function addMetricValueContents(
@@ -792,7 +748,7 @@ export function addMetricValueContents(
       metric.name === metricName && (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
   );
   const value = sampleMetric ? sampleMetric.value : getMetricValue(metricName, sample);
-  const preliminary = sampleMetric ? sampleMetric.preliminary : isPreliminary(metricName, sample);
+  const preliminary = sampleMetric ? sampleMetric.preliminary : false;
   if (value === null) {
     if (sample.run) {
       if (sample.analysisSkipped) {
@@ -1231,34 +1187,7 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
         : sample.volume * sample.concentration;
     case "DV200":
       return nullIfUndefined(sample.dv200);
-    case "Mean Insert Size":
-      return nullIfUndefined(sample.meanInsertSize);
-    case "Median Insert Size":
-      return nullIfUndefined(sample.medianInsertSize);
-    case "Duplication Rate":
-      return nullIfUndefined(sample.duplicationRate);
-    case METRIC_LABELS_CLUSTERS[0]:
-    case METRIC_LABELS_CLUSTERS[1]:
-    case METRIC_LABELS_CLUSTERS[2]:
-    case METRIC_LABELS_CLUSTERS[3]:
-      if (nullOrUndefined(sample.clustersPerSample)) {
-        return nullIfUndefined(sample.preliminaryClustersPerSample);
-      } else {
-        return sample.clustersPerSample;
-      }
-    case "rRNA Contamination":
-      return nullIfUndefined(sample.rRnaContamination);
-    case METRIC_LABEL_COVERAGE:
-      if (nullOrUndefined(sample.meanCoverageDeduplicated)) {
-        return nullIfUndefined(sample.preliminaryMeanCoverageDeduplicated);
-      } else {
-        return sample.meanCoverageDeduplicated;
-      }
     case "Coverage (Raw)":
-    case "Mean Bait Coverage":
-      return nullIfUndefined(sample.rawCoverage);
-    case "Mapped to Coding":
-      return nullIfUndefined(sample.mappedToCoding);
     case "Quantitative PCR (qPCR)":
       // Must be in nM
       if (sample.concentrationUnits === "NANOMOLAR") {
@@ -1266,24 +1195,8 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       } else {
         return null;
       }
-    case "On Target Reads":
-      return nullIfUndefined(sample.onTargetReads);
     case METRIC_LABEL_Q30:
       return sample.run ? nullIfUndefined(sample.run.percentOverQ30) : null;
-    case "Lambda Methylation":
-      return nullIfUndefined(sample.lambdaMethylation);
-    case "Lambda Clusters":
-      return nullIfUndefined(sample.lambdaClusters);
-    case "pUC19 Methylation":
-      return nullIfUndefined(sample.puc19Methylation);
-    case "pUC19 Clusters":
-      return nullIfUndefined(sample.puc19Clusters);
-    case "Relative CpG Frequency in Regions vs Reference":
-      return nullIfUndefined(sample.relativeCpgInRegions);
-    case "Methylation Beta":
-      return nullIfUndefined(sample.methylationBeta);
-    case "PE Reads":
-      return nullIfUndefined(sample.peReads);
     case "Collapsed Coverage":
       return nullIfUndefined(sample.collapsedCoverage);
   }

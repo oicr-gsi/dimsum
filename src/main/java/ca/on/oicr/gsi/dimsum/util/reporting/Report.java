@@ -30,7 +30,7 @@ public abstract class Report {
   }
 
   public static ReportFormat getFormat(JsonNode parameters) {
-    String format = parameters.has(PARAM_FORMAT) ? parameters.get(PARAM_FORMAT).asText() : null;
+    String format = parameters.has(PARAM_FORMAT) ? parameters.get(PARAM_FORMAT).asString() : null;
     if (format == null) {
       return ReportFormat.EXCEL;
     }
