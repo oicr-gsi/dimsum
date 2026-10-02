@@ -8,18 +8,18 @@ export type MetricCategory =
 
 export interface Metric {
   name: string;
-  sortPriority?: number;
-  minimum?: number;
-  maximum?: number;
-  units?: string;
-  tissueMaterial?: string;
-  tissueOrigin?: string;
-  tissueType?: string;
-  negateTissueType?: boolean;
-  nucleicAcidType?: string;
-  containerModel?: string;
-  readLength?: number;
-  readLength2?: number;
+  sortPriority: number | null;
+  minimum: number | null;
+  maximum: number | null;
+  units: string | null;
+  tissueMaterial: string | null;
+  tissueOrigin: string | null;
+  tissueType: string | null;
+  negateTissueType: boolean | null;
+  nucleicAcidType: string | null;
+  containerModel: string | null;
+  readLength: number | null;
+  readLength2: number | null;
   thresholdType: string;
 }
 
