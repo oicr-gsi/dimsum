@@ -14,7 +14,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/plotly.js-dist-min": "^2.3.4",
-    "tailwindcss": "^3.0.24",
+    "tailwindcss": "^4.3.3",
     "ts-loader": "^9.3.0",
     "typescript": "^5.3.3",
     "webpack": "^5.105.0",
