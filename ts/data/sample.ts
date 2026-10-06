@@ -833,6 +833,7 @@ function valueMissing(metric: SampleMetric): boolean {
   if (metric.metricLevel === "LANE") {
     if (
       !metric.laneValues ||
+      !metric.laneValues.length ||
       metric.laneValues.some(
         (lane) => nullOrUndefined(lane.laneValue) && nullOrUndefined(lane.read1Value),
       )
