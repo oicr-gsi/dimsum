@@ -1,6 +1,8 @@
 import { Tooltip } from "../component/tooltip";
 import { Metric, MetricCategory, MetricSubcategory } from "../data/assay";
-import { addTextDiv, makeIcon } from "./html-utils";
+import { nullOrUndefined } from "../data/data-utils";
+import { SampleMetric } from "../data/sample";
+import { addTextDiv, makeIcon, makeTextDiv } from "./html-utils";
 import { siteConfig } from "./site-config";
 
 export function getMetricNames(category: MetricCategory, assayIds: number[]): string[] {
@@ -106,6 +108,60 @@ export function makeMetricDisplay(
   return div;
 }
 
+export function makeSampleMetricDisplay(
+  value: number,
+  metric: SampleMetric,
+  includeRequirementsTooltip: boolean,
+): HTMLSpanElement {
+  const div = document.createElement("div");
+  div.innerText = formatSampleMetricValue(value, metric);
+  if (includeRequirementsTooltip) {
+    const tooltip = Tooltip.getInstance();
+    tooltip.addTarget(div, (fragment: DocumentFragment) => {
+      makeMetricRequirementsTooltip(fragment, metric);
+    });
+  }
+  return div;
+}
+
+export function makeMetricRequirementsTooltip(fragment: DocumentFragment, metric: SampleMetric) {
+  if (metric.preliminary) {
+    const preliminaryDiv = makeTextDiv("PRELIMINARY VALUE ONLY");
+    preliminaryDiv.classList.add("font-bold");
+    fragment.appendChild(preliminaryDiv);
+  }
+  const requirementsDiv = document.createElement("div");
+  requirementsDiv.innerText = "Required: " + getMetricRequirementText(metric);
+  fragment.append(requirementsDiv);
+}
+
+export function formatSampleMetricValue(value: number, metric: SampleMetric) {
+  let metricPlaces = 1;
+  if (metric.minimum != null) {
+    if (metric.maximum != null) {
+      metricPlaces = Math.max(
+        countDecimalPlaces(metric.minimum),
+        countDecimalPlaces(metric.maximum),
+      );
+    } else {
+      metricPlaces = countDecimalPlaces(metric.minimum);
+    }
+  } else if (metric.maximum != null) {
+    metricPlaces = countDecimalPlaces(metric.maximum);
+  }
+
+  const divisorUnit = getDivisorUnit(metric.units);
+  if (divisorUnit) {
+    value = value / getDivisor(divisorUnit);
+  }
+
+  if (metricPlaces === 0 && Number.isInteger(value)) {
+    return formatDecimal(value, 0) + (divisorUnit || "");
+  } else {
+    return formatDecimal(value, metricPlaces + 1) + (divisorUnit || "");
+  }
+}
+
 export function formatMetricValue(value: number, metrics: Metric[], divisorUnit?: string | null) {
   const metricPlaces = Math.max(
     ...metrics.map((metric) =>
@@ -122,15 +178,15 @@ export function formatMetricValue(value: number, metrics: Metric[], divisorUnit?
   }
 }
 
-export function getDivisorUnit(metric: Metric) {
-  if (!metric.units) {
+export function getDivisorUnit(units: string | null) {
+  if (!units) {
     return null;
   }
-  if (metric.units.startsWith("K")) {
+  if (units === "K" || units.startsWith("K/")) {
     return "K";
-  } else if (metric.units.startsWith("M")) {
+  } else if (units === "M" || units.startsWith("M/")) {
     return "M";
-  } else if (metric.units.startsWith("B")) {
+  } else if (units === "B" || units.startsWith("B/")) {
     return "B";
   }
   return null;
@@ -162,8 +218,8 @@ function formatDecimal(value: number, decimalPlaces?: number) {
   return val;
 }
 
-function formatThreshold(value?: number) {
-  if (value === undefined) {
+function formatThreshold(value?: number | null) {
+  if (value == null) {
     return "Unknown";
   }
   if (Number.isInteger(value)) {
@@ -193,7 +249,10 @@ export function addMetricRequirementText(metrics: Metric[], container: Node) {
   container.appendChild(metricDiv);
 }
 
-export function getMetricRequirementText(metric: Metric) {
+export function getMetricRequirementText(metric: SampleMetric | Metric) {
+  if (nullOrUndefined(metric.thresholdType)) {
+    return "?";
+  }
   let text = null;
   switch (metric.thresholdType) {
     case "GT":
@@ -223,7 +282,7 @@ export function getMetricRequirementText(metric: Metric) {
 export function anyFail(value: number, metrics: Metric[]): boolean {
   for (let i = 0; i < metrics.length; i++) {
     let compareValue = value;
-    const divisorUnit = getDivisorUnit(metrics[i]);
+    const divisorUnit = getDivisorUnit(metrics[i].units);
     const divisor = getDivisor(divisorUnit);
     if (divisor) {
       compareValue = compareValue / divisor;
@@ -287,7 +346,7 @@ export function anyFail(value: number, metrics: Metric[]): boolean {
   return false;
 }
 
-function countDecimalPlaces(num?: number) {
+function countDecimalPlaces(num: number | null) {
   if (!num) {
     return 0;
   }

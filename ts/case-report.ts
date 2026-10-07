@@ -19,12 +19,14 @@ import { qcStatuses } from "./data/qc-status";
 import { makeTextDiv, styleText } from "./util/html-utils";
 import {
   addMetricValueContents,
+  addMetricValueContentsNew,
   getFirstReviewStatus,
   getSampleMetricCellHighlight,
   metricApplies as sampleMetricApplies,
   RUN_METRIC_LABELS,
   Sample,
   subcategoryApplies as sampleSubcategoryApplies,
+  getSampleMetricHighlightNew,
 } from "./data/sample";
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
@@ -146,9 +148,23 @@ const attributes: AttributeDefinition<Case>[] = [
 const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
   disablePageControls: true,
   getChildren(parent) {
-    return parent.metricSubcategory.metrics
-      .filter((metric) => sampleMetricApplies(metric, parent.sample))
-      .sort((a, b) => (a.sortPriority || 0) - (b.sortPriority || 0));
+    const filtered = parent.metricSubcategory.metrics.filter((metric) =>
+      sampleMetricApplies(metric, parent.sample),
+    );
+    const filteredNames = filtered.map((metric) => metric.name);
+    // Add in required metrics where the sample doesn't match any defined criteria. Since the
+    // metrics here come from the assay, it'll be included with the wrong threshold, but the
+    // threshold and value columns will use the sample metric to correctly show it as missing
+    parent.metricSubcategory.metrics.forEach((metric) => {
+      if (
+        !filteredNames.includes(metric.name) &&
+        parent.sample.metrics.find((metric) => metric.name === metric.name)
+      ) {
+        filtered.push(metric);
+        filteredNames.push(metric.name);
+      }
+    });
+    return filtered.sort((a, b) => (a.sortPriority || 0) - (b.sortPriority || 0));
   },
   getSubheading: (object) => object.metricSubcategory.name || null,
   noChildrenWarning: "Metrics missing",
@@ -203,8 +219,17 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
         if (object.thresholdType === "BOOLEAN") {
           addText(fragment, "n/a");
         } else {
-          addText(fragment, getMetricRequirementText(object));
+          const sampleMetric = parent.sample.metrics.find((metric) => metric.name === object.name);
+          addText(fragment, getMetricRequirementText(sampleMetric || object));
         }
+      },
+      getCellHighlight(object, child) {
+        // warning for required metrics with no matching criteria (no threshold on sample metric)
+        const sampleMetric = object.sample.metrics.find((metric) => metric.name === child?.name);
+        if (sampleMetric && !sampleMetric.thresholdType) {
+          return "warning";
+        }
+        return null;
       },
     },
     {
@@ -212,12 +237,21 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       headingClass: "print-width-20",
       child: true,
       addChildContents(object, parent, fragment) {
-        addMetricValueContents(parent.sample, [object], fragment, false, false);
+        const sampleMetric = parent.sample.metrics.find((metric) => metric.name === object.name);
+        if (sampleMetric) {
+          addMetricValueContentsNew(parent.sample, sampleMetric, fragment, false, false);
+          return;
+        }
+        addMetricValueContents(parent.sample, [object], fragment, false);
       },
       getCellHighlight(reportSample, metric) {
         if (metric == null) {
           return "na";
         } else {
+          const sampleMetric = reportSample.sample.metrics.find((x) => x.name === metric.name);
+          if (sampleMetric) {
+            return getSampleMetricHighlightNew(sampleMetric);
+          }
           return getSampleMetricCellHighlight(
             reportSample.sample,
             metric.name,

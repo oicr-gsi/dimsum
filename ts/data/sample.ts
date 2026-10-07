@@ -16,12 +16,15 @@ import {
   addMetricRequirementText,
   anyFail,
   formatMetricValue,
+  formatSampleMetricValue,
   getBooleanMetricHighlight,
   getBooleanMetricValueIcon,
   getDivisorUnit,
   getMetricNames,
   makeMetricDisplay,
+  makeMetricRequirementsTooltip,
   makeNotFoundIcon,
+  makeSampleMetricDisplay,
   makeStatusIcon,
 } from "../util/metrics";
 import { showDownloadOptionsDialog, showErrorDialog } from "../component/dialog";
@@ -45,18 +48,24 @@ export const RUN_METRIC_LABELS = [
 type ThresholdType = "BOOLEAN" | "LT" | "LE" | "GT" | "GE" | "BETWEEN";
 type MetricLevel = "SAMPLE" | "RUN" | "LANE";
 
+export interface SampleMetricLane {
+  laneNumber: number;
+  laneValue: number | null;
+  read1Value: number | null;
+  read2Value: number | null;
+}
+
 export interface SampleMetric {
-  // minimal fields implemented for now; others commented
   name: string;
   thresholdType: ThresholdType;
-  // minimum: number | null;
-  // maximum: number | null;
+  minimum: number | null;
+  maximum: number | null;
   metricLevel: MetricLevel;
   preliminary: boolean | null;
   value: number | null;
-  // laneValues:
+  laneValues: SampleMetricLane[] | null;
   qcPassed: boolean | null;
-  // units: string | null;
+  units: string | null;
 }
 
 export interface RelatedSample {
@@ -398,9 +407,7 @@ export function getLibraryQualificationsDefinition(
     bulkActions: [
       {
         title: "QC in MISO",
-        handler(items) {
-          qcInMiso(items, "LIBRARY_QUALIFICATION");
-        },
+        handler: qcInMiso,
         view: "internal",
       },
     ],
@@ -443,9 +450,7 @@ export function getFullDepthSequencingsDefinition(
     bulkActions: [
       {
         title: "QC in MISO",
-        handler(items) {
-          qcInMiso(items, "FULL_DEPTH_SEQUENCING");
-        },
+        handler: qcInMiso,
         view: "internal",
       },
     ],
@@ -485,7 +490,7 @@ function downloadSampleMetrics(
   showDownloadOptionsDialog(callback);
 }
 
-function qcInMiso(items: Sample[], category: MetricCategory) {
+function qcInMiso(items: Sample[]) {
   const missingRun = items.filter((x) => !x.run).map((x) => x.name);
   if (missingRun.length) {
     const list = makeList(missingRun);
@@ -501,7 +506,7 @@ function qcInMiso(items: Sample[], category: MetricCategory) {
     showErrorDialog("Some libraries have no assay:", list);
     return;
   }
-  openQcInMiso(items, category);
+  openQcInMiso(items);
 }
 
 function unique<Type>(item: Type, index: number, array: Type[]) {
@@ -519,15 +524,15 @@ function makeList<Type>(items: string[]): HTMLElement {
   return list;
 }
 
-function openQcInMiso(samples: Sample[], category: MetricCategory) {
+function openQcInMiso(samples: Sample[]) {
   const request: QcInMisoRequest = {
     report: "Dimsum",
-    library_aliquots: generateMetricData(category, samples),
+    library_aliquots: generateMetricData(samples),
   };
   postNavigate(urls.miso.qcRunLibraries, request, true);
 }
 
-function generateMetricData(category: MetricCategory, samples: Sample[]): MisoRunLibrary[] {
+function generateMetricData(samples: Sample[]): MisoRunLibrary[] {
   const data: MisoRunLibrary[] = [];
   samples.forEach((sample) => {
     if (!sample.assayIds?.length) {
@@ -536,68 +541,36 @@ function generateMetricData(category: MetricCategory, samples: Sample[]): MisoRu
     if (!sample.run) {
       throw new Error(`Sample ${sample.id} has no run`);
     }
-    const metricNames = getMetricNames(category, sample.assayIds).filter(
-      (x) => RUN_METRIC_LABELS.indexOf(x) === -1,
-    );
     const sequencingLane = sample.sequencingLane;
     assertRequired(sequencingLane);
     data.push({
       name: extractLibraryName(sample.id),
       run_id: sample.run.id,
       partition: parseInt(sequencingLane),
-      metrics: getSampleMetrics(sample, metricNames, category),
+      metrics: getSampleMetrics(sample),
     });
   });
   return data;
 }
 
-function getSampleMetrics(
-  sample: Sample,
-  metricNames: string[],
-  category: MetricCategory,
-): MisoRunLibraryMetric[] {
-  return metricNames
-    .flatMap((metricName) => getMatchingMetrics(metricName, category, sample) || [])
-    .filter((metric) => metric.thresholdType !== "BOOLEAN")
+function getSampleMetrics(sample: Sample): MisoRunLibraryMetric[] {
+  return sample.metrics
+    .filter((metric) => metric.metricLevel === "SAMPLE" && metric.thresholdType !== "BOOLEAN")
     .map((metric) => {
-      const sampleMetric = sample.metrics.find(
-        (sampleMetric) => sampleMetric.name === metric.name && sampleMetric.metricLevel == "SAMPLE",
-      );
-      const value = sampleMetric ? sampleMetric.value : getMetricValue(metric.name, sample);
+      const threshold1 = nullOrUndefined(metric.minimum) ? metric.maximum : metric.minimum;
+      assertRequired(threshold1);
+
       const misoMetric: MisoRunLibraryMetric = {
         title: metric.name,
         threshold_type: metric.thresholdType.toLowerCase(),
-        threshold: getSingleThreshold(metric),
-        value: value,
+        threshold: threshold1,
+        value: metric.value,
       };
-      if (metric.thresholdType == "BETWEEN") {
-        if (metric.maximum === undefined) {
-          throw new Error("Metric is missing maximum value");
-        }
+      if (!nullOrUndefined(metric.minimum) && !nullOrUndefined(metric.maximum)) {
         misoMetric.threshold_2 = metric.maximum;
       }
       return misoMetric;
     });
-}
-
-export function getSingleThreshold(metric: Metric) {
-  switch (metric.thresholdType) {
-    case "GT":
-    case "GE":
-    case "BETWEEN":
-      if (metric.minimum === undefined) {
-        throw new Error("Metric is missing minimum value");
-      }
-      return metric.minimum;
-    case "LT":
-    case "LE":
-      if (metric.maximum === undefined) {
-        throw new Error("Metric is missing maximum value");
-      }
-      return metric.maximum;
-    default:
-      throw new Error("Unhandled threshold type: " + metric.thresholdType);
-  }
 }
 
 function generateMetricColumns(
@@ -613,6 +586,10 @@ function generateMetricColumns(
     .filter((metricName) =>
       samples.some((sample) => {
         // filter out metrics that are n/a for all samples
+        if (sample.metrics.find((metric) => metric.name === metricName)) {
+          return true;
+        }
+        // Handle metrics not in sample.metrics yet
         const metrics = getMatchingMetrics(metricName, category, sample);
         return metrics && metrics.length;
       }),
@@ -621,6 +598,15 @@ function generateMetricColumns(
       return {
         title: metricName,
         addParentContents(sample, fragment) {
+          // generate entirely from sample.metrics instead of using the assay metric. At some
+          // point, this should be used for all metrics
+          const sampleMetric = sample.metrics.find((metric) => metric.name === metricName);
+          if (sampleMetric) {
+            addMetricValueContentsNew(sample, sampleMetric, fragment, true, true);
+            return;
+          }
+          // handle metrics that aren't in sample.metrics yet, and metrics that are N/A for the
+          // sample
           const metrics = getMatchingMetrics(metricName, category, sample);
           if (!metrics || !metrics.length) {
             addNaText(fragment);
@@ -629,10 +615,30 @@ function generateMetricColumns(
           addMetricValueContents(sample, metrics, fragment, true);
         },
         getCellHighlight(sample) {
+          // Similarly use sample.metrics if available
+          const sampleMetric = sample.metrics.find((metric) => metric.name === metricName);
+          if (sampleMetric) {
+            return getSampleMetricHighlightNew(sampleMetric);
+          }
           return getSampleMetricCellHighlight(sample, metricName, category);
         },
       };
     });
+}
+
+export function getSampleMetricHighlightNew(metric: SampleMetric): CellStatus | null {
+  // Preliminary = warning
+  if (metric.preliminary) {
+    return "warning";
+  }
+  // Unhandled metrics
+  if (/^Assigned/.test(metric.name) || metric.name === "Empty") {
+    return null;
+  }
+  if (nullOrUndefined(metric.qcPassed)) {
+    return "warning";
+  }
+  return metric.qcPassed ? null : "error";
 }
 
 export function getSampleMetricCellHighlight(
@@ -644,41 +650,14 @@ export function getSampleMetricCellHighlight(
   if (!metrics || !metrics.length) {
     return "na";
   }
-  // handle metrics that are checked against multiple values
-  switch (metricName) {
-    case METRIC_LABEL_CLUSTERS_PF_1:
-    case METRIC_LABEL_CLUSTERS_PF_2:
-      return getClustersPfHighlight(sample, metrics);
-    case METRIC_LABEL_PHIX:
-      return getPhixHighlight(sample, metrics);
-  }
-  if (metricName === "Sample Authenticated") {
-    const sampleMetric = sample.metrics.find((metric) => metric.name === metricName);
-    const qcPassed = sampleMetric ? sampleMetric.qcPassed : null;
-    return getBooleanMetricHighlight(qcPassed);
-  } else if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+  if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
     return getBooleanMetricHighlight(sample.qcPassed);
   }
-  if (
-    /^Adaptor Contamination/.test(metricName) ||
-    /^AUC between/.test(metricName) ||
-    /^Assigned/.test(metricName) ||
-    metricName === "Empty"
-  ) {
+  if (/^Adaptor Contamination/.test(metricName) || /^AUC between/.test(metricName)) {
     return null;
   }
 
-  // TODO: handle lane level metrics
-  const sampleMetric = sample.metrics.find(
-    (metric) =>
-      metric.name === metricName && (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
-  );
-  // handle metrics that may be preliminary
-  const preliminary = sampleMetric ? sampleMetric.preliminary : false;
-  if (preliminary) {
-    return "warning";
-  }
-  const value = sampleMetric ? sampleMetric.value : getMetricValue(metricName, sample);
+  const value = getMetricValue(metricName, sample);
   if (nullOrUndefined(value)) {
     return "warning";
   }
@@ -688,12 +667,190 @@ export function getSampleMetricCellHighlight(
   return null;
 }
 
+export function addMetricValueContentsNew(
+  sample: Sample,
+  metric: SampleMetric,
+  fragment: DocumentFragment,
+  addTooltip: boolean,
+  shouldCollapse: boolean,
+) {
+  // Unhandled metrics
+  if (/^Assigned/.test(metric.name) || metric.name === "Empty") {
+    addTextDiv("Manual check required", fragment);
+    return;
+  }
+  if (valueMissing(metric)) {
+    if (sample.run) {
+      if (sample.analysisSkipped) {
+        fragment.appendChild(makeAnalysisSkippedIcon());
+      } else {
+        const status = sample.run.completionDate ? qcStatuses.analysis : qcStatuses.sequencing;
+        fragment.appendChild(makeStatusIcon(status.icon, status.label));
+      }
+    } else {
+      fragment.appendChild(makeNotFoundIcon());
+    }
+    return;
+  }
+
+  if (metric.thresholdType === "BOOLEAN") {
+    fragment.append(getBooleanMetricValueIcon(metric.qcPassed));
+    return;
+  }
+
+  let mainContents;
+  if (nullOrUndefined(metric.value) && metric.laneValues && metric.laneValues.length) {
+    const readLevel =
+      nullOrUndefined(metric.laneValues[0].laneValue) &&
+      !nullOrUndefined(metric.laneValues[0].read1Value);
+    if (metric.laneValues.length === 1 && !readLevel) {
+      // display lane 1 value only
+      assertRequired(metric.laneValues[0].laneValue);
+      mainContents = makeSampleMetricDisplay(metric.laneValues[0].laneValue, metric, addTooltip);
+    } else {
+      // display min/max per lane/read
+      mainContents = makeRunLevelSummary(metric, readLevel);
+    }
+  } else {
+    assertRequired(metric.value);
+    mainContents = makeSampleMetricDisplay(
+      metric.value,
+      metric,
+      addTooltip && metric.metricLevel != "LANE",
+    );
+  }
+  if (metric.preliminary) {
+    const icon = makeIcon("pen-ruler");
+    icon.classList.add("mr-1");
+    mainContents.prepend(icon);
+  }
+
+  fragment.append(mainContents);
+  addLaneValues(metric, fragment, mainContents, addTooltip, shouldCollapse);
+}
+
+function makeRunLevelSummary(metric: SampleMetric, readLevel: boolean) {
+  assertRequired(metric.laneValues);
+  const laneValues = readLevel
+    ? (metric.laneValues
+        .flatMap((lane) => [lane.read1Value, lane.read2Value])
+        .filter((x) => !nullOrUndefined(x)) as number[])
+    : (metric.laneValues
+        .map((lane) => lane.laneValue)
+        .filter((x) => !nullOrUndefined(x)) as number[]);
+  assertRequired(laneValues);
+  switch (metric.thresholdType) {
+    case "GT":
+    case "GE": {
+      const valueText = formatSampleMetricValue(Math.min(...laneValues), metric);
+      return makeTextDiv(valueText + "+/" + (readLevel ? "R" : "L"));
+    }
+    case "LT":
+    case "LE": {
+      const valueText = formatSampleMetricValue(Math.max(...laneValues), metric);
+      return makeTextDiv(valueText + "-/" + (readLevel ? "R" : "L"));
+    }
+    default: {
+      return makeTextDiv("See lanes");
+    }
+  }
+}
+
+function showLaneValues(metric: SampleMetric): boolean {
+  if (!metric.laneValues || !metric.laneValues.length) {
+    return false;
+  }
+  if (metric.laneValues.length > 1) {
+    return true;
+  }
+  const singleLane = metric.laneValues[0];
+  if (
+    nullOrUndefined(singleLane.read1Value) &&
+    (nullOrUndefined(metric.value) || metric.value == singleLane.laneValue)
+  ) {
+    // The single lane value is already shown in place of the run value (or is the same anyway)
+    return false;
+  }
+  return true;
+}
+
+function addLaneValues(
+  metric: SampleMetric,
+  fragment: DocumentFragment,
+  mainContents: HTMLElement,
+  addTooltip: boolean,
+  shouldCollapse: boolean,
+) {
+  if (!showLaneValues(metric)) {
+    return;
+  }
+  const laneContentWrapper = document.createElement("div");
+  const laneCount = metric.laneValues ? metric.laneValues.length : 0;
+  assertRequired(metric.laneValues);
+  const tooltip = Tooltip.getInstance();
+  metric.laneValues
+    .sort((a, b) => a.laneNumber - b.laneNumber)
+    .forEach((lane) => {
+      const laneDiv = document.createElement("div");
+      laneDiv.classList.add("whitespace-nowrap", "print-hanging");
+
+      if (laneCount > 1) {
+        const laneLabel = document.createTextNode(`L${lane.laneNumber}: `);
+        laneDiv.appendChild(laneLabel);
+      }
+
+      if (!nullOrUndefined(lane.laneValue)) {
+        const text = formatSampleMetricValue(lane.laneValue, metric);
+        laneDiv.appendChild(document.createTextNode(text));
+        if (addTooltip) {
+          tooltip.addTarget(laneDiv, (fragment) => makeMetricRequirementsTooltip(fragment, metric));
+        }
+      } else if (nullOrUndefined(lane.read1Value)) {
+        laneDiv.appendChild(makeNotFoundIcon());
+      } else {
+        const text =
+          `R1: ${formatSampleMetricValue(lane.read1Value, metric)}` +
+          (!nullOrUndefined(lane.read2Value)
+            ? `; R2: ${formatSampleMetricValue(lane.read2Value, metric)}`
+            : "");
+        const textNode = document.createTextNode(text);
+        laneDiv.appendChild(textNode);
+
+        if (addTooltip) {
+          tooltip.addTarget(laneDiv, (fragment) => makeMetricRequirementsTooltip(fragment, metric));
+        }
+      }
+      laneContentWrapper.appendChild(laneDiv);
+    });
+
+  handleCollapse(mainContents, laneContentWrapper, fragment, shouldCollapse);
+}
+
+function valueMissing(metric: SampleMetric): boolean {
+  if (metric.thresholdType === "BOOLEAN") {
+    return nullOrUndefined(metric.qcPassed);
+  }
+  if (metric.metricLevel === "LANE") {
+    if (
+      !metric.laneValues ||
+      !metric.laneValues.length ||
+      metric.laneValues.some(
+        (lane) => nullOrUndefined(lane.laneValue) && nullOrUndefined(lane.read1Value),
+      )
+    ) {
+      return true;
+    }
+  } else if (metric.value == null) {
+    return true;
+  }
+  return false;
+}
+
 export function addMetricValueContents(
   sample: Sample,
   metrics: Metric[],
   fragment: DocumentFragment,
   addTooltip: boolean,
-  shouldCollapse: boolean = true,
 ) {
   const metricNames = metrics
     .map((metric) => metric.name)
@@ -702,35 +859,7 @@ export function addMetricValueContents(
     throw new Error("No common metric name found");
   }
   const metricName = metricNames[0];
-  // handle metrics that have multiple values
-  switch (metricName) {
-    case METRIC_LABEL_Q30:
-      addQ30Contents(sample, metrics, fragment, addTooltip, shouldCollapse);
-      return;
-    case METRIC_LABEL_CLUSTERS_PF_1:
-    case METRIC_LABEL_CLUSTERS_PF_2:
-      addClustersPfContents(sample, metrics, fragment, addTooltip, shouldCollapse);
-      return;
-    case METRIC_LABEL_PHIX:
-      addPhixContents(sample, metrics, fragment, addTooltip, shouldCollapse);
-      return;
-  }
-
-  if (metricName === "Sample Authenticated") {
-    const sampleMetric = sample.metrics.find((metric) => metric.name === metricName);
-    const qcPassed = sampleMetric ? sampleMetric.qcPassed : null;
-    if (qcPassed == null) {
-      // Show analysis skipped or pending rather than pending QC
-      if (sample.analysisSkipped) {
-        fragment.append(makeAnalysisSkippedIcon());
-      } else {
-        fragment.append(makeStatusIcon(qcStatuses.analysis.icon, qcStatuses.analysis.label));
-      }
-    } else {
-      fragment.append(getBooleanMetricValueIcon(qcPassed));
-    }
-    return;
-  } else if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
+  if (metrics.every((metric) => metric.thresholdType === "BOOLEAN")) {
     fragment.append(getBooleanMetricValueIcon(sample.qcPassed));
     return;
   }
@@ -738,17 +867,7 @@ export function addMetricValueContents(
     fragment.append(makeNameDiv("See attachment in MISO", urls.miso.sample(sample.id)));
     return;
   }
-  if (/^Assigned/.test(metricName) || metricName === "Empty") {
-    addTextDiv("Manual check required", fragment);
-    return;
-  }
-  // TODO: handle lane level metrics and run level metrics with multiple values
-  const sampleMetric = sample.metrics.find(
-    (metric) =>
-      metric.name === metricName && (metric.metricLevel == "SAMPLE" || metric.metricLevel == "RUN"),
-  );
-  const value = sampleMetric ? sampleMetric.value : getMetricValue(metricName, sample);
-  const preliminary = sampleMetric ? sampleMetric.preliminary : false;
+  const value = getMetricValue(metricName, sample);
   if (value === null) {
     if (sample.run) {
       if (sample.analysisSkipped) {
@@ -762,16 +881,7 @@ export function addMetricValueContents(
     }
   } else {
     let additionalTooltip = undefined;
-    if (preliminary) {
-      additionalTooltip = makeTextDiv("PRELIMINARY VALUE ONLY");
-      additionalTooltip.classList.add("font-bold");
-    }
     const contents = makeMetricDisplay(value, metrics, addTooltip, undefined, additionalTooltip);
-    if (preliminary) {
-      const icon = makeIcon("pen-ruler");
-      icon.classList.add("mr-1");
-      contents.prepend(icon);
-    }
     fragment.append(contents);
   }
 }
@@ -813,280 +923,6 @@ function handleCollapse(
 
   fragment.appendChild(metricWrapper);
   fragment.appendChild(contentWrapper);
-}
-
-function addQ30Contents(
-  sample: Sample,
-  metrics: Metric[],
-  fragment: DocumentFragment,
-  addTooltip: boolean,
-  shouldCollapse: boolean = true,
-) {
-  // run-level value is checked, but run and lane-level are both displayed
-  if (!sample.run || nullOrUndefined(sample.run.percentOverQ30)) {
-    if (sample.run && !sample.run.completionDate) {
-      fragment.appendChild(makeSequencingIcon());
-    } else {
-      fragment.appendChild(makeNotFoundIcon());
-    }
-    return;
-  }
-
-  const metricDisplay = makeMetricDisplay(sample.run.percentOverQ30, metrics, addTooltip);
-
-  const contentWrapper = document.createElement("div");
-
-  assertDefined(sample.run.lanes);
-  const lanes = sample.run.lanes;
-  lanes.forEach((lane) => {
-    if (nullOrUndefined(lane.percentOverQ30Read1)) {
-      return;
-    }
-    let text = lanes.length === 1 ? "" : `L${lane.laneNumber} `;
-    text += `R1: ${lane.percentOverQ30Read1}`;
-    if (lane.percentOverQ30Read2) {
-      text += `; R2: ${lane.percentOverQ30Read2}`;
-    }
-    const div = document.createElement("div");
-    div.classList.add("whitespace-nowrap", "print-hanging");
-    div.appendChild(document.createTextNode(text));
-    contentWrapper.appendChild(div);
-  });
-
-  handleCollapse(metricDisplay, contentWrapper, fragment, shouldCollapse);
-}
-
-function addClustersPfContents(
-  sample: Sample,
-  metrics: Metric[],
-  fragment: DocumentFragment,
-  addTooltip: boolean,
-  shouldCollapse: boolean = true,
-) {
-  // For joined flowcells, run-level is checked
-  // For non-joined, each lane is checked
-  // Metric is sometimes specified "/lane", sometimes per run
-  if (!sample.run || nullOrUndefined(sample.run.clustersPf)) {
-    if (sample.run && !sample.run.completionDate) {
-      fragment.appendChild(makeSequencingIcon());
-    } else {
-      fragment.appendChild(makeNotFoundIcon());
-    }
-    return;
-  }
-
-  const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
-  const perRunMetrics = separatedMetrics[0];
-  const perLaneMetrics = separatedMetrics[1];
-  const tooltip = Tooltip.getInstance();
-  const runDiv = document.createElement("div");
-  const divisorUnit = getDivisorUnit(metrics[0]);
-
-  runDiv.innerText = formatMetricValue(sample.run.clustersPf, metrics, divisorUnit);
-
-  if (addTooltip && perRunMetrics.length) {
-    // whether originally or not, these metrics are per run
-    const addContents = (fragment: DocumentFragment) => {
-      addMetricRequirementText(perRunMetrics, fragment);
-    };
-    tooltip.addTarget(runDiv, addContents);
-  }
-
-  assertDefined(sample.run.lanes);
-  if (sample.run.lanes.length > 1) {
-    const contentWrapper = document.createElement("div");
-    const addContents = (fragment: DocumentFragment) => {
-      // these metrics are per lane
-      addMetricRequirementText(perLaneMetrics, fragment);
-    };
-
-    sample.run.lanes.forEach((lane) => {
-      if (!nullOrUndefined(lane.clustersPf)) {
-        const laneDiv = document.createElement("div");
-        laneDiv.classList.add("whitespace-nowrap", "print-hanging");
-        laneDiv.innerText = `L${lane.laneNumber}: ${formatMetricValue(
-          lane.clustersPf,
-          metrics,
-          divisorUnit,
-        )}`;
-        if (addTooltip && perLaneMetrics.length) {
-          tooltip.addTarget(laneDiv, addContents);
-        }
-        contentWrapper.appendChild(laneDiv);
-      }
-    });
-
-    handleCollapse(runDiv, contentWrapper, fragment, shouldCollapse);
-  } else {
-    fragment.appendChild(runDiv);
-  }
-}
-
-function getClustersPfHighlight(sample: Sample, metrics: Metric[]): CellStatus | null {
-  if (!sample.run || nullOrUndefined(sample.run.clustersPf)) {
-    return "warning";
-  }
-  const separatedMetrics = separateRunVsLaneMetrics(metrics, sample.run);
-  const perRunMetrics = separatedMetrics[0];
-  const perLaneMetrics = separatedMetrics[1];
-
-  if (perRunMetrics.length && anyFail(sample.run.clustersPf, perRunMetrics)) {
-    return "error";
-  }
-
-  if (perLaneMetrics.length) {
-    let highlight: CellStatus | null = null;
-    assertDefined(sample.run.lanes);
-    for (let i = 0; i < sample.run.lanes.length; i++) {
-      const lane = sample.run.lanes[i];
-      if (nullOrUndefined(lane.clustersPf)) {
-        highlight = "warning";
-      } else if (anyFail(lane.clustersPf, perLaneMetrics)) {
-        return "error";
-      }
-    }
-    return highlight;
-  }
-
-  return null;
-}
-
-function separateRunVsLaneMetrics(metrics: Metric[], run: Run) {
-  let perLaneMetrics = metrics.filter((metric) => metric.units && metric.units.endsWith("/lane"));
-  let perRunMetrics = metrics.filter((metric) => !metric.units || !metric.units.endsWith("/lane"));
-  if (run.joinedLanes) {
-    // ALL metrics are per run. If specified per lane, multiply by lane count
-    perLaneMetrics.forEach((metric) => {
-      const perRunMetric = makePerRunFromLaneMetric(metric, run);
-      perRunMetrics.push(perRunMetric);
-    });
-    perLaneMetrics = [];
-  }
-  assertDefined(run.lanes);
-  if (run.lanes.length === 1) {
-    // Treat all as per run since we won't show the lane metrics separately
-    perRunMetrics = metrics;
-    perLaneMetrics = [];
-  }
-  return [perRunMetrics, perLaneMetrics];
-}
-
-function makePerRunFromLaneMetric(perLaneMetric: Metric, run: Run) {
-  assertDefined(run.lanes);
-  const perRunMetric: Metric = Object.assign({}, perLaneMetric);
-  if (perRunMetric.minimum) {
-    perRunMetric.minimum *= run.lanes.length;
-  }
-  if (perRunMetric.maximum) {
-    perRunMetric.maximum *= run.lanes.length;
-  }
-  if (!perRunMetric.units) {
-    throw new Error("Unexpected missing units");
-  }
-  const match = /^(.*)\/lane$/.exec(perRunMetric.units);
-  if (!match) {
-    throw new Error(`Unexpected metric units: ${perRunMetric.units}`);
-  }
-  perRunMetric.units = match[1];
-  return perRunMetric;
-}
-
-function addPhixContents(
-  sample: Sample,
-  metrics: Metric[],
-  fragment: DocumentFragment,
-  addTooltip: boolean,
-  shouldCollapse: boolean = true,
-) {
-  // There is no run-level metric, so we check each read of each lane
-  if (
-    !sample.run ||
-    !sample.run.lanes ||
-    !sample.run.lanes.length ||
-    sample.run.lanes.every((lane) => nullOrUndefined(lane.percentPfixRead1))
-  ) {
-    if (sample.run && !sample.run.completionDate) {
-      fragment.appendChild(makeSequencingIcon());
-    } else {
-      fragment.appendChild(makeNotFoundIcon());
-    }
-    return;
-  }
-
-  const tooltip = Tooltip.getInstance();
-  const addContents = (fragment: DocumentFragment) => {
-    addMetricRequirementText(metrics, fragment);
-  };
-
-  const multipleLanes = sample.run.lanes.length > 1;
-
-  const minPhixValue = Math.min(
-    ...sample.run.lanes.flatMap((lane) => {
-      const values = [];
-      if (lane.percentPfixRead1 !== null) {
-        values.push(lane.percentPfixRead1);
-      }
-      if (lane.percentPfixRead2 !== null) {
-        values.push(lane.percentPfixRead2);
-      }
-      return values;
-    }),
-  );
-
-  const contentWrapper = document.createElement("div");
-
-  sample.run.lanes.forEach((lane) => {
-    const laneDiv = document.createElement("div");
-    laneDiv.classList.add("whitespace-nowrap", "print-hanging");
-
-    if (multipleLanes) {
-      const laneLabel = document.createTextNode(`L${lane.laneNumber}: `);
-      laneDiv.appendChild(laneLabel);
-    }
-
-    if (nullOrUndefined(lane.percentPfixRead1)) {
-      laneDiv.appendChild(makeNotFoundIcon());
-    } else {
-      const text =
-        `R1: ${lane.percentPfixRead1}` +
-        (!nullOrUndefined(lane.percentPfixRead2) ? `; R2: ${lane.percentPfixRead2}` : "");
-      const textNode = document.createTextNode(text);
-      laneDiv.appendChild(textNode);
-
-      if (addTooltip) {
-        tooltip.addTarget(laneDiv, addContents);
-      }
-    }
-    contentWrapper.appendChild(laneDiv);
-  });
-
-  const minPhixDiv = document.createElement("div");
-  minPhixDiv.innerText = `${minPhixValue.toFixed(2)}+/R`;
-
-  handleCollapse(minPhixDiv, contentWrapper, fragment, shouldCollapse);
-}
-
-function getPhixHighlight(sample: Sample, metrics: Metric[]): CellStatus | null {
-  if (
-    !sample.run ||
-    !sample.run.lanes ||
-    !sample.run.lanes.length ||
-    sample.run.lanes.some((lane) => nullOrUndefined(lane.percentPfixRead1))
-  ) {
-    return "warning";
-  }
-  if (
-    sample.run.lanes.some((lane) => {
-      assertRequired(lane.percentPfixRead1);
-      return (
-        anyFail(lane.percentPfixRead1, metrics) ||
-        (!nullOrUndefined(lane.percentPfixRead2) && anyFail(lane.percentPfixRead2, metrics))
-      );
-    })
-  ) {
-    return "error";
-  }
-  return null;
 }
 
 function getMatchingMetrics(
@@ -1195,8 +1031,6 @@ function getMetricValue(metricName: string, sample: Sample): number | null {
       } else {
         return null;
       }
-    case METRIC_LABEL_Q30:
-      return sample.run ? nullIfUndefined(sample.run.percentOverQ30) : null;
     case "Collapsed Coverage":
       return nullIfUndefined(sample.collapsedCoverage);
   }
@@ -1255,10 +1089,6 @@ export function getFirstReviewStatus(qcable: Qcable) {
   } else {
     return qcStatuses.qc;
   }
-}
-
-function makeSequencingIcon() {
-  return makeStatusIcon(qcStatuses.sequencing.icon, qcStatuses.sequencing.label);
 }
 
 export function extractLibraryName(runLibraryId: string): string {
