@@ -7,6 +7,12 @@ This file is updated automatically as described in [Unreleased Changes](changes/
 
 ---------------------------------------------------------------------------------------------------
 
+## [1.68.0] - 2026-10-07
+
+### Added
+
+* Required metrics, which will appear on a sample even if there is no defined threshold. This will help to identify missing assay configuration and data entry errors.
+
 ## [1.67.2] - 2026-08-31
 
 ### Fixed
