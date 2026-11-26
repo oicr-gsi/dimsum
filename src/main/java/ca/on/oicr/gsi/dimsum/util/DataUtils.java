@@ -70,6 +70,13 @@ public class DataUtils {
     return isFalse(sample.getQcPassed()) || isFalse(sample.getDataReviewPassed());
   }
 
+  public static boolean isFailed(Run run) {
+    if (run.getDataReviewDate() == null) {
+      return false;
+    }
+    return isFalse(run.getQcPassed()) || isFalse(run.getDataReviewPassed());
+  }
+
   private static boolean isTrue(Boolean value) {
     return Boolean.TRUE.equals(value);
   }

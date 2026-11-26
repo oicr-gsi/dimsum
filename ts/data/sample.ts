@@ -131,22 +131,42 @@ interface QcInMisoRequest {
   library_aliquots: MisoRunLibrary[];
 }
 
-function makeQcStatusColumn(includeRun: boolean): ColumnDefinition<Sample, void> {
-  const getStatus = includeRun ? getQcStatus : getSampleQcStatus;
+function makeQcStatusColumn(): ColumnDefinition<Sample, void> {
   return {
     title: "QC Status",
     sortType: "custom",
     addParentContents(sample, fragment) {
-      const status = getStatus(sample);
+      // for run-libraries, show combined main status but include both in the tooltip
+      const status = getQcStatus(sample);
       const icon = makeIcon(status.icon);
       const tooltipInstance = Tooltip.getInstance();
       tooltipInstance.addTarget(icon, (tooltip) => {
-        addStatusTooltipText(tooltip, status, sample.qcReason, sample.qcUser, sample.qcNote);
+        if (sample.run) {
+          const run = sample.run;
+          addStatusTooltipText(
+            tooltip,
+            getQcStatusWithDataReview(run),
+            run.qcReason,
+            run.qcUser,
+            run.qcNote,
+            "Run status",
+          );
+          addStatusTooltipText(
+            tooltip,
+            getSampleQcStatus(sample),
+            sample.qcReason,
+            sample.qcUser,
+            sample.qcNote,
+            "Run-library status",
+          );
+        } else {
+          addStatusTooltipText(tooltip, status, sample.qcReason, sample.qcUser, sample.qcNote);
+        }
       });
       fragment.appendChild(icon);
     },
     getCellHighlight(sample) {
-      const status = getStatus(sample);
+      const status = getQcStatus(sample);
       return status.cellStatus || null;
     },
   };
@@ -313,7 +333,7 @@ export const receiptDefinition: TableDefinition<Sample, void> = {
   staticActions: [legendAction],
   generateColumns: function (data?: Sample[]) {
     return [
-      makeQcStatusColumn(false),
+      makeQcStatusColumn(),
       makeNameColumn(false),
       {
         title: "Requisition",
@@ -351,7 +371,7 @@ export const extractionDefinition: TableDefinition<Sample, void> = {
   staticActions: [legendAction],
   generateColumns(data) {
     return [
-      makeQcStatusColumn(false),
+      makeQcStatusColumn(),
       makeNameColumn(false),
       tissueAttributesColumn,
       {
@@ -375,7 +395,7 @@ export const libraryPreparationDefinition: TableDefinition<Sample, void> = {
   staticActions: [legendAction],
   generateColumns(data) {
     return [
-      makeQcStatusColumn(false),
+      makeQcStatusColumn(),
       makeNameColumn(false),
       tissueAttributesColumn,
       designColumn,
@@ -413,7 +433,7 @@ export function getLibraryQualificationsDefinition(
     ],
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
-        makeQcStatusColumn(includeSequencingAttributes),
+        makeQcStatusColumn(),
         makeNameColumn(includeSequencingAttributes),
         tissueAttributesColumn,
         designColumn,
@@ -456,7 +476,7 @@ export function getFullDepthSequencingsDefinition(
     ],
     generateColumns(data) {
       const columns: ColumnDefinition<Sample, void>[] = [
-        makeQcStatusColumn(includeSequencingAttributes),
+        makeQcStatusColumn(),
         makeNameColumn(includeSequencingAttributes),
         tissueAttributesColumn,
         designColumn,
