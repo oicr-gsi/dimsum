@@ -1,7 +1,7 @@
 package ca.on.oicr.gsi.dimsum.service;
 
-import ca.on.oicr.gsi.cardea.data.Assay;
-import ca.on.oicr.gsi.cardea.data.MetricCategory;
+import static ca.on.oicr.gsi.dimsum.util.DataUtils.isFailed;
+
 import ca.on.oicr.gsi.cardea.data.Run;
 import ca.on.oicr.gsi.cardea.data.Sample;
 import ca.on.oicr.gsi.cardea.data.SampleMetric;
@@ -72,22 +72,17 @@ public class NotificationManager {
     return jiraErrors;
   }
 
-  public void update(Map<String, RunAndLibraries> data, Map<Long, Assay> assaysById) {
+  public void update(Map<String, RunAndLibraries> data) {
     Counter jiraErrorCounter = new Counter();
     Set<String> handledRunNames = new HashSet<>();
-    List<Notification> newNotifications =
-        updateOpenIssues(data, assaysById, handledRunNames, jiraErrorCounter);
-    newNotifications.addAll(
-        createOrReopenIssues(data, assaysById, handledRunNames, jiraErrorCounter));
+    List<Notification> newNotifications = updateOpenIssues(data, handledRunNames, jiraErrorCounter);
+    newNotifications.addAll(createOrReopenIssues(data, handledRunNames, jiraErrorCounter));
     notifications = newNotifications;
     jiraErrors = jiraErrorCounter.getCount();
   }
 
   private List<Notification> updateOpenIssues(
-      Map<String, RunAndLibraries> data,
-      Map<Long, Assay> assaysById,
-      Set<String> handledRunNames,
-      Counter jiraErrorCounter) {
+      Map<String, RunAndLibraries> data, Set<String> handledRunNames, Counter jiraErrorCounter) {
     List<Notification> newNotifications = new ArrayList<>();
     if (issueTracker == null) {
       return newNotifications;
@@ -115,8 +110,7 @@ public class NotificationManager {
       }
       // track to avoid reprocessing later
       handledRunNames.add(runName);
-      Notification notification =
-          makeNotification(runAndLibraries, assaysById, true, issue.getKey());
+      Notification notification = makeNotification(runAndLibraries, true, issue.getKey());
       updateIssue(issue, notification, jiraErrorCounter);
       if (notification != null && notification.requiresAction()) {
         newNotifications.add(notification);
@@ -178,18 +172,14 @@ public class NotificationManager {
   }
 
   private List<Notification> createOrReopenIssues(
-      Map<String, RunAndLibraries> data,
-      Map<Long, Assay> assaysById,
-      Set<String> handledRunNames,
-      Counter jiraErrorCounter) {
+      Map<String, RunAndLibraries> data, Set<String> handledRunNames, Counter jiraErrorCounter) {
     List<Notification> newNotifications = new ArrayList<>();
     data.values().stream()
         .filter(
             x ->
                 !handledRunNames.contains(x.getRun().getName())
-                    && (readyForLibraryQualificationQc(x, assaysById)
-                        || readyForFullDepthQc(x, assaysById)))
-        .map(x -> makeNotification(x, assaysById, false, null))
+                    && (readyForLibraryQualificationQc(x) || readyForFullDepthQc(x)))
+        .map(x -> makeNotification(x, false, null))
         .filter(Objects::nonNull)
         .forEach(
             x -> {
@@ -234,62 +224,56 @@ public class NotificationManager {
     return newNotifications;
   }
 
-  protected boolean readyForLibraryQualificationQc(
-      RunAndLibraries runAndLibraries, Map<Long, Assay> assaysById) {
+  protected boolean readyForLibraryQualificationQc(RunAndLibraries runAndLibraries) {
     Set<SampleAndRelated> libraries = runAndLibraries.getLibraryQualifications();
+    // Skip if there are no libraries, or if the run is failed (implicit fail of libraries)
     if (libraries.isEmpty()) {
       return false;
     }
     Run run = runAndLibraries.getRun();
+    if (isFailed(run)) {
+      // If the run is failed, all the libraries are implicitly failed too
+      return false;
+    }
     // "ready" if metrics for ALL libraries are available and ANY library or run sign-off is needed
-    return libraries.stream()
-            .allMatch(
-                x -> metricsAvailable(x, run, assaysById, MetricCategory.LIBRARY_QUALIFICATION))
+    return libraries.stream().allMatch(x -> metricsAvailable(x))
         && (libraries.stream().anyMatch(x -> x.getDataReviewDate() == null)
             || run.getDataReviewDate() == null);
   }
 
-  protected boolean readyForFullDepthQc(
-      RunAndLibraries runAndLibraries, Map<Long, Assay> assaysById) {
+  protected boolean readyForFullDepthQc(RunAndLibraries runAndLibraries) {
     Set<SampleAndRelated> libraries = runAndLibraries.getFullDepthSequencings();
     if (libraries.isEmpty()) {
       return false;
     }
     Run run = runAndLibraries.getRun();
-    final MetricCategory category = MetricCategory.FULL_DEPTH_SEQUENCING;
+    if (isFailed(run)) {
+      // If the run is failed, all the libraries are implicitly failed too
+      return false;
+    }
     // "ready" if ANY library has metrics available AND ANY such library or the run needs sign-off
     return libraries.stream()
         .anyMatch(
             x ->
-                metricsAvailable(x, run, assaysById, category)
+                metricsAvailable(x)
                     && (x.getDataReviewDate() == null || run.getDataReviewDate() == null));
   }
 
   private Notification makeNotification(
-      RunAndLibraries runAndLibraries,
-      Map<Long, Assay> assaysById,
-      boolean returnIfPendingAnalysisOnly,
-      String issueKey) {
+      RunAndLibraries runAndLibraries, boolean returnIfPendingAnalysisOnly, String issueKey) {
     Run run = runAndLibraries.getRun();
     Set<Sample> pendingAnalysis = new HashSet<>();
     Set<Sample> pendingQc = new HashSet<>();
     Set<Sample> pendingDataReview = new HashSet<>();
-    sortSamples(
-        runAndLibraries.getLibraryQualifications(),
-        run,
-        assaysById,
-        MetricCategory.LIBRARY_QUALIFICATION,
-        pendingAnalysis,
-        pendingQc,
-        pendingDataReview);
-    sortSamples(
-        runAndLibraries.getFullDepthSequencings(),
-        run,
-        assaysById,
-        MetricCategory.FULL_DEPTH_SEQUENCING,
-        pendingAnalysis,
-        pendingQc,
-        pendingDataReview);
+    if (!isFailed(run)) {
+      sortSamples(
+          runAndLibraries.getLibraryQualifications(),
+          pendingAnalysis,
+          pendingQc,
+          pendingDataReview);
+      sortSamples(
+          runAndLibraries.getFullDepthSequencings(), pendingAnalysis, pendingQc, pendingDataReview);
+    }
 
     if (pendingQc.isEmpty() && pendingDataReview.isEmpty() && run.getDataReviewDate() != null) {
       if (returnIfPendingAnalysisOnly) {
@@ -305,16 +289,13 @@ public class NotificationManager {
 
   private void sortSamples(
       Set<SampleAndRelated> runLibs,
-      Run run,
-      Map<Long, Assay> assaysById,
-      MetricCategory category,
       Set<Sample> pendingAnalysis,
       Set<Sample> pendingQc,
       Set<Sample> pendingDataReview) {
     for (SampleAndRelated sample : runLibs) {
       if (sample.getDataReviewDate() != null) {
         continue;
-      } else if (!metricsAvailable(sample, run, assaysById, category)) {
+      } else if (!metricsAvailable(sample)) {
         pendingAnalysis.add(sample);
       } else if (sample.getQcDate() == null) {
         pendingQc.add(sample);
@@ -340,13 +321,7 @@ public class NotificationManager {
     return data;
   }
 
-  protected boolean metricsAvailable(
-      Sample sample, Run run, Map<Long, Assay> assaysById, MetricCategory metricCategory) {
-    if (metricCategory != MetricCategory.LIBRARY_QUALIFICATION
-        && metricCategory != MetricCategory.FULL_DEPTH_SEQUENCING) {
-      throw new IllegalArgumentException(
-          String.format("Unexpected metric category: %s", metricCategory));
-    }
+  protected boolean metricsAvailable(Sample sample) {
     if (sample.getMetrics() == null) {
       // No metrics means no values to wait for, so all are available
       return true;

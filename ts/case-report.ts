@@ -27,6 +27,8 @@ import {
   Sample,
   subcategoryApplies as sampleSubcategoryApplies,
   getSampleMetricHighlightNew,
+  getSampleQcStatus,
+  getQcStatusWithDataReview,
 } from "./data/sample";
 import { addTextDiv, makeNameDiv } from "./util/html-utils";
 import { getMetricRequirementText } from "./util/metrics";
@@ -173,14 +175,13 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
       title: "Item",
       headingClass: "print-width-25",
       addParentContents(object, fragment) {
-        if (object.allSamples) {
-          // this is a run-level item
+        if (isRunLevel(object)) {
           const run = getRun(object.sample);
           const runName = run.name;
           fragment.appendChild(
             makeWrappingNameDiv(runName, urls.miso.run(runName), urls.dimsum.run(runName)),
           );
-          object.allSamples.forEach((sample) => {
+          object.allSamples?.forEach((sample) => {
             fragment.appendChild(
               makeWrappingNameDiv(
                 sample.name + (sample.sequencingLane ? ` (L${sample.sequencingLane})` : ""),
@@ -263,15 +264,37 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     {
       title: "QC Metric Sign-Off",
       addParentContents(object, fragment) {
-        displaySampleSignOff(fragment, getRunOrSampleLevel(object), object.caseStopped);
+        if (isRunLevel(object)) {
+          displaySampleSignOff(fragment, getRun(object.sample), object.caseStopped);
+        } else {
+          const sampleStatus = getSampleQcStatus(object.sample);
+          if (
+            sampleStatus == qcStatuses.qc &&
+            object.sample.run &&
+            getQcStatusWithDataReview(object.sample.run) === qcStatuses.failed
+          ) {
+            fragment.append(makeTextDiv("Run Failed", "bold"));
+          } else {
+            displaySampleSignOff(fragment, object.sample, object.caseStopped);
+          }
+        }
         addAssayMismatchText(fragment, object);
       },
       getCellHighlight(object) {
         const qcable = getRunOrSampleLevel(object);
         const reviewStatus = getFirstReviewStatus(qcable);
-        if (reviewStatus === qcStatuses.qc && object.caseStopped) {
-          return "na";
-        } else if (reviewStatus.cellStatus) {
+        if (reviewStatus === qcStatuses.qc) {
+          if (object.caseStopped) {
+            return "na";
+          } else if (
+            !isRunLevel(object) &&
+            object.sample.run &&
+            getQcStatusWithDataReview(object.sample.run) === qcStatuses.failed
+          ) {
+            return "error";
+          }
+        }
+        if (reviewStatus.cellStatus) {
           return reviewStatus.cellStatus;
         } else if (!caseAssayAppliesToSample(object)) {
           return "warning";
@@ -282,11 +305,21 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
     {
       title: "QC Stage Sign-Off",
       addParentContents(object, fragment) {
-        if (object.sample.run) {
-          displayDataReviewSignOff(fragment, getRunOrSampleLevel(object), object.caseStopped);
-          addAssayMismatchText(fragment, object);
-        } else {
+        if (!object.sample.run) {
           addText(fragment, "No second review required");
+        } else {
+          if (isRunLevel(object)) {
+            displayDataReviewSignOff(fragment, object.sample.run, object.caseStopped);
+          } else if (
+            !object.sample.dataReviewDate &&
+            getQcStatusWithDataReview(object.sample.run) === qcStatuses.failed
+          ) {
+            fragment.append(makeTextDiv("Run Failed", "bold"));
+          } else {
+            displayDataReviewSignOff(fragment, getRunOrSampleLevel(object), object.caseStopped);
+          }
+
+          addAssayMismatchText(fragment, object);
         }
       },
       getCellHighlight(object) {
@@ -296,6 +329,11 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
           if (!qcable.dataReviewDate) {
             if (object.caseStopped) {
               return "na";
+            } else if (
+              !isRunLevel(object) &&
+              getQcStatusWithDataReview(object.sample.run) === qcStatuses.failed
+            ) {
+              return "error";
             } else {
               return qcStatuses.dataReview.cellStatus;
             }
@@ -313,12 +351,16 @@ const sampleGateMetricsDefinition: TableDefinition<ReportSample, Metric> = {
 };
 
 function getRunOrSampleLevel(object: ReportSample): Qcable {
-  if (object.allSamples) {
+  if (isRunLevel(object)) {
     // this is a run-level item
     return getRun(object.sample);
   } else {
     return object.sample;
   }
+}
+
+function isRunLevel(object: ReportSample): boolean {
+  return !!object.allSamples;
 }
 
 function getRun(sample: Sample) {

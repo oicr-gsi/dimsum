@@ -57,66 +57,26 @@ public class NotificationManagerTest {
 
   @Test
   public void testLibraryQualificationMetricsAvailable() {
-    assertTrue(
-        sut.metricsAvailable(
-            makeRunLibrary(true, false),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.LIBRARY_QUALIFICATION));
-    assertTrue(
-        sut.metricsAvailable(
-            makeRunLibrary(true, true),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.LIBRARY_QUALIFICATION));
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, false)));
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, true)));
   }
 
   @Test
   public void testLibraryQualificationMetricsNotAvailable() {
-    assertFalse(
-        sut.metricsAvailable(
-            makeRunLibrary(false, false),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.LIBRARY_QUALIFICATION));
-    assertFalse(
-        sut.metricsAvailable(
-            makeRunLibrary(false, true),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.LIBRARY_QUALIFICATION));
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, false)));
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, true)));
   }
 
   @Test
   public void testFullDepthMetricsAvailable() {
-    assertTrue(
-        sut.metricsAvailable(
-            makeRunLibrary(true, false),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.FULL_DEPTH_SEQUENCING));
-    assertTrue(
-        sut.metricsAvailable(
-            makeRunLibrary(true, true),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.FULL_DEPTH_SEQUENCING));
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, false)));
+    assertTrue(sut.metricsAvailable(makeRunLibrary(true, true)));
   }
 
   @Test
   public void testFullDepthMetricsNotAvailable() {
-    assertFalse(
-        sut.metricsAvailable(
-            makeRunLibrary(false, false),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.FULL_DEPTH_SEQUENCING));
-    assertFalse(
-        sut.metricsAvailable(
-            makeRunLibrary(false, true),
-            pendingQcRun,
-            assaysById,
-            MetricCategory.FULL_DEPTH_SEQUENCING));
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, false)));
+    assertFalse(sut.metricsAvailable(makeRunLibrary(false, true)));
   }
 
   @Test
@@ -124,7 +84,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
-    assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries));
   }
 
   @Test
@@ -133,7 +93,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
-    assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries));
   }
 
   @Test
@@ -142,7 +102,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
-    assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForLibraryQualificationQc(runAndLibraries));
   }
 
   @Test
@@ -151,7 +111,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(false, false));
-    assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
+    assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries));
   }
 
   @Test
@@ -160,7 +120,21 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
     runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, true));
-    assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries, assaysById));
+    assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries));
+  }
+
+  @Test
+  public void testNotReadyForLibraryQualificationRunFailed() {
+    // No further signoffs needed if the run is failed
+    RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
+    Run run = runAndLibraries.getRun();
+    when(run.getQcPassed()).thenReturn(false);
+    when(run.getQcDate()).thenReturn(LocalDate.now());
+    when(run.getDataReviewPassed()).thenReturn(false);
+    when(run.getDataReviewDate()).thenReturn(LocalDate.now());
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
+    runAndLibraries.getLibraryQualifications().add(makeRunLibrary(true, false));
+    assertFalse(sut.readyForLibraryQualificationQc(runAndLibraries));
   }
 
   @Test
@@ -168,7 +142,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
-    assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -177,7 +151,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
-    assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -186,7 +160,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
-    assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -195,7 +169,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
-    assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -204,7 +178,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
-    assertTrue(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertTrue(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -213,7 +187,7 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(true);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, true));
-    assertFalse(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertFalse(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -222,7 +196,21 @@ public class NotificationManagerTest {
     RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
     runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(false, false));
-    assertFalse(sut.readyForFullDepthQc(runAndLibraries, assaysById));
+    assertFalse(sut.readyForFullDepthQc(runAndLibraries));
+  }
+
+  @Test
+  public void testNotReadyForFullDepthRunFailed() {
+    // No further signoffs needed if the run is failed
+    RunAndLibraries runAndLibraries = makeRunAndLibraries(false);
+    Run run = runAndLibraries.getRun();
+    when(run.getQcPassed()).thenReturn(false);
+    when(run.getQcDate()).thenReturn(LocalDate.now());
+    when(run.getDataReviewPassed()).thenReturn(false);
+    when(run.getDataReviewDate()).thenReturn(LocalDate.now());
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
+    runAndLibraries.getFullDepthSequencings().add(makeRunLibrary(true, false));
+    assertFalse(sut.readyForFullDepthQc(runAndLibraries));
   }
 
   @Test
@@ -230,7 +218,7 @@ public class NotificationManagerTest {
     Map<String, RunAndLibraries> data = makeData(true, 1, 1, 0, 0);
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.emptySet());
     when(jiraService.getIssueBySummary(SUMMARY)).thenReturn(null);
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueBySummary(SUMMARY);
     verify(jiraService).createIssue(Mockito.eq(SUMMARY), anyString());
@@ -240,11 +228,11 @@ public class NotificationManagerTest {
   @Test
   public void testUnchangedSincePostFullDepthIssue() {
     Map<String, RunAndLibraries> data = makeData(true, 1, 1, 0, 0);
-    Issue issue = makeIssue("R1A1Q1D0");
+    Issue issue = makeIssue("R3A1Q1D0");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
     when(jiraService.getIssueByKey(issue.getKey())).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueByKey(issue.getKey());
     verify(jiraService).getIssueState(issue);
@@ -254,11 +242,11 @@ public class NotificationManagerTest {
   @Test
   public void testUnchangedSinceUpdateFullDepthIssue() {
     Map<String, RunAndLibraries> data = makeData(true, 0, 0, 2, 0);
-    Issue issue = makeIssue("R1A0Q2D0", "R1A0Q0D2");
+    Issue issue = makeIssue("R1A0Q2D0", "R3A0Q0D2");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
     when(jiraService.getIssueByKey(issue.getKey())).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueByKey(issue.getKey());
     verify(jiraService).getIssueState(issue);
@@ -272,7 +260,7 @@ public class NotificationManagerTest {
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
     when(jiraService.getIssueByKey(issue.getKey())).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueState(issue);
     verify(jiraService).getIssueByKey(issue.getKey());
@@ -286,7 +274,7 @@ public class NotificationManagerTest {
     Issue issue = makeIssue("R3A1Q0D1");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OPEN);
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueState(issue);
     verify(jiraService).pauseIssue(any(), anyString());
@@ -300,7 +288,7 @@ public class NotificationManagerTest {
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.emptySet());
     when(jiraService.getIssueBySummary(SUMMARY)).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.PAUSED);
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueBySummary(SUMMARY);
     verify(jiraService, times(2)).getIssueState(issue);
@@ -313,7 +301,7 @@ public class NotificationManagerTest {
     Map<String, RunAndLibraries> data = makeData(true, 0, 0, 0, 2);
     Issue issue = makeIssue("R3A0Q1D0");
     when(jiraService.getOpenIssues(anyString())).thenReturn(Collections.singleton(issue));
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).closeIssue(any(), anyString());
     verifyNoMoreInteractions(jiraService);
@@ -327,7 +315,7 @@ public class NotificationManagerTest {
     when(jiraService.getIssueBySummary(SUMMARY)).thenReturn(issue);
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.PAUSED);
     // Verify that it would normally be reopened
-    sut.update(data, assaysById);
+    sut.update(data);
     verify(jiraService).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService).getIssueBySummary(SUMMARY);
     verify(jiraService, times(2)).getIssueState(issue);
@@ -336,7 +324,7 @@ public class NotificationManagerTest {
 
     // Verify that it is not reopened if overridden
     when(jiraService.getIssueState(issue)).thenReturn(IssueState.OVERRIDDEN);
-    sut.update(data, assaysById);
+    sut.update(data);
     // Note: these verifications count the previously verified invocations too
     verify(jiraService, times(2)).getOpenIssues(SUMMARY_SUFFIX);
     verify(jiraService, times(2)).getIssueBySummary(SUMMARY);
@@ -365,6 +353,9 @@ public class NotificationManagerTest {
     Run run = mock(Run.class);
     when(run.getName()).thenReturn(RUN_NAME);
     if (signoffsDone) {
+      when(run.getQcPassed()).thenReturn(true);
+      when(run.getQcDate()).thenReturn(arbitraryTimestamp);
+      when(run.getDataReviewPassed()).thenReturn(true);
       when(run.getDataReviewDate()).thenReturn(arbitraryTimestamp);
     }
     return run;
@@ -414,7 +405,9 @@ public class NotificationManagerTest {
     when(metric.getThresholdType()).thenReturn(ThresholdType.GE);
     when(metric.getQcPassed()).thenReturn(metricsAvailable ? true : null);
     when(runLib.getMetrics()).thenReturn(Collections.singletonList(metric));
+    when(runLib.getQcPassed()).thenReturn(qcDone ? true : null);
     when(runLib.getQcDate()).thenReturn(qcDone ? arbitraryTimestamp : null);
+    when(runLib.getDataReviewPassed()).thenReturn(signoffsDone ? true : null);
     when(runLib.getDataReviewDate()).thenReturn(signoffsDone ? arbitraryTimestamp : null);
     return runLib;
   }

@@ -209,9 +209,12 @@ export function addNaText(fragment: DocumentFragment) {
   fragment.appendChild(document.createTextNode("N/A"));
 }
 
-export function makeTextDiv(text: string) {
+export function makeTextDiv(text: string, style?: TextStyle | null) {
   const divContainer = document.createElement("div");
   divContainer.appendChild(document.createTextNode(text));
+  if (style) {
+    styleText(divContainer, style);
+  }
   return divContainer;
 }
 
